@@ -1767,6 +1767,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     }
                 }
                 break;
+            case 58730: // No Fly Zone - Wintergrasp
             case 58600: // No fly Zone - Dalaran
                 if (GetTickNumber() == 10)
                 {
