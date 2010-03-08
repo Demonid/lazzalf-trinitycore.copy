@@ -329,6 +329,7 @@ class PetAura;
 class Minion;
 class Guardian;
 class UnitAI;
+class Totem;
 class Transport;
 class Vehicle;
 
@@ -1431,7 +1432,7 @@ class Unit : public WorldObject
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject *obj, float speedZ);
 
-        void SendMonsterStop();
+        void SendMonsterStop(bool on_death = false);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
@@ -1849,8 +1850,8 @@ class Unit : public WorldObject
         static Player* GetPlayer(uint64 guid);
         static Creature* GetCreature(WorldObject& object, uint64 guid);
 
-        MotionMaster* GetMotionMaster() { return &i_motionMaster; }
-
+        MotionMaster* GetMotionMaster(){ return &i_motionMaster; }
+	
         bool IsStopped() const { return !(hasUnitState(UNIT_STAT_MOVING)); }
         void StopMoving();
 
@@ -1954,6 +1955,10 @@ class Unit : public WorldObject
 
         void OutDebugInfo() const;
         virtual bool isBeingLoaded() const { return false;}
+
+	Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; }
+		Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
+
     protected:
         explicit Unit ();
 
