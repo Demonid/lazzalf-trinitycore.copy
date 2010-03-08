@@ -1484,9 +1484,6 @@ void Creature::setDeathState(DeathState s)
         if(m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        SetHealth(0);
-        SetPower(getPowerType(),0);
-
         if ((canFly() || IsFlying()) && FallGround())
             return;
 
