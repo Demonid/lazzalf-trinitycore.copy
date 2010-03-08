@@ -1573,6 +1573,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Returning old mails...");
     objmgr.ReturnOrDeleteOldMails(false);
 
+	// Loads the jail conf out of the database
+    sLog.outString("Loading JailConfing...");    
+    objmgr.LoadJailConf();
+
     sLog.outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
 
