@@ -1208,6 +1208,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN]                 = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWins", 30);
     m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM]    = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWinsAgainstTeam", 15);
     m_configs[CONFIG_ARENAMOD_TIME_RESET]                     = sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+    m_configs[CONFIG_ARENAMOD_CONTROLL_IP]                    = sConfig.GetIntDefault("ArenaMod.ControllIp", 0);
 
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfig.GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
