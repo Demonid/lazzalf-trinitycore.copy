@@ -711,10 +711,17 @@ void BattleGround::EndBattleGround(uint32 winner)
     // arena rating calculation
     if (isArena() && isRated())
     {
+        bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+
         winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
         if (winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
+            if(enabled)
+            {
+                winner_arena_team->SaveToDBArenaModTeam(winner_arena_team->GetId(), loser_arena_team->GetId());
+            }
+
             loser_rating = loser_arena_team->GetStats().rating;
             winner_rating = winner_arena_team->GetStats().rating;
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
@@ -776,6 +783,16 @@ void BattleGround::EndBattleGround(uint32 winner)
         // per player calculation
         if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
+            bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+
+            if(enabled)
+            {
+                if(winner_arena_team->GetId() == plr->GetArenaTeamId(winner_arena_team->GetSlot()))
+                {
+                    winner_arena_team->SaveToDBArenaModPlayer(plr->GetGUID(), winner_arena_team->GetId(), loser_arena_team->GetId());
+                }
+            }
+
             if (team == winner)
             {
                 // update achievement BEFORE personal rating update

@@ -1201,6 +1201,14 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING] = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
     m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]  = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
 
+	m_configs[CONFIG_ARENAMOD_ENABLE]                         = sConfig.GetBoolDefault("ArenaMod.Enabled", 0);
+	m_configs[CONFIG_ARENAMOD_MODE]                           = sConfig.GetIntDefault("ArenaMod.Mode", 3);
+    m_configs[CONFIG_ARENAMOD_MAX_TEAM_WIN]                   = sConfig.GetIntDefault("ArenaMod.MaximalTeamWins", 40);	
+	m_configs[CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM]      = sConfig.GetIntDefault("ArenaMod.MaximalTeamWinsAgainstTeam", 20);
+    m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN]                 = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWins", 30);
+    m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM]    = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWinsAgainstTeam", 15);
+    m_configs[CONFIG_ARENAMOD_TIME_RESET]                     = sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfig.GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
     m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfig.GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
@@ -1661,6 +1669,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting BattleGround System");
     sBattleGroundMgr.CreateInitialBattleGrounds();
     sBattleGroundMgr.InitAutomaticArenaPointDistribution();
+	sBattleGroundMgr.InitAutomaticArenaModTimer();
 
     ///- Initialize outdoor pvp
     sLog.outString("Starting Outdoor PvP System");
