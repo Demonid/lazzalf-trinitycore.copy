@@ -2020,6 +2020,53 @@ AuctionHouseBot.DisableItemsAboveReqSkillRank = 0
 AuctionHouseBot.DisableTGsBelowReqSkillRank = 0
 AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 
+###################################################################################################################
+# ARENA MOD SETTINGS
+# 
+#    ArenaMod.Enable
+#        Enable/Disable Arena Mod
+#    Default: 0 (disabled)
+#
+#    ArenaMod.Mode
+#        Three possible modes are available, they are addable as flags :
+#        - Mode 1 : Player mode
+#          Only activates limitations for each player
+#        - Mode 2 : Team mode
+#          Only activates limitations for the whole arenateam
+#        - Mode 1 + 2 = Mode 3 : Player & Team mode
+#          Activates limitations for each player and whole arenateam
+#    Default: 3
+#
+#    ArenaMod.MaximalTeamWins
+#        Sets the maximal amount of all wins of a team against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalTeamWinsAgainstTeam
+#        Sets the maximal amount of wins of a team against another specific team
+#    Default: 15
+#
+#    ArenaMod.MaximalPlayerWins
+#        Sets the maximal amount of all wins of a single player against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalPlayerWinsAgainstTeam
+#        Sets the maximal amount of wins of a single player against another specific team
+#    Default: 30
+#
+#    ArenaMod.TimeToReset
+#        Sets the time intervall in HOURS for resetting the limitation
+#    Default: 24
+#
+###################################################################################################################
+
+ArenaMod.Enabled = 0
+ArenaMod.Mode = 3
+ArenaMod.MaximalTeamWins = 40
+ArenaMod.MaximalTeamWinsAgainstTeam = 20
+ArenaMod.MaximalPlayerWins = 30
+ArenaMod.MaximalPlayerWinsAgainstTeam = 15
+ArenaMod.TimeToReset = 24
+
 ###############################################################################
 # CONSOLE AND REMOTE ACCESS
 #

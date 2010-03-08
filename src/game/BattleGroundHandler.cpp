@@ -758,7 +758,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recv_data )
         SendPacket(&data);
         sLog.outDebug("Battleground: player joined queue for arena, skirmish, bg queue type %u bg type %u: GUID %u, NAME %s",bgQueueTypeId,bgTypeId,_player->GetGUIDLow(), _player->GetName());
     }
-    sBattleGroundMgr.ScheduleQueueUpdate(arenaRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
+    sBattleGroundMgr.ScheduleQueueUpdate(arenaRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId(), ateamId);
 }
 
 void WorldSession::HandleReportPvPAFK( WorldPacket & recv_data )
