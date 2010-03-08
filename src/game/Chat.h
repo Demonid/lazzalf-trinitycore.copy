@@ -138,6 +138,7 @@ class ChatHandler
         bool HandleCharacterRenameCommand(const char * args);
         bool HandleCharacterReputationCommand(const char* args);
         bool HandleCharacterTitlesCommand(const char* args);
+		bool HandleCharacterJailpinfoCommand(const char* args);
 
         bool HandleChannelSetPublic(const char *args);
 
@@ -572,6 +573,11 @@ class ChatHandler
 
         /*bool HandleCharDeleteCommand(const char *args);
         bool HandleSendMessageCommand(const char * args);*/
+
+        bool HandleJailCommand(const char* args);
+        bool HandleJailInfoCommand(const char* args);
+        bool HandleUnJailCommand(const char* args);
+        bool HandleJailReloadCommand(const char* args);
 
         bool HandleFlushArenaPointsCommand(const char *args);
         bool HandlePlayAllCommand(const char* args);

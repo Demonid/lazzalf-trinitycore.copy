@@ -35,6 +35,8 @@
 #include "PoolHandler.h"
 #include "AccountMgr.h"
 #include "WaypointManager.h"
+#include "WaypointMovementGenerator.h"
+#include "math.h"
 #include "Util.h"
 #include <cctype>
 #include <iostream>
@@ -3452,6 +3454,51 @@ bool ChatHandler::HandleCharacterReputationCommand(const char* args)
         SendSysMessage(ss.str().c_str());
     }
     return true;
+}
+
+bool ChatHandler::HandleCharacterJailpinfoCommand(const char* args)
+{
+
+	Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if(!extractPlayerTarget((char*)args,&target,&target_guid,&target_name))
+        return false;
+
+        if (target->m_jail_times > 0)
+        {
+            if(target->m_jail_release > 0)
+            {
+                time_t localtime;
+                localtime = time(NULL);
+                uint32 min_left = (uint32)floor(float(target->m_jail_release - localtime) / 60);
+
+                if (min_left <= 0)
+                {
+                    target->m_jail_release = 0;
+                    target->_SaveJail();
+                    PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, 0, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                    return true;
+                }
+                else
+                {
+                    PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, min_left, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                    return true;
+                }
+            }
+            else
+            {
+                PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, 0, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                return true;
+            }
+        }
+        else
+        {
+            PSendSysMessage(LANG_JAIL_GM_NOINFO, target->GetName());
+            return true;
+        }
+
+	return true;
 }
 
 //change standstate

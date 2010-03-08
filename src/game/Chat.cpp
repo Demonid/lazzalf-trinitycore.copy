@@ -126,7 +126,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "level",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterLevelCommand,      "", NULL },
         { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRenameCommand,     "", NULL },
         { "reputation",     SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", NULL },
-        { "titles",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterTitlesCommand,     "", NULL },
+        { "Jailpinfo",      SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterJailpinfoCommand,  "", NULL },
+		{ "titles",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterTitlesCommand,     "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -696,6 +697,11 @@ ChatCommand * ChatHandler::getCommandTable()
         { "loadpath",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleReloadAllPaths,             "", NULL },
         { "ahbotoptions",   SEC_GAMEMASTER,     true,  &ChatHandler::HandleAHBotOptionsCommand,        "", NULL },
         { "ticket",         SEC_MODERATOR,      false,  NULL,                                          "", ticketCommandTable },
+
+        { "jail",           SEC_MODERATOR,      false, &ChatHandler::HandleJailCommand,                "", NULL },
+        { "jailinfo",       SEC_PLAYER,         false, &ChatHandler::HandleJailInfoCommand,            "", NULL },
+        { "unjail",         SEC_MODERATOR,      false, &ChatHandler::HandleUnJailCommand,              "", NULL },
+        { "jailreload",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleJailReloadCommand,          "", NULL },
 
         { "aura",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAuraCommand,                "", NULL },
         { "unaura",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnAuraCommand,              "", NULL },
