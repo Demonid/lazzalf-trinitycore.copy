@@ -22,9 +22,9 @@
 //Stalagg
 enum StalaggYells
 {
-    SAY_STAL_AGGRO          = -1533023, //not used
-    SAY_STAL_SLAY           = -1533024, //not used
-    SAY_STAL_DEATH          = -1533025  //not used
+    SAY_STAL_AGGRO          = -1533023,
+    SAY_STAL_SLAY           = -1533024,
+    SAY_STAL_DEATH          = -1533025
 };
 
 enum StalagSpells
@@ -38,9 +38,9 @@ enum StalagSpells
 //Feugen
 enum FeugenYells
 {
-    SAY_FEUG_AGGRO          = -1533026, //not used
-    SAY_FEUG_SLAY           = -1533027, //not used
-    SAY_FEUG_DEATH          = -1533028 //not used
+    SAY_FEUG_AGGRO          = -1533026,
+    SAY_FEUG_SLAY           = -1533027,
+    SAY_FEUG_DEATH          = -1533028
 };
 
 enum FeugenSpells
@@ -61,6 +61,7 @@ enum ThaddiusActions
 
 //generic
 #define C_TESLA_COIL            16218           //the coils (emotes "Tesla Coil overloads!")
+#define EMOTE_TESLA "Tesla Coil overloads!"
 
 //Thaddius
 enum ThaddiusYells
@@ -72,10 +73,10 @@ enum ThaddiusYells
     SAY_SLAY                = -1533033,
     SAY_ELECT               = -1533034, //not used
     SAY_DEATH               = -1533035,
-    SAY_SCREAM1             = -1533036, //not used
-    SAY_SCREAM2             = -1533037, //not used
-    SAY_SCREAM3             = -1533038, //not used
-    SAY_SCREAM4             = -1533039 //not used
+    SAY_SCREAM1             = -1533036,
+    SAY_SCREAM2             = -1533037,
+    SAY_SCREAM3             = -1533038,
+    SAY_SCREAM4             = -1533039
 };
 
 enum ThaddiusSpells
@@ -93,7 +94,19 @@ enum Events
     EVENT_SHIFT,
     EVENT_CHAIN,
     EVENT_BERSERK,
+    EVENT_SCREAM,
 };
+
+// If Feugen or Stalagg gets too far from the Tesla Coil behind him, the raid will start taking unhealable AoE
+#define CREATURE_TESLA      16218
+#define SPELL_TESLA         32309 // similar spell from Patchwerk
+
+#define TESLA_S_X             3450.45 // Stalagg - Tesla
+#define TESLA_S_Y            -2931.42
+#define TESLA_S_Z             312.091
+#define TESLA_F_X             3508.14 // Feugen - Tesla
+#define TESLA_F_Y            -2988.65
+#define TESLA_F_Z             312.092
 
 struct boss_thaddiusAI : public BossAI
 {
@@ -138,6 +151,24 @@ struct boss_thaddiusAI : public BossAI
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
+        me->SummonCreature(39000, 3517.93, -2942.52, 303.12, 2.096, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
+    }
+
+    void Reset()
+    {
+        if (!checkStalaggAlive)
+        {
+            if (instance)
+                if (Creature *pStalagg = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_STALAGG)))
+                    pStalagg->Respawn();
+        }
+        else
+        {
+            if (instance)
+                if (Creature *pFeugen = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_FEUGEN)))
+                    pFeugen->Respawn();
+        }
+        _Reset();
     }
 
     void DoAction(const int32 action)
@@ -233,6 +264,10 @@ struct boss_thaddiusAI : public BossAI
                 case EVENT_BERSERK:
                     DoCast(me, SPELL_BERSERK);
                     return;
+                case EVENT_SCREAM:
+                    DoScriptText(RAND(SAY_SCREAM1,SAY_SCREAM2,SAY_SCREAM3,SAY_SCREAM4), me);
+                    events.ScheduleEvent(EVENT_SCREAM, urand(45000,60000));
+                    return;
             }
         }
 
@@ -259,6 +294,7 @@ struct mob_stalaggAI : public ScriptedAI
 
     uint32 powerSurgeTimer;
     uint32 magneticPullTimer;
+    uint32 TeslaTimer;
 
     void Reset()
     {
@@ -268,11 +304,13 @@ struct mob_stalaggAI : public ScriptedAI
                     pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
         powerSurgeTimer = urand(20000,25000);
         magneticPullTimer = 20000;
+        TeslaTimer = 5000;
     }
 
     void EnterCombat(Unit *pWho)
     {
         DoCast(SPELL_STALAGG_TESLA);
+        DoScriptText(SAY_STAL_AGGRO, me);
     }
 
     void JustDied(Unit *killer)
@@ -280,7 +318,15 @@ struct mob_stalaggAI : public ScriptedAI
         if (pInstance)
             if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
-                    pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
+                    {
+                        pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
+                        DoScriptText(SAY_STAL_DEATH, me);
+                    }
+    }
+
+    void KilledUnit(Unit* victim)
+    {
+        DoScriptText(SAY_STAL_SLAY, me);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -297,17 +343,23 @@ struct mob_stalaggAI : public ScriptedAI
 
                 if (pFeugenVictim && pStalaggVictim)
                 {
+                    // store tank threat before any other change is made
+                    int32 threatStalaggVictim = m_creature->getThreatManager().getThreat(pStalaggVictim);
+                    int32 threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
+						
                     // magnetic pull is not working. So just jump.
-
                     // reset aggro to be sure that feugen will not follow the jump
                     pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
-                    pFeugenVictim->JumpTo(m_creature, 0.3f); 
-
                     m_creature->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
+                    
+                    // threat switching between tanks, using the previously stored values
+                    pFeugen->getThreatManager().addThreat(pStalaggVictim, threatStalaggVictim);
+                    m_creature->getThreatManager().addThreat(pFeugenVictim, threatFeugenVictim);
+
+                    pFeugenVictim->JumpTo(m_creature, 0.3f); 
                     pStalaggVictim->JumpTo(pFeugen, 0.3f);
                 }
             }
-
             magneticPullTimer = 20000;
         }
         else magneticPullTimer -= uiDiff;
@@ -317,6 +369,22 @@ struct mob_stalaggAI : public ScriptedAI
             DoCast(m_creature, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
             powerSurgeTimer = urand(15000,20000);
         } else powerSurgeTimer -= uiDiff;
+
+        if (TeslaTimer <= uiDiff)
+        {
+            Creature* Tesla = me->SummonCreature(CREATURE_TESLA, TESLA_S_X, TESLA_S_Y, TESLA_S_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
+            TeslaTimer = 5000;
+            if (Tesla)
+            {
+                Tesla->SetVisibility(VISIBILITY_OFF);
+                if (!me->IsWithinDistInMap(Tesla, 20))
+                {
+                    Tesla->MonsterTextEmote(EMOTE_TESLA, 0, true);
+                    DoCastAOE(SPELL_TESLA);
+                }
+            }
+        }
+        else TeslaTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
@@ -350,6 +418,7 @@ struct mob_feugenAI : public ScriptedAI
     void EnterCombat(Unit *pWho)
     {
         DoCast(SPELL_FEUGEN_TESLA);
+        DoScriptText(SAY_FEUG_AGGRO, me);
     }
 
     void JustDied(Unit *killer)
@@ -357,7 +426,15 @@ struct mob_feugenAI : public ScriptedAI
         if (pInstance)
             if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
-                    pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
+                    {
+                        DoScriptText(SAY_FEUG_DEATH, me);
+                        pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
+                    }
+    }
+
+    void KilledUnit(Unit* victim)
+    {
+        DoScriptText(SAY_FEUG_SLAY, me);
     }
 
     void UpdateAI(const uint32 uiDiff)
