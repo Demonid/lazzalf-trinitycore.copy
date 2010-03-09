@@ -91,7 +91,7 @@ static bool isNonTriggerAura[TOTAL_AURAS];
 static bool procPrepared = InitTriggerAuraData();
 
 Unit::Unit()
-: WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
+: WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostileRefManager(this)
 , IsAIEnabled(false), NeedChangeAI(false)
 , i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_vehicle(NULL), m_transport(NULL)
 , m_ControlledByPlayer(false), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE), m_vehicleKit(NULL)
@@ -246,7 +246,7 @@ void Unit::Update(uint32 p_time)
         // Check UNIT_STAT_MELEE_ATTACKING or UNIT_STAT_CHASE (without UNIT_STAT_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
-        if (m_HostilRefManager.isEmpty())
+        if (m_HostileRefManager.isEmpty())
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
             if (m_CombatTimer <= p_time)
@@ -321,14 +321,14 @@ void Unit::SendMonsterStop(bool on_death)
 
     if (on_death == true)
     {
-        data << uint8(1);
+        data << uint8(0);
         data << uint32((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
         data << uint32(0);                                      // Time in between points
         data << uint32(1);                                      // 1 single waypoint
         data << GetPositionX() << GetPositionY() << GetPositionZ();
     }
     else
-        data << uint8(0);
+        data << uint8(1);
 
     SendMessageToSet(&data, true);
 
@@ -5306,24 +5306,18 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 }
                 // Eye for an Eye
                 case 9799:
-                {
-                    // return damage % to attacker but < 50% own total health
-                    basepoints0 = 5*int32(damage)/100;
-                    if (basepoints0 > GetMaxHealth()/2)
-                        basepoints0 = GetMaxHealth()/2;
-
-                    triggered_spell_id = 25997;
-
-                    break;
-                }
                 case 25988:
                 {
                     // return damage % to attacker but < 50% own total health
-                    basepoints0 = 10*int32(damage)/100;
-                    if(basepoints0 > GetMaxHealth()/2)
+                    basepoints0 = int32((triggerAmount* damage) /100);
+
+                    if (basepoints0 > GetMaxHealth()/2)
                         basepoints0 = GetMaxHealth()/2;
 
+                    sLog.outDebug("DEBUG LINE: Data about Eye for an Eye ID %u, damage taken %u, unit max health %u, damage done %u", dummySpell->Id, damage, GetMaxHealth(),basepoints0);
+
                     triggered_spell_id = 25997;
+
                     break;
                 }
                 // Sweeping Strikes
@@ -11990,7 +11984,7 @@ void Unit::setDeathState(DeathState s)
     {
         CombatStop();
         DeleteThreatList();
-        getHostilRefManager().deleteReferences();
+        getHostileRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
         if (IsNonMeleeSpellCasted(false))
@@ -13114,7 +13108,7 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
     CombatStop();
     ClearComboPointHolders();
     DeleteThreatList();
-    getHostilRefManager().setOnlineOfflineState(false);
+    getHostileRefManager().setOnlineOfflineState(false);
     GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
 }
 
@@ -15081,7 +15075,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
 
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
-    getHostilRefManager().deleteReferences();
+    getHostileRefManager().deleteReferences();
     DeleteThreatList();
     RestoreFaction();
     GetMotionMaster()->InitDefault();
@@ -16109,8 +16103,8 @@ void Unit::SendThreatListUpdate()
         WorldPacket data(SMSG_THREAT_UPDATE, 8 + count * 8);
         data.append(GetPackGUID());
         data << uint32(count);
-        std::list<HostilReference*>& tlist = getThreatManager().getThreatList();
-        for (std::list<HostilReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
+        std::list<HostileReference*>& tlist = getThreatManager().getThreatList();
+        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             data.appendPackGUID((*itr)->getUnitGuid());
             data << uint32((*itr)->getThreat());
@@ -16119,17 +16113,17 @@ void Unit::SendThreatListUpdate()
     }
 }
 
-void Unit::SendChangeCurrentVictimOpcode(HostilReference* pHostilReference)
+void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
 {
     if (uint32 count = getThreatManager().getThreatList().size())
     {
         sLog.outDebug( "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message" );
         WorldPacket data(SMSG_HIGHEST_THREAT_UPDATE, 8 + 8 + count * 8);
         data.append(GetPackGUID());
-        data.appendPackGUID(pHostilReference->getUnitGuid());
+        data.appendPackGUID(pHostileReference->getUnitGuid());
         data << uint32(count);
-        std::list<HostilReference*>& tlist = getThreatManager().getThreatList();
-        for (std::list<HostilReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
+        std::list<HostileReference*>& tlist = getThreatManager().getThreatList();
+        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             data.appendPackGUID((*itr)->getUnitGuid());
             data << uint32((*itr)->getThreat());
@@ -16146,12 +16140,12 @@ void Unit::SendClearThreatListOpcode()
     SendMessageToSet(&data, false);
 }
 
-void Unit::SendRemoveFromThreatListOpcode(HostilReference* pHostilReference)
+void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 {
     sLog.outDebug( "WORLD: Send SMSG_THREAT_REMOVE Message" );
     WorldPacket data(SMSG_THREAT_REMOVE, 8 + 8);
     data.append(GetPackGUID());
-    data.appendPackGUID(pHostilReference->getUnitGuid());
+    data.appendPackGUID(pHostileReference->getUnitGuid());
     SendMessageToSet(&data, false);
 }
 
@@ -16214,7 +16208,7 @@ void Unit::StopAttackFaction(uint32 faction_id)
             ++itr;
     }
 
-    getHostilRefManager().deleteReferencesForFaction(faction_id);
+    getHostileRefManager().deleteReferencesForFaction(faction_id);
 
     for(ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
             (*itr)->StopAttackFaction(faction_id);

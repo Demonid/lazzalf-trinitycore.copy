@@ -922,7 +922,7 @@ bool OutdoorPvPWG::UpdateQuestGiverPosition(uint32 guid, Creature *creature)
         if (creature->isAlive() && creature->isInCombat())
         {
             creature->CombatStop(true);
-            creature->getHostilRefManager().deleteReferences();
+            creature->getHostileRefManager().deleteReferences();
         }
         creature->SetHomePosition(pos);
         creature->DestroyForNearbyPlayers();
@@ -1454,7 +1454,7 @@ void OutdoorPvPWG::EndBattle()
             }
             (*itr)->RemoveAurasDueToSpell(SPELL_TENACITY);
             (*itr)->CombatStop(true);
-            (*itr)->getHostilRefManager().deleteReferences();
+            (*itr)->getHostileRefManager().deleteReferences();
         }
 
         if (m_timer == 1) // Battle End was forced so no reward.
