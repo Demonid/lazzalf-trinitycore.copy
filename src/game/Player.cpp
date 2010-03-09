@@ -4945,7 +4945,7 @@ void Player::RepopAtGraveyard()
     if ((!isAlive() && zone && zone->ID == 4188 && GetPositionZ() > 240))
     {
         ResurrectPlayer(0.5f);
-        SpawnCorpseBones()
+        SpawnCorpseBones();
     }
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
