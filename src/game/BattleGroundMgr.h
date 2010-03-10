@@ -94,7 +94,7 @@ class BattleGroundQueue
         bool GetPlayerGroupInfoData(const uint64& guid, GroupQueueInfo* ginfo);
         void PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
         uint32 GetAverageQueueWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
-		bool TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2);
+        bool TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2);
 
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
@@ -234,7 +234,7 @@ class BattleGroundMgr
         uint32 GetPrematureFinishTime() const;
 
         void InitAutomaticArenaPointDistribution();
-		void InitAutomaticArenaModTimer();
+        void InitAutomaticArenaModTimer();
         void DistributeArenaPoints();
         void ToggleArenaTesting();
         void ToggleTesting();
@@ -269,9 +269,9 @@ class BattleGroundMgr
         std::set<uint32> m_ClientBattleGroundIds[MAX_BATTLEGROUND_TYPE_ID][MAX_BATTLEGROUND_BRACKETS]; //the instanceids just visible for the client
         uint32 m_NextRatingDiscardUpdate;
         time_t m_NextAutoDistributionTime;
-		time_t m_NextArenaModResetTime;
+        time_t m_NextArenaModResetTime;
         uint32 m_AutoDistributionTimeChecker;
-		uint32 m_ArenaModResetChecker;
+        uint32 m_ArenaModResetChecker;
         bool   m_ArenaTesting;
         bool   m_Testing;
 };
