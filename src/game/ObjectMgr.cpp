@@ -3364,8 +3364,8 @@ void ObjectMgr::LoadGroups()
     Group *group = NULL;
     uint64 leaderGuid = 0;
     uint32 count = 0;
-    //                                                     0         1              2           3           4              5      6      7      8      9      10     11     12     13      14         15              16
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, raiddifficulty, leaderGuid FROM groups");
+    //                                                           0           1           2              3      4      5      6      7      8      9      10     11      12          13              14
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, raiddifficulty, leaderGuid FROM groups");
 
     if( !result )
     {
@@ -3385,7 +3385,7 @@ void ObjectMgr::LoadGroups()
         bar.step();
         Field *fields = result->Fetch();
         ++count;
-        leaderGuid = MAKE_NEW_GUID(fields[16].GetUInt32(),0,HIGHGUID_PLAYER);
+        leaderGuid = MAKE_NEW_GUID(fields[14].GetUInt32(),0,HIGHGUID_PLAYER);
 
         group = new Group;
         if(!group->LoadGroupFromDB(leaderGuid, result, false))
@@ -3404,7 +3404,7 @@ void ObjectMgr::LoadGroups()
     count = 0;
     group = NULL;
     leaderGuid = 0;
-    //                                        0           1          2         3
+    //                                            2          3         4           1                                     1
     result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
     if(!result)
     {

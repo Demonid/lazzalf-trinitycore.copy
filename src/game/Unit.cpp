@@ -3745,8 +3745,8 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     // Remove totem at next update if totem looses its aura
     if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetTypeId() == TYPEID_UNIT && this->ToCreature()->isTotem()&& ((TempSummon*)this)->GetSummonerGUID() == aura->GetCasterGUID())
     {
-        if (((Totem*)this)->GetSpell() == aura->GetId() && ((Totem*)this)->GetTotemType() == TOTEM_PASSIVE)
-            ((Totem*)this)->setDeathState(JUST_DIED);
+      if (this->ToTotem()->GetSpell() == aura->GetId() && this->ToTotem()->GetTotemType() == TOTEM_PASSIVE)
+	this->ToTotem()->setDeathState(JUST_DIED);
     }
 
     // Remove aurastates only if were not found
@@ -8999,7 +8999,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
             victim->SetInCombatWith(this);
         AddThreat(victim, 0.0f);
 
-        this->ToCreature()->SendAIReaction(AI_REACTION_AGGRO);
+        this->ToCreature()->SendAIReaction(AI_REACTION_HOSTILE);
         this->ToCreature()->CallAssistance();
     }
 
@@ -9350,7 +9350,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
         else if (minion->isTotem())
         {
             // All summoned by totem minions must disappear when it is removed.
-            if (const SpellEntry* spInfo = sSpellStore.LookupEntry(((Totem*)minion)->GetSpell()))
+	  if (const SpellEntry* spInfo = sSpellStore.LookupEntry(minion->ToTotem()->GetSpell()))
                 for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
                     if (spInfo->Effect[i] != SPELL_EFFECT_SUMMON)
@@ -13904,7 +13904,7 @@ void Unit::SendPetAIReaction(uint64 guid)
 
     WorldPacket data(SMSG_AI_REACTION, 8 + 4);
     data << uint64(guid);
-    data << uint32(AI_REACTION_AGGRO);
+    data << uint32(AI_REACTION_HOSTILE);
     owner->ToPlayer()->GetSession()->SendPacket(&data);
 }
 
@@ -14939,11 +14939,11 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
     assert(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
     assert((type == CHARM_TYPE_VEHICLE) == IsVehicle());
 
-    sLog.outDebug("SetCharmedBy: charmer %u, charmed %u, type %u.", charmer->GetEntry(), GetEntry(), (uint32)type);
+    sLog.outDebug("SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
 
     if (this == charmer)
     {
-        sLog.outCrash("Unit::SetCharmedBy: Unit %u is trying to charm itself!", GetEntry());
+        sLog.outCrash("Unit::SetCharmedBy: Unit %u (GUID %u) is trying to charm itself!", GetEntry(), GetGUIDLow());
         return false;
     }
 
@@ -14952,14 +14952,14 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
 
     if (GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->GetTransport())
     {
-        sLog.outCrash("Unit::SetCharmedBy: Player on transport is trying to charm %u", GetEntry());
+        sLog.outCrash("Unit::SetCharmedBy: Player on transport is trying to charm %u (GUID %u)", GetEntry(), GetGUIDLow());
         return false;
     }
 
     // Already charmed
     if (GetCharmerGUID())
     {
-        sLog.outCrash("Unit::SetCharmedBy: %u has already been charmed but %u is trying to charm it!", GetEntry(), charmer->GetEntry());
+        sLog.outCrash("Unit::SetCharmedBy: %u (GUID %u) has already been charmed but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
         return false;
     }
 
@@ -14984,7 +14984,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
     // StopCastingCharm may remove a possessed pet?
     if (!IsInWorld())
     {
-        sLog.outCrash("Unit::SetCharmedBy: %u is not in world but %u is trying to charm it!", GetEntry(), charmer->GetEntry());
+        sLog.outCrash("Unit::SetCharmedBy: %u (GUID %u) is not in world but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
         return false;
     }
 
