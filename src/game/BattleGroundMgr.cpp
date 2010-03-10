@@ -1401,7 +1401,7 @@ void BattleGroundMgr::Update(uint32 diff)
             m_AutoDistributionTimeChecker -= diff;
     }
 
-	bool ArenaModEnabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+    bool ArenaModEnabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
 
     if(ArenaModEnabled)
     {
