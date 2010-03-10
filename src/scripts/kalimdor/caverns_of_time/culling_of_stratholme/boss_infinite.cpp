@@ -25,6 +25,14 @@ enum Spells
     SPELL_VOID_STRIKE                 = 60590
 };
 
+enum Yells
+{
+    SAY_AGGRO                                = -1595045,
+    SAY_FAIL                                 = -1595046,
+    SAY_DEATH                                = -1595047
+};
+
+
 struct boss_infiniteAI : public ScriptedAI
 {
     boss_infiniteAI(Creature *c) : ScriptedAI(c)

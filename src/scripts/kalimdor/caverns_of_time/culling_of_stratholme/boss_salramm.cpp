@@ -64,6 +64,8 @@ struct boss_salrammAI : public ScriptedAI
     boss_salrammAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
+        if (pInstance)
+            DoScriptText(SAY_SPAWN,m_creature);
     }
 
     uint32 Curse_flesh_Timer;
@@ -94,8 +96,8 @@ struct boss_salrammAI : public ScriptedAI
              pInstance->SetData(DATA_SALRAMM_EVENT, IN_PROGRESS);
     }
 
-    void AttackStart(Unit* who) {}
-    void MoveInLineOfSight(Unit* who) {}
+    //void AttackStart(Unit* who) {}
+    //void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target

@@ -53,13 +53,12 @@ enum Mobs
 
 enum Events
 {
-    EVENT_PURSUE = 1,
+    EVENT_NONE,
+    EVENT_PURSUE,
     EVENT_MISSILE,
     EVENT_VENT,
     EVENT_SPEED,
-    EVENT_SUMMON,
-    EVENT_MIMIRON_INFERNO, // Not Blizzlike
-    EVENT_HODIR_FURY,      // Not Blizzlike
+    EVENT_SUMMON
 };
 
 enum Seats
@@ -85,20 +84,20 @@ struct boss_flame_leviathanAI : public BossAI
     {
         _Reset();
         me->SetReactState(REACT_AGGRESSIVE);
+        m_pInstance->SetData(TYPE_LEVIATHAN, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         _EnterCombat();
+        m_pInstance->SetData(TYPE_LEVIATHAN, IN_PROGRESS);
         me->SetReactState(REACT_DEFENSIVE);
         events.ScheduleEvent(EVENT_PURSUE, 0);
         events.ScheduleEvent(EVENT_MISSILE, 1500);
         events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 15000);
         events.ScheduleEvent(EVENT_SUMMON, 0);
-        //events.ScheduleEvent(EVENT_MIMIRON_INFERNO, 60000 + (rand()%60000)); // Not Blizzlike
-        //events.ScheduleEvent(EVENT_HODIR_FURY, 60000 + (rand()%60000));      // Not Blizzlike
-        if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
+        if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7))) // commented because server crashes
             turret->AI()->DoZoneInCombat();
     }
 
@@ -106,7 +105,11 @@ struct boss_flame_leviathanAI : public BossAI
     void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
     {
         if (spell->Id == SPELL_PURSUED)
+        {
+            DoResetThreat();
+            me->AddThreat(pTarget, 5000000.0f);
             AttackStart(pTarget);
+        }
     }
 
     void JustDied(Unit *victim)
@@ -125,64 +128,45 @@ struct boss_flame_leviathanAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!me->isInCombat())
+        if (!UpdateVictim())
             return;
-
-        if (me->getThreatManager().isThreatListEmpty())
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         events.Update(diff);
 
-        if (me->hasUnitState(UNIT_STAT_CASTING))
-            return;
-
-        uint32 eventId = events.GetEvent();
-        if (!me->getVictim())
-            eventId = EVENT_PURSUE;
-
-        switch(eventId)
+        while(uint32 eventId = events.ExecuteEvent())
         {
+            switch(eventId)
+            {
             case 0: break; // this is a must
             case EVENT_PURSUE:
                 DoCastAOE(SPELL_PURSUED, true);
-                //events.RepeatEvent(35000); // this should not be used because eventId may be overriden
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
                 if(!me->getVictim()) // all siege engines and demolishers are dead
                     UpdateVictim(); // begin to kill other things
-                return;
+                break;
             case EVENT_MISSILE:
                 //TODO: without target no visual effect
-                //DoCastAOE(SPELL_MISSILE_BARRAGE);
-                DoCast(me->getVictim(), SPELL_MISSILE_BARRAGE);
-                events.RepeatEvent(1500);
-                return;
+                DoCastAOE(SPELL_MISSILE_BARRAGE);
+                events.RescheduleEvent(EVENT_MISSILE, 1500);
+                break;
             case EVENT_VENT:
                 DoCastAOE(SPELL_FLAME_VENTS);
-                events.RepeatEvent(20000);
-                return;
+                events.RescheduleEvent(EVENT_VENT, 20000);
+                break;
             case EVENT_SPEED:
                 DoCastAOE(SPELL_GATHERING_SPEED);
-                events.RepeatEvent(15000);
-                return;
+                events.RescheduleEvent(EVENT_SPEED, 15000);
+                break;
             case EVENT_SUMMON:
                 if(summons.size() < 15) // 4seat+1turret+10lift
                     if(Creature *lift = DoSummonFlyer(MOB_MECHANOLIFT, me, rand()%20 + 20, 50, 0))
                         lift->GetMotionMaster()->MoveRandom(100);
-                events.RepeatEvent(2000);
-                return;
-            case EVENT_MIMIRON_INFERNO: // Not Blizzlike
-                DoCast(me->getVictim(), SPELL_MIMIRON_INFERNO);
-                events.RepeatEvent(60000 + (rand()%60000));
-                return;
-            case EVENT_HODIR_FURY:      // Not Blizzlike
-                DoCast(me->getVictim(), SPELL_HODIR_FURY);
-                events.RepeatEvent(60000 + (rand()%60000));
+                events.RescheduleEvent(EVENT_SUMMON, 2000);
+                break;
             default:
                 events.PopEvent();
                 break;
+            }
         }
 
         DoSpellAttackIfReady(SPELL_BATTERING_RAM);
