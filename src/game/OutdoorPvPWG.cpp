@@ -72,7 +72,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     std::list<uint32> spiritGuids;
 
     // Store Eng, spirit guide guids and questgiver for later use
-    QueryResult *result = WorldDatabase.PQuery("SELECT guid, id FROM creature WHERE creature.map=571"
+    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT guid, id FROM creature WHERE creature.map=571"
         " AND creature.id IN (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);",
         CRE_ENG_A, CRE_ENG_H, CRE_SPI_A, CRE_SPI_H, 31101, 31051, 31102, 31052,
         31107, 31109, 31151, 31153, 31106, 31108, 31053, 31054, 31091, 31036);
@@ -168,7 +168,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                     break;
             }
         }while(result->NextRow());
-        delete result;
     }
 
     // Select POI
@@ -332,7 +331,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             workshop->SetTeamByBuildingState();
         }
     }while(result->NextRow());
-    delete result;
 
     engGuids.clear();
     spiritGuids.clear();
