@@ -82,14 +82,9 @@ enum Texts
     SAY_DEFEAT_3                 = -1620018
 };
 
-struct boss_algalonAI : public ScriptedAI
+struct boss_algalonAI : public BossAI
 {
-    boss_algalonAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = c->GetInstanceData();
-    }
-
-    ScriptedInstance* pInstance;
+    boss_algalonAI(Creature *c) : BossAI(c, BOSS_ALGALON){}
 
     std::list<uint64> m_lCollapsingStarGUIDList;
 
@@ -123,14 +118,13 @@ struct boss_algalonAI : public ScriptedAI
 
     void Reset()
     {
+        _Reset();
         Phase = 1;
 
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         DoScriptText(SAY_DEFEAT_1, me);
         DoScriptText(SAY_DEFEAT_2, me);
         DoScriptText(SAY_DEFEAT_3, me);
-        if (pInstance)
-            pInstance->SetData(TYPE_ALGALON, NOT_STARTED);
 
         BlackHoleGUID = 0;
 
@@ -151,10 +145,9 @@ struct boss_algalonAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
+        _EnterCombat();
         me->InterruptSpell(CURRENT_CHANNELED_SPELL);
         me->SetInCombatWithZone();
-        if (pInstance)
-            pInstance->SetData(TYPE_ALGALON, IN_PROGRESS);
     }
 
     void DespawnCollapsingStar()
@@ -214,8 +207,8 @@ struct boss_algalonAI : public ScriptedAI
 
             me->DisappearAndDie();
 
-            if (pInstance)
-                pInstance->SetData(TYPE_ALGALON, DONE);
+            _JustDied();
+
         }
 
         if (Phase == 1)

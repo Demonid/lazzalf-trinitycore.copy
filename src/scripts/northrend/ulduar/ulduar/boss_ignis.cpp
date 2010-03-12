@@ -29,7 +29,7 @@
 
 struct boss_ignis_AI : public BossAI
 {
-    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, TYPE_IGNIS) {}
+    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS) {}
 
     uint32 FLAME_JETS_Timer;
     uint32 SCORCH_Timer;
