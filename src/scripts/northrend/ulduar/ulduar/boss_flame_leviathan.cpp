@@ -20,29 +20,32 @@
 #include "ulduar.h"
 #include "Vehicle.h"
 
-#define SPELL_PURSUED           62374
-#define SPELL_GATHERING_SPEED   62375
-#define SPELL_BATTERING_RAM     62376
-#define SPELL_FLAME_VENTS       62396
-#define SPELL_MISSILE_BARRAGE   62400
-#define SPELL_SYSTEMS_SHUTDOWN  62475
+enum Spells
+{
+    SPELL_PURSUED                  = 62374,
+    SPELL_GATHERING_SPEED          = 62375,
+    SPELL_BATTERING_RAM            = 62376,
+    SPELL_FLAME_VENTS              = 62396,
+    SPELL_MISSILE_BARRAGE          = 62400,
+    SPELL_SYSTEMS_SHUTDOWN         = 62475,
 
-#define SPELL_FLAME_CANNON      62395
-//#define SPELL_FLAME_CANNON      64692 trigger the same spell
+    SPELL_FLAME_CANNON             = 62395,
+    //SPELL_FLAME_CANNON           = 64692 trigger the same spell
 
-#define SPELL_OVERLOAD_CIRCUIT  62399
+    SPELL_OVERLOAD_CIRCUIT         = 62399,
 
-#define SPELL_SEARING_FLAME     62402
+    SPELL_SEARING_FLAME            = 62402,
 
-#define SPELL_BLAZE             62292
+    SPELL_BLAZE                    = 62292,
 
-#define SPELL_SMOKE_TRAIL       63575
+    SPELL_SMOKE_TRAIL              = 63575,
 
-#define SPELL_MIMIRON_INFERNO   62910
+    SPELL_MIMIRON_INFERNO          = 62910,
 
-#define SPELL_HODIR_FURY        62297
+    SPELL_HODIR_FURY               = 62297,
 
-#define SPELL_ELECTROSHOCK      62522
+    SPELL_ELECTROSHOCK             = 62522
+};
 
 enum Mobs
 {
@@ -70,13 +73,10 @@ enum Seats
 
 struct boss_flame_leviathanAI : public BossAI
 {
-    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, TYPE_LEVIATHAN), vehicle(me->GetVehicleKit())
+    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, BOSS_LEVIATHAN), vehicle(me->GetVehicleKit())
     {
-        m_pInstance = pCreature->GetInstanceData();
         assert(vehicle);
     }
-
-    ScriptedInstance* m_pInstance;
 
     Vehicle *vehicle;
 
@@ -84,38 +84,24 @@ struct boss_flame_leviathanAI : public BossAI
     {
         _Reset();
         me->SetReactState(REACT_AGGRESSIVE);
-        m_pInstance->SetData(TYPE_LEVIATHAN, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         _EnterCombat();
-        m_pInstance->SetData(TYPE_LEVIATHAN, IN_PROGRESS);
         me->SetReactState(REACT_DEFENSIVE);
         events.ScheduleEvent(EVENT_PURSUE, 0);
         events.ScheduleEvent(EVENT_MISSILE, 1500);
         events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 15000);
         events.ScheduleEvent(EVENT_SUMMON, 0);
-        if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7))) // commented because server crashes
+        if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
-    }
-
-    // TODO: effect 0 and effect 1 may be on different target
-    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
-    {
-        if (spell->Id == SPELL_PURSUED)
-        {
-            DoResetThreat();
-            me->AddThreat(pTarget, 5000000.0f);
-            AttackStart(pTarget);
-        }
     }
 
     void JustDied(Unit *victim)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_LEVIATHAN, DONE);
+        _JustDied();
     }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
@@ -139,7 +125,7 @@ struct boss_flame_leviathanAI : public BossAI
             {
             case 0: break; // this is a must
             case EVENT_PURSUE:
-                DoCastAOE(SPELL_PURSUED, true);
+                Pursue();
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
                 if(!me->getVictim()) // all siege engines and demolishers are dead
                     UpdateVictim(); // begin to kill other things
@@ -170,6 +156,31 @@ struct boss_flame_leviathanAI : public BossAI
         }
 
         DoSpellAttackIfReady(SPELL_BATTERING_RAM);
+    }
+
+    void Pursue()
+    {
+        std::list<Creature*> PursueList;
+        me->GetCreatureListWithEntryInGrid(PursueList, RAND(33060,33109), 200.0f);
+        if (PursueList.empty())
+            {
+                me->GetCreatureListWithEntryInGrid(PursueList, 33060, 200.0f);
+                if (PursueList.empty())
+                    me->GetCreatureListWithEntryInGrid(PursueList, 33109, 200.0f);
+            }
+		else
+        {
+            for (std::list<Creature*>::iterator itr = PursueList.begin(); itr != PursueList.end(); ++itr)
+            {
+                if (Creature* pPursued = *itr)
+                    {
+                        DoResetThreat();
+                        me->AddThreat(pPursued, 5000000.0f);
+                        AttackStart(pPursued);
+                    }
+            }
+        }
+        me->AddAura(SPELL_PURSUED, me->getVictim());
     }
 };
 
