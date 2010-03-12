@@ -177,14 +177,29 @@ Waypoint m_aDragonCommon[MAX_WAYPOINT]=
     {3250.479, 585.827, 98.652},
     {3209.969, 566.523, 98.652}
 };
-static Location FlameRight1Spawn = { 3197.59, 495.336, 57.8462 };
-static Location FlameRight1Direction = { 3289.28, 521.569, 55.1526 };
-static Location FlameRight2Spawn = { 3201.94, 543.324, 56.7209 };
-static Location FlameRight2Direction = { 3288.98, 549.291, 55.1232 };
-static Location FlameLeft1Spawn = { 3290.24, 521.725, 55.1238 };
-static Location FlameLeft1Direction = { 3199.94, 516.891, 57.5112 };
-static Location FlameLeft2Spawn = { 3290.33, 586.51, 55.063 };
-static Location FlameLeft2Direction = { 3195.03, 479.135, 55.6331 };
+//from front to back
+static Locations FlameRightSpawn[] =
+{
+    { 3209.62, 510.504, 55.6252 },
+    { 3211.25, 546.950, 55.5959 }
+};
+static Locations FlameRightDir[] =
+{
+    { 3278.96, 503.274, 55.4526 },
+    { 3287.15, 543.363, 55.4549 }
+};
+static Locations FlameLeftSpawn[] =
+{
+    { 3282.07, 492.242, 55.5588 },
+    { 3284.12, 528.148, 55.6020 },
+    { 3283.73, 563.529, 55.4084 }
+};
+static Locations FlameLeftDir[] =
+{
+    { 3209.81, 492.841, 55.4260 },
+    { 3210.47, 530.876, 55.5881 },
+    { 3209.79, 568.781, 55.6274 }
+};
 
 static Location AcolyteofShadron = { 3363.92, 534.703, 97.2683 };
 static Location AcolyteofShadron2 = { 3246.57, 551.263, 58.6164 };
@@ -461,24 +476,24 @@ struct boss_sartharionAI : public ScriptedAI
         if (m_uiFlameTsunamiTimer <= uiDiff)
         {
             SendFlameTsunami();
-            switch(urand(0,1))
+            Creature * Flame[3];
+
+            uint32 roll = urand(0,1);
+            for (int i=0; i<3; i++)
             {
-                case 0:
+                if (roll == 0)
                 {
-                    Creature *Right1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight1Spawn.x, FlameRight1Spawn.y , FlameRight1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
-                    Creature *Right2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight2Spawn.x, FlameRight2Spawn.y , FlameRight2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
-                    Right1->GetMotionMaster()->MovePoint(0, FlameRight1Direction.x, FlameRight1Direction.y, FlameRight1Direction.z);
-                    Right2->GetMotionMaster()->MovePoint(0, FlameRight2Direction.x, FlameRight2Direction.y, FlameRight2Direction.z);
-                    break;
+                    if (i >= 2)
+                        continue;
+                    Flame[i] = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameRightSpawn[i].x, FlameRightSpawn[i].y , FlameRightSpawn[i].z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
+                    Flame[i]->GetMotionMaster()->MovePoint(0, FlameRightDir[i].x, FlameRightDir[i].y, FlameRightDir[i].z);
                 }
-                case 1:
+                else
                 {
-                    Creature *Left1 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft1Spawn.x, FlameLeft1Spawn.y , FlameLeft1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
-                    Creature *Left2 = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft2Spawn.x, FlameLeft2Spawn.y , FlameLeft2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
-                    Left1->GetMotionMaster()->MovePoint(0, FlameLeft1Direction.x, FlameLeft1Direction.y, FlameLeft1Direction.z);
-                    Left2->GetMotionMaster()->MovePoint(0, FlameLeft2Direction.x, FlameLeft2Direction.y, FlameLeft2Direction.z);
-                    break;
+                    Flame[i] = m_creature->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeftSpawn[i].x, FlameLeftSpawn[i].y , FlameLeftSpawn[i].z, 0, TEMPSUMMON_TIMED_DESPAWN,12000);
+                    Flame[i]->GetMotionMaster()->MovePoint(0, FlameLeftDir[i].x, FlameLeftDir[i].y, FlameLeftDir[i].z);
                 }
+                Flame[i]->CastSpell(Flame[i], SPELL_FLAME_TSUNAMI, true);
             }
 
             m_uiFlameTsunamiTimer = 30000;
@@ -849,7 +864,7 @@ struct mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE));
+                DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
             m_uiShadowFissureTimer = urand(15000,20000);
         }
