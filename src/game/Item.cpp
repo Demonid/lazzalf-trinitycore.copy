@@ -625,12 +625,14 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
         delete this;
         return;
     }
-
     if (state != ITEM_UNCHANGED)
     {
         // new items must stay in new state until saved
-        if (uState != ITEM_NEW) uState = state;
-        AddToUpdateQueueOf(forplayer);
+        if (uState != ITEM_NEW)
+            uState = state;
+        
+        if (forplayer)
+            AddToUpdateQueueOf(forplayer);
     }
     else
     {
@@ -643,17 +645,10 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
 
 void Item::AddToUpdateQueueOf(Player *player)
 {
-    if (IsInUpdateQueue()) return;
+    if (IsInUpdateQueue())
+        return;
 
-    if (!player)
-    {
-        player = GetOwner();
-        if (!player)
-        {
-            sLog.outDebug("Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
-            return;
-        }
-    }
+    ASSERT(player != NULL);
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -661,7 +656,8 @@ void Item::AddToUpdateQueueOf(Player *player)
         return;
     }
 
-    if (player->m_itemUpdateQueueBlocked) return;
+    if (player->m_itemUpdateQueueBlocked)
+        return;
 
     player->m_itemUpdateQueue.push_back(this);
     uQueuePos = player->m_itemUpdateQueue.size()-1;
@@ -669,17 +665,10 @@ void Item::AddToUpdateQueueOf(Player *player)
 
 void Item::RemoveFromUpdateQueueOf(Player *player)
 {
-    if (!IsInUpdateQueue()) return;
+    if (!IsInUpdateQueue())
+        return;
 
-    if (!player)
-    {
-        player = GetOwner();
-        if (!player)
-        {
-            sLog.outDebug("Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
-            return;
-        }
-    }
+    ASSERT(player != NULL)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -687,7 +676,8 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
         return;
     }
 
-    if (player->m_itemUpdateQueueBlocked) return;
+    if (player->m_itemUpdateQueueBlocked)
+        return;
 
     player->m_itemUpdateQueue[uQueuePos] = NULL;
     uQueuePos = -1;
