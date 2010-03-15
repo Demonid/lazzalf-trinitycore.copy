@@ -49,6 +49,11 @@ enum Data
     DATA_VAI
 };
 
+enum Data64
+{
+    DATA_IGNIS,
+};
+
 enum Npcs
 {
     NPC_COMMANDER               = 33210,

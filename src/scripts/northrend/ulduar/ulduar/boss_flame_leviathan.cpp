@@ -131,7 +131,6 @@ struct boss_flame_leviathanAI : public BossAI
                     UpdateVictim(); // begin to kill other things
                 break;
             case EVENT_MISSILE:
-                //TODO: without target no visual effect
                 DoCastAOE(SPELL_MISSILE_BARRAGE);
                 events.RescheduleEvent(EVENT_MISSILE, 1500);
                 break;
