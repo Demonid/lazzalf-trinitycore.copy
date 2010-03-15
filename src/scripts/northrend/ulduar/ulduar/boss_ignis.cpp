@@ -16,6 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+/* ScriptData
+SDName: Ignis the Furnace Master
+SDAuthor: PrinceCreed
+SD%Complete: 90
+EndScriptData */
+
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
@@ -167,13 +173,10 @@ struct boss_ignis_AI : public BossAI
                     events.ScheduleEvent(EVENT_SCORCH, 25000);
                     break;
                 case EVENT_CONSTRUCT:
-                    for (uint32 i = 0; i < RAID_MODE(1,2); ++i)
-                        {
-                            DoSummon(MOB_IRON_CONSTRUCT, triggers[rand()%20]);
-                            DoCast(SPELL_STRENGHT);
-                        }
+                    DoSummon(MOB_IRON_CONSTRUCT, triggers[rand()%20]);
+                    DoCast(SPELL_STRENGHT);
                     DoCast(m_creature,SPELL_ACTIVATE_CONSTRUCT);
-                    events.ScheduleEvent(EVENT_CONSTRUCT, 45000);
+                    events.ScheduleEvent(EVENT_CONSTRUCT, RAID_MODE(40000, 30000));
                     break;
             }
         }
@@ -232,10 +235,13 @@ struct mob_iron_constructAI : public ScriptedAI
 
     void DamageTaken(Unit *attacker, uint32 &damage)
     {
-        if (me->HasAura(SPELL_BRITTLE) && damage >= 5000)
+        if (m_creature->HasAura(SPELL_BRITTLE) && damage >= 5000)
         {
             DoCast(SPELL_SHATTER);
-            m_creature->SetDisplayId(26154); // due to visual problems
+            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
+                if (pIgnis->AI())
+                    pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
+            m_creature->DisappearAndDie();
         }
     }
 
@@ -250,7 +256,7 @@ struct mob_iron_constructAI : public ScriptedAI
             {
                 m_creature->RemoveAura(SPELL_HEAT);
                 DoCast(SPELL_MOLTEN);
-                WaterTimer = 3000;
+                WaterTimer = 2000;
                 Brittled = false;
             }
         }
@@ -261,25 +267,17 @@ struct mob_iron_constructAI : public ScriptedAI
                 Creature* Water1 = m_creature->SummonCreature(WATER_TRIGGER, WATER_1_X, WATER_1_Y, WATER_1_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                 Creature* Water2 = m_creature->SummonCreature(WATER_TRIGGER, WATER_2_X, WATER_2_Y, WATER_2_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                     if (Water1 && Water2){
-                        if ((m_creature->IsWithinDistInMap(Water1, 16) || m_creature->IsWithinDistInMap(Water2, 16)) && !Brittled && m_creature->HasAura(SPELL_MOLTEN)){
+                        if ((m_creature->IsWithinDistInMap(Water1, 18) || m_creature->IsWithinDistInMap(Water2, 18)) && !Brittled && m_creature->HasAura(SPELL_MOLTEN)){
                             DoCast(SPELL_BRITTLE);
                             m_creature->RemoveAura(SPELL_MOLTEN);
                             Brittled = true;
                         }
                     }
-                WaterTimer = 3000;
+                WaterTimer = 2000;
             }
         else WaterTimer -= uiDiff;
 
-
         DoMeleeAttackIfReady();
-    }
-
-    void JustDied(Unit *victim)
-    {
-        if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
-            if (pIgnis->AI())
-                pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
     }
 };
 
