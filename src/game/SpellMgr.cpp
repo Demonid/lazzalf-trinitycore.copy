@@ -746,6 +746,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         //case 37675:                                         // Chaos Blast removed from mangos
         case 34700:                                         // Allergic Reaction
         case 61987:                                         // Avenging Wrath Marker
+        case 61988:                                         // Divine Shield exclude aura
         case 61248:                                         // Power of Tenebron
         case 61251:                                         // Power of Vesperon
         case 58105:                                         // Power of Shadron
