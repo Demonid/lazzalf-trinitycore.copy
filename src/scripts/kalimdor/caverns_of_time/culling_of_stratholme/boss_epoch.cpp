@@ -50,11 +50,6 @@ enum Yells
     SAY_SLAY_3                               = -1595007, //"You were destined to fail. "
     SAY_DEATH                                = -1595008 //"*gurgles*"
 };
-enum CombatPhases
-{
-    INTRO,
-    COMBAT
-};
 
 struct boss_epochAI : public ScriptedAI
 {
@@ -70,9 +65,7 @@ struct boss_epochAI : public ScriptedAI
     uint32 uiTimeWarpTimer;
     uint32 uiTimeStopTimer;
     uint32 uiCurseOfExertionTimer;
-
-    CombatPhases Phase;
-    
+   
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -97,12 +90,7 @@ struct boss_epochAI : public ScriptedAI
     }
 
     void UpdateAI(const uint32 diff)
-    {
-        if (Phase == INTRO)
-        {
-            return;
-        }
-        
+    {     
         //Return since we have no target
         if (!UpdateVictim())
             return;
