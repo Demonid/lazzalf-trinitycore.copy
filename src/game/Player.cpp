@@ -16292,12 +16292,12 @@ void Player::_LoadJail(void)
     }
 }
 
-bool Player::isAllowedToLoot(Creature* creature)
+bool Player::isAllowedToLoot(const Creature* creature)
 {
-    if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward())
+    if (!creature->isDead() || !creature->IsDamageEnoughForLootingAndReward())
        return false;
 
-    Loot* loot = &creature->loot;
+    const Loot* loot = &creature->loot;
     if (loot->items.size() == 0)
         return false;
 
