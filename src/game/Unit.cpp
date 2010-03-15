@@ -9978,11 +9978,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                             break;
                         }
                 }
-
-            //Drain soul
-            if (spellProto->SpellFamilyFlags[0] == 16384)
-                if ( pVictim->GetHealth() <= pVictim->GetMaxHealth()/4 )
-                    DoneTotalMod *= 4;
         break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Improved Icy Touch

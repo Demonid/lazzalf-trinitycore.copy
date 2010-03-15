@@ -856,7 +856,7 @@ void AuraEffect::CalculateSpellMod()
                     break;
             }
             // Drain Soul - If the target is at or below 25% health, Drain Soul causes four times the normal damage
-            /*if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && GetSpellProto()->SpellFamilyFlags[0] & 0x00004000)
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && GetSpellProto()->SpellFamilyFlags[0] & 0x00004000)
             {
                 if (!m_spellmod)
                 {
@@ -872,7 +872,7 @@ void AuraEffect::CalculateSpellMod()
                         m_spellmod->value = 0;
                 }
             }
-            break;*/
+            break;
         case SPELL_AURA_ADD_FLAT_MODIFIER:
         case SPELL_AURA_ADD_PCT_MODIFIER:
             if (!m_spellmod)
