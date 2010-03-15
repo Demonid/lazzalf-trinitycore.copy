@@ -47,6 +47,7 @@
 #include "InstanceData.h" //for condition_instance_data
 #include "GossipDef.h"
 #include "Vehicle.h"
+#include "AchievementMgr.h"
 
 INSTANTIATE_SINGLETON_1(ObjectMgr);
 
@@ -7840,8 +7841,17 @@ bool PlayerCondition::Meets(Player const * player) const
             FactionEntry const* faction = sFactionStore.LookupEntry(value1);
             return faction && uint32(player->GetReputationMgr().GetRank(faction)) >= int32(value2);
         }
+        case CONDITION_ACHIEVEMENT:
+        {
+            AchievementEntry const* achievement = GetAchievementStore()->LookupEntry(value1);
+            return player->GetAchievementMgr().HasAchieved(achievement);
+        }
         case CONDITION_TEAM:
             return player->GetTeam() == value1;
+        case CONDITION_CLASS:
+            return player->getClass() == value1;
+        case CONDITION_RACE:
+            return player->getRace() == value1;
         case CONDITION_SKILL:
             return player->HasSkill(value1) && player->GetBaseSkillValue(value1) >= value2;
         case CONDITION_QUESTREWARDED:

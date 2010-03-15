@@ -16298,7 +16298,7 @@ bool Player::isAllowedToLoot(const Creature* creature)
        return false;
 
     const Loot* loot = &creature->loot;
-    if (loot->items.size() == 0)
+    if (loot->isLooted()) // nothing to loot or everything looted.
         return false;
 
     Player* recipient = creature->GetLootRecipient();
