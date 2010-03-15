@@ -116,7 +116,7 @@ enum eEnums
     //flame tsunami
     SPELL_FLAME_TSUNAMI                         = 57494,    // the visual dummy
     SPELL_FLAME_TSUNAMI_LEAP                    = 60241,    // SPELL_EFFECT_138 some leap effect, causing caster to move in direction
-    SPELL_FLAME_TSUNAMI_DMG_AURA                = 57492,    // periodic damage, npc has this aura
+    SPELL_FLAME_TSUNAMI_DMG_AURA                = 57492,    // periodic damage, npc has this aura    
 
     NPC_FLAME_TSUNAMI                           = 30616,    // for the flame waves
     NPC_LAVA_BLAZE                              = 30643,    // adds spawning from flame strike
@@ -291,6 +291,16 @@ struct boss_sartharionAI : public ScriptedAI
             pInstance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
     }
 
+    void MovementInform(uint32 uiType, uint32 uiPointId)
+    {
+        if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
+        {
+            EnterEvadeMode();
+            m_creature->GetMotionMaster()->Clear();
+            return;
+        }
+    }
+
     void EnterCombat(Unit* pWho)
     {
         DoScriptText(SAY_SARTHARION_AGGRO,m_creature);
@@ -403,14 +413,17 @@ struct boss_sartharionAI : public ScriptedAI
                         case NPC_TENEBRON:
                             iTextId = SAY_SARTHARION_CALL_TENEBRON;
                             pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aTene[1].m_fX, m_aTene[1].m_fY, m_aTene[1].m_fZ);
+                            DoCast(m_creature->getVictim(), SPELL_POWER_OF_TENEBRON);
                             break;
                         case NPC_SHADRON:
                             iTextId = SAY_SARTHARION_CALL_SHADRON;
                             pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aShad[1].m_fX, m_aShad[1].m_fY, m_aShad[1].m_fZ);
+                            DoCast(m_creature->getVictim(), SPELL_POWER_OF_SHADRON);
                             break;
                         case NPC_VESPERON:
                             iTextId = SAY_SARTHARION_CALL_VESPERON;
                             pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aVesp[1].m_fX, m_aVesp[1].m_fY, m_aVesp[1].m_fZ);
+                            DoCast(m_creature->getVictim(), SPELL_POWER_OF_VESPERON);
                             break;
                     }
 
@@ -658,6 +671,8 @@ struct dummy_dragonAI : public ScriptedAI
         if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
         {
             EnterEvadeMode();
+            if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             return;
         }
 
@@ -831,7 +846,7 @@ struct mob_tenebronAI : public dummy_dragonAI
     uint32 m_uiHatchEggTimer;
 
     void Reset()
-    {
+    {        
         m_uiShadowBreathTimer = 20000;
         m_uiShadowFissureTimer = 5000;
         m_uiHatchEggTimer = 30000;
@@ -864,7 +879,7 @@ struct mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
+                DoCast(pTarget, SPELL_SHADOW_FISSURE);
 
             m_uiShadowFissureTimer = urand(15000,20000);
         }
@@ -951,7 +966,7 @@ struct mob_shadronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
+                DoCast(pTarget, SPELL_SHADOW_FISSURE);
 
             m_uiShadowFissureTimer = urand(15000,20000);
         }
@@ -1035,7 +1050,7 @@ struct mob_vesperonAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
+                DoCast(pTarget, SPELL_SHADOW_FISSURE);
 
             m_uiShadowFissureTimer = urand(15000,20000);
         }
@@ -1288,7 +1303,7 @@ struct npc_flame_tsunamiAI : public ScriptedAI
         m_creature->HasAura(57492);
     }
 
-    uint32 Tsunami_Timer;
+    uint32 Tsunami_Timer;    
 
     void Reset()
     {
@@ -1324,13 +1339,12 @@ struct npc_twilight_fissureAI : public Scripted_NoMovementAI
     {
         if (VoidBlast_Timer <= diff)
         {
-            DoCast(m_creature->getVictim(), RAID_MODE(SPELL_VOID_BLAST, SPELL_VOID_BLAST_H));
+            DoCast(m_creature, RAID_MODE(SPELL_VOID_BLAST, SPELL_VOID_BLAST_H));
             VoidBlast_Timer = 9000;
             m_creature->Kill(m_creature);
         } else VoidBlast_Timer -= diff;
     }
 };
-
 
 CreatureAI* GetAI_npc_flame_tsunami(Creature* pCreature)
 {
