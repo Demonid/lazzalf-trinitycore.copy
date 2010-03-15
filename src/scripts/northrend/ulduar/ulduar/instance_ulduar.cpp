@@ -35,12 +35,32 @@ struct instance_ulduar : public InstanceData
         LoadDoorData(doorData);
     }
 
+    uint64 uiIgnis;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
         AddDoor(pGo, add);
     }
 
+    void OnCreatureCreate(Creature* pCreature, bool add)
+    {
+        switch(pCreature->GetEntry())
+        {
+            case 33118: uiIgnis = pCreature->GetGUID(); return;
+        }
+
+        AddMinion(pCreature, add);
+    }
+
+    uint64 GetData64(uint32 id)
+    {
+        switch(id)
+        {
+        case DATA_IGNIS:
+            return uiIgnis;
+        }
+        return 0;
+    }
 
     bool SetBossState(uint32 id, EncounterState state)
     {
