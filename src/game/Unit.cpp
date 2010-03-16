@@ -9778,7 +9778,12 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) &&
             (*i)->GetSpellProto()->EquippedItemClass == -1 &&          // -1 == any item class (not wand)
             (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0) // 0 == any inventory type (not wand)
+        {
             DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+  
+ 	        if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+               i = mModDamagePercentDone.begin();
+        }
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
     // Add flat bonus from spell damage versus
@@ -10975,7 +10980,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
 
     if (attType == RANGED_ATTACK && pVictim->GetTypeId() == TYPEID_UNIT)
     {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
+        //APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
 
         // ..done (base at attack power and creature type)
         AuraEffectList const& mCreatureAttackPower = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS);
@@ -11043,7 +11048,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
                 if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+                {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+ 
+                    if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+                        i = mModDamagePercentDone.begin();
+                }
         }
 
     AuraEffectList const &mDamageDoneVersus = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS);
@@ -13479,7 +13489,7 @@ bool InitTriggerAuraData()
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
-    isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
+    //isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
 
     return true;
 }

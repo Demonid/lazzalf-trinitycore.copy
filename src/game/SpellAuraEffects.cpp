@@ -363,7 +363,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //307 absorb healing?
     &AuraEffect::HandleNULL,                                      //308 new aura for hunter traps
     &AuraEffect::HandleNULL,                                      //309 absorb healing?
-    &AuraEffect::HandleNoImmediateEffect,                         //310 5 spells SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS implemented in Unit::MeleeDamageBonus
+    &AuraEffect::HandleNoImmediateEffect,                         //310 SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE
     &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3
@@ -634,7 +634,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             {
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    int32 value = int32((amount*-1)-10);
+                    int32 value = int32((amount*-1));
                     uint32 defva = uint32(caster->ToPlayer()->GetSkillValue(SKILL_DEFENSE) + caster->ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));
 
                     if(defva > 400)
