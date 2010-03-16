@@ -2049,12 +2049,6 @@ void Spell::EffectDummy(uint32 i)
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
                 return;
             }
-            // Scourge Strike
-            if(m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
-            {
-                m_damage = float (m_damage) * (float(damage * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) + 100.0f) / 100.0f);
-                return;
-            }
             // Death Coil
             if(m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
             {
@@ -4655,6 +4649,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Blood-Caked Strike - Blood-Caked Blade
             else if (m_spellInfo->SpellIconID == 1736)
                 totalDamagePercentMod *= (float(unitTarget->GetDiseasesByCaster(m_caster->GetGUID())) * 12.5f + 100.0f) / 100.0f;
+            // Rune Strike
+            else if (m_spellInfo->SpellFamilyFlags[1] & 0x20000000)
+                m_damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.15f);
             break;
         }
     }

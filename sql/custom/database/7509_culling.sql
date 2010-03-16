@@ -1,4 +1,4 @@
--- [Culling of Stratholme] Instance by John Holiver
+﻿-- [Culling of Stratholme] Instance by John Holiver
 -- Much work done, the instance is playable with this
 -- Although there're things that aren't implemented yet
 -- * Random placement of risen zombies after MalGanis transform some
@@ -348,9 +348,9 @@ INSERT INTO `gameobject` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `positi
 (500000, 193597, 595, 2, 1, 2288.35, 1498.73, 128.414, -0.994837, 0, 0, 0, 1, 180, 0, 1);
 
 -- Some updates that know i really don't know if are needed anymore
-UPDATE `creature_template` SET `minhealth`=8600, `maxhealth`=8600 where `entry` in (31127, 31126, 28167, 28169);
+-- UPDATE `creature_template` SET `minhealth`=8600, `maxhealth`=8600 where `entry` in (31127, 31126, 28167, 28169);
 UPDATE `creature_template` SET `faction_A`=35, `faction_H`=35 where `entry` in (31127, 31126, 28167, 28169);
-UPDATE `creature_template` SET `minhealth`=15000, `maxhealth`=15000 where `entry` in (27737);
+-- UPDATE `creature_template` SET `minhealth`=15000, `maxhealth`=15000 where `entry` in (27737);
 UPDATE `creature_template` SET `MovementType` = 2 WHERE `creature_template`.`entry` = 26528;
 UPDATE `creature` SET `spawntimesecs`='3600' where `id` in (31127, 31126, 28167, 28169);
 UPDATE `gameobject` SET `state`='1' where `id`=187711;
