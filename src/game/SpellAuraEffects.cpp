@@ -441,6 +441,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     }
 
     float DoneActualBenefit = 0.0f;
+	float BenefitMod = 1.0f;
 
     // custom amount calculations go here
     switch(GetAuraType())
@@ -503,7 +504,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         float bonus = 0.8068f;
                         // Borrowed Time
                         if (AuraEffect const * aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1))
-                            bonus += aurEff->GetAmount() / 100;
+                            bonus += aurEff->GetAmount() / 100.0;
                         
                         DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(GetSpellProto())) * bonus; 
                     }
@@ -567,7 +568,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellProto->SpellFamilyFlags[0] & 0x00800000 && GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
             {
                 m_canBeRecalculated = false;
-                // 0.01*$AP*cp
+                // 0.06*$AP*cp
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
 
@@ -577,7 +578,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect const * aurEff = caster->GetAuraEffect(34241,0))
                     amount += cp * aurEff->GetAmount();
 
-                amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp * 6 / 100);
             }
             // Rend
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARRIOR && GetSpellProto()->SpellFamilyFlags[0] & 0x20)
@@ -688,6 +689,15 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
     }
     if (DoneActualBenefit != 0.0f)
     {
+        // Handle SPELL_AURA_ADD_PCT_MODIFIERs
+        Unit::AuraEffectList const& AuraPctMmodifiers = caster->GetAuraEffectsByType(SPELL_AURA_ADD_PCT_MODIFIER);
+        for (Unit::AuraEffectList::const_iterator i = AuraPctMmodifiers.begin(); i != AuraPctMmodifiers.end(); ++i)
+        {
+            if ((*i)->IsAffectedOnSpell(m_spellProto) && (*i)->GetMiscValue() == SPELLMOD_ALL_EFFECTS)
+                BenefitMod += (*i)->GetAmount() / 100.0f;
+        }
+        DoneActualBenefit *= BenefitMod;
+
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
         amount += (int32)DoneActualBenefit;
     }
@@ -1767,6 +1777,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     }
                 }
                 break;
+            case 58730: // No Fly Zone - Wintergrasp
             case 58600: // No fly Zone - Dalaran
                 if (GetTickNumber() == 10)
                 {
@@ -1777,6 +1788,20 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 62292: // Blaze (Pool of Tar)
                 // should we use custom damage?
                 target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
+                break;
+			case 51685: // Prey on the Weak
+            case 51686:
+            case 51687:
+            case 51688:
+            case 51689:
+                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
+                    if(!target->HasAura(58670)) {
+                        int32 basepoints = GetSpellProto()->EffectBasePoints[0];
+                        target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
+                    }
+                }
+                else
+                    target->RemoveAurasDueToSpell(58670);
                 break;
             case 62399: // Overload Circuit
                 if(target->GetMap()->IsDungeon() && target->GetAppliedAuras().count(62399) >= (target->GetMap()->IsHeroic() ? 4 : 2))

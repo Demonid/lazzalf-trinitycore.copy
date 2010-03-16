@@ -599,6 +599,13 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
         }
+        // Scourge Strike
+        if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
+        {
+            int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
+            if (shadowdmg > 0)
+                CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
+        }
     }
 
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
@@ -3542,8 +3549,17 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
         // find current aura from spell and change it's stackamount
         if (Aura * foundAura = GetOwnedAura(aura->GetId(), aura->GetCasterGUID(), 0, aura))
         {
-            if(aura->GetSpellProto()->StackAmount)
+            if(aura->GetSpellProto()->StackAmount) 
+            {
                 aura->ModStackAmount(foundAura->GetStackAmount());
+                for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS ; ++effIndex)
+                    {
+                        if (!aura->HasEffect(effIndex))
+                            continue;
+                        if (aura->GetEffect(effIndex)->IsPeriodic())
+                            aura->GetEffect(effIndex)->SetPeriodic(foundAura->GetEffect(effIndex)->GetPeriodic());
+                    }
+            }
 
             // Use the new one to replace the old one
             // This is the only place where AURA_REMOVE_BY_STACK should be used
