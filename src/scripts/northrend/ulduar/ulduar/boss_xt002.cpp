@@ -27,24 +27,21 @@
 
 struct boss_xt002_AI : public BossAI
 {
-    boss_xt002_AI(Creature *pCreature) : BossAI(pCreature, TYPE_XT002)
-    {
-        m_pInstance = pCreature->GetInstanceData();
-    }
-
-    ScriptedInstance* m_pInstance;
+    boss_xt002_AI(Creature *pCreature) : BossAI(pCreature, BOSS_XT002){}
 
     uint32 SEARING_LIGHT_Timer;
     uint32 SONIC_BOOM_Timer;
 
     void Reset()
     {
+        _Reset();
         SEARING_LIGHT_Timer = 100;
         SONIC_BOOM_Timer = 20;
     }
 
     void EnterCombat(Unit* who)
     {
+        _EnterCombat();
         DoScriptText(SAY_AGGRO,m_creature);
     }
     void KilledUnit(Unit* victim)
@@ -54,10 +51,8 @@ struct boss_xt002_AI : public BossAI
 
     void JustDied(Unit *victim)
     {
+        _JustDied();
         DoScriptText(SAY_SLAY, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_XT002, DONE);
     }
 
     void MoveInLineOfSight(Unit* who) {}

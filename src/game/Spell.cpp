@@ -2334,6 +2334,9 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             }
                         }
                         break;
+                    case 62343: // Scorch Ground (Ignis)
+                        SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
+                        break;
 
                     default:
                         sLog.outDebug("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`", m_spellInfo->Id, m_caster->GetEntry());
@@ -2482,6 +2485,50 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         }
                         break;
                     }
+					case 64844: // Divine Hymn
+                    case 64843:
+                    {
+                        typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
+                        TopHealth healedMembers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->IsInRaidWith(m_targets.getUnitTarget()))
+                            {
+                                PrioritizeHealthUnitWraper  WTarget(*itr);
+                                healedMembers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!healedMembers.empty() && unitList.size()<3)
+                        {
+                            unitList.push_back(healedMembers.top().getUnit());
+                            healedMembers.pop();
+                        }
+                        break;
+                    } 
+                    case 64904: // Hymn of Hope
+                    case 64901:
+                    {
+                        typedef std::priority_queue<PrioritizeManaUnitWraper, std::vector<PrioritizeManaUnitWraper>, PrioritizeMana> TopMana;
+                        TopMana manaUsers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->getPowerType() == POWER_MANA)
+                            {
+                                PrioritizeManaUnitWraper  WTarget(*itr);
+                                manaUsers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!manaUsers.empty() && unitList.size()<3)
+                        {
+                            unitList.push_back(manaUsers.top().getUnit());
+                            manaUsers.pop();
+                        }
+                        break;
+                    }
                     case 52759: // Ancestral Awakening
                     {
                         typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
@@ -2499,6 +2546,11 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             healedMembers.pop();
                         }
                         break;
+                    }
+                    case 62343: // Scorch Ground not hits the trigger
+                    {
+                        unitList.remove(m_caster);
+                        break; 
                     }
                 }
                 if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_TARGET_ANY
