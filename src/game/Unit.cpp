@@ -9992,6 +9992,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                             break;
                         }
                 }
+            // Drain Soul - increased damage for targets under 25 % HP
+            if (spellProto->SpellFamilyFlags[0] & 0x00004000)
+                if (HasAura(200000))
+                    DoneTotalMod *= 4;
         break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Improved Icy Touch
@@ -11749,6 +11753,10 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
+
+    if (m_Visibility == VISIBILITY_GROUP_STEALTH)
+        DestroyForNearbyPlayers();
+
     UpdateObjectVisibility();
 }
 
@@ -14823,38 +14831,36 @@ void Unit::SetControlled(bool apply, UnitState state)
 
         switch(state)
         {
-        case UNIT_STAT_STUNNED:
-	   {
-	    addUnitState(state);
-            SetStunned(true);
-	    CastStop();
-	   }
-            break;
-        case UNIT_STAT_ROOT:
-            if (!hasUnitState(UNIT_STAT_STUNNED))
-		{
-		 addUnitState(state);
-                 SetRooted(true);
-	 	}
-            break;
-        case UNIT_STAT_CONFUSED:
-            if (!hasUnitState(UNIT_STAT_STUNNED))
-		{
-		addUnitState(state);
-                SetConfused(true);
-		CastStop();
-		}
-            break;
-        case UNIT_STAT_FLEEING:
-            if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
-		{
-		addUnitState(state);
-                SetFeared(true);
-		CastStop();
-		}
-            break;
-        default:
-            break;
+            case UNIT_STAT_STUNNED:
+                addUnitState(state);
+                SetStunned(true);
+                CastStop();
+                break;
+            case UNIT_STAT_ROOT:
+                if (!hasUnitState(UNIT_STAT_STUNNED))
+		        {
+		            addUnitState(state);
+                    SetRooted(true);
+	 	        }
+                break;
+            case UNIT_STAT_CONFUSED:
+                if (!hasUnitState(UNIT_STAT_STUNNED))
+		        {
+		            addUnitState(state);
+                    SetConfused(true);
+		            CastStop();
+		        }
+                break;
+            case UNIT_STAT_FLEEING:
+                if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
+		        {
+		            addUnitState(state);
+                    SetFeared(true);
+		            CastStop();
+		        }
+                break;
+            default:
+                break;
         }
     }
     else
