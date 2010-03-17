@@ -599,6 +599,13 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
         }
+        // Scourge Strike
+        if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
+        {
+            int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
+            if (shadowdmg > 0)
+                CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
+        }
     }
 
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
@@ -3542,8 +3549,17 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
         // find current aura from spell and change it's stackamount
         if (Aura * foundAura = GetOwnedAura(aura->GetId(), aura->GetCasterGUID(), 0, aura))
         {
-            if(aura->GetSpellProto()->StackAmount)
+            if(aura->GetSpellProto()->StackAmount) 
+            {
                 aura->ModStackAmount(foundAura->GetStackAmount());
+                for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS ; ++effIndex)
+                    {
+                        if (!aura->HasEffect(effIndex))
+                            continue;
+                        if (aura->GetEffect(effIndex)->IsPeriodic())
+                            aura->GetEffect(effIndex)->SetPeriodic(foundAura->GetEffect(effIndex)->GetPeriodic());
+                    }
+            }
 
             // Use the new one to replace the old one
             // This is the only place where AURA_REMOVE_BY_STACK should be used
@@ -8256,6 +8272,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             if (!(procSpell->SpellFamilyFlags[0] & 0x20))
                 return false;
             break;
+        }        
+        // Glyph of Death's Embrace
+        case 58677:
+        {
+            if (procSpell->Id != 47633)
+                return false;
+            break;
         }
         // Blessing of Ancient Kings (Val'anyr, Hammer of Ancient Kings)
         case 64411:
@@ -8280,7 +8303,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         if (this->GetTypeId() != TYPEID_PLAYER || !this->ToPlayer()->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
             return false;
     }
-
     // Rime
     else if (auraSpellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && auraSpellInfo->SpellIconID == 56)
     {
@@ -9762,7 +9784,12 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) &&
             (*i)->GetSpellProto()->EquippedItemClass == -1 &&          // -1 == any item class (not wand)
             (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0) // 0 == any inventory type (not wand)
+        {
             DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+  
+ 	        if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+               i = mModDamagePercentDone.begin();
+        }
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
     // Add flat bonus from spell damage versus
@@ -10959,7 +10986,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
 
     if (attType == RANGED_ATTACK && pVictim->GetTypeId() == TYPEID_UNIT)
     {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
+        //APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
 
         // ..done (base at attack power and creature type)
         AuraEffectList const& mCreatureAttackPower = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS);
@@ -11027,7 +11054,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
                 if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+                {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+ 
+                    if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+                        i = mModDamagePercentDone.begin();
+                }
         }
 
     AuraEffectList const &mDamageDoneVersus = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS);
@@ -13463,7 +13495,7 @@ bool InitTriggerAuraData()
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
-    isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
+    //isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
 
     return true;
 }

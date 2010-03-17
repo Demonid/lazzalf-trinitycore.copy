@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Database/DatabaseEnv.h"
 #include "Common.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -1521,8 +1522,55 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGround const* bgOrTemplate, BattleG
         if(memberBracketEntry != bracketEntry)
             return BG_JOIN_ERR_MIXED_LEVELS;
         // don't let join rated matches if the arena team id doesn't match
-        if(isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
-            return BG_JOIN_ERR_MIXED_ARENATEAM;
+        if(isRated)
+        {
+            if(member->GetArenaTeamId(arenaSlot) != arenaTeamId)
+            {
+                return BG_JOIN_ERR_MIXED_ARENATEAM;
+            }
+
+            uint32 winsAllTeam = 0;
+            uint32 winsAllPlayer = 0;
+
+            uint32 winsAllTeamLimit = sWorld.getConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN);
+            uint32 winsAllPlayerLimit = sWorld.getConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN);
+            bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+
+            if(enabled)
+            {
+                QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_team_id='%u' AND player_guid = '0'", arenaTeamId);
+
+                if(result)
+                {
+                    do
+                    {
+                        Field *fields = result->Fetch();
+                        uint32 wins = fields[0].GetUInt32();
+
+                        winsAllTeam += wins;
+                    }while(result->NextRow());
+                }
+
+                result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u'", GUID_LOPART(member->GetGUID()));
+
+                if(result)
+                {
+                    do
+                    {
+                        Field *fields = result->Fetch();
+                        uint32 wins = fields[0].GetUInt32();
+
+                        winsAllPlayer += wins;
+                    }while(result->NextRow());
+                }
+
+
+                if(winsAllTeam >= winsAllTeamLimit || winsAllPlayer >= winsAllPlayerLimit)
+                {
+                    return BG_JOIN_ERR_GROUP_DESERTER;
+                }
+            }
+        }
         // don't let join if someone from the group is already in that bg queue
         if(member->InBattleGroundQueueForBattleGroundQueueType(bgQueueTypeId))
             return BG_JOIN_ERR_GROUP_MEMBER_ALREADY_IN_QUEUE;
@@ -1559,6 +1607,10 @@ void Group::SetDungeonDifficulty(Difficulty difficulty)
             continue;
         player->SetDungeonDifficulty(difficulty);
         player->SendDungeonDifficulty(true);
+        // Send player to recall position is a dungeon (to avoid an exploit)
+        Map *map = MapManager::Instance().FindMap(player->GetMapId(), player->GetInstanceId());
+        if (map && map->IsDungeon() && map->HavePlayers())
+            player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
     }
 }
 
