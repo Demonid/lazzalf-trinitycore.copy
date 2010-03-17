@@ -1097,7 +1097,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Improved Fear
                 else if (GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
                 {
-                    if (caster->GetTypeId() == TYPEID_UNIT)
+                    if (caster->GetTypeId() == TYPEID_PLAYER/*caster->GetTypeId() == TYPEID_UNIT*/)
                     {
                         if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_WARLOCK, 98, 0))
                         {
@@ -1110,7 +1110,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                                     sLog.outError("Aura::HandleAuraSpecificMods: Unknown rank of Improved Fear (%d) found", aurEff->GetId());
                             }
                             if (spellId)
-                                caster->CastSpell(caster, spellId, true);
+                                target->CastSpell(target, spellId, true);
+                                /*caster->CastSpell(caster, spellId, true);*/
                         }
                     }
                 }
