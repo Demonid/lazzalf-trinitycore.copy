@@ -8272,6 +8272,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             if (!(procSpell->SpellFamilyFlags[0] & 0x20))
                 return false;
             break;
+        }        
+        // Glyph of Death's Embrace
+        case 58677:
+        {
+            if (procSpell->Id != 47633)
+                return false;
+            break;
         }
         // Blessing of Ancient Kings (Val'anyr, Hammer of Ancient Kings)
         case 64411:
@@ -8296,7 +8303,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         if (this->GetTypeId() != TYPEID_PLAYER || !this->ToPlayer()->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
             return false;
     }
-
     // Rime
     else if (auraSpellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && auraSpellInfo->SpellIconID == 56)
     {
