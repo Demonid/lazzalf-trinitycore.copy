@@ -4127,7 +4127,7 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
     mechanic = 1 << GetMiscValue();
 
     //immune movement impairment and loss of control
-    if(GetId()==42292 || GetId()==59752)
+    if(GetId()==42292 || GetId()==59752 || GetId()==53490)
         mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     // Forbearance
     // in DBC wrong mechanic immune since 3.0.x
