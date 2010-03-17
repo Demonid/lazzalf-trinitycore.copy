@@ -747,6 +747,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case 34700:                                         // Allergic Reaction
         case 61987:                                         // Avenging Wrath Marker
         case 61988:                                         // Divine Shield exclude aura
+        case 61248:                                         // Power of Tenebron
+        case 61251:                                         // Power of Vesperon
+        case 58105:                                         // Power of Shadron
         case 50524:                                         // Runic Power Feed
             return false;
         case 12042:                                         // Arcane Power
@@ -3105,6 +3108,16 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     {
         case 58600: // No fly Zone - Dalaran (Krasus Landing exception)
             if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
+                return false;
+            break;
+        case 58730: // No fly Zone - Wintergrasp
+            if (!player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+                || player->HasAura(45472) || player->HasAura(44795))
+                return false;
+            break;
+        case 58045: // Essence of Wintergrasp - Wintergrasp
+        case 57940: // Essence of Wintergrasp - Northrend
+            if (!player || player->GetTeamId() != sWorld.getState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION))
                 return false;
             break;
     }

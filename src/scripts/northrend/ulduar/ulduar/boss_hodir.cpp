@@ -26,13 +26,7 @@
 
 struct boss_hodirAI : public BossAI
 {
-    boss_hodirAI(Creature *pCreature) : BossAI(pCreature, TYPE_HODIR)
-    {
-        m_pInstance = pCreature->GetInstanceData();
-        Reset();
-    }
-
-    ScriptedInstance* m_pInstance;
+    boss_hodirAI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR){}
 
     void Reset()
     {
@@ -44,17 +38,14 @@ struct boss_hodirAI : public BossAI
 
     void JustDied(Unit *victim)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_HODIR, DONE);
+        _JustDied();
     }
 
     void Aggro(Unit* pWho)
     {
+        _EnterCombat();
 //        DoScriptText(SAY_AGGRO, m_creature);
         m_creature->SetInCombatWithZone();
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_HODIR, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
