@@ -599,6 +599,8 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_emily' WHERE `entry`=26588;
 UPDATE `creature_template` SET `ScriptName` = 'npc_mrfloppy' WHERE `entry`=26589;
 UPDATE `gameobject_template` SET `ScriptName`= 'go_amberpine_outhouse' WHERE `entry`=188666;
 UPDATE `creature_template` SET `ScriptName`= 'npc_outhouse_bunny' WHERE `entry`=27326;
+UPDATE `creature_template` SET `ScriptName`= 'npc_tallhorn_stag' WHERE `entry`=26363;
+UPDATE `creature_template` SET `ScriptName`= 'npc_amberpine_woodsman' WHERE `entry`=27293;
 
 /* DRAK'THARON KEEP */
 UPDATE `instance_template` SET `script`='instance_drak_tharon' WHERE `map`=600;
@@ -734,6 +736,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_arete' WHERE `entry`=29344;
 UPDATE `creature_template` SET `ScriptName`='npc_dame_evniki_kapsalis' WHERE `entry`=34885;
 UPDATE `creature_template` SET `ScriptName`='npc_squire_david' WHERE `entry`=33447;
 UPDATE `creature_template` SET `ScriptName`='npc_argent_valiant' WHERE `entry`=33448;
+UPDATE `creature_template` SET `ScriptName`='npc_argent_tournament_post' WHERE `entry`=35473;
 
 /* IRONFORGE */
 UPDATE `creature_template` SET `ScriptName`='npc_royal_historian_archesonus' WHERE `entry`=8879;
