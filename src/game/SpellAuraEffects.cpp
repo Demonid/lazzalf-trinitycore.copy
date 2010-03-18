@@ -568,7 +568,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellProto->SpellFamilyFlags[0] & 0x00800000 && GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
             {
                 m_canBeRecalculated = false;
-                // 0.06*$AP*cp
+                // 0.01*$AP*cp
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
 
@@ -578,7 +578,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 if (AuraEffect const * aurEff = caster->GetAuraEffect(34241,0))
                     amount += cp * aurEff->GetAmount();
 
-                amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp * 6 / 100);
+                amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
             }
             // Rend
             else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARRIOR && GetSpellProto()->SpellFamilyFlags[0] & 0x20)
