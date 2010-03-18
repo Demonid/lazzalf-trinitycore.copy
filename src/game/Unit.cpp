@@ -11471,9 +11471,12 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
             this->ToCreature()->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
         if (enemy)
-        {
+        {            
             if (IsAIEnabled)
+			{
                 this->ToCreature()->AI()->EnterCombat(enemy);
+                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);//always remove Out of Combat Non Attackable flag if we enter combat and AI is enabled
+            }
             if (this->ToCreature()->GetFormation())
                 this->ToCreature()->GetFormation()->MemberAttackStart(this->ToCreature(), enemy);
         }
@@ -11501,6 +11504,10 @@ void Unit::ClearInCombat()
     // Player's state will be cleared in Player::UpdateContestedPvP
     if (GetTypeId() != TYPEID_PLAYER)
     {
+        Creature* creature = this->ToCreature();
+        if (creature->GetCreatureInfo() && creature->GetCreatureInfo()->unit_flags & UNIT_FLAG_OOC_NOT_ATTACKABLE)
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);//re-apply Out of Combat Non Attackable flag if we leave combat, can be overriden in scripts in EnterEvadeMode()
+
         clearUnitState(UNIT_STAT_ATTACK_PLAYER);
         if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
             SetUInt32Value(UNIT_DYNAMIC_FLAGS, ((Creature*)this)->GetCreatureInfo()->dynamicflags);
