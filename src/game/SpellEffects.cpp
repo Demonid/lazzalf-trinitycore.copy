@@ -2074,7 +2074,7 @@ void Spell::EffectDummy(uint32 i)
             if(m_spellInfo->Id == 49560)
             {
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
-                    unit->CastSpell(m_caster, damage, true);
+                    return;
                 else
                     unitTarget->CastSpell(m_caster, damage, true);
                 return;
