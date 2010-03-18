@@ -25,6 +25,7 @@
 #define SPELL_SPELL_DISRUPTION  29310
 #define SPELL_DECREPIT_FEVER    RAID_MODE(29998,55011)
 #define SPELL_PLAGUE_CLOUD      29350
+#define ACHIEV_SAFETY_DANCE     RAID_MODE(1996,2139)
 
 enum Events
 {
@@ -55,10 +56,18 @@ struct boss_heiganAI : public BossAI
 
     uint32 eruptSection;
     bool eruptDirection;
+    bool bIsSomeoneDied;
     Phases phase;
+
+    void Reset()
+    {
+        bIsSomeoneDied = false;
+        _Reset();
+    }
 
     void KilledUnit(Unit* Victim)
     {
+        bIsSomeoneDied = true;
         if (!(rand()%5))
             DoScriptText(SAY_SLAY, me);
     }
@@ -67,6 +76,9 @@ struct boss_heiganAI : public BossAI
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
+
+        if (instance && !bIsSomeoneDied)
+            instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
     }
 
     void EnterCombat(Unit *who)
@@ -139,17 +151,15 @@ struct boss_heiganAI : public BossAI
                 case EVENT_CHECK:
                     Creature* Check = me->SummonCreature(CREATURE_CHECK, CHECK_X, CHECK_Y, CHECK_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                     events.ScheduleEvent(EVENT_CHECK, 5000);
-                    if (Check)
-                    {
+                    if (Check){
                         Check->SetVisibility(VISIBILITY_OFF);
-                        if (me->IsWithinDistInMap(Check, 4))
-                        {
+                        if (me->IsWithinDistInMap(Check, 4)){
                             std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
                             for (std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
-                                 if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
+                                if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
                                     (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
+                            }
                         }
-                    }
                     break;
             }
         }
