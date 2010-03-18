@@ -7343,9 +7343,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Must Dual Wield
                 if (!procSpell || !haveOffhandWeapon())
                     return false;
-                // Chance as basepoints for dummy aura
-                if (!roll_chance_i(triggerAmount))
-                    return false;
 
                 switch (procSpell->Id)
                 {
@@ -7361,7 +7358,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     case 51417: triggered_spell_id = 66959; break;                            // Rank 3
                     case 51418: triggered_spell_id = 66960; break;                            // Rank 4
                     case 51419: triggered_spell_id = 66961; break;                            // Rank 5
-                    case 51420: triggered_spell_id = 66962; break;                            // Rank 6
+                    case 55268: triggered_spell_id = 66962; break;                            // Rank 6
 
                     // Plague Strike
                     case 45462: triggered_spell_id = 66216; break;                            // Rank 1
