@@ -31,12 +31,7 @@
 
 struct boss_auriaya_AI : public BossAI
 {
-    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, TYPE_AURIAYA)
-    {
-        m_pInstance = pCreature->GetInstanceData();
-    }
-
-    ScriptedInstance* m_pInstance;
+    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, BOSS_AURIAYA){}
 
     uint32 TERRIFYING_SCREECH_Timer;
     uint32 SONIC_SCREECH_Timer;
@@ -49,6 +44,7 @@ struct boss_auriaya_AI : public BossAI
 
     void EnterCombat(Unit* who)
     {
+        _EnterCombat();
         DoScriptText(SAY_AGGRO,m_creature);
     }
     void KilledUnit(Unit* victim)
@@ -58,10 +54,8 @@ struct boss_auriaya_AI : public BossAI
 
     void JustDied(Unit *victim)
     {
+        _JustDied();
         DoScriptText(SAY_SLAY_1, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_AURIAYA, DONE);
     }
 
     void MoveInLineOfSight(Unit* who) {}
