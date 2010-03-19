@@ -1308,9 +1308,9 @@ class Unit : public WorldObject
         uint32 GetSpellCritDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_SPELL, 2.2f, 33.0f, damage); }
 
         // player or player's pet resilience (-1%), cap 100%
-        uint32 GetMeleeDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 1.0f, 100.0f, damage); }
-        uint32 GetRangedDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 1.0f, 100.0f, damage); }
-        uint32 GetSpellDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 1.0f, 100.0f, damage); }
+        uint32 GetMeleeDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 2.0f, 100.0f, damage); }
+        uint32 GetRangedDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 2.0f, 100.0f, damage); }
+        uint32 GetSpellDamageReduction(uint32 damage) const { return GetCombatRatingDamageReduction(CR_CRIT_TAKEN_MELEE, 2.0f, 100.0f, damage); }
 
         float MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const;
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell);
@@ -1838,6 +1838,7 @@ class Unit : public WorldObject
         void SetHover(bool on);
         bool isHover() const { return HasAuraType(SPELL_AURA_HOVER); }
 
+        int32 ApplyEffectModifiers(SpellEntry const* spellProto, uint8 effect_index, int32 value);
         int32 CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_index, int32 basePoints, Unit const* target);
         int32 CalcSpellDuration(SpellEntry const* spellProto);
         int32 ModSpellDuration(SpellEntry const* spellProto, Unit const* target, int32 duration, bool positive);
