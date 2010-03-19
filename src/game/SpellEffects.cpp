@@ -4699,6 +4699,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         if ( m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL )
              weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
 
+        if (m_attackType == OFF_ATTACK) // Off-Hand fixed_bonus is not reduced by Off-Hand Penality (50%)
+ 	            weapon_total_pct *= 2;
+
         if(fixed_bonus)
             fixed_bonus = int32(fixed_bonus * weapon_total_pct);
         if(spell_bonus)
