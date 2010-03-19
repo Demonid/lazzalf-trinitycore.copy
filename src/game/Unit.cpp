@@ -891,38 +891,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
             originalCaster=owner->GetGUID();
 
     SpellCastTargets targets;
-    uint32 targetMask = spellInfo->Targets;
-    //if (targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2))
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-    {
-        if (SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
-        {
-            /*SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-            if (srange && GetSpellMaxRange(srange) == 0.0f)
-            {
-                Victim = this;
-                break;
-            }
-            else */if (!Victim)
-            {
-                sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-                return;
-            }
-            else
-                break;
-        }
-    }
     targets.setUnitTarget(Victim);
-
-    if (targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
-    {
-        if (!Victim)
-        {
-            sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-            return;
-        }
-        targets.setDst(Victim);
-    }
 
     if (castItem)
         DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
@@ -965,34 +934,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
     }
 
     SpellCastTargets targets;
-    uint32 targetMask = spellInfo->Targets;
-
-    //check unit target
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-    {
-        if (SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
-        {
-            if (!Victim)
-            {
-                sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-                return;
-            }
-            else
-                break;
-        }
-    }
     targets.setUnitTarget(Victim);
-
-    //check destination
-    if (targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
-    {
-        if (!Victim)
-        {
-            sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-            return;
-        }
-        targets.setDst(Victim);
-    }
 
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -10193,6 +10135,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         DoneTotal += DoneAdvertisedBenefit * coeff * coeff2;
     }
 
+    // Some spells don't benefit from done mods
+    if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
+    {
+        DoneTotal = 0;
+        DoneTotalMod = 1.0f;
+    }
+
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
     // apply spellmod to Done damage (flat and pct)
     if (Player* modOwner = GetSpellModOwner())
@@ -15309,9 +15258,10 @@ Unit *Unit::GetVehicleBase() const
 
 Creature *Unit::GetVehicleCreatureBase() const
 {
-    Unit *veh = GetVehicleBase();
-    if (veh && veh->GetTypeId() == TYPEID_UNIT)
-        return dynamic_cast<Creature*>(veh);
+    if( Unit *veh = GetVehicleBase())
+        if( Creature *c = veh->ToCreature())
+            return c;
+
     return NULL;
 }
 
@@ -16012,7 +15962,7 @@ void Unit::ExitVehicle()
     if (GetTypeId() == TYPEID_PLAYER)
     {
         //this->ToPlayer()->SetClientControl(this, 1);
-        this->ToPlayer()->SendTeleportAckMsg();
+        this->ToPlayer()->SendTeleportAckPacket();
         this->ToPlayer()->SetFallInformation(0, GetPositionZ());
     }
     WorldPacket data;
@@ -16131,31 +16081,9 @@ void Unit::NearTeleportTo( float x, float y, float z, float orientation, bool ca
         this->ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
-        WorldPacket data;
-        /*data.Initialize(MSG_MOVE_TELEPORT, 30);
-        data.append(GetPackGUID());
-        data << uint32(GetUnitMovementFlags());
-        data << uint16(0);  // Probably walk flags here
-        data << getMSTime(); // time
-        data << x; // destination coords
-        data << y;
-        data << z;
-        data << orientation;
-        data << uint32 (0);
-        // Other information here: jumping angle etc
-        SendMessageToSet(&data, false);*/
-
         // FIXME: this interrupts spell visual
         DestroyForNearbyPlayers();
-
         SetPosition(x, y, z, orientation, true);
-        //ObjectAccessor::UpdateObjectVisibility(this);
-
-        //WorldPacket data;
-        // Work strange for many spells: triggered active mover set for targeted player to creature
-        //BuildTeleportAckMsg(&data, x, y, z, orientation);
-        //BuildHeartBeatMsg(&data);
-        //SendMessageToSet(&data, false);
     }
 }
 
