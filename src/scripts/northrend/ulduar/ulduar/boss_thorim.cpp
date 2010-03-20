@@ -26,7 +26,7 @@
 
 struct boss_thorimAI : public BossAI
 {
-    boss_thorimAI(Creature* pCreature) : BossAI(pCreature, TYPE_THORIM)
+    boss_thorimAI(Creature* pCreature) : BossAI(pCreature, BOSS_THORIM)
     {
         m_pInstance = pCreature->GetInstanceData();
         Reset();
@@ -44,17 +44,14 @@ struct boss_thorimAI : public BossAI
 
     void JustDied(Unit *victim)
     {
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_THORIM, DONE);
+        _JustDied();
     }
 
     void Aggro(Unit* pWho)
     {
+        _EnterCombat();
 //        DoScriptText(SAY_AGGRO, m_creature);
         m_creature->SetInCombatWithZone();
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_THORIM, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
