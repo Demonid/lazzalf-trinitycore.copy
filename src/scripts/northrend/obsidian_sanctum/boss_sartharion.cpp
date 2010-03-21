@@ -259,6 +259,9 @@ struct boss_sartharionAI : public ScriptedAI
     bool m_bHasCalledTenebron;
     bool m_bHasCalledShadron;
     bool m_bHasCalledVesperon;
+    bool bCanUseWill;
+
+    bool m_bReseted;
 
     void Reset()
     {
@@ -283,6 +286,8 @@ struct boss_sartharionAI : public ScriptedAI
         m_bHasCalledShadron = false;
         m_bHasCalledVesperon = false;
 
+        m_bReseted = false;
+
         if (m_creature->HasAura(SPELL_TWILIGHT_REVENGE))
             m_creature->RemoveAurasDueToSpell(SPELL_TWILIGHT_REVENGE);
 
@@ -291,10 +296,34 @@ struct boss_sartharionAI : public ScriptedAI
         achievProgress = 0;
     }
 
+    void ResetDragon()
+    {
+        if (!m_bReseted && bCanUseWill)
+        {
+            if (Creature* pShadron = ((Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_SHADRON))))
+            {
+                if (!pShadron->isAlive())
+                    pShadron->Respawn();
+            }
+            if (Creature* pVesperon = ((Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_VESPERON))))
+            {
+                if (!pVesperon->isAlive())
+                    pVesperon->Respawn();
+            }
+            if (Creature* pTenebron = ((Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_TENEBRON))))
+            {
+                if (!pTenebron->isAlive())
+                    pTenebron->Respawn();
+            }
+        }
+        m_bReseted = true;
+    }
+
     void JustReachedHome()
     {
         if (pInstance)
             pInstance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
+        ResetDragon();
     }
 
     void MovementInform(uint32 uiType, uint32 uiPointId)
@@ -302,6 +331,7 @@ struct boss_sartharionAI : public ScriptedAI
         if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
         {
             EnterEvadeMode();
+            ResetDragon();
             m_creature->GetMotionMaster()->Clear();
             return;
         }
@@ -362,7 +392,7 @@ struct boss_sartharionAI : public ScriptedAI
         Creature* pFetchVesp = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_VESPERON));
 
         //if at least one of the dragons are alive and are being called
-        bool bCanUseWill = false;
+        bCanUseWill = false;
 
         if (pFetchTene && pFetchTene->isAlive() && !pFetchTene->getVictim())
         {
