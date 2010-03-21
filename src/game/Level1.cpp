@@ -2463,7 +2463,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
         HandleAnnounceCommand(announce.c_str());
 
-        if ((objmgr.m_jailconf_max_jails == jail_times) && (objmgr.m_jailconf_ban == 2) )
+        if ((objmgr.m_jailconf_max_jails >= jail_times) && (objmgr.m_jailconf_ban == 2) )
         {
             CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
@@ -2479,7 +2479,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
             Player::DeleteFromDB(GUID, fields[1].GetUInt32());
         }
-        else if ((objmgr.m_jailconf_max_jails == jail_times) && (objmgr.m_jailconf_ban == 1) )
+        else if ((objmgr.m_jailconf_max_jails >= jail_times) && (objmgr.m_jailconf_ban == 1) )
         {
             CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
@@ -2572,7 +2572,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
         ban_by = GetTrinityString(LANG_JAIL_BAN_BY);
 
 	    loginDatabase.BeginTransaction();
-        loginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+604800,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
+        loginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
         loginDatabase.CommitTransaction();
 
         chr->GetSession()->LogoutPlayer(false);
