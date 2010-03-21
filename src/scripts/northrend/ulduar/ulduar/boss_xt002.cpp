@@ -185,7 +185,7 @@ struct boss_xt002_AI : public BossAI
     uint8 heart_exposed;
     bool enraged;
 
-    uint32 transferHealth;
+    int32 transferHealth;
     bool enterHardMode;
     bool hardMode;
 

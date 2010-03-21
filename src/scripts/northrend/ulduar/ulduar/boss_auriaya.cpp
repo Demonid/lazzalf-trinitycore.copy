@@ -36,7 +36,10 @@ enum Yells
 
 struct boss_auriaya_AI : public BossAI
 {
-    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, BOSS_AURIAYA){}
+    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, TYPE_AURIAYA)
+    {
+    }
+
     uint32 TERRIFYING_SCREECH_Timer;
     uint32 SONIC_SCREECH_Timer;
 

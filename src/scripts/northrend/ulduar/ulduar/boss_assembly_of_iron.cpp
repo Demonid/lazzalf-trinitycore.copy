@@ -148,7 +148,7 @@ struct boss_steelbreakerAI : public ScriptedAI
         phase = 0;
         m_creature->RemoveAllAuras();
         if (pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, NOT_STARTED);
+            pInstance->SetData(TYPE_ASSEMBLY, NOT_STARTED);
     }
 
     EventMap events;
@@ -195,7 +195,7 @@ struct boss_steelbreakerAI : public ScriptedAI
     {
         DoScriptText(RAND(SAY_STEELBREAKER_DEATH_1,SAY_STEELBREAKER_DEATH_2), m_creature);
         if (IsEncounterComplete(pInstance, m_creature) && pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, DONE);
+            pInstance->SetData(TYPE_ASSEMBLY, DONE);
     }
 
     void KilledUnit(Unit *who)
@@ -258,7 +258,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
     void Reset()
     {
         if (pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, NOT_STARTED);
+            pInstance->SetData(TYPE_ASSEMBLY, NOT_STARTED);
         events.Reset();
         m_creature->RemoveAllAuras();
         phase = 0;
@@ -308,7 +308,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
     {
         DoScriptText(RAND(SAY_MOLGEIM_DEATH_1,SAY_MOLGEIM_DEATH_2), m_creature);
         if (IsEncounterComplete(pInstance, m_creature) && pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, DONE);
+            pInstance->SetData(TYPE_ASSEMBLY, DONE);
     }
 
     void KilledUnit(Unit *who)
@@ -425,7 +425,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     void Reset()
     {
         if (pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, NOT_STARTED);
+            pInstance->SetData(TYPE_ASSEMBLY, NOT_STARTED);
         m_creature->RemoveAllAuras();
         events.Reset();
         phase = 0;
@@ -478,7 +478,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     {
         DoScriptText(RAND(SAY_BRUNDIR_DEATH_1,SAY_BRUNDIR_DEATH_2), m_creature);
         if (IsEncounterComplete(pInstance, m_creature) && pInstance)
-            pInstance->SetData(BOSS_ASSEMBLY, DONE);
+            pInstance->SetData(TYPE_ASSEMBLY, DONE);
     }
 
     void KilledUnit(Unit *who)

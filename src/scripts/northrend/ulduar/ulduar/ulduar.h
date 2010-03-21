@@ -19,52 +19,7 @@
 #ifndef DEF_ULDUAR_H
 #define DEF_ULDUAR_H
 
-enum Encounter
-{
-    BOSS_LEVIATHAN,
-    BOSS_IGNIS,
-    BOSS_RAZORSCALE,
-    BOSS_XT002,
-    BOSS_ASSEMBLY,
-    BOSS_KOLOGARN,
-    BOSS_AURIAYA,
-    BOSS_MIMIRON,
-    BOSS_HODIR,
-    BOSS_THORIM,
-    BOSS_FREYA,
-    BOSS_VEZAX,
-    BOSS_YOGGSARON,
-    BOSS_ALGALON,
-    MAX_BOSS_NUMBER
-};
-
-enum Data
-{
-    DATA_STEELBREAKER,
-    DATA_MOLGEIM,
-    DATA_BRUNDIR,
-    DATA_RUNEMASTER_MOLGEIM,
-    DATA_STORMCALLER_BRUNDIR,
-    DATA_NADA,
-    DATA_VAI
-};
-
-enum Data64
-{
-    DATA_IGNIS,
-};
-
-enum Npcs
-{
-    NPC_COMMANDER               = 33210,
-    NPC_GTRAPPER                = 33259,
-    NPC_ENGINEER                = 33287,
-    NPC_DEFENDER                = 33816,
-    NPC_IRON_CONSTRUCT          = 33121,
-    NPC_FIRE_STATE              = 33184
-};
-
-/*enum eTypes
+enum eTypes
 {
     MAX_ENCOUNTER               = 14,
 
@@ -104,20 +59,7 @@ enum Npcs
     NPC_FREYA                   = 32906,
     NPC_VEZAX                   = 33271,
     NPC_YOGGSARON               = 33288,
-    NPC_ALGALON                 = 32871,
-
-    NPC_COMMANDER               = 33210,
-    NPC_GTRAPPER                = 33259,
-    NPC_ENGINEER          		= 33287,
-    NPC_DEFENDER          		= 33816,
-    NPC_IRON_CONSTRUCT          = 33121,
-    NPC_FIRE_STATE              = 33184
+    NPC_ALGALON                 = 32871
 };
-
-enum Data
-{
-    DATA_NADA,
-    DATA_VAI
-};*/
 
 #endif
