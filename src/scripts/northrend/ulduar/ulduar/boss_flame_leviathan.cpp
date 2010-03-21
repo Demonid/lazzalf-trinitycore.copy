@@ -73,7 +73,7 @@ enum Seats
 
 struct boss_flame_leviathanAI : public BossAI
 {
-    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, BOSS_LEVIATHAN), vehicle(me->GetVehicleKit())
+    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, TYPE_LEVIATHAN), vehicle(me->GetVehicleKit())
     {
         assert(vehicle);
     }
