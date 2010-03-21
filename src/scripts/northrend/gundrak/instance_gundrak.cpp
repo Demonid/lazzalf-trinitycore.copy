@@ -21,7 +21,7 @@ struct instance_gundrak : public ScriptedInstance
 
     bool bHeroicMode;
     bool spawnSupport;
-
+    
     uint32 timer;
     uint32 phase;
     uint64 toActivate;
@@ -31,6 +31,8 @@ struct instance_gundrak : public ScriptedInstance
     uint64 uiDrakkariColossus;
     uint64 uiGalDarah;
     uint64 uiEckTheFerocious;
+
+    uint32 NumberOfDeadRuinsDwellers;
 
     uint64 uiSladRanAltar;
     uint64 uiMoorabiAltar;
@@ -94,6 +96,8 @@ struct instance_gundrak : public ScriptedInstance
         uiGalDarahStatueState = GO_STATE_READY;
         uiBridgeState = GO_STATE_ACTIVE;
         uiCollisionState = GO_STATE_READY;
+
+        NumberOfDeadRuinsDwellers = 0;
 
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -263,6 +267,12 @@ struct instance_gundrak : public ScriptedInstance
             if (bHeroicMode && data == DONE)
                 HandleGameObject(uiEckTheFerociousDoorBehind,true);
             break;
+        case DATA_DEAD_RUINS_DWELLERS:
+            if(data==0)
+                NumberOfDeadRuinsDwellers = 0;
+            else
+                NumberOfDeadRuinsDwellers +=data;
+            break;
         }
 
         if (data == DONE)
@@ -278,6 +288,7 @@ struct instance_gundrak : public ScriptedInstance
             case DATA_GAL_DARAH_EVENT:            return m_auiEncounter[2];
             case DATA_DRAKKARI_COLOSSUS_EVENT:    return m_auiEncounter[3];
             case DATA_ECK_THE_FEROCIOUS_EVENT:    return m_auiEncounter[4];
+            case DATA_DEAD_RUINS_DWELLERS:        return NumberOfDeadRuinsDwellers;
         }
 
         return 0;
@@ -309,7 +320,7 @@ struct instance_gundrak : public ScriptedInstance
              << (uiSladRanStatue ? GetObjState(uiSladRanStatue) : GO_STATE_ACTIVE) << " " << (uiMoorabiStatue ? GetObjState(uiMoorabiStatue) : GO_STATE_ACTIVE) << " "
              << (uiDrakkariColossusStatue ? GetObjState(uiDrakkariColossusStatue) : GO_STATE_ACTIVE) << " " << (uiGalDarahStatue ? GetObjState(uiGalDarahStatue) : GO_STATE_READY) << " "
              << (uiBridge ? GetObjState(uiBridge) : GO_STATE_ACTIVE) << " " << (uiCollision ? GetObjState(uiCollision) : GO_STATE_READY);
-
+        
 
         str_data = saveStream.str();
 
