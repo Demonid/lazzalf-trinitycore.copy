@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
 /* Script Data Start
 SDName: Boss slad_ran
 SDAuthor: LordVanMartin
@@ -85,7 +67,7 @@ static Locations SpawnLoc[]=
 
 struct boss_slad_ranAI : public ScriptedAI
 {
-    boss_slad_ranAI(Creature *c) : ScriptedAI(c), summons(m_creature)
+    boss_slad_ranAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
     }
@@ -99,8 +81,6 @@ struct boss_slad_ranAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    SummonList summons;
-
     void Reset()
     {
         uiPoisonNovaTimer = 10000;
@@ -108,7 +88,6 @@ struct boss_slad_ranAI : public ScriptedAI
         uiVenomBoltTimer = 15000;
         uiSpawnTimer = 5000;
         uiPhase = 0;
-	summons.DespawnAll();
 
         if (pInstance)
             pInstance->SetData(DATA_SLAD_RAN_EVENT, NOT_STARTED);
@@ -151,16 +130,11 @@ struct boss_slad_ranAI : public ScriptedAI
             if (uiSpawnTimer <= diff)
             {
                 if (uiPhase == 1)
-                    for (uint8 i = 0; i < (IsHeroic() ? 5 : 3); ++i)
-                    {
-                        m_creature->SummonCreature(CREATURE_SNAKE, SpawnLoc[i].x, SpawnLoc[i].y, SpawnLoc[i].z, SpawnLoc[i].orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);                       
-			
-                    }
+                    for (uint8 i = 0; i < DUNGEON_MODE(3, 5); ++i)
+                        m_creature->SummonCreature(CREATURE_SNAKE, SpawnLoc[i].x, SpawnLoc[i].y, SpawnLoc[i].z, SpawnLoc[i].orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
                 if (uiPhase == 2)
-                    for (uint8 i = 0; i < (IsHeroic() ? 5 : 3); ++i)
-                     {
-                        m_creature->SummonCreature(CREATURE_CONSTRICTORS, SpawnLoc[i].x, SpawnLoc[i].y, SpawnLoc[i].z, SpawnLoc[i].orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);                        
-                    };
+                    for (uint8 i = 0; i < DUNGEON_MODE(3, 5); ++i)
+                        m_creature->SummonCreature(CREATURE_CONSTRICTORS, SpawnLoc[i].x, SpawnLoc[i].y, SpawnLoc[i].z, SpawnLoc[i].orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
                 uiSpawnTimer = 5000;
             } else uiSpawnTimer -= diff;
         }
@@ -195,7 +169,6 @@ struct boss_slad_ranAI : public ScriptedAI
     void JustSummoned(Creature* summoned)
     {
         summoned->GetMotionMaster()->MovePoint(0,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ());
-	summons.Summon(summoned);
 
     }
 };
