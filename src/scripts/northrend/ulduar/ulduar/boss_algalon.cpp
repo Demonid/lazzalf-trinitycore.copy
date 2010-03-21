@@ -82,10 +82,15 @@ enum Yells
     SAY_SUMMON_3                                = -1603019,
 };
 
-struct boss_algalonAI : public BossAI
+struct boss_algalonAI : public ScriptedAI
 {
-    boss_algalonAI(Creature *c) : BossAI(c, BOSS_ALGALON){}
+    boss_algalonAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
         Summon = false; // not in reset. intro speech done only once.
+    }
+
+    ScriptedInstance* pInstance;
 
     std::list<uint64> m_lCollapsingStarGUIDList;
 
@@ -131,10 +136,11 @@ struct boss_algalonAI : public BossAI
 
     void Reset()
     {
-        _Reset();
         Phase = 1;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        if (pInstance)
+            pInstance->SetData(TYPE_ALGALON, NOT_STARTED);
 
         BlackHoleGUID = 0;
 
@@ -155,7 +161,6 @@ struct boss_algalonAI : public BossAI
         ++uiStep;
     }
 
-        _EnterCombat();
     void DespawnCollapsingStar()
     {
         if (m_lCollapsingStarGUIDList.empty())
@@ -215,7 +220,8 @@ struct boss_algalonAI : public BossAI
 
             m_creature->DisappearAndDie();
 
-            _JustDied();
+            if (pInstance)
+                pInstance->SetData(TYPE_ALGALON, DONE);
 
             return;
         }
