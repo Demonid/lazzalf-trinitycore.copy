@@ -43,7 +43,8 @@ enum Events
     EVENT_JET,
     EVENT_SCORCH,
     EVENT_POT,
-    EVENT_CONSTRUCT
+    EVENT_CONSTRUCT,
+    EVENT_END_POT
 };
 
 #define EMOTE_JETS    "Ignis the Furnace Master begins to cast Flame Jets!"
@@ -62,6 +63,9 @@ enum ConstructSpells
     SPELL_BRITTLE               = 62382,
     SPELL_SHATTER               = 62383
 };
+
+#define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
+#define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
 // Water trigger coords
 #define WATER_1_X                 646.77
@@ -97,13 +101,16 @@ const Position Pos[20] =
 
 struct boss_ignis_AI : public BossAI
 {
-    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS) 
+    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS), vehicle(me->GetVehicleKit())
     {
         // Do not let Ignis be affected by Scorch Ground haste buff
         me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HEAT, true);
+        assert(vehicle);
     }
 
     std::vector<Creature*> triggers;
+    Vehicle *vehicle;
+    uint32 EncounterTime;
 
     void Reset()
     {
@@ -117,6 +124,8 @@ struct boss_ignis_AI : public BossAI
         events.ScheduleEvent(EVENT_SCORCH, 25000);
         events.ScheduleEvent(EVENT_POT, 29000);
         events.ScheduleEvent(EVENT_CONSTRUCT, 15000);
+        events.ScheduleEvent(EVENT_END_POT, 40000);
+        EncounterTime = 0;
 
         for(uint32 i = 0; i < 20; ++i)
             if (Creature *trigger = DoSummon(WORLD_TRIGGER, Pos[i]))
@@ -131,6 +140,21 @@ struct boss_ignis_AI : public BossAI
     void JustDied(Unit *victim)
     {
         _JustDied();
+
+        if(EncounterTime <= MAX_ENCOUNTER_TIME)
+        {
+            AchievementEntry const *AchievStokinTheFurnace = GetAchievementStore()->LookupEntry(ACHIEVEMENT_STOKIN_THE_FURNACE);
+            if(AchievStokinTheFurnace)
+            {
+                Map *pMap = m_creature->GetMap();
+                if(pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievStokinTheFurnace);
+                }
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -151,6 +175,8 @@ struct boss_ignis_AI : public BossAI
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
 
+        EncounterTime += diff;
+
         while(uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
@@ -161,10 +187,17 @@ struct boss_ignis_AI : public BossAI
                     events.ScheduleEvent(EVENT_JET, urand(35000,40000));
                     break;
                 case EVENT_POT:
-                    //TODO Serve vehicleid per spostare il player nella pentola
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
-                        DoCast(pTarget, RAID_MODE(SPELL_SLAG_POT, H_SPELL_SLAG_POT));
+                       {
+                           DoCast(pTarget, RAID_MODE(SPELL_SLAG_POT, H_SPELL_SLAG_POT));
+                           pTarget->EnterVehicle(vehicle);
+                       }
+                    events.ScheduleEvent(EVENT_END_POT, 10000);
                     events.ScheduleEvent(EVENT_POT, 15000);
+                    break;
+                case EVENT_END_POT:
+                    vehicle->RemoveAllPassengers();
+                    events.ScheduleEvent(EVENT_END_POT, 30000);
                     break;
                 case EVENT_SCORCH:
                     if (Unit *pTarget = me->getVictim())
@@ -175,7 +208,7 @@ struct boss_ignis_AI : public BossAI
                 case EVENT_CONSTRUCT:
                     DoSummon(MOB_IRON_CONSTRUCT, triggers[rand()%20]);
                     DoCast(SPELL_STRENGHT);
-                    DoCast(m_creature,SPELL_ACTIVATE_CONSTRUCT);
+                    DoCast(me, SPELL_ACTIVATE_CONSTRUCT);
                     events.ScheduleEvent(EVENT_CONSTRUCT, RAID_MODE(40000, 30000));
                     break;
             }
@@ -192,9 +225,8 @@ struct boss_ignis_AI : public BossAI
         if (summon->GetEntry() == MOB_IRON_CONSTRUCT)
             summon->setFaction(16);
 	
-        summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        summon->AI()->DoAction(0);
+        summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        summon->AI()->AttackStart(me->getVictim());
         summon->AI()->DoZoneInCombat();
         summons.Summon(summon);
     }
@@ -241,7 +273,7 @@ struct mob_iron_constructAI : public ScriptedAI
             if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
-            m_creature->DisappearAndDie();
+            m_creature->ForcedDespawn();
         }
     }
 
