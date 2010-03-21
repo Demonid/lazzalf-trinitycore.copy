@@ -19,22 +19,36 @@
 /* ScriptData
 SDName: Ignis the Furnace Master
 SDAuthor: PrinceCreed
-SD%Complete: 90
+SD%Complete: 100
 EndScriptData */
 
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
+enum Yells
+{
+    SAY_AGGRO                                   = -1603220,
+    SAY_SLAY_1                                  = -1603221,
+    SAY_SLAY_2                                  = -1603222,
+    SAY_DEATH                                   = -1603223,
+    SAY_SUMMON                                  = -1603224,
+    SAY_SLAG_POT                                = -1603225,
+    SAY_SCORCH_1                                = -1603226,
+    SAY_SCORCH_2                                = -1603227,
+    SAY_BERSERK                                 = -1603228,
+};
+
 enum Spells
 {
-    SPELL_FLAME_JETS            = 62680,
-    H_SPELL_FLAME_JETS          = 63472,
-    SPELL_SCORCH                = 62546,
-    H_SPELL_SCORCH              = 63474,
-    SPELL_SLAG_POT              = 62717,
-    H_SPELL_SLAG_POT            = 63477,
-    SPELL_ACTIVATE_CONSTRUCT    = 62488,
-    SPELL_STRENGHT              = 64473
+    SPELL_FLAME_JETS                            = 62680,
+    H_SPELL_FLAME_JETS                          = 63472,
+    SPELL_SCORCH                                = 62546,
+    H_SPELL_SCORCH                              = 63474,
+    SPELL_SLAG_POT                              = 62717,
+    H_SPELL_SLAG_POT                            = 63477,
+    SPELL_ACTIVATE_CONSTRUCT                    = 62488,
+    SPELL_STRENGHT                              = 64473,
+    SPELL_BERSERK                               = 47008
 };
 
 enum Events
@@ -44,24 +58,25 @@ enum Events
     EVENT_SCORCH,
     EVENT_POT,
     EVENT_CONSTRUCT,
-    EVENT_END_POT
+    EVENT_END_POT,
+    EVENT_BERSERK
 };
 
 #define EMOTE_JETS    "Ignis the Furnace Master begins to cast Flame Jets!"
 
 // Mob and triggers
-#define MOB_IRON_CONSTRUCT        33121
-#define GROUND_SCORCH             33119
-#define WATER_TRIGGER             16218
+#define MOB_IRON_CONSTRUCT                      33121
+#define GROUND_SCORCH                           33119
+#define WATER_TRIGGER                           16218
 
-#define ACTION_REMOVE_BUFF        20
+#define ACTION_REMOVE_BUFF                      20
 
 enum ConstructSpells
 {
-    SPELL_HEAT                  = 65667,
-    SPELL_MOLTEN                = 62373,
-    SPELL_BRITTLE               = 62382,
-    SPELL_SHATTER               = 62383
+    SPELL_HEAT                                  = 65667,
+    SPELL_MOLTEN                                = 62373,
+    SPELL_BRITTLE                               = 62382,
+    SPELL_SHATTER                               = 62383
 };
 
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
@@ -101,7 +116,7 @@ const Position Pos[20] =
 
 struct boss_ignis_AI : public BossAI
 {
-    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS), vehicle(me->GetVehicleKit())
+    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, TYPE_IGNIS), vehicle(me->GetVehicleKit())
     {
         // Do not let Ignis be affected by Scorch Ground haste buff
         me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HEAT, true);
@@ -120,11 +135,13 @@ struct boss_ignis_AI : public BossAI
     void EnterCombat(Unit *who)
     {
         _EnterCombat();
+        DoScriptText(SAY_AGGRO, me);
         events.ScheduleEvent(EVENT_JET, 30000);
         events.ScheduleEvent(EVENT_SCORCH, 25000);
         events.ScheduleEvent(EVENT_POT, 29000);
         events.ScheduleEvent(EVENT_CONSTRUCT, 15000);
         events.ScheduleEvent(EVENT_END_POT, 40000);
+        events.ScheduleEvent(EVENT_BERSERK, 480000);
         EncounterTime = 0;
 
         for(uint32 i = 0; i < 20; ++i)
@@ -140,6 +157,7 @@ struct boss_ignis_AI : public BossAI
     void JustDied(Unit *victim)
     {
         _JustDied();
+        DoScriptText(SAY_DEATH, me);
 
         if(EncounterTime <= MAX_ENCOUNTER_TIME)
         {
@@ -187,6 +205,7 @@ struct boss_ignis_AI : public BossAI
                     events.ScheduleEvent(EVENT_JET, urand(35000,40000));
                     break;
                 case EVENT_POT:
+                    DoScriptText(SAY_SLAG_POT, me);
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
                        {
                            DoCast(pTarget, RAID_MODE(SPELL_SLAG_POT, H_SPELL_SLAG_POT));
@@ -200,21 +219,33 @@ struct boss_ignis_AI : public BossAI
                     events.ScheduleEvent(EVENT_END_POT, 30000);
                     break;
                 case EVENT_SCORCH:
+                    DoScriptText(RAND(SAY_SCORCH_1, SAY_SCORCH_2), me);
                     if (Unit *pTarget = me->getVictim())
                         me->SummonCreature(GROUND_SCORCH, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 45000);
                     DoCast(RAID_MODE(SPELL_SCORCH, H_SPELL_SCORCH));
                     events.ScheduleEvent(EVENT_SCORCH, 25000);
                     break;
                 case EVENT_CONSTRUCT:
+                    DoScriptText(SAY_SUMMON, me);
                     DoSummon(MOB_IRON_CONSTRUCT, triggers[rand()%20]);
                     DoCast(SPELL_STRENGHT);
                     DoCast(me, SPELL_ACTIVATE_CONSTRUCT);
                     events.ScheduleEvent(EVENT_CONSTRUCT, RAID_MODE(40000, 30000));
                     break;
+                case EVENT_BERSERK:
+                    DoCast(me, SPELL_BERSERK, true);
+                    DoScriptText(SAY_BERSERK, me);
+                    break;
             }
         }
 
         DoMeleeAttackIfReady();
+    }
+
+    void KilledUnit(Unit* Victim)
+    {
+        if (!(rand()%5))
+            DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
     }
 
     void JustSummoned(Creature *summon)
@@ -270,7 +301,7 @@ struct mob_iron_constructAI : public ScriptedAI
         if (m_creature->HasAura(SPELL_BRITTLE) && damage >= 5000)
         {
             DoCast(SPELL_SHATTER);
-            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
+            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(NPC_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
             m_creature->ForcedDespawn();
