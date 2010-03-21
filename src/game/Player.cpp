@@ -16246,6 +16246,7 @@ void Player::_LoadJail(void)
 
     if (!result)
     {
+		m_jail_times = 0;
         m_jail_isjailed = false;
         return;
     }
