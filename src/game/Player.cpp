@@ -11684,7 +11684,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         RemoveItemDurations(pItem);
         
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
-            DeleteRefundReference(pItem);
+            pItem->SetNotRefundable(this);
 
         ItemRemovedQuestCheck( pItem->GetEntry(), pItem->GetCount() );
 
@@ -16582,12 +16582,10 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                     else
                     {    
                         fields = result2->Fetch();
-                        ItemRefund* RefundData = new ItemRefund();
-                        RefundData->eligibleFor = fields[0].GetUInt32();
-                        RefundData->paidMoney = fields[1].GetUInt32();
-                        RefundData->paidExtendedCost = fields[2].GetUInt32();
-                        item->SetRefundData(RefundData);
-                        AddRefundReference(item);
+                        item->SetRefundRecipient(fields[0].GetUInt32());
+                        item->SetPaidMoney(fields[1].GetUInt32());
+                        item->SetPaidExtendedCost(fields[2].GetUInt32());
+                        AddRefundReference(item->GetGUID());
                     }
                 }
             }
@@ -17683,21 +17681,20 @@ void Player::_SaveInventory()
         m_items[i]->FSetState(ITEM_NEW);
     }
 
-    // Updated played time for refundable items
-    for (std::set<Item*>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end();)
+    // Updated played time for refundable items. We don't do this in Player::Update because there's simply no need for it,
+    // the client auto counts down in real time after having received the initial played time on the first
+    // SMSG_ITEM_REFUND_INFO_RESPONSE packet.
+    // Item::UpdatePlayedTime is only called when needed, which is in DB saves, and item refund info requests.
+    std::set<uint64>::iterator i_next;
+    for (std::set<uint64>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
     {
-        // Item could be deleted, or traded.
-        // In the first case, DeleteRefundDataFromDB() was already called in Item::SaveToDB()
-        Item* iPtr = (*itr);
-        if (!iPtr)
-            m_refundableItems.erase(itr++);
-        else
-        {
-            iPtr->UpdatePlayedTime(this);
-            if (iPtr->GetPlayedTime() > (2*HOUR))
-                iPtr->SetNotRefundable(this);
-            ++itr;
-        }    
+        // use copy iterator because UpdatePlayedTime may invalidate itr
+        i_next = itr;
+        ++i_next;
+
+        Item* iPtr = GetItemByGuid(*itr);
+        ASSERT(iPtr); // Sanity check, if this assertion is hit then the item wasn't removed from the set correctly./
+        iPtr->UpdatePlayedTime(this);
     }
 
     // update enchantment durations
@@ -17713,14 +17710,16 @@ void Player::_SaveInventory()
     for (size_t i = 0; i < m_itemUpdateQueue.size(); ++i)
     {
         Item *item = m_itemUpdateQueue[i];
-        if(!item || item->GetState() == ITEM_REMOVED) continue;
-        Item *test = GetItemByPos( item->GetBagSlot(), item->GetSlot());
+        if (!item || item->GetState() == ITEM_REMOVED)
+            continue;
+
+        Item *test = GetItemByPos(item->GetBagSlot(), item->GetSlot());
 
         if (test == NULL)
         {
             sLog.outCrash("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
             //error = true;
-            //now some items in bags cannot be saved but after cleansup they appear again
+            //Should the above line really be commented out?
         }
         else if (test != item)
         {
@@ -19550,13 +19549,11 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             
             if (it->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE) && crItem->ExtendedCost)
             {
-                ItemRefund* RefundData = new ItemRefund();
-                RefundData->eligibleFor = GetGUIDLow();
-                RefundData->paidMoney = price;
-                RefundData->paidExtendedCost = crItem->ExtendedCost;
-                it->SetRefundData(RefundData);
+                it->SetRefundRecipient(GetGUIDLow());
+                it->SetPaidMoney(price);
+                it->SetPaidExtendedCost(crItem->ExtendedCost);
                 it->SaveRefundDataToDB();
-                AddRefundReference(it);
+                AddRefundReference(it->GetGUID());
             }
         }
     }
@@ -19610,13 +19607,11 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
 
             if (it->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE) && crItem->ExtendedCost)
             {
-                ItemRefund* RefundData = new ItemRefund();
-                RefundData->eligibleFor = GetGUIDLow();
-                RefundData->paidMoney = price;
-                RefundData->paidExtendedCost = crItem->ExtendedCost;
-                it->SetRefundData(RefundData);
+                it->SetRefundRecipient(GetGUIDLow());
+                it->SetPaidMoney(price);
+                it->SetPaidExtendedCost(crItem->ExtendedCost);
                 it->SaveRefundDataToDB();
-                AddRefundReference(it);
+                AddRefundReference(it->GetGUID());
             }
         }
     }
@@ -23543,12 +23538,12 @@ void Player::SendDuelCountdown(uint32 counter)
     GetSession()->SendPacket(&data);
 }
 
-void Player::AddRefundReference(Item* it)
+void Player::AddRefundReference(uint64 it)
 {
     m_refundableItems.insert(it);
 }
 
-void Player::DeleteRefundReference(Item* it)
+void Player::DeleteRefundReference(uint64 it)
 {
     m_refundableItems.erase(it);
 }
