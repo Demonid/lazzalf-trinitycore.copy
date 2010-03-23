@@ -1,32 +1,21 @@
 /*
- * Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+* Copyright (C) 2009-2010 TrinityCore <http://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
 
-/*Script Data Start
-SDName: Boss Eck the Ferocious
-SDAuthor: LordVanMartin
-SD%Complete:
-SDComment: Only appears in DUNGEON_MODE mode
-SDCategory:
-Script Data End */
-
-/*** SQL START ***
-update creature_template set scriptname = '' where entry = '';
-*** SQL END ***/
 #include "ScriptedPch.h"
 #include "gundrak.h"
 
@@ -36,21 +25,10 @@ enum Spells
     SPELL_ECK_BITE                          = 55813, //Eck bites down hard, inflicting 150% of his normal damage to an enemy.
     SPELL_ECK_SPIT                          = 55814, //Eck spits toxic bile at enemies in a cone in front of him, inflicting 2970 Nature damage and draining 220 mana every 1 sec for 3 sec.
     SPELL_ECK_SPRING_1                      = 55815, //Eck leaps at a distant target.  --> Drops aggro and charges a random player. Tank can simply taunt him back.
-    SPELL_ECK_SPRING_2                      = 55837,  //Eck leaps at a distant target.
-    SPELL_ECK_RESIDUE                       = 55817
+    SPELL_ECK_SPRING_2                      = 55837  //Eck leaps at a distant target.
 };
 
-#define CREATURE_BOSS_ECK_THE_FEROCIOUS 29932
-
-struct Location
-{
-    float x,y,z,o;
-};
-
-static Location BossSpawnLocation =
-{
-  1643.877930, 936.278015, 107.204948, 0.668432
-};
+static Position EckSpawnPoint = { 1643.877930, 936.278015, 107.204948, 0.668432 };
 
 struct boss_eckAI : public ScriptedAI
 {
@@ -70,7 +48,7 @@ struct boss_eckAI : public ScriptedAI
 
     void Reset()
     {
-        uiBerserkTimer = 70000 + rand()%30000; //60-90 secs according to wowwiki
+        uiBerserkTimer = 60000 + rand()%30000; //60-90 secs according to wowwiki
         uiBiteTimer = 5000;
         uiSpitTimer = 10000;
         uiSpringTimer = 8000;
@@ -140,7 +118,7 @@ struct boss_eckAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         if (pInstance)
-            pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, DONE);    
+            pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, DONE);
     }
 };
 
@@ -162,14 +140,9 @@ struct npc_ruins_dwellerAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_DEAD_RUINS_DWELLERS,1);
-            if(pInstance->GetData(DATA_DEAD_RUINS_DWELLERS) == 6 && IsHeroic())
-            {
-                Creature* eck = m_creature->SummonCreature(CREATURE_BOSS_ECK_THE_FEROCIOUS, BossSpawnLocation.x, BossSpawnLocation.y, BossSpawnLocation.z, BossSpawnLocation.o, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000);
-                if(eck)
-                    eck->setFaction(m_creature->getFaction());
-                pInstance->SetData(DATA_DEAD_RUINS_DWELLERS,0);
-            }
+            pInstance->SetData(DATA_RUIN_DIED_DWELLER,m_creature->GetGUID());
+            if (pInstance->GetData(DATA_RUIN_DIED_DWELLER) == 0)
+                m_creature->SummonCreature(CREATURE_ECK, EckSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300*IN_MILISECONDS);
         }
     }
 };
