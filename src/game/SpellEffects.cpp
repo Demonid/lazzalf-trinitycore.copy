@@ -2138,7 +2138,7 @@ void Spell::EffectDummy(uint32 i)
                 unitTarget->SetDisplayId(25537+urand(0,3));
             }
             // Runic Power Feed ( keeping Gargoyle alive )
-            else if (m_spellInfo->Id == 50524)
+            /*else if (m_spellInfo->Id == 50524)
             {
                 // No power, dismiss Gargoyle
                 if (m_caster->GetPower(POWER_RUNIC_POWER)<30)
@@ -2147,7 +2147,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->ModifyPower(POWER_RUNIC_POWER,-30);
 
                 return;
-            }
+            }*/
             break;
     }
 
