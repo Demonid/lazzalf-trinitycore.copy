@@ -1,4 +1,3 @@
-
 ########### next target ###############
 
 SET(game_STAT_SRCS
@@ -198,6 +197,8 @@ SET(game_STAT_SRCS
    OutdoorPvPSI.h
    OutdoorPvPTF.cpp
    OutdoorPvPTF.h
+   OutdoorPvPWG.cpp
+   OutdoorPvPWG.h
    OutdoorPvPZM.cpp
    OutdoorPvPZM.h
    Path.h
@@ -331,4 +332,3 @@ endif(NOT DO_SCRIPTS)
 
 add_library(game STATIC ${game_STAT_SRCS})
 ADD_DEPENDENCIES(game revision.h)
-

@@ -1607,6 +1607,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\OutdoorPvPZM.cpp"
 				>
 			</File>
@@ -2792,6 +2800,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\src\scripts\kalimdor\caverns_of_time\culling_of_stratholme\culling_of_stratholme.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\src\scripts\kalimdor\caverns_of_time\culling_of_stratholme\culling_of_stratholme.h"
 							>
 						</File>
@@ -3075,6 +3087,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\scripts\northrend\storm_peaks.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\scripts\northrend\wintergrasp.cpp"
 					>
 				</File>
 				<File

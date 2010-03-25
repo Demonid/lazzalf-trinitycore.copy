@@ -409,6 +409,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if(!unitTarget->HasAura(27825))
                             return;
                         break;
+                    // Polarity Shift charges 
+                    case 28059: 
+                    case 28084: 
+                    case 39088:
+                    case 39091:
+                        // only affects players
+                        if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                            return;
                     // Cataclysmic Bolt
                     case 38441:
                     {
@@ -1075,12 +1083,12 @@ void Spell::EffectDummy(uint32 i)
                 }
                 // Polarity Shift
                 case 28089:
-                    if(unitTarget)
+                    if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                         unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
                     break;
                 // Polarity Shift
                 case 39096:
-                    if(unitTarget)
+                    if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                         unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 39088 : 39091, true, NULL, NULL, m_caster->GetGUID());
                     break;
                 case 29200:                                 // Purify Helboar Meat
@@ -2041,12 +2049,6 @@ void Spell::EffectDummy(uint32 i)
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
                 return;
             }
-            // Scourge Strike
-            if(m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
-            {
-                m_damage = float (m_damage) * (float(damage * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) + 100.0f) / 100.0f);
-                return;
-            }
             // Death Coil
             if(m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
             {
@@ -2072,7 +2074,7 @@ void Spell::EffectDummy(uint32 i)
             if(m_spellInfo->Id == 49560)
             {
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
-                    unit->CastSpell(m_caster, damage, true);
+                    return;
                 else
                     unitTarget->CastSpell(m_caster, damage, true);
                 return;
@@ -2136,7 +2138,7 @@ void Spell::EffectDummy(uint32 i)
                 unitTarget->SetDisplayId(25537+urand(0,3));
             }
             // Runic Power Feed ( keeping Gargoyle alive )
-            else if (m_spellInfo->Id == 50524)
+            /*else if (m_spellInfo->Id == 50524)
             {
                 // No power, dismiss Gargoyle
                 if (m_caster->GetPower(POWER_RUNIC_POWER)<30)
@@ -2145,7 +2147,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->ModifyPower(POWER_RUNIC_POWER,-30);
 
                 return;
-            }
+            }*/
             break;
     }
 
@@ -4652,6 +4654,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Blood-Caked Strike - Blood-Caked Blade
             else if (m_spellInfo->SpellIconID == 1736)
                 totalDamagePercentMod *= (float(unitTarget->GetDiseasesByCaster(m_caster->GetGUID())) * 12.5f + 100.0f) / 100.0f;
+            // Rune Strike
+            else if (m_spellInfo->SpellFamilyFlags[1] & 0x20000000)
+                m_damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.15f);
             break;
         }
     }
@@ -4693,6 +4698,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         float weapon_total_pct = 1.0f;
         if ( m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL )
              weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
+
+        if (m_attackType == OFF_ATTACK) // Off-Hand fixed_bonus is not reduced by Off-Hand Penality (50%)
+ 	            weapon_total_pct *= 2;
 
         if(fixed_bonus)
             fixed_bonus = int32(fixed_bonus * weapon_total_pct);
@@ -7407,7 +7415,12 @@ void Spell::EffectTitanGrip(uint32 /*eff_idx*/)
 void Spell::EffectRedirectThreat(uint32 /*i*/)
 {
     if(unitTarget)
-        m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());
+    {
+        if (m_spellInfo->Id == 59665) // Vigilance
+            unitTarget->SetReducedThreatPercent((uint32)damage, m_caster->GetGUID());
+        else
+            m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());
+     } 
 }
 
 void Spell::EffectWMODamage(uint32 /*i*/)
@@ -7509,6 +7522,13 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
                 summon->SetDisplayId(1126);
 
         summon->AI()->EnterEvadeMode();
+
+        if (AuraEffect *avoidance = m_originalCaster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2718, 0)) 
+        {
+            int32 bp = avoidance->GetAmount() / 1000;
+ 
+            summon->CastCustomSpell(summon, 62137, &bp, NULL, NULL, true);
+        }
     }
 }
 
