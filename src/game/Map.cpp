@@ -39,6 +39,7 @@
 #include "WaypointManager.h"
 #include "DBCEnums.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
@@ -2467,6 +2468,13 @@ bool InstanceMap::CanEnter(Player *player)
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
     }
+
+	// Vault of Archavon
+ 	if (GetId() == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(player))
+  	{
+ 	    player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAP_NOT_ALLOWED);
+  	    return false;
+  	}
 
     return Map::CanEnter(player);
 }
