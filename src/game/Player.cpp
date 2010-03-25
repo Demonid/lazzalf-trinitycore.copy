@@ -15930,6 +15930,10 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         RelocateToHomebind();
     }
 
+    // Vault of Archavon
+    if (mapEntry->MapID == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(this))
+  	    RelocateToHomebind();
+
     // fix crash (because of if(Map *map = _FindMap(instanceId)) in MapInstanced::CreateInstance)
     if(instanceId)
         if(InstanceSave * save = GetInstanceSave(mapId, mapEntry->IsRaid()))

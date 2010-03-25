@@ -557,9 +557,9 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recv_data )
     }
     else
     {  // Wintergrasp Hack till 3.2 and it's implemented as BG
-        if (GetPlayer()->GetZoneId() == 4197)
+        if (GetPlayer()->GetZoneId() == NORTHREND_WINTERGRASP)
         {
-            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197);
+            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
             if (pvpWG && pvpWG->isWarTime())
                 pvpWG->SendAreaSpiritHealerQueryOpcode(_player, guid);
         }
@@ -588,9 +588,9 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recv_data )
     }
     else
     {  // Wintergrasp Hack till 3.2 and it's implemented as BG
-        if (GetPlayer()->GetZoneId() == 4197)
+        if (GetPlayer()->GetZoneId() == NORTHREND_WINTERGRASP)
         {
-            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197);
+            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
             if (pvpWG && pvpWG->isWarTime())
                 pvpWG->AddPlayerToResurrectQueue(guid, _player->GetGUID());
         }
