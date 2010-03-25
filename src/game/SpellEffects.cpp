@@ -2073,6 +2073,9 @@ void Spell::EffectDummy(uint32 i)
             // Death Grip
             if(m_spellInfo->Id == 49560)
             {
+                if(unitTarget == m_caster)
+  	                    return;
+
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
                     return;
                 else
@@ -3237,6 +3240,23 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, damage, power);
+
+    // Scripted Mods
+ 	Unit::AuraEffectList const &mOverrideClassScript= m_caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+ 
+ 	for (Unit::AuraEffectList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
+  	{
+ 	    if (!(*i)->IsAffectedOnSpell(m_spellInfo))
+  	        continue;
+
+ 	    switch ((*i)->GetMiscValue())
+  	    {
+  	        case 5497:                // Improved Mana Gems (T6 trinket - T7 bonus)
+ 	        int32 basepoints = (*i)->GetAmount();
+  	        m_caster->CastCustomSpell(unitTarget, 37445, &basepoints, &basepoints, NULL, true, NULL);
+  	        break;
+  	    }
+  	}
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
