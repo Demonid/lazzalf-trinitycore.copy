@@ -21,8 +21,7 @@
 
 #include "OutdoorPvPImpl.h"
 
-#define ZONE_WINTERGRASP         4197
-#define POS_X_CENTER             5100
+#define POS_X_CENTER                5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 
 const uint32 WintergraspFaction[3] = {1732, 1735, 35};
@@ -34,24 +33,27 @@ const uint32 ClockWorldState[2] = {3781,4354};
 enum OutdoorPvPWGSpell
 {
     // Wartime auras
-    SPELL_RECRUIT                                = 37795,
-    SPELL_CORPORAL                               = 33280,
-    SPELL_LIEUTENANT                             = 55629,
-    SPELL_TENACITY                               = 58549,
-    SPELL_TENACITY_VEHICLE                       = 59911,
-    SPELL_TOWER_CONTROL                          = 62064,
-    SPELL_SPIRITUAL_IMMUNITY                     = 58729,
+    SPELL_RECRUIT                       = 37795,
+    SPELL_CORPORAL                      = 33280,
+    SPELL_LIEUTENANT                    = 55629,
+    SPELL_TENACITY                      = 58549,
+    SPELL_TENACITY_VEHICLE              = 59911,
+    SPELL_TOWER_CONTROL                 = 62064,
+    SPELL_SPIRITUAL_IMMUNITY            = 58729,
 
     // Reward spells
-    SPELL_VICTORY_REWARD                         = 56902,
-    SPELL_DEFEAT_REWARD                          = 58494,
-    SPELL_DAMAGED_TOWER                          = 59135,
-    SPELL_DESTROYED_TOWER                        = 59136,
-    SPELL_DAMAGED_BUILDING                       = 59201,
-    SPELL_INTACT_BUILDING                        = 59203,
+    SPELL_VICTORY_REWARD                = 56902,
+    SPELL_DEFEAT_REWARD                 = 58494,
+    SPELL_DAMAGED_TOWER                 = 59135,
+    SPELL_DESTROYED_TOWER               = 59136,
+    SPELL_DAMAGED_BUILDING              = 59201,
+    SPELL_INTACT_BUILDING               = 59203,
 
-//    SPELL_TELEPORT_DALARAN                       = 53360,
-//    SPELL_VICTORY_AURA                           = 60044,
+    SPELL_ESSENCE_OF_WINTERGRASP_WINNER = 58045,
+    SPELL_ESSENCE_OF_WINTERGRASP_WORLD  = 57940,
+
+    SPELL_TELEPORT_DALARAN              = 53360,
+    SPELL_VICTORY_AURA                  = 60044,
 };
 
 /* Not used / Not implemented
@@ -214,6 +216,7 @@ class OutdoorPvPWG : public OutdoorPvP
         void HandlePlayerLeaveZone(Player *plr, uint32 zone);
         void HandlePlayerResurrects(Player * plr, uint32 zone);
         void HandleKill(Player *killer, Unit *victim);
+        void HandleEssenceOfWintergrasp(Player *plr, uint32 zoneId);
 
         bool Update(uint32 diff);
 
@@ -228,8 +231,8 @@ class OutdoorPvPWG : public OutdoorPvP
         void setTimer(uint32 timer) { if (timer >= 0) m_timer = timer; };
         uint32 GetNumPlayersA() const { return m_players[TEAM_ALLIANCE].size(); };
         uint32 GetNumPlayersH() const { return m_players[TEAM_HORDE].size(); };
-        TeamId getDefenderTeam() const { return m_defender; };
-        TeamId getAttackerTeam() const { return OTHER_TEAM(m_defender); };
+        TeamId getDefenderTeamId() const { return m_defender; };
+        TeamId getAttackerTeamId() const { return OTHER_TEAM(m_defender); };
         void forceChangeTeam();
         void forceStopBattle();
         void forceStartBattle();
@@ -294,7 +297,6 @@ class OutdoorPvPWG : public OutdoorPvP
         void RebuildAllBuildings();
 
         void SendInitWorldStatesTo(Player *player = NULL) const;
-        void RemoveOfflinePlayerWGAuras();
         void RewardMarkOfHonor(Player *player, uint32 count);
         void MoveQuestGiver(uint32 guid);
         void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
