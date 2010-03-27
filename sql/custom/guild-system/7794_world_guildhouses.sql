@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS `guildhouses`;
+﻿DROP TABLE IF EXISTS `guildhouses`;
 CREATE TABLE `guildhouses` (
   `id` int(8) unsigned NOT NULL auto_increment,
   `guildId` bigint(20) NOT NULL default '0',
@@ -12,11 +12,12 @@ CREATE TABLE `guildhouses` (
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
+DROP TABLE IF EXISTS `guild_guard`;
 CREATE TABLE `guild_guard` (
-  `creature_id` int(6) unsigned NOT NULL DEFAULT '0',
+  `creature_guid` int(6) unsigned NOT NULL DEFAULT '0',
   `guild_house_id` int(11) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guild_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
+  PRIMARY KEY (`creature_guid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DELETE FROM `creature_template` WHERE `entry` = 70058;
 INSERT INTO `creature_template` VALUES
