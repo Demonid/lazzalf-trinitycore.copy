@@ -10,7 +10,7 @@
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
@@ -45,7 +45,7 @@ struct instance_culling_of_stratholme : public ScriptedInstance
     uint64 uiExitGate;
     uint64 uiMalGanisChest;
     
-    uint8 m_auiEncounter[MAX_ENCOUNTER];
+    uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string str_data;
     
     bool IsEncounterInProgress() const
@@ -93,9 +93,11 @@ struct instance_culling_of_stratholme : public ScriptedInstance
                 break;
             case GO_EXIT_GATE:
                 uiExitGate = pGo->GetGUID();
+                if (m_auiEncounter[3] == DONE)
+                    HandleGameObject(uiExitGate,true);
                 break;
             case GO_MALGANIS_CHEST_N:
-     	    case GO_MALGANIS_CHEST_H:
+			case GO_MALGANIS_CHEST_H:
                 uiMalGanisChest = pGo->GetGUID();
                 if (m_auiEncounter[3] == DONE)
                     pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
@@ -118,16 +120,21 @@ struct instance_culling_of_stratholme : public ScriptedInstance
                 break;
             case DATA_MAL_GANIS_EVENT:
                 m_auiEncounter[3] = data;
-                GameObject *pGate;
-                if (m_auiEncounter[3] == IN_PROGRESS && (pGate = instance->GetGameObject(uiMalGanisGate2)))
-                     pGate->SetGoState(GO_STATE_READY);
-                GameObject *pGo;
-                if (m_auiEncounter[3] == DONE && (pGo = instance->GetGameObject(uiMalGanisChest)) && (pGate = instance->GetGameObject(uiExitGate)))
-                {                
-                    pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
-                    pGate->SetGoState(GO_STATE_ACTIVE);
-                    //Give Achievments?
-                }                    
+
+                switch(m_auiEncounter[3])
+                {
+                    case NOT_STARTED:
+                        HandleGameObject(uiMalGanisGate2,true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(uiMalGanisGate2,false);
+                        break;
+                    case DONE:
+                        HandleGameObject(uiExitGate, true);
+                        if (GameObject *pGo = instance->GetGameObject(uiMalGanisChest))
+                            pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
+                        break;
+                }
                 break;
             case DATA_INFINITE_EVENT:
                 m_auiEncounter[4] = data;

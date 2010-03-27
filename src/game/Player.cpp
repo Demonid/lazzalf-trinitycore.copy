@@ -6923,7 +6923,9 @@ void Player::DuelComplete(DuelCompleteType type)
     WorldPacket data(SMSG_DUEL_COMPLETE, (1));
     data << (uint8)((type != DUEL_INTERUPTED) ? 1 : 0);
     GetSession()->SendPacket(&data);
-    duel->opponent->GetSession()->SendPacket(&data);
+
+    if (duel->opponent->GetSession())
+        duel->opponent->GetSession()->SendPacket(&data);
 
     if (type != DUEL_INTERUPTED)
     {
@@ -14177,6 +14179,9 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
         InitTalentForLevel();
     }
 
+    if (pQuest->GetRewArenaPoints())
+        ModifyArenaPoints(pQuest->GetRewArenaPoints());
+    
     // Send reward mail
     if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
         MailDraft(mail_template_id).SendMailTo(this, questGiver, MAIL_CHECK_MASK_NONE, pQuest->GetRewMailDelaySecs());
@@ -15294,7 +15299,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
 
     data << uint32(10*Trinity::Honor::hk_honor_at_level(getLevel(), pQuest->GetRewHonorableKills()));
     data << uint32(pQuest->GetBonusTalents());              // bonus talents
-    data << uint32(0);
+    data << uint32(pQuest->GetRewArenaPoints());
     GetSession()->SendPacket( &data );
 
     if (pQuest->GetQuestCompleteScript() != 0)
