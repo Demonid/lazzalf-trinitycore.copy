@@ -3732,6 +3732,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 37;
             count++;
             break;
+        case 47573:     // Twisted Faith
+        case 47577:
+        case 47578:
+        case 51166:
+        case 51167:
+            spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
+            break;
         // Master Shapeshifter: missing stance data for forms other than bear - bear version has correct data
         // To prevent aura staying on target after talent unlearned
         case 48420:
