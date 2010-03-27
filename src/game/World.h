@@ -88,11 +88,11 @@ enum WorldTimers
 };
 
 // States than may change after server started
-enum WorldStates
+/*enum WorldStates
 {
     WORLDSTATE_WINTERGRASP_CONTROLING_FACTION,
-    WORLDSTATE_VALUE_COUNT,
-};
+    WORLDSTATE_VALUE_COUNT
+};*/
 
 /// Configuration elements
 enum WorldConfigs
@@ -600,18 +600,9 @@ class World
             return index < CONFIG_VALUE_COUNT ? m_configs[index] : 0;
         }
 
-        // Set a server state - Those general values that can change after server have been setup
-        void setState(uint32 index, uint32 value)
-        {
-            if (index < WORLDSTATE_VALUE_COUNT)
-                m_states[index] = value;
-        }
-
-        // Get a server state element
-        uint32 getState(uint32 index) const
-        {
-            return index < WORLDSTATE_VALUE_COUNT ? m_states[index] : 0;
-        }
+        void setWorldState(uint32 index, uint64 value);
+        uint64 getWorldState(uint32 index) const;
+        void LoadWorldStates();
 
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }
@@ -727,7 +718,8 @@ class World
 
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
-        uint32 m_states[WORLDSTATE_VALUE_COUNT];
+        typedef std::map<uint32,uint64> WorldStatesMap;
+        WorldStatesMap m_worldstates;       
         int32 m_playerLimit;
         AccountTypes m_allowedSecurityLevel;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
