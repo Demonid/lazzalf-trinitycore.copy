@@ -56,12 +56,12 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 {
     if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
-        sWorld.setState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
+        sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
         return false;
     }
 
     m_defender = TeamId(urand(0,1));
-    sWorld.setState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
+    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
     m_changeDefender = false;
     m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
@@ -1450,7 +1450,7 @@ void OutdoorPvPWG::StartBattle()
     m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILISECONDS;
 
     // Remove Essence of Wintergrasp to all players
-    sWorld.setState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
+    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
     //sWorld.UpdateAreaDependentAuras();
 
     // destroyed all vehicles
@@ -1504,7 +1504,7 @@ void OutdoorPvPWG::EndBattle()
      m_wartime = false;
 
     // Cast Essence of Wintergrasp to all players (CheckCast will determine who to cast)
-    sWorld.setState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
+    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
 
     for (uint32 team = 0; team < 2; ++team)
     {
