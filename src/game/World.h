@@ -93,6 +93,8 @@ enum WorldTimers
     WORLDSTATE_WINTERGRASP_CONTROLING_FACTION,
     WORLDSTATE_VALUE_COUNT
 };*/
+#define WORLDSTATE_WINTERGRASP_CONTROLING_FACTION 20002
+
 
 /// Configuration elements
 enum WorldConfigs

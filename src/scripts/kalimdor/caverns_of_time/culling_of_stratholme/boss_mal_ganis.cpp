@@ -202,7 +202,8 @@ struct boss_mal_ganisAI : public ScriptedAI
                             uiOutroTimer = 8000;
                             break;
                         case 2:
-                            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, pArthas->GetGUID());
+                            if(pArthas)
+                                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, pArthas->GetGUID());
                             m_creature->HandleEmoteCommand(29);
                             DoScriptText(SAY_ESCAPE_SPEECH_2, m_creature);
                             ++uiOutroStep;
