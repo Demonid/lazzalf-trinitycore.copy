@@ -87,15 +87,6 @@ enum WorldTimers
     WUPDATE_COUNT       = 10
 };
 
-// States than may change after server started
-/*enum WorldStates
-{
-    WORLDSTATE_WINTERGRASP_CONTROLING_FACTION,
-    WORLDSTATE_VALUE_COUNT
-};*/
-#define WORLDSTATE_WINTERGRASP_CONTROLING_FACTION 20002
-
-
 /// Configuration elements
 enum WorldConfigs
 {
@@ -638,8 +629,8 @@ class World
 
      void SetWintergrapsTimer(uint32 timer, uint32 state)
      {
-           m_WintergrapsTimer = timer;
-        m_WintergrapsState = state;
+         m_WintergrapsTimer = timer;
+         m_WintergrapsState = state;
      }
 
      uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }

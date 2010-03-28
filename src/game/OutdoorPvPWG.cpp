@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
 #include "OutdoorPvPWG.h"
 #include "SpellAuras.h"
 #include "Vehicle.h"
@@ -56,15 +38,37 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 {
     if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
-        sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
+        sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(TEAM_NEUTRAL));
         return false;
     }
 
-    m_defender = TeamId(urand(0,1));
-    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
-    m_changeDefender = false;
+    m_defender = TEAM_NEUTRAL;
+
+    if (!(m_defender = (TeamId)sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID)) || (TeamId)sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) == TEAM_NEUTRAL)
+    {
+        m_defender = (TeamId)urand(0,1);
+        sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, getDefenderTeamId());
+    }
+
+    m_clock[TEAM_ALLIANCE] = uint64(sWorld.getWorldState(WS_WINTERGRASP_CLOCK_ALLY));
+    m_clock[TEAM_HORDE] = uint64(sWorld.getWorldState(WS_WINTERGRASP_CLOCK_HORDE));
+
+    m_wartime = (bool)sWorld.getWorldState(WS_WINTERGRASP_ISWAR);
+    m_timer = uint64(sWorld.getWorldState(WS_WINTERGRASP_TIMER));
+
+    // TODO: Until the team/state is at startup correct set (not implemented yet) we must set 0 here!
+    //m_workshopCount[TEAM_ALLIANCE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY));
+    //m_workshopCount[TEAM_HORDE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE));
+    //m_towerDestroyedCount[TEAM_ALLIANCE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY));
+    //m_towerDestroyedCount[TEAM_HORDE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE));
     m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
+    m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
+    m_towerDestroyedCount[TEAM_HORDE] = 0;
+
+    m_towerDamagedCount[TEAM_ALLIANCE] = 0;
+    m_towerDamagedCount[TEAM_HORDE] = 0;
+    m_changeDefender = false;
     m_tenacityStack = 0;
     m_gate = NULL;
 
@@ -382,21 +386,21 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             ++itr;
     }
 
-    //Titan Relic
-    objmgr.AddGOData(192829, 571, 5440, 2840.8, 420.43 + 10, 0);
+    // Titan Relic Orig. Pos!
+    //objmgr.AddGOData(192829, 571, 5440, 2840.8, 420.43 + 10, 0);
+    // Titan Relic Custom Pos
+    objmgr.AddGOData(192829, 571, 4062.482178f, 2512.390137f, 462.944153f + 10.0f, 0.147435f);
 
     _LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
     _LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
 
-    m_wartime = false;
-    m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
+    if (!m_timer)
+        m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
 
-    m_towerDamagedCount[TEAM_ALLIANCE] = 0;
-    m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
-    m_towerDamagedCount[TEAM_HORDE] = 0;
-    m_towerDestroyedCount[TEAM_HORDE] = 0;
+    m_saveinterval = 300000;
 
     RegisterZone(NORTHREND_WINTERGRASP);
+
     return true;
 }
 
@@ -531,16 +535,10 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     break;
             }
             BroadcastStateChange(state);
+            SaveData();
         }
     }
 }
-
-/*void OutdoorPvPWG::RemoveOfflinePlayerWGAuras()
-{
-    // if server crashed while in battle there could be players with rank or tenacity
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE spell IN (%u, %u, %u, %u, %u)",
-        SPELL_RECRUIT, SPELL_CORPORAL, SPELL_LIEUTENANT, SPELL_TENACITY, SPELL_TOWER_CONTROL);
-}*/
 
 void OutdoorPvPWG::ModifyWorkshopCount(TeamId team, bool add)
 {
@@ -555,6 +553,7 @@ void OutdoorPvPWG::ModifyWorkshopCount(TeamId team, bool add)
         sLog.outError("OutdoorPvPWG::ModifyWorkshopCount: negative workshop count!");
 
     SendUpdateWorldState(MaxVehNumWorldState[team], m_workshopCount[team] * MAX_VEHICLE_PER_WORKSHOP);
+    SaveData();
 }
 
 uint32 OutdoorPvPWG::GetCreatureEntry(uint32 guidlow, const CreatureData *data)
@@ -637,7 +636,7 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
                 else
                     return;
 
-                if (uint32 engLowguid = GUID_LOPART(((TempSummon*)creature)->GetSummonerGUID()))
+                if (uint32 engLowguid = GUID_LOPART(creature->ToTempSummon()->GetSummonerGUID()))
                 {
                     if (OPvPCapturePointWG *workshop = GetWorkshopByEngGuid(engLowguid))
                     {
@@ -784,13 +783,12 @@ void OutdoorPvPWG::RebuildAllBuildings()
             if (itr->second->type == BUILDING_WORKSHOP)
                 ModifyWorkshopCount(itr->second->GetTeam(), true);
         }
-
         itr->second->damageState = DAMAGE_INTACT;
         itr->second->SetTeam(getDefenderTeamId() == TEAM_ALLIANCE ? OTHER_TEAM(itr->second->defaultTeam) : itr->second->defaultTeam);
     }
     m_towerDamagedCount[TEAM_ALLIANCE] = 0;
-    m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
     m_towerDamagedCount[TEAM_HORDE] = 0;
+    m_towerDestroyedCount[TEAM_ALLIANCE] = 0;
     m_towerDestroyedCount[TEAM_HORDE] = 0;
 }
 
@@ -1052,7 +1050,7 @@ void OutdoorPvPWG::HandleEssenceOfWintergrasp(Player *plr, uint32 zoneId)
     }
 }
 
-void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
+void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 {
     HandleEssenceOfWintergrasp(plr, zone);
 
@@ -1063,9 +1061,9 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
     {
         if (plr->getLevel() > 69)
         {
-            if (!plr->HasAura(SPELL_RECRUIT) && !plr->HasAura(SPELL_CORPORAL)
-                && !plr->HasAura(SPELL_LIEUTENANT))
+            if (!plr->HasAura(SPELL_RECRUIT) && !plr->HasAura(SPELL_CORPORAL) && !plr->HasAura(SPELL_LIEUTENANT))
                 plr->CastSpell(plr, SPELL_RECRUIT, true);
+
             if (plr->GetTeamId() == getAttackerTeamId())
             {
                 if (m_towerDestroyedCount[getAttackerTeamId()] < 3)
@@ -1085,7 +1083,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player * plr, uint32 zone)
 }
 
 // Reapply Auras if needed
-void OutdoorPvPWG::HandlePlayerResurrects(Player * plr, uint32 zone)
+void OutdoorPvPWG::HandlePlayerResurrects(Player *plr, uint32 zone)
 {
     if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return;
@@ -1301,10 +1299,36 @@ void OutdoorPvPWG::UpdateClock()
         UpdateClockDigit(timer, 0, 10);
 }
 
+void OutdoorPvPWG::SaveData()
+{
+    sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(m_defender));
+    sWorld.setWorldState(WS_WINTERGRASP_CLOCK_ALLY, uint64(m_clock[TEAM_ALLIANCE]));
+    sWorld.setWorldState(WS_WINTERGRASP_CLOCK_HORDE, uint64(m_clock[TEAM_HORDE]));
+    sWorld.setWorldState(WS_WINTERGRASP_ISWAR, uint64(m_wartime));
+    sWorld.setWorldState(WS_WINTERGRASP_TIMER, uint64(m_timer));
+
+    // TODO: Until the team/state is at startup correct set (not implemented yet) we must set 0 here!
+    //sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(m_workshopCount[TEAM_ALLIANCE]));
+    //sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(m_workshopCount[TEAM_HORDE]));
+    //sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(m_towerDestroyedCount[TEAM_ALLIANCE]));
+    //sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(m_towerDestroyedCount[TEAM_HORDE]));
+    sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(0));
+    sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(0));
+    sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(0));
+    sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(0));
+
+    m_saveinterval = 300000;
+}
+
 bool OutdoorPvPWG::Update(uint32 diff)
 {
     if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return false;
+
+    if (m_saveinterval <= diff)
+        SaveData();
+    else
+        m_saveinterval -= diff;
 
     if (m_timer > diff)
     {
@@ -1348,7 +1372,6 @@ bool OutdoorPvPWG::Update(uint32 diff)
                         }
                         (itr->second).clear();
                     }
-
                     m_ReviveQueue.clear();
                     m_LastResurrectTime = 0;
                 }
@@ -1403,8 +1426,9 @@ bool OutdoorPvPWG::Update(uint32 diff)
 
         SendInitWorldStatesTo();
         m_sendUpdate = true;
-    }
 
+        SaveData();
+    }
     return false;
 }
 
@@ -1437,6 +1461,7 @@ void OutdoorPvPWG::forceChangeTeam()
     m_changeDefender = true;
     m_timer = 1;
     sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_SWITCH_FACTION), objmgr.GetTrinityStringForDBCLocale(getAttackerTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
+
     if (isWarTime())
         forceStartBattle();
     else
@@ -1450,8 +1475,7 @@ void OutdoorPvPWG::StartBattle()
     m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILISECONDS;
 
     // Remove Essence of Wintergrasp to all players
-    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, TEAM_NEUTRAL);
-    //sWorld.UpdateAreaDependentAuras();
+    sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, TEAM_NEUTRAL);
 
     // destroyed all vehicles
     for (uint32 team = 0; team < 2; ++team)
@@ -1501,10 +1525,7 @@ void OutdoorPvPWG::StartBattle()
 
 void OutdoorPvPWG::EndBattle()
 {
-     m_wartime = false;
-
-    // Cast Essence of Wintergrasp to all players (CheckCast will determine who to cast)
-    sWorld.setWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION, getDefenderTeamId());
+    m_wartime = false;
 
     for (uint32 team = 0; team < 2; ++team)
     {
@@ -1666,7 +1687,8 @@ void OutdoorPvPWG::EndBattle()
     m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILISECONDS;
 
     TeamCastSpell(getAttackerTeamId(), SPELL_TELEPORT_DALARAN);
- 	sWorld.UpdateAreaDependentAuras();
+
+    sWorld.UpdateAreaDependentAuras();
 }
 
 bool OutdoorPvPWG::CanBuildVehicle(OPvPCapturePointWG *workshop) const
