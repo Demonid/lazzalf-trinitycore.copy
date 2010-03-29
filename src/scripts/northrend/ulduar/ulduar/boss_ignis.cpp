@@ -67,7 +67,6 @@ enum Events
 // Mob and triggers
 #define MOB_IRON_CONSTRUCT                      33121
 #define GROUND_SCORCH                           33119
-#define WATER_TRIGGER                           16218
 
 #define ACTION_REMOVE_BUFF                      20
 
@@ -82,13 +81,11 @@ enum ConstructSpells
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
-// Water trigger coords
+// Water coords
 #define WATER_1_X                 646.77
-#define WATER_1_Y                 277.79
-#define WATER_1_Z                 359.88
 #define WATER_2_X                 526.77
-#define WATER_2_Y                 277.79
-#define WATER_2_Z                 359.88
+#define WATER_Y                   277.79
+#define WATER_Z                   359.88
 
 const Position Pos[20] =
 {
@@ -287,12 +284,10 @@ struct mob_iron_constructAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    uint32 WaterTimer;
     bool Brittled;
 
     void Reset()
     {
-        WaterTimer = 1500000;
         Brittled = false;
     }
 
@@ -310,6 +305,8 @@ struct mob_iron_constructAI : public ScriptedAI
 
 	void UpdateAI(const uint32 uiDiff)
     {
+        Map *cMap = m_creature->GetMap();
+
         if (m_creature->HasAura(SPELL_MOLTEN) && m_creature->HasAura(SPELL_HEAT))
             m_creature->RemoveAura(SPELL_HEAT);
 
@@ -319,26 +316,18 @@ struct mob_iron_constructAI : public ScriptedAI
             {
                 m_creature->RemoveAura(SPELL_HEAT);
                 DoCast(SPELL_MOLTEN);
-                WaterTimer = 2000;
                 Brittled = false;
             }
         }
 
-        // Summon water triggers for distance check
-        if (WaterTimer <= uiDiff)
-			{
-                Creature* Water1 = m_creature->SummonCreature(WATER_TRIGGER, WATER_1_X, WATER_1_Y, WATER_1_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-                Creature* Water2 = m_creature->SummonCreature(WATER_TRIGGER, WATER_2_X, WATER_2_Y, WATER_2_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-                    if (Water1 && Water2){
-                        if ((m_creature->IsWithinDistInMap(Water1, 18) || m_creature->IsWithinDistInMap(Water2, 18)) && !Brittled && m_creature->HasAura(SPELL_MOLTEN)){
-                            DoCast(SPELL_BRITTLE);
-                            m_creature->RemoveAura(SPELL_MOLTEN);
-                            Brittled = true;
-                        }
-                    }
-                WaterTimer = 2000;
-            }
-        else WaterTimer -= uiDiff;
+        // Water pools
+        if(cMap->GetId() == 603 && !Brittled && m_creature->HasAura(SPELL_MOLTEN) 
+            && m_creature->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || m_creature->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
+        {
+            DoCast(SPELL_BRITTLE);
+            m_creature->RemoveAura(SPELL_MOLTEN);
+            Brittled = true;
+        }
 
         DoMeleeAttackIfReady();
     }
