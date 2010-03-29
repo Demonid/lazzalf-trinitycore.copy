@@ -234,6 +234,8 @@ SET(game_STAT_SRCS
    ScriptMgr.h
    ScriptSystem.cpp
    ScriptSystem.h
+   sc_npc_teleport.cpp
+   sc_npc_teleport.h
    SharedDefines.h
    SkillHandler.cpp
    SpellAuraDefines.h

@@ -17,6 +17,7 @@ SET(scripts_STAT_SRCS
    ../game/ScriptedSimpleAI.cpp
    ../game/ScriptedSimpleAI.h
    custom/on_events.cpp
+   custom/npc_teleport.cpp
    eastern_kingdoms/blackrock_depths/blackrock_depths.cpp
    eastern_kingdoms/blackrock_depths/boss_ambassador_flamelash.cpp
    eastern_kingdoms/blackrock_depths/boss_anubshiah.cpp

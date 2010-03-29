@@ -1686,6 +1686,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\scripts\custom\npc_teleport.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\scripts\custom\npc_wyrmresttempel_taxi.cpp"
 					>
 				</File>
@@ -4226,6 +4230,14 @@
 					PrecompiledHeaderThrough="pchdef.h"
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.h"
+			>
 		</File>
 	</Files>
 	<Globals>
