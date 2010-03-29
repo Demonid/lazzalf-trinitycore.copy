@@ -200,7 +200,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         " WHERE gameobject.map=571"
         " AND gameobject.position_x>%f AND gameobject.position_y>%f"
         " AND gameobject.position_x<%f AND gameobject.position_y<%f"
-        " AND (gameobject_template.type=33)"
+        " AND gameobject_template.type=33"
         " AND gameobject.id=gameobject_template.entry",
         minX, minY, maxX, maxY);
 
@@ -426,6 +426,9 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
 void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
 {
+    if (!obj)
+        return;
+
     if (obj->GetEntry() == 192829) // Titan Relic
     {
         if (isWarTime() && m_gate && obj->GetGOInfo()->goober.eventId == eventId && m_gate->damageState == DAMAGE_DESTROYED)
@@ -489,6 +492,9 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
 
         BuildingState *state = itr->second;
 
+        if (!state || !state->building)
+            return;
+
         if (eventId == obj->GetGOInfo()->building.damagedEvent)
         {
             state->damageState = DAMAGE_DAMAGED;
@@ -513,7 +519,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
             state->damageState = DAMAGE_DESTROYED;
 
             // If the gate was destroyed, the invisible collisions must be opened!
-            if (state->building->GetEntry() == m_gate->building->GetEntry())
+            if (m_gate && m_gate->building && state->building->GetEntry() == m_gate->building->GetEntry())
             {
                 if (!m_gate_collision1)
                     sLog.outError("WINTERGRASP: Can't find GO with entry 194162 'Doodad_WG_Keep_Door01_collision01'!");
@@ -539,6 +545,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                 case BUILDING_TOWER:
                     --m_towerDamagedCount[state->GetTeam()];
                     ++m_towerDestroyedCount[state->GetTeam()];
+
                     if (state->GetTeam() == getAttackerTeamId())
                     {
                         TeamCastSpell(getAttackerTeamId(), -SPELL_TOWER_CONTROL);
