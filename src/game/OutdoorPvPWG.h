@@ -239,6 +239,9 @@ class OutdoorPvPWG : public OutdoorPvP
         BuildingStateMap m_buildingStates;
         BuildingState *m_gate;
 
+        GameObject *m_gate_collision1;
+        GameObject *m_gate_collision2;
+
         CreatureSet m_creatures;
         CreatureSet m_vehicles[2];
         GameObjectSet m_gobjects;
