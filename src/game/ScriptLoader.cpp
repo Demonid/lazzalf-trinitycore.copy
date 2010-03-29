@@ -17,6 +17,9 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 
+//TeleNPC2
+void AddSC_npc_teleport();
+
 //world
 void AddSC_areatrigger_scripts();
 void AddSC_boss_emeriss();
@@ -497,6 +500,9 @@ void AddScripts()
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+	
+	//TeleNPC2
+    AddSC_npc_teleport();
 
     //world
     AddSC_areatrigger_scripts();
