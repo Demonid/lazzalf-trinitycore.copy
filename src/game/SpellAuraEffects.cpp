@@ -4706,7 +4706,13 @@ void AuraEffect::HandleAuraModIncreaseEnergy(AuraApplication const * aurApp, uin
     if (GetId()==64904)                                     // Hymn of Hope
     {
         if(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK)
-            target->SetPower(powerType, apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount());
+        {
+			int32 change = apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount();
+			if (change < 0)
+				change = 0;
+			target->SetPower(powerType, change); 
+		}
+        // target->SetPower(powerType, apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount());
     }
 
     // generic flat case
