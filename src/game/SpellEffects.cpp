@@ -7106,15 +7106,54 @@ void Spell::EffectTransmitted(uint32 effIndex)
     }
 
     Map *cMap = m_caster->GetMap();
-    if(goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
+    if (goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
     {
+        bool hackzone = false; // Customization
         //dirty way to hack serpent shrine pool
         if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)//center of strange pool
         {
             fx = 36.69+irand(-8,8);//random place for the bobber
             fy = -416.38+irand(-8,8);
             fz = -19.9645;//serpentshrine water level
-        }else if ( !cMap->IsInWater(fx, fy, fz-0.5f, 0.5f))             // Hack to prevent fishing bobber from failing to land on fishing hole
+        }
+        // Customization Start
+        else if ( cMap->GetId() == 571 && m_caster->GetDistance(5699.62, 605.35, 646.38) <= 10 ) //Northrend Dalaran Fontana
+        {
+            fx = 5699.62+irand(-3,3);
+            fy = 605.35+irand(-3,3);
+            fz = 646.38;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 571 && m_caster->GetDistance(5720.65, 660.13, 612.14) <= 10 ) //Northrend Dalaran Fogne
+        {
+            fx = 5720.65+irand(-3,3);
+            fy = 660.13+irand(-3,3);
+            fz = 612.14;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 0 && m_caster->GetDistance(-4651.49, -1086.20, 500.45) <= 20 ) //The Forlorn Cavern[Ironforge]
+        {
+            fx = -4651.49+irand(-3,3);//random place for the bobber
+            fy = -1086.20+irand(-3,3);
+            fz = 500.45;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 1 && m_caster->GetDistance(1507.66, -4189.09, 40.03) <= 20 ) //Valley of Spirits[Orgrimmar]
+        {
+            fx = 1507.66+irand(-3,3);//random place for the bobber
+            fy =-4189.09+irand(-3,3);
+            fz = 41.0;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 1 && m_caster->GetDistance(1969.20, -4655.43, 24.55) <= 20 ) //Valley of Honor[Orgrimmar]
+        {
+            fx = 1969.20+irand(-3,3);//random place for the bobber
+            fy =-4655.43+irand(-3,3);
+            fz = 24.55;
+            hackzone = true;
+        }
+        // Customization End
+        else if ( !cMap->IsInWater(fx, fy, fz-0.5f, 0.5f))             // Hack to prevent fishing bobber from failing to land on fishing hole
         { // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
             SendChannelUpdate(0);
@@ -7122,7 +7161,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         }
 
         // replace by water level in this case
-        if(cMap->GetId() != 548)//if map is not serpentshrine caverns
+        if(cMap->GetId() != 548 && !hackzone)//if map is not serpentshrine caverns
             fz = cMap->GetWaterLevel(fx, fy);
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
