@@ -44,6 +44,7 @@ EndContentData */
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
+#include "Guild.h"
 
 /*########
 # npc_air_force_bots
@@ -2072,7 +2073,8 @@ bool GossipSelect_npc_wormhole(Player* pPlayer, Creature* pCreature, uint32 uiSe
 #define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
 #define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate."
 #define MSG_ALREADYHAVEGH        "LA tua gilda possiede già una sede. (%s)."
-#define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare la casa. Hai bisogno di 1000 goldi."
+#define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare la casa. Hai bisogno di %u gold."
+#define MSG_NOTENOUGHGUILDMEMBERS "Non hai abbastanza membri in gilda per acquistare la casa. Hai bisogno di %u membri."
 #define MSG_GHOCCUPIED           "Sfortunatamente questa casa è già occupata."
 #define MSG_CONGRATULATIONS      "Congratulazioni! La sede è stata creata."
 #define MSG_SOLD                 "La gilda è stata venduta. ??? ???? %u ??????."
@@ -2260,14 +2262,35 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
 
     QueryResult_AutoPtr result;
 
-    result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u",
-        guildhouseId);
+    
+    uint32 guildsize = 1;
+
+    Guild *guild = objmgr.GetGuildById(player->GetGuildId());
+    if (guild)
+        guildsize = guild->GetMemberSize();
+
+    result = WorldDatabase.PQuery("SELECT `minguildsize` FROM `guildhouses` WHERE `id` = %u", guildhouseId);
+    
+    if (!result)
+        return; 
+
+    Field *fields = result->Fetch();
+    uint32 minguildsize = fields[0].GetUInt32();
+
+    if (guildsize < minguildsize)
+    {
+        char msg[100];
+        sprintf(msg, MSG_NOTENOUGHGUILDMEMBERS, minguildsize);
+        _creature->MonsterWhisper(msg, player->GetGUID());
+        return;
+    }
+
+    result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u", guildhouseId);
 
     if (!result)
-        return;
+        return;    
     
-    
-    Field *fields = result->Fetch();
+    fields = result->Fetch();
     int32 price = fields[0].GetInt32();
 
     if (player->GetMoney() < price * 10000)

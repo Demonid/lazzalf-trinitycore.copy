@@ -9,6 +9,7 @@ CREATE TABLE `guildhouses` (
   `comment` varchar(255) NOT NULL default '',
   `price` bigint(20) NOT NULL default '0',
   `faction` int(8) unsigned NOT NULL default '3',
+  `minguildsize` int(16) unsigned NOT NULL default '3',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
