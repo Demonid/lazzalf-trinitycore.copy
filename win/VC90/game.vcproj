@@ -1607,6 +1607,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\OutdoorPvPZM.cpp"
 				>
 			</File>
@@ -1675,6 +1683,10 @@
 				>
 				<File
 					RelativePath="..\..\src\scripts\custom\npc_acherus_taxi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\scripts\custom\npc_teleport.cpp"
 					>
 				</File>
 				<File
@@ -3082,6 +3094,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\scripts\northrend\wintergrasp.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\scripts\northrend\zuldrak.cpp"
 					>
 				</File>
@@ -4214,6 +4230,14 @@
 					PrecompiledHeaderThrough="pchdef.h"
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.h"
+			>
 		</File>
 	</Files>
 	<Globals>

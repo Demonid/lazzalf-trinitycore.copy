@@ -1183,6 +1183,78 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
     return false;
 }
 
+// Guardie di gilda
+void ObjectMgr::LoadGuildGuardID()
+{
+    mGuildGuardID.clear();
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT creature_guid, guild_house_id FROM guild_guard ORDER BY creature_guid ASC");
+
+    if (!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString("");
+        sLog.outErrorDb(">> Loaded 0 guild guards. DB table `guild_guards` is empty.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint64 creature_guid = fields[0].GetUInt64();
+        uint32 guid_house_id = fields[1].GetUInt64();
+        QueryResult_AutoPtr result2 = WorldDatabase.PQuery("SELECT guildId FROM guildhouses WHERE id = %u", guid_house_id);
+        
+        if (result2)
+        {
+            Field *fields2 = result2->Fetch();
+            uint32 guild_id = fields2[0].GetUInt32();
+
+            if(CheckGuildGuardID(creature_guid, guild_id))
+                mGuildGuardID[creature_guid] = guild_id;
+            else 
+                mGuildGuardID[creature_guid] = 0;            
+        }
+        else
+        {
+            sLog.outError("La GuildHouse '%u' non esiste in guildhouses per il caricamento delle guardia %u", guid_house_id, creature_guid);
+        }
+    } while (result->NextRow());   
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u guild guard", mGuildGuardID.size() );
+}
+
+//Check Guardie
+bool ObjectMgr::CheckGuildGuardID(uint64 creature_guid, uint32 guild_id) const
+{
+    if (!guild_id)
+        return false;
+
+    //const CreatureInfo* const npc = GetCreatureInfo(creature_id);
+    Guild* guild = GetGuildById(guild_id);  
+    
+    /*if(!npc)
+    {
+        sLog.outError("La Creatura '%u' non esiste in creature_template",creature_id);
+        return false;
+    }*/
+
+    if(!guild_id)
+    {
+        sLog.outError("La gilda %u non esiste",guild_id);
+        return false;
+    }
+
+    return true;
+}
+
 void ObjectMgr::LoadCreatures()
 {
     uint32 count = 0;
@@ -6570,6 +6642,121 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
 uint32 ObjectMgr::GeneratePetNumber()
 {
     return ++m_hiPetNumber;
+}
+
+// Loads the jail conf out of the database
+void ObjectMgr::LoadJailConf(void)
+{
+    CharacterDatabase.BeginTransaction();
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail_conf`");
+    CharacterDatabase.CommitTransaction();
+
+    if (!result)
+    {
+		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR1));
+		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR2));
+
+		m_jailconf_max_jails    = 3;
+		m_jailconf_max_duration = 672;
+		m_jailconf_min_reason   = 25;
+		m_jailconf_warn_player  = 1;
+		m_jailconf_amnestie     = 180;
+
+		m_jailconf_ally_x       = -8673.43;
+		m_jailconf_ally_y       = 631.795;
+		m_jailconf_ally_z       = 96.9406;
+		m_jailconf_ally_o       = 2.1785;
+		m_jailconf_ally_m       = 0;
+
+		m_jailconf_horde_x      = 2179.85;
+    	m_jailconf_horde_y      = -4763.96;
+		m_jailconf_horde_z      = 54.911;
+		m_jailconf_horde_o      = 4.44216;
+		m_jailconf_horde_m      = 1;
+
+		m_jailconf_ban          = 0;
+		m_jailconf_radius       = 10;
+
+        return;
+    }
+do
+{
+    Field *fields = result->Fetch();
+    m_jail_obt = fields[1].GetString();
+	if(m_jail_obt == "m_jailconf_max_jails")
+	{
+      m_jailconf_max_jails    = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_max_duration")
+	{
+	  m_jailconf_max_duration = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_min_reason")
+	{
+      m_jailconf_min_reason   = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_warn_player")
+	{
+      m_jailconf_warn_player  = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_amnestie")
+	{
+	  m_jailconf_amnestie     = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_ally_x")
+	{
+      m_jailconf_ally_x       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_y")
+	{
+      m_jailconf_ally_y       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_z")
+	{
+      m_jailconf_ally_z       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_o")
+	{
+      m_jailconf_ally_o       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_m")
+	{
+      m_jailconf_ally_m       = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_horde_x")
+	{
+      m_jailconf_horde_x      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_y")
+	{
+      m_jailconf_horde_y      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_z")
+	{
+      m_jailconf_horde_z      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_o")
+	{
+      m_jailconf_horde_o      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_m")
+	{
+      m_jailconf_horde_m      = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_ban")
+	{
+      m_jailconf_ban = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_radius")
+	{
+      m_jailconf_radius = fields[2].GetUInt32();
+	}
+}
+while (result->NextRow());
+
+    sLog.outString("");
+    sLog.outString(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_LOADED));
+    sLog.outString("");
 }
 
 void ObjectMgr::LoadCorpses()

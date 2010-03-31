@@ -2337,6 +2337,12 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
     return vCount->count;
 }
 
+// Guardie di gilda
+uint32 Creature::GetGuildByGuard()
+{
+    return objmgr.GetGuildByGuardID(GetGUID());
+}
+
 TrainerSpellData const* Creature::GetTrainerSpells() const
 {
     return objmgr.GetNpcTrainerSpells(GetEntry());

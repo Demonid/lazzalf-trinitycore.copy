@@ -23,6 +23,7 @@
 #include "OutdoorPvPZM.h"
 #include "OutdoorPvPSI.h"
 #include "OutdoorPvPEP.h"
+#include "OutdoorPvPWG.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Policies/SingletonImp.h"
@@ -125,6 +126,19 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         m_OutdoorPvPSet.push_back(pOP);
         sLog.outDebug("OutdoorPvP : EP successfully initiated.");
     }
+
+    pOP = new OutdoorPvPWG;
+    // respawn, init variables
+    if(!pOP->SetupOutdoorPvP())
+    {
+        sLog.outDebug("OutdoorPvP : Wintergrasp init failed.");
+        delete pOP;
+    }
+    else
+    {
+        m_OutdoorPvPSet.push_back(pOP);
+        sLog.outDebug("OutdoorPvP : Wintergrasp successfully initiated.");
+    }
 }
 
 void OutdoorPvPMgr::AddZone(uint32 zoneid, OutdoorPvP *handle)
@@ -132,13 +146,49 @@ void OutdoorPvPMgr::AddZone(uint32 zoneid, OutdoorPvP *handle)
     m_OutdoorPvPMap[zoneid] = handle;
 }
 
+bool OutdoorPvPMgr::CanEnterVaultOfArchavon(Player *plr)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    if (!pvpWG)
+        return false;
+
+    if (pvpWG->getDefenderTeamId() != plr->GetTeamId() || pvpWG->isWarTime())
+        return false;
+
+    return true;
+}
+
+bool OutdoorPvPMgr::CanBeAttacked(Creature *pCreature)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    if (!pvpWG)
+        return false;
+
+    // Toravon
+    if (pCreature->GetEntry() == 38433 && (pvpWG->GetTimer()/60) <= 15)
+        return false;
+
+    // All
+    if (pvpWG->isWarTime())
+        return false;
+
+    return true;
+}
+
 void OutdoorPvPMgr::HandlePlayerEnterZone(Player *plr, uint32 zoneid)
 {
+    if (zoneid != NORTHREND_WINTERGRASP)
+    {
+ 	    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+ 	    if (pvpWG)
+  	        pvpWG->HandleEssenceOfWintergrasp(plr, zoneid);
+    }
+
     OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneid);
-    if(itr == m_OutdoorPvPMap.end())
+    if (itr == m_OutdoorPvPMap.end())
         return;
 
-    if(itr->second->HasPlayer(plr))
+    if (itr->second->HasPlayer(plr))
         return;
 
     itr->second->HandlePlayerEnterZone(plr, zoneid);

@@ -363,7 +363,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //307 absorb healing?
     &AuraEffect::HandleNULL,                                      //308 new aura for hunter traps
     &AuraEffect::HandleNULL,                                      //309 absorb healing?
-    &AuraEffect::HandleNoImmediateEffect,                         //310 5 spells SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS implemented in Unit::MeleeDamageBonus
+    &AuraEffect::HandleNoImmediateEffect,                         //310 SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE
     &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3
@@ -441,6 +441,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     }
 
     float DoneActualBenefit = 0.0f;
+	float BenefitMod = 1.0f;
 
     // custom amount calculations go here
     switch(GetAuraType())
@@ -503,7 +504,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         float bonus = 0.8068f;
                         // Borrowed Time
                         if (AuraEffect const * aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1))
-                            bonus += aurEff->GetAmount() / 100;
+                            bonus += aurEff->GetAmount() / 100.0;
                         
                         DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(GetSpellProto())) * bonus; 
                     }
@@ -633,7 +634,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             {
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    int32 value = int32((amount*-1)-10);
+                    int32 value = int32((amount*-1));
                     uint32 defva = uint32(caster->ToPlayer()->GetSkillValue(SKILL_DEFENSE) + caster->ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));
 
                     if(defva > 400)
@@ -688,6 +689,15 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
     }
     if (DoneActualBenefit != 0.0f)
     {
+        // Handle SPELL_AURA_ADD_PCT_MODIFIERs
+        Unit::AuraEffectList const& AuraPctMmodifiers = caster->GetAuraEffectsByType(SPELL_AURA_ADD_PCT_MODIFIER);
+        for (Unit::AuraEffectList::const_iterator i = AuraPctMmodifiers.begin(); i != AuraPctMmodifiers.end(); ++i)
+        {
+            if ((*i)->IsAffectedOnSpell(m_spellProto) && (*i)->GetMiscValue() == SPELLMOD_ALL_EFFECTS)
+                BenefitMod += (*i)->GetAmount() / 100.0f;
+        }
+        DoneActualBenefit *= BenefitMod;
+
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
         amount += (int32)DoneActualBenefit;
     }
@@ -1765,6 +1775,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     }
                 }
                 break;
+            case 58730: // No Fly Zone - Wintergrasp
             case 58600: // No fly Zone - Dalaran
                 if (GetTickNumber() == 10)
                 {
@@ -1775,6 +1786,20 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 62292: // Blaze (Pool of Tar)
                 // should we use custom damage?
                 target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
+                break;
+			case 51685: // Prey on the Weak
+            case 51686:
+            case 51687:
+            case 51688:
+            case 51689:
+                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
+                    if(!target->HasAura(58670)) {
+                        int32 basepoints = GetSpellProto()->EffectBasePoints[0];
+                        target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
+                    }
+                }
+                else
+                    target->RemoveAurasDueToSpell(58670);
                 break;
             case 62399: // Overload Circuit
                 if(target->GetMap()->IsDungeon() && target->GetAppliedAuras().count(62399) >= (target->GetMap()->IsHeroic() ? 4 : 2))
@@ -4101,6 +4126,7 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
     {
         case 42292: // PvP trinket
         case 59752: // Every Man for Himself
+        case 53490: // Bullheaded
             mechanic = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
             // Actually we should apply immunities here, too, but the aura has only 100 ms duration, so there is practically no point
             break;
@@ -4680,7 +4706,13 @@ void AuraEffect::HandleAuraModIncreaseEnergy(AuraApplication const * aurApp, uin
     if (GetId()==64904)                                     // Hymn of Hope
     {
         if(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK)
-            target->SetPower(powerType, apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount());
+        {
+			int32 change = apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount();
+			if (change < 0)
+				change = 0;
+			target->SetPower(powerType, change); 
+		}
+        // target->SetPower(powerType, apply ? GetAmount() + target->GetPower(powerType) : target->GetPower(powerType) - GetAmount());
     }
 
     // generic flat case
@@ -5666,9 +5698,19 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     {
                         if (AuraEffect const * aurEff = GetBase()->GetEffect(1))
                         {
-                            int32 damage = aurEff->GetAmount()*4;
-                            // backfire damage
-                            target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL,GetCasterGUID());
+                            if (GetEffIndex() == 0) 
+                            {
+                                // backfire damage
+                                int32 damage = caster->SpellDamageBonus(target, GetSpellProto(), aurEff->GetAmount(), DOT) * 3;
+                                target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+                            }
+                            else 
+                            {
+                                // Shadow Affinity
+                                int32 returnmana = (GetSpellProto()->ManaCostPercentage * caster->GetCreateMana() / 100);
+                                if (AuraEffect* aureff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 178, 1))
+                                    caster->CastCustomSpell(caster, 64103, &returnmana, NULL, NULL, true, NULL, this, GetCasterGUID());
+                            }
                         }
                     }
                     break;
@@ -5677,11 +5719,11 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if(GetId()==34477)
                         target->SetReducedThreatPercent(0, 0);
                     break;
-                case SPELLFAMILY_DEATHKNIGHT:
+               /* case SPELLFAMILY_DEATHKNIGHT:
                     // Summon Gargoyle ( will start feeding gargoyle )
                     if(GetId()==61777)
                         target->CastSpell(target,m_spellProto->EffectTriggerSpell[m_effIndex],true);
-                    break;
+                    break;*/
                 default:
                     break;
             }

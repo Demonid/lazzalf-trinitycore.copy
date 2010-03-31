@@ -17,6 +17,9 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 
+//TeleNPC2
+void AddSC_npc_teleport();
+
 //world
 void AddSC_areatrigger_scripts();
 void AddSC_boss_emeriss();
@@ -397,6 +400,7 @@ void AddSC_howling_fjord();
 void AddSC_icecrown();
 void AddSC_sholazar_basin();
 void AddSC_storm_peaks();
+void AddSC_wintergrasp();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 
@@ -496,6 +500,9 @@ void AddScripts()
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+	
+	//TeleNPC2
+    AddSC_npc_teleport();
 
     //world
     AddSC_areatrigger_scripts();
@@ -877,6 +884,7 @@ void AddScripts()
     AddSC_icecrown();
     AddSC_sholazar_basin();
     AddSC_storm_peaks();
+    AddSC_wintergrasp();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
 

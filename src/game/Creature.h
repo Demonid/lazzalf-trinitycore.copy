@@ -428,6 +428,7 @@ class Creature : public Unit, public GridObject<Creature>
         //bool canFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
+        uint32 GetGuildByGuard();
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
         ///// TODO RENAME THIS!!!!!
         bool isCanTrainingOf(Player* player, bool msg) const;

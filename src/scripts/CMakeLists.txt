@@ -17,6 +17,7 @@ SET(scripts_STAT_SRCS
    ../game/ScriptedSimpleAI.cpp
    ../game/ScriptedSimpleAI.h
    custom/on_events.cpp
+   custom/npc_teleport.cpp
    eastern_kingdoms/blackrock_depths/blackrock_depths.cpp
    eastern_kingdoms/blackrock_depths/boss_ambassador_flamelash.cpp
    eastern_kingdoms/blackrock_depths/boss_anubshiah.cpp
@@ -223,6 +224,7 @@ SET(scripts_STAT_SRCS
    kalimdor/caverns_of_time/culling_of_stratholme/boss_infinite.cpp
    kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp
    kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.h
+   kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp
    kalimdor/caverns_of_time/dark_portal/dark_portal.h
    kalimdor/caverns_of_time/dark_portal/instance_dark_portal.cpp
    kalimdor/caverns_of_time/dark_portal/dark_portal.cpp
