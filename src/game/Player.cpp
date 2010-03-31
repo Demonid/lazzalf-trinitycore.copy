@@ -7695,8 +7695,23 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             {
                 if(IsPositiveSpell(pEnchant->spellid[s]))
                     CastSpell(this, pEnchant->spellid[s], true, item);
-                else
+                else 
+                {
                     CastSpell(target, pEnchant->spellid[s], true, item);
+                    // Deadly Poison
+                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags[0] == 0x10000 && spellInfo->SpellFamilyFlags[1] == 0x80000) 
+                    {
+                        if (Aura * aur = target->GetAura(pEnchant->spellid[s], GetGUID()))
+                            if (aur->GetStackAmount() == 5)
+                                if (Item* Weapon = GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK, true))
+                                    if (SpellItemEnchantmentEntry const *Poison = sSpellItemEnchantmentStore.LookupEntry(Weapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))) 
+                                    {
+                                        SpellEntry const* poisonEntry = sSpellStore.LookupEntry(Poison->spellid[s]);
+                                        if(poisonEntry && poisonEntry->Dispel == DISPEL_POISON)
+                                            CastSpell(target, poisonEntry, true, Weapon);
+                                    }
+                    }
+                }
             }
         }
     }
