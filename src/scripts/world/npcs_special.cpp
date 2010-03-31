@@ -2066,13 +2066,13 @@ bool GossipSelect_npc_wormhole(Player* pPlayer, Creature* pCreature, uint32 uiSe
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 
 #define MSG_GOSSIP_TELE          "Teletrasportami Alla sede di gilda"
-#define MSG_GOSSIP_BUY           "Crea Sede di gilda (1000 golds)"
-#define MSG_GOSSIP_SELL          "Vendi sede di gilda (500 golds)"
+#define MSG_GOSSIP_BUY           "Crea Sede di gilda"
+#define MSG_GOSSIP_SELL          "Vendi sede di gilda"
 #define MSG_GOSSIP_NEXTPAGE      "Successivo -->"
 #define MSG_INCOMBAT             "Sei in combat!"
 #define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
 #define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate."
-#define MSG_ALREADYHAVEGH        "LA tua gilda possiede già una sede. (%s)."
+#define MSG_ALREADYHAVEGH        "La tua gilda possiede già una sede. (%s)."
 #define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare la casa. Hai bisogno di %u gold."
 #define MSG_NOTENOUGHGUILDMEMBERS "Non hai abbastanza membri in gilda per acquistare la casa. Hai bisogno di %u membri."
 #define MSG_GHOCCUPIED           "Sfortunatamente questa casa è già occupata."
@@ -2107,7 +2107,7 @@ bool GossipSelect_npc_wormhole(Player* pPlayer, Creature* pCreature, uint32 uiSe
 
 bool isPlayerGuildLeader(Player *player)
 {
-    return (player->GetRank() == 0) && (player->GetGuildId() != 0);
+    return ((player->GetRank() == 0) && (player->GetGuildId() != 0));
 }
 
 bool getGuildHouseCoords(uint32 guildId, float &x, float &y, float &z, uint32 &map)
@@ -2169,8 +2169,15 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     //show not occupied guildhouses
 
     QueryResult_AutoPtr result;
-    result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u ORDER BY `id` ASC LIMIT %u",
-        player->getFaction(), showFromId, GOSSIP_COUNT_MAX);
+
+    uint32 guildsize = 1;
+
+    Guild *guild = objmgr.GetGuildById(player->GetGuildId());
+    if (guild)
+        guildsize = guild->GetMemberSize();
+
+    result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `minguildsize` DESC LIMIT %u",
+        (player->GetTeam() == HORDE)?1:0, showFromId, guildsize, GOSSIP_COUNT_MAX);
 
     if (result)
     {
@@ -2179,7 +2186,6 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
         uint32 price = 0;
         do
         {
-
             Field *fields = result->Fetch();
 
             guildhouseId = fields[0].GetInt32();
@@ -2187,7 +2193,7 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
             price = fields[2].GetUInt32();
             
             std::stringstream complete_comment;
-            complete_comment << "price "<<price <<" - "<<comment;
+            complete_comment << "price " << price << " - " << comment;
 
             //send comment as a gossip item
             //transmit guildhouseId in Action variable
@@ -2207,14 +2213,16 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
 
         return true;
-    } else
+    } 
+    else
     {
         if (showFromId = 0)
         {
             //all guildhouses are occupied
             _creature->MonsterWhisper(MSG_NOFREEGH, player->GetGUID());
             player->CLOSE_GOSSIP_MENU();
-        } else
+        } 
+        else
         {
             //this condition occurs when COUNT(guildhouses) % GOSSIP_COUNT_MAX == 0
             //just show GHs from beginning
@@ -2227,11 +2235,9 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
 
 bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = false)
 {
-
     QueryResult_AutoPtr result;
 
-    result = WorldDatabase.PQuery("SELECT `comment` FROM `guildhouses` WHERE `guildId` = %u",
-        player->GetGuildId());
+    result = WorldDatabase.PQuery("SELECT `comment` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
 
     if (result)
     {
@@ -2239,14 +2245,13 @@ bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = f
         {
             //whisper to player "already have etc..."
             Field *fields = result->Fetch();
-            char msg[100];
+            char msg[200];
             sprintf(msg, MSG_ALREADYHAVEGH, fields[0].GetString());
             _creature->MonsterWhisper(msg, player->GetGUID());
         }        
         return true;
     }
     return false;
-
 }
 
 void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
@@ -2263,7 +2268,7 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
     QueryResult_AutoPtr result;
 
     
-    uint32 guildsize = 1;
+    /*uint32 guildsize = 1;
 
     Guild *guild = objmgr.GetGuildById(player->GetGuildId());
     if (guild)
@@ -2283,14 +2288,14 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
         sprintf(msg, MSG_NOTENOUGHGUILDMEMBERS, minguildsize);
         _creature->MonsterWhisper(msg, player->GetGUID());
         return;
-    }
+    }*/
 
-    result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u", guildhouseId);
+    result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u" , guildhouseId);
 
     if (!result)
         return;    
     
-    fields = result->Fetch();
+    Field *fields = result->Fetch();
     int32 price = fields[0].GetInt32();
 
     if (player->GetMoney() < price * 10000)
@@ -2343,7 +2348,7 @@ void sellGuildhouse(Player *player, Creature *_creature)
             player->ModifyMoney(price*5000);
 
         //display message e.g. "here your money etc."
-        char msg[100];
+        char msg[200];
         sprintf(msg, MSG_SOLD, price / 2);
         _creature->MonsterWhisper(msg, player->GetGUID());
     }
@@ -2357,8 +2362,8 @@ bool GossipHello_guildmaster(Player *player, Creature *_creature)
     if (isPlayerGuildLeader(player))
     {
         //show additional menu for guild leader
-        /*player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_GOSSIP_BUY,
-            GOSSIP_SENDER_MAIN, ACTION_SHOW_BUYLIST);*/
+        player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_GOSSIP_BUY,
+            GOSSIP_SENDER_MAIN, ACTION_SHOW_BUYLIST);
         if (isPlayerHasGuildhouse(player, _creature))
         {
             //and additional for guildhouse owner
@@ -2390,7 +2395,8 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             if (action > OFFSET_SHOWBUY_FROM)
             {
                 showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
-            } else if (action > OFFSET_GH_ID_TO_ACTION)
+            } 
+            else if (action > OFFSET_GH_ID_TO_ACTION)
             {
                 //player clicked on buy list
                 player->CLOSE_GOSSIP_MENU();
@@ -2470,8 +2476,7 @@ struct guild_guardAI : public ScriptedAI
 
             if (!m_creature->isInCombat())
             {
-                m_creature->SetInCombatWith(who);
-                
+                m_creature->SetInCombatWith(who);                
             }
         }
     }
@@ -2513,12 +2518,12 @@ bool GossipHello_buffnpc(Player *player, Creature *_Creature)
         player->ADD_GOSSIP_ITEM( 5, "Buff me Thorns"                                , GOSSIP_SENDER_MAIN, 1220);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Sanctuary"         , GOSSIP_SENDER_MAIN, 1225);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Might"             , GOSSIP_SENDER_MAIN, 1230);
-        player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Light"             , GOSSIP_SENDER_MAIN, 1235);
+        //player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Light"             , GOSSIP_SENDER_MAIN, 1235);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Wisdom"            , GOSSIP_SENDER_MAIN, 1240);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Kings"             , GOSSIP_SENDER_MAIN, 1245);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Divine Spirit"                         , GOSSIP_SENDER_MAIN, 1250);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Shadow Protection"                     , GOSSIP_SENDER_MAIN, 1251);
-        player->ADD_GOSSIP_ITEM( 5, "Buff me Power Word: Fortitude"                 , GOSSIP_SENDER_MAIN, 1262);
+        player->ADD_GOSSIP_ITEM( 5, "Buff me Power Word: Fortitude"                 , GOSSIP_SENDER_MAIN, 1252);
     }
     else // Main Menu for Horde
     {
@@ -2533,7 +2538,7 @@ bool GossipHello_buffnpc(Player *player, Creature *_Creature)
         player->ADD_GOSSIP_ITEM( 5, "Buff me Thorns"                                , GOSSIP_SENDER_MAIN, 1220);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Sanctuary"         , GOSSIP_SENDER_MAIN, 1225);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Might"             , GOSSIP_SENDER_MAIN, 1230);
-        player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Light"             , GOSSIP_SENDER_MAIN, 1235);
+        //player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Light"             , GOSSIP_SENDER_MAIN, 1235);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Wisdom"            , GOSSIP_SENDER_MAIN, 1240);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Greater Blessing of Kings"             , GOSSIP_SENDER_MAIN, 1245);
         player->ADD_GOSSIP_ITEM( 5, "Buff me Divine Spirit"                         , GOSSIP_SENDER_MAIN, 1250);
@@ -2604,11 +2609,11 @@ void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action 
             break;
         case 1225: // Buff me Greater Blessing of Sanctuary
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,27169,false);
+            _Creature->CastSpell(player,25899,false);
             break;
         case 1230: // Buff me Greater Blessing of Might
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,27141,false);
+            _Creature->CastSpell(player,48934,false);
             break;
         case 1235: // Buff me Greater Blessing of Light
             player->CLOSE_GOSSIP_MENU();
@@ -2616,23 +2621,23 @@ void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action 
             break;
         case 1240: // Buff me Greater Blessing of Wisdom
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,27143,false);
+            _Creature->CastSpell(player,48938,false);
             break;
-        case 1245: // Buff me Greater Blessing of Wisdom
+        case 1245: // Buff me Greater Blessing of Kings
             player->CLOSE_GOSSIP_MENU();
             _Creature->CastSpell(player,25898,false);
             break;
         case 1250: // Buff me Divine Spirit
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,25312,false);
+            _Creature->CastSpell(player,48073,false);
             break;
         case 1251: // Buff me Shadow Protection
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,25433,false);
+            _Creature->CastSpell(player,48169,false);
             break;
         case 1252: // Buff me Power Word: Fortitude
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,25389,false);
+            _Creature->CastSpell(player,48161,false);
             break;
     }
 }
