@@ -10039,7 +10039,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Pets just add their bonus damage to their spell damage
     // note that their spell damage is just gain of their own auras
     if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
-        DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
+        if (!(GetSpellSchoolMask(spellProto) & SPELL_SCHOOL_MASK_NORMAL))                 // Do not add Spellpower to melee abilities
+            DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
+        else if (((Guardian*)this)->GetBonusDamage())                                     // Instead add a fixed amount of AP
+            DoneAdvertisedBenefit += GetTotalAttackPowerValue(BASE_ATTACK) * 0.2f;
 
     // Check for table values
     float coeff = 0;
@@ -12344,7 +12347,7 @@ int32 Unit::ModSpellDuration(SpellEntry const* spellProto, Unit const* target, i
         return duration;
 
     //cut duration only of negative effects
-    if (!positive)
+    if (!positive && !(spellProto->SpellFamilyName == SPELLFAMILY_ROGUE && spellProto->SpellFamilyFlags[1] == 0x8))
     {
         int32 mechanic = GetAllSpellMechanicMask(spellProto);
 
