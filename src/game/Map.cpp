@@ -3722,6 +3722,18 @@ void Map::ScriptsProcess()
 
                 break;
             }
+            case SCRIPT_COMMAND_MODEL:
+            {
+                if(!source)
+                {
+                    sLog.outError("SCRIPT_COMMAND_MODEL call for NULL creature.");
+                    break;
+                }
+
+                source->ToCreature()->SetDisplayId(step.script->datalong);
+
+                break;
+            }
             default:
                 sLog.outError("Unknown script command %u called.",step.script->command);
                 break;
