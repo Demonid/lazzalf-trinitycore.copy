@@ -634,25 +634,26 @@ OutdoorPvPWGCreType OutdoorPvPWG::GetCreatureType(uint32 entry) const
         case CRE_ENG_A: // Alliance Engineer
         case CRE_ENG_H: // Horde Engineer
             return CREATURE_ENGINEER;
-        case 30739:case 30740: // Champions
-        case 32307:case 32308: // Guards
+        case 30739: case 30740: // Champions
+        case 32307: case 32308: // Guards
             return CREATURE_GUARD;
         case CRE_SPI_A: // Dwarven Spirit Guide
         case CRE_SPI_H: // Taunka Spirit Guide
             return CREATURE_SPIRIT_GUIDE;
         case 6491: // Spirit Healers
             return CREATURE_SPIRIT_HEALER;
-        case 31101:case 31051: // Hoodoo Master & Sorceress
-        case 31102:case 31052: // Vieron Blazefeather & Bowyer
-        case 31107:case 31109: // Lieutenant & Senior Demolitionist
-        case 31151:case 31153: // Tactical Officer
-        case 31106:case 31108: // Siegesmith & Siege Master
-        case 31053:case 31054: // Primalist & Anchorite
-        case 31091:case 31036: // Commander
+        case 31101: case 31051: // Hoodoo Master & Sorceress
+        case 31102: case 31052: // Vieron Blazefeather & Bowyer
+        case 31107: case 31109: // Lieutenant & Senior Demolitionist
+        case 31151: case 31153: // Tactical Officer
+        case 31106: case 31108: // Siegesmith & Siege Master
+        case 31053: case 31054: // Primalist & Anchorite
+        case 31091: case 31036: // Commander
             return CREATURE_QUESTGIVER;
-        case 32615:case 32626: // Warbringer && Brigadier General
-        case 32296:case 32294: // Quartermaster
-        case 30870:case 30869: // Flight Masters
+        case 32615: case 32626: // Warbringer && Brigadier General
+        case 32296: case 32294: // Quartermaster
+        case 39173: case 39172: // Quartermaster
+        case 30870: case 30869: // Flight Masters
             return CREATURE_SPECIAL;
         default:
             return CREATURE_OTHER; // Revenants, Elementals, etc
