@@ -83,7 +83,7 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
 
     if(newid == 0) // Vendi
     {
-        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `id` = %u", newid);
+        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         itr->second.Id = 0;
         //RemoveGuildHouseAdd(newid);        
     }
