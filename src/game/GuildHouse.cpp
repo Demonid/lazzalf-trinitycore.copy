@@ -49,19 +49,42 @@ bool CheckGuildID(uint32 guild_id)
     return true;
 }
 
-bool CheckGuildHouse(uint32 guild, GuildHouse &GHm)
+bool CheckGuildHouse(uint32 guild_id)
 {
-    GuildHouseMap::const_iterator itr = GH_map.find(guild);
+    GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
         return false;
-    GHm = itr->second;
+    if(itr->second.Id == 0)
+        return false;
     return true;
 }
 
-bool GetGuildHouseLocation(uint32 guild, float &x, float &y, float &z, float &o, uint32 &map)
+bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
 {
-    GuildHouseMap::const_iterator itr = GH_map.find(guild);
+    GuildHouseMap::iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
+        return false;
+
+    if(newid == 0)
+    {
+        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `id` = %u", newid);
+        itr->second.Id = 0;
+    }
+    else
+    {        
+        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
+        itr->second.ChangeId(newid);
+    }
+
+    return true;
+}
+
+bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map)
+{
+    GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
+    if(itr == GH_map.end()) 
+        return false;
+    if(itr->second.Id == 0)
         return false;
     x = itr->second.m_X;
     y = itr->second.m_Y;
@@ -96,10 +119,10 @@ void LoadGuildHouse()
 
         uint32 id = fields[0].GetUInt32();
         uint32 guildID = fields[1].GetUInt32();
-        uint32 x = fields[2].GetFloat();
-        uint32 y = fields[3].GetFloat();
-        uint32 z = fields[4].GetFloat();
-        uint16 map = fields[5].GetUInt32();
+        uint32 x   = fields[2].GetFloat();
+        uint32 y   = fields[3].GetFloat();
+        uint32 z   = fields[4].GetFloat();
+        uint16 map = fields[5].GetUInt16();
         uint32 add = 0;
 
         if(!CheckGuildID(guildID))
@@ -121,6 +144,61 @@ void LoadGuildHouse()
     sLog.outString( ">> Loaded %u GuildHouse", GH_map.size() );
 }
 
+void LoadGuildHouseAdd()
+{
+    GH_AddHouse.clear();
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT * FROM guildhouses_add ORDER BY Id ASC");
+
+    if (!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString("");
+        sLog.outErrorDb(">> Loaded 0 guild house add.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint16 id           = fields[0].GetUInt16();
+        uint16 add_type     = fields[1].GetUInt16();
+        uint32 id_template  = fields[2].GetUInt32();
+        uint8 type          = fields[3].GetUInt8();
+        uint32 x            = fields[4].GetFloat();
+        uint32 y            = fields[5].GetFloat();
+        uint32 z            = fields[6].GetFloat();
+        uint32 o            = fields[7].GetFloat();
+        uint16 map          = fields[5].GetUInt16();
+
+        GH_ItemTemp NewItemTemp(id_template, (GH_ItemTemplate_Type)type, x, y, z, o, map);
+        uint32 find = 0;
+        find = ( (uint32)id << 16 ) || (uint32)add_type;
+        GH_AddHouse[find].push_back(NewItemTemp);        
+    } while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u GuildHouseAdd", GH_AddHouse.size() );
+}
+
+GH_ItemTemp::GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, float X, float Y, float Z, float O, uint16 map)
+{
+    guid = 0;    
+    id_template = new_id_template;
+    type = newtype;
+    m_X = X;
+    m_Y = Y; 
+    m_Z = Z;
+    m_orient = O;
+    m_map = map;
+}
+
 GuildHouse::GuildHouse()
 {
     GuildId = 0;
@@ -133,7 +211,7 @@ GuildHouse::GuildHouse()
     m_map = 0;
 }
 
-GuildHouse::GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint32 map, uint32 add)
+GuildHouse::GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map, uint32 add)
 {
     GuildId = guildID;
     Id = id;
@@ -145,7 +223,7 @@ GuildHouse::GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, 
     GuildHouse_Add = add;
 }
 
-void GuildHouse::SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint32 map)
+void GuildHouse::SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map)
 {
     GuildId = guildID;
     Id = id;
@@ -157,8 +235,7 @@ void GuildHouse::SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, ui
 
 void GuildHouse::ChangeId(uint32 newid)
 {
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", GuildId, newid);
-    result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `guildId` = %u", GuildId);
+    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
     if(result)
     {
         Id = newid;
@@ -166,7 +243,7 @@ void GuildHouse::ChangeId(uint32 newid)
         m_X = fields[0].GetFloat();
         m_Y = fields[1].GetFloat();
         m_Z = fields[2].GetFloat();
-        m_map = fields[3].GetUInt32();        
+        m_map = fields[3].GetUInt16();        
         return;
     }
 };
