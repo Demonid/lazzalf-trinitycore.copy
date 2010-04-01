@@ -47,6 +47,7 @@ enum GuildAdd_Type
     NPC_BUFFMAN      = 0x00000002,
     NPC_TELE         = 0x00000004,
 };
+#define NPC_MAX 3
 
 enum GH_ItemTemplate_Type
 {
@@ -68,8 +69,8 @@ class GH_ItemTemp
 
 class GuildHouse
 {
-    public:        
-        GuildHouse();
+    public: 
+        GuildHouse(uint32 guild_id = 0, uint32 guild_add = 0);
         GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map, uint32 add);
         
         uint32        GuildId;      
@@ -95,5 +96,7 @@ bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
+bool RemoveGuildHouseAdd(uint32 id);
+bool AddGuildHouseAdd(uint32 add, uint32 id);
 
 #endif
