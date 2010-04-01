@@ -75,19 +75,23 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
 
         GuildHouse NewGH(guild_id, add);
         GH_map[guild_id] = NewGH;
+
+        itr = GH_map.find(guild_id);
+        if(itr == GH_map.end())
+            return false;
     }
 
     if(newid == 0) // Vendi
     {
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `id` = %u", newid);
         itr->second.Id = 0;
-        RemoveGuildHouseAdd(newid);        
+        //RemoveGuildHouseAdd(newid);        
     }
     else // Compra
     {        
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         itr->second.ChangeId(newid);
-        RemoveGuildHouseAdd(newid);
+        //RemoveGuildHouseAdd(newid);
     }
     return true;
 }
