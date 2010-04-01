@@ -128,7 +128,7 @@ void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     }
 
     float x, y, z, o;
-    uint32 map;
+    uint16 map;
 
     if (GetGuildHouseLocation(player->GetGuildId(), x, y, z, o, map))
     {
@@ -297,9 +297,11 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
         return;
     }
 
+    ChangeGuildHouse(player->GetGuildId(), guildhouseId);
+
     //update DB
-    result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u",
-        player->GetGuildId(), guildhouseId);
+    /*result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u",
+        player->GetGuildId(), guildhouseId);*/
 
     player->ModifyMoney(-(price*10000));
     _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, player->GetGUID());
@@ -320,7 +322,8 @@ void sellGuildhouse(Player *player, Creature *_creature)
         Field *fields = result->Fetch();
         uint32 price = fields[0].GetUInt32();
 
-        result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", player->GetGuildId());
+        ChangeGuildHouse(player->GetGuildId(),0);
+        //result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", player->GetGuildId());
         
         player->ModifyMoney(price*5000);
 

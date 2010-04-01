@@ -56,39 +56,44 @@ enum GH_ItemTemplate_Type
 
 class GH_ItemTemp
 {
-    GH_ItemTemplate_Type type;
-    uint32               id_template;
-    float                m_X, m_Y, m_Z, m_orient;
-    uint32               m_map; 
+    public:
+        uint32 guid;
+        GH_ItemTemplate_Type type;
+        uint32               id_template;
+        float                m_X, m_Y, m_Z, m_orient;
+        uint16               m_map;
+
+        GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, float X, float Y, float Z, float O, uint16 map);
 };
 
 class GuildHouse
 {
     public:        
         GuildHouse();
-        GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint32 map, uint32 add);
+        GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map, uint32 add);
         
         uint32        GuildId;      
         uint32        Id;    
         uint32        GuildHouse_Add;
         float         m_X, m_Y, m_Z, m_orient;
-        uint32        m_map; 
+        uint16        m_map; 
 
         void ChangeId(uint32 newid);
         void SetGuildHouse_Add(uint32 NewAdd);
         void ChangeGuildHouse_Add(uint32 NewAdd);
-        void SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint32 map);
+        void SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map);
 };
 
 typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
 
-typedef std::list<GH_ItemTemp> GH_I;
-typedef UNORDERED_MAP<uint32, GH_I> GH_AI;
-typedef UNORDERED_MAP<uint32, GH_AI> GH_Add;
+typedef std::list<GH_ItemTemp> GH_Item;
+typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
 
 void LoadGuildHouse();
+void LoadGuildHouseAdd();
 bool CheckGuildID(uint32 guild_id);
-bool CheckGuildHouse(uint32 guild, GuildHouse &GHm);
-bool GetGuildHouseLocation(uint32 guild, float &x, float &y, float &z, float &o, uint32 &map);
+bool CheckGuildHouse(uint32 guild_id);
+bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map);
+bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 
 #endif
