@@ -62,20 +62,33 @@ bool CheckGuildHouse(uint32 guild_id)
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
 {
     GuildHouseMap::iterator itr = GH_map.find(guild_id);
-    if(itr == GH_map.end()) 
-        return false;
+    if(itr == GH_map.end()) //Inserisci nuova classe per la gilda
+    {
+        uint32 add = 0;
 
-    if(newid == 0)
+        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `guildhouses_guildadd` WHERE `guildId` = %u", guild_id);
+        if(result)
+        {
+            Field *fields = result->Fetch();
+            add = fields[0].GetUInt32();
+        }
+
+        GuildHouse NewGH(guild_id, add);
+        GH_map[guild_id] = NewGH;
+    }
+
+    if(newid == 0) // Vendi
     {
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `id` = %u", newid);
         itr->second.Id = 0;
+        RemoveGuildHouseAdd(newid);        
     }
-    else
+    else // Compra
     {        
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         itr->second.ChangeId(newid);
+        RemoveGuildHouseAdd(newid);
     }
-
     return true;
 }
 
@@ -91,6 +104,37 @@ bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float 
     z = itr->second.m_Z;
     o = itr->second.m_orient;
     map = itr->second.m_map;
+    return true;
+}
+
+bool RemoveGuildHouseAdd(uint32 id)
+{
+    for(uint32 i = 1; i < NPC_MAX; i++)
+    {
+        uint32 find = id << 16 || i;
+        GH_Add::iterator itr = GH_AddHouse.find(find);
+        if(itr == GH_AddHouse.end()) 
+            continue;
+        GH_Item::iterator itr2 = (*itr).second.begin();
+        for(; itr2 != (*itr).second.end(); itr2++)
+        {
+            if((*itr2).guid)
+            {
+                if((*itr2).type == CREATURE)
+                {
+                    objmgr.DeleteCreatureData((*itr2).guid);
+                    (*itr2).guid = 0;
+                }
+                else
+                {
+                    objmgr.DeleteGOData((*itr2).guid);
+                    (*itr2).guid = 0;                                       
+                }
+            }
+            else
+                break;
+        }           
+    }
     return true;
 }
 
@@ -199,11 +243,11 @@ GH_ItemTemp::GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, f
     m_map = map;
 }
 
-GuildHouse::GuildHouse()
+GuildHouse::GuildHouse(uint32 guild_id, uint32 guild_add)
 {
-    GuildId = 0;
+    GuildId = guild_id;    
+    GuildHouse_Add = guild_add;
     Id = 0;
-    GuildHouse_Add = 0;
     m_X = 0;
     m_Y = 0;  
     m_Z = 0;
