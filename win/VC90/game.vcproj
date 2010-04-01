@@ -1682,6 +1682,10 @@
 				Name="Custom"
 				>
 				<File
+					RelativePath="..\..\src\scripts\custom\GuildHouse_npc.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\scripts\custom\npc_acherus_taxi.cpp"
 					>
 				</File>
@@ -4191,6 +4195,14 @@
 				</Filter>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\..\src\game\GuildHouse.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\GuildHouse.h"
+			>
+		</File>
 		<File
 			RelativePath="..\..\src\game\pchdef.cpp"
 			>

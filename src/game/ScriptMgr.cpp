@@ -12,6 +12,7 @@
 #include "ScriptSystem.h"
 #include "Policies/SingletonImp.h"
 #include "sc_npc_teleport.h"
+#include "GuildHouse.h"
 
 INSTANTIATE_SINGLETON_1(ScriptMgr);
 
@@ -59,6 +60,8 @@ void ScriptMgr::ScriptsInit()
     LoadDatabase();
 	// Load TeleNPC2 - maybe not the best place to load it ...
     LoadNpcTele();
+    //GuildHouse System
+    LoadGuildHouse();
 
     outstring_log("TSCR: Loading C++ scripts");
     barGoLink bar(1);

@@ -121,6 +121,8 @@ SET(game_STAT_SRCS
    GuardAI.h
    Guild.cpp
    Guild.h
+   GuildHouse.cpp
+   GuildHouse.h
    GuildHandler.cpp
    HomeMovementGenerator.cpp
    HomeMovementGenerator.h
