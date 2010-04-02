@@ -9,8 +9,24 @@ CREATE TABLE `guildhouses` (
   `comment` varchar(255) NOT NULL default '',
   `price` bigint(20) NOT NULL default '0',
   `faction` int(8) unsigned NOT NULL default '3',
-  `minguildsize` int(16) unsigned NOT NULL default '3',
+  `minguildsize` int(16) unsigned NOT NULL default '1',
   PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
+
+DROP TABLE IF EXISTS `guildhouses_add`;
+CREATE TABLE `guildhouses_add` (
+  `guid` int(32) unsigned NOT NULL auto_increment,
+  `id` int(16) unsigned NOT NULL,
+  `add_type` int(16) unsigned NOT NULL,
+  `id_template` int(32) unsigned NOT NULL,
+  `type` int(8) unsigned NOT NULL,
+  `x` double NOT NULL,
+  `y` double NOT NULL,
+  `z` double NOT NULL,
+  `o` double NOT NULL,
+  `map` int(11) NOT NULL,
+  `comment` varchar(255) NOT NULL default '',
+  PRIMARY KEY  (`guid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
 DROP TABLE IF EXISTS `guild_guard`;
