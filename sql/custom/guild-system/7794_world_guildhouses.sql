@@ -15,26 +15,13 @@ CREATE TABLE `guildhouses` (
 
 DROP TABLE IF EXISTS `guildhouses_add`;
 CREATE TABLE `guildhouses_add` (
-  `guid` int(32) unsigned NOT NULL auto_increment,
+  `guid` int(32) unsigned NOT NULL,  
+  `type` int(16) unsigned NOT NULL,
   `id` int(16) unsigned NOT NULL,
   `add_type` int(16) unsigned NOT NULL,
-  `id_template` int(32) unsigned NOT NULL,
-  `type` int(8) unsigned NOT NULL,
-  `x` double NOT NULL,
-  `y` double NOT NULL,
-  `z` double NOT NULL,
-  `o` double NOT NULL,
-  `map` int(11) NOT NULL,
   `comment` varchar(255) NOT NULL default '',
-  PRIMARY KEY  (`guid`)
+  PRIMARY KEY  (`guid`,`type`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
-
-DROP TABLE IF EXISTS `guild_guard`;
-CREATE TABLE `guild_guard` (
-  `creature_guid` int(6) unsigned NOT NULL DEFAULT '0',
-  `guild_house_id` int(11) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`creature_guid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DELETE FROM `creature_template` WHERE `entry` = 70058;
 INSERT INTO `creature_template` VALUES

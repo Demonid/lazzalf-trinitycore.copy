@@ -49,7 +49,7 @@ enum GuildAdd_Type
 };
 #define NPC_MAX 3
 
-enum GH_ItemTemplate_Type
+enum GH_Item_type
 {
     CREATURE        = 0,
     OBJECT          = 1,
@@ -58,14 +58,13 @@ enum GH_ItemTemplate_Type
 class GH_ItemTemp
 {
     public:
-        uint32 guid;
-        GH_ItemTemplate_Type type;
-        uint32               id_template;
-        uint32               team;
-        float                m_X, m_Y, m_Z, m_orient;
-        uint16               m_map;
+        uint32              guid;
+        GH_Item_type        type;
+        uint32              GH_id;
+        uint32              GH_AddType;
+        bool                spawned;
 
-        GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, float X, float Y, float Z, float O, uint16 map);
+        GH_ItemTemp(uint32 new_guid, GH_Item_type new_type, uint32 new_GH_id, uint32 new_GH_AddType);
 };
 
 class GuildHouse
@@ -90,14 +89,19 @@ typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
 
 typedef std::list<GH_ItemTemp> GH_Item;
 typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
+typedef UNORDERED_MAP<uint64, uint32> GuildGuardID;
 
+uint32 GetGuildByGuardID(uint64 guid);
 void LoadGuildHouse();
 void LoadGuildHouseAdd();
+//void LoadGuildGuardID();
+bool CheckGuildGuardID(uint64 creature_guid, uint32 guild_id);
 bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 bool RemoveGuildHouseAdd(uint32 id);
-bool AddGuildHouseAdd(uint32 id, uint32 add);
+bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
+void UpdateGuardMap(uint32 guid, uint32 guild);
 
 #endif
