@@ -448,7 +448,7 @@ struct guild_guardAI : public ScriptedAI
 
         uint32 guild =((Player*)who)->GetGuildId();
 
-        uint32 guardguild = m_creature->GetGuildByGuard();
+        uint32 guardguild = GetGuildByGuardID(m_creature->GetGUID());
 
         if ( guardguild && guild!=guardguild && m_creature->Attack(who, true) )
         {

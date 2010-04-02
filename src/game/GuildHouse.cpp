@@ -33,6 +33,7 @@
 
 GuildHouseMap GH_map;
 GH_Add GH_AddHouse;
+GuildGuardID mGuildGuardID;
 
 bool CheckGuildID(uint32 guild_id)
 {
@@ -91,7 +92,7 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     {        
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         itr->second.ChangeId(newid);
-        AddGuildHouseAdd(newid, itr->second.GuildHouse_Add);
+        AddGuildHouseAdd(newid, itr->second.GuildHouse_Add, guild_id);
     }
     return true;
 }
@@ -122,25 +123,29 @@ bool RemoveGuildHouseAdd(uint32 id)
         GH_Item::iterator itr2 = (*itr).second.begin();
         for(; itr2 != (*itr).second.end(); itr2++)
         {
-            if((*itr2).guid)
-            {
+            if((*itr2).spawned)
                 if((*itr2).type == CREATURE)
                 {
-                    objmgr.DeleteCreatureData((*itr2).guid);
-                    (*itr2).guid = 0;
+                   if (CreatureData const* cre_data = objmgr.GetCreatureData((*itr2).guid))
+                   {
+                       objmgr.RemoveCreatureFromGrid((*itr2).guid, cre_data);
+                       (*itr2).spawned = false;
+                   }
                 }
                 else
                 {
-                    objmgr.DeleteGOData((*itr2).guid);
-                    (*itr2).guid = 0;                                       
+                   if (GameObjectData const* go_data = objmgr.GetGOData((*itr2).guid))
+                   {
+                       objmgr.RemoveGameobjectFromGrid((*itr2).guid, go_data);
+                       (*itr2).spawned = false;
+                   }
                 }
-            }
         }           
     }
     return true;
 }
 
-bool AddGuildHouseAdd(uint32 id, uint32 add)
+bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 {
     for(uint8 i = 0; i<32; i++)
         if( (uint32(1)<<i && add) != 0 )
@@ -152,17 +157,25 @@ bool AddGuildHouseAdd(uint32 id, uint32 add)
             GH_Item::iterator itr2 = (*itr).second.begin();
             for(; itr2 != (*itr).second.end(); itr2++)
             {
-                if(!(*itr2).guid)
-                {
+                if(!(*itr2).spawned)
                     if((*itr2).type == CREATURE)
                     {
-                        (*itr2).guid = objmgr.AddCreData((*itr2).id_template,(*itr2).team,(*itr2).m_map,(*itr2).m_X,(*itr2).m_Y,(*itr2).m_Z,(*itr2).m_orient);
+                       if (CreatureData const* cre_data = objmgr.GetCreatureData((*itr2).guid))
+                       {
+                           objmgr.AddCreatureToGrid((*itr2).guid, cre_data);
+                           (*itr2).spawned = true;
+                           if(i == 0) //Guardie
+                               UpdateGuardMap((*itr2).guid,guild);
+                       }
                     }
                     else
                     {
-                        (*itr2).guid = objmgr.AddGOData((*itr2).id_template,(*itr2).team,(*itr2).m_map,(*itr2).m_X,(*itr2).m_Y,(*itr2).m_Z,(*itr2).m_orient);                                     
+                       if (GameObjectData const* go_data = objmgr.GetGOData((*itr2).guid))  
+                       {
+                           objmgr.AddGameobjectToGrid((*itr2).guid, go_data);
+                           (*itr2).spawned = true;
+                       }
                     }
-                }
             }           
         }
     return true;
@@ -213,7 +226,8 @@ void LoadGuildHouse()
         GuildHouse NewGH(guildID, id, x, y, z, map, add);
         GH_map[guildID] = NewGH;
 
-        AddGuildHouseAdd(id, add);
+        RemoveGuildHouseAdd(id);
+        AddGuildHouseAdd(id, add, guildID);
 
     } while (result->NextRow());
 
@@ -224,6 +238,8 @@ void LoadGuildHouse()
 void LoadGuildHouseAdd()
 {
     GH_AddHouse.clear();
+    mGuildGuardID.clear();
+
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT * FROM guildhouses_add ORDER BY Id ASC");
 
     if (!result)
@@ -244,17 +260,12 @@ void LoadGuildHouseAdd()
         Field *fields = result->Fetch();
         bar.step();
 
-        uint16 id           = fields[1].GetUInt16();
-        uint16 add_type     = fields[2].GetUInt16();
-        uint32 id_template  = fields[3].GetUInt32();
-        uint8 type          = fields[4].GetUInt8();
-        uint32 x            = fields[5].GetFloat();
-        uint32 y            = fields[6].GetFloat();
-        uint32 z            = fields[7].GetFloat();
-        uint32 o            = fields[8].GetFloat();
-        uint16 map          = fields[9].GetUInt16();
+        uint32 guid         = fields[0].GetUInt32();
+        uint16 type         = fields[1].GetUInt16();
+        uint16 id           = fields[2].GetUInt16();
+        uint16 add_type     = fields[3].GetUInt16();
 
-        GH_ItemTemp NewItemTemp(id_template, (GH_ItemTemplate_Type)type, x, y, z, o, map);
+        GH_ItemTemp NewItemTemp(guid, (GH_Item_type)type, id, add_type);
         uint32 find = 0;
         find = ( (uint32)id << 16 ) || (uint32)add_type;
         GH_AddHouse[find].push_back(NewItemTemp);        
@@ -264,17 +275,13 @@ void LoadGuildHouseAdd()
     sLog.outString( ">> Loaded %u GuildHouseAdd", GH_AddHouse.size() );
 }
 
-GH_ItemTemp::GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, float X, float Y, float Z, float O, uint16 map)
+GH_ItemTemp::GH_ItemTemp(uint32 new_guid, GH_Item_type new_type, uint32 new_GH_id, uint32 new_GH_AddType)
 {
-    guid = 0;    
-    id_template = new_id_template;
-    type = newtype;
-    team = 35;
-    m_X = X;
-    m_Y = Y; 
-    m_Z = Z;
-    m_orient = O;
-    m_map = map;
+    guid = new_guid;
+    type = new_type;
+    GH_id = new_GH_id;
+    GH_AddType = new_GH_AddType;
+    spawned = true;
 }
 
 GuildHouse::GuildHouse(uint32 guild_id, uint32 guild_add)
@@ -336,5 +343,94 @@ void GuildHouse::ChangeGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add &= NewAdd;
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
-    AddGuildHouseAdd(Id, NewAdd);
+    AddGuildHouseAdd(Id, NewAdd, GuildId);
 };
+
+// Guardie di gilda
+/*void LoadGuildGuardID()
+{
+    mGuildGuardID.clear();
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT creature_guid, guild_house_id FROM guild_guard ORDER BY creature_guid ASC");
+
+    if (!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString("");
+        sLog.outErrorDb(">> Loaded 0 guild guards. DB table `guild_guards` is empty.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint64 creature_guid = fields[0].GetUInt64();
+        uint32 guid_house_id = fields[1].GetUInt64();
+        QueryResult_AutoPtr result2 = WorldDatabase.PQuery("SELECT guildId FROM guildhouses WHERE id = %u", guid_house_id);
+        
+        if (result2)
+        {
+            Field *fields2 = result2->Fetch();
+            uint32 guild_id = fields2[0].GetUInt32();
+
+            if(CheckGuildGuardID(creature_guid, guild_id))
+                mGuildGuardID[creature_guid] = guild_id;
+            else 
+                mGuildGuardID[creature_guid] = 0;            
+        }
+        else
+        {
+            sLog.outError("La GuildHouse '%u' non esiste in guildhouses per il caricamento delle guardia %u", guid_house_id, creature_guid);
+        }
+    } while (result->NextRow());   
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u guild guard", mGuildGuardID.size() );
+}*/
+
+//Check Guardie
+bool CheckGuildGuardID(uint64 creature_guid, uint32 guild_id)
+{
+    if (!guild_id)
+        return false;
+
+    //const CreatureInfo* const npc = GetCreatureInfo(creature_id);
+    Guild* guild = objmgr.GetGuildById(guild_id);  
+    
+    /*if(!npc)
+    {
+        sLog.outError("La Creatura '%u' non esiste in creature_template",creature_id);
+        return false;
+    }*/
+
+    if(!guild_id)
+    {
+        sLog.outError("La gilda %u non esiste",guild_id);
+        return false;
+    }
+
+    return true;
+}
+
+uint32 GetGuildByGuardID(uint64 guid)
+{
+    GuildGuardID::const_iterator itr = mGuildGuardID.find(guid);
+    if(itr == mGuildGuardID.end()) return 0;
+    return itr->second;
+}
+
+
+void UpdateGuardMap(uint32 guid, uint32 guild)
+{
+    GuildGuardID::iterator itr = mGuildGuardID.find(guid);
+    if(itr == mGuildGuardID.end()) 
+        mGuildGuardID[guid] = guild;
+    else
+        itr->second = guild;
+}
