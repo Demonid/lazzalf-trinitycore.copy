@@ -729,7 +729,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     damage += int32(0.2f*ap + 0.32f*sp);
                 }
                 // Judgement of Wisdom, Light, Justice
-                else if(m_spellInfo->Id == 54158)
+                else if (m_spellInfo->SpellFamilyFlags[0] & 0x00800000 && m_spellInfo->Id != 31804 && m_spellInfo->Id != 53733)//else if(m_spellInfo->Id == 54158)
                 {
                     float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     float sp = m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
@@ -5901,8 +5901,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 63521:
                 {
                     // Divine Plea
-                    if(Aura * aura = m_caster->GetAura(54428))
-                        aura->RefreshDuration();
+                    //for(uint8 i = 0; i < 3; ++i)
+                        //if (Aura* aura = unitTarget->GetAura(54428, ((GetEffIndex())i)))
+                        if (Aura* aura = unitTarget->GetAura(54428))
+                            aura->RefreshDuration();
                     return;
                 }
             }

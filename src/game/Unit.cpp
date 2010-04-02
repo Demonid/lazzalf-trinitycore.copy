@@ -6476,7 +6476,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 float ap = GetTotalAttackPowerValue(BASE_ATTACK);
                 int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
                              SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
-                basepoints0 = (int32)GetAttackTime(BASE_ATTACK) * int32(ap*0.022f + 0.044f * holy) / 1000;
+                basepoints0 = int32(GetAttackTime(BASE_ATTACK)) * int32(ap*0.022f + 0.044f * holy) / 1000;
                 break;
             }
             // Light's Beacon - Beacon of Light
@@ -11401,7 +11401,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         return;
 
     if (PvP)
-        m_CombatTimer = 5000;
+        m_CombatTimer = 6000;
 
     if (isInCombat() || hasUnitState(UNIT_STAT_EVADE))
         return;
