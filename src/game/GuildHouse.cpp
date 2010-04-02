@@ -85,13 +85,13 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     {
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         itr->second.Id = 0;
-        //RemoveGuildHouseAdd(newid);        
+        RemoveGuildHouseAdd(newid);        
     }
     else // Compra
     {        
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
         itr->second.ChangeId(newid);
-        //RemoveGuildHouseAdd(newid);
+        AddGuildHouseAdd(newid, itr->second.GuildHouse_Add);
     }
     return true;
 }
@@ -135,12 +135,39 @@ bool RemoveGuildHouseAdd(uint32 id)
                     (*itr2).guid = 0;                                       
                 }
             }
-            else
-                break;
         }           
     }
     return true;
 }
+
+bool AddGuildHouseAdd(uint32 id, uint32 add)
+{
+    for(uint8 i = 0; i<32; i++)
+        if( (uint32(1)<<i && add) != 0 )
+        {
+            uint32 find = id << 16 || i;
+            GH_Add::iterator itr = GH_AddHouse.find(find);
+            if(itr == GH_AddHouse.end()) 
+                continue;
+            GH_Item::iterator itr2 = (*itr).second.begin();
+            for(; itr2 != (*itr).second.end(); itr2++)
+            {
+                if(!(*itr2).guid)
+                {
+                    if((*itr2).type == CREATURE)
+                    {
+                        (*itr2).guid = objmgr.AddCreData((*itr2).id_template,(*itr2).team,(*itr2).m_map,(*itr2).m_X,(*itr2).m_Y,(*itr2).m_Z,(*itr2).m_orient);
+                    }
+                    else
+                    {
+                        (*itr2).guid = objmgr.AddGOData((*itr2).id_template,(*itr2).team,(*itr2).m_map,(*itr2).m_X,(*itr2).m_Y,(*itr2).m_Z,(*itr2).m_orient);                                     
+                    }
+                }
+            }           
+        }
+    return true;
+}
+        
 
 void LoadGuildHouse()
 {
@@ -185,7 +212,9 @@ void LoadGuildHouse()
 
         GuildHouse NewGH(guildID, id, x, y, z, map, add);
         GH_map[guildID] = NewGH;
-        
+
+        AddGuildHouseAdd(id, add);
+
     } while (result->NextRow());
 
     sLog.outString();
@@ -215,15 +244,15 @@ void LoadGuildHouseAdd()
         Field *fields = result->Fetch();
         bar.step();
 
-        uint16 id           = fields[0].GetUInt16();
-        uint16 add_type     = fields[1].GetUInt16();
-        uint32 id_template  = fields[2].GetUInt32();
-        uint8 type          = fields[3].GetUInt8();
-        uint32 x            = fields[4].GetFloat();
-        uint32 y            = fields[5].GetFloat();
-        uint32 z            = fields[6].GetFloat();
-        uint32 o            = fields[7].GetFloat();
-        uint16 map          = fields[5].GetUInt16();
+        uint16 id           = fields[1].GetUInt16();
+        uint16 add_type     = fields[2].GetUInt16();
+        uint32 id_template  = fields[3].GetUInt32();
+        uint8 type          = fields[4].GetUInt8();
+        uint32 x            = fields[5].GetFloat();
+        uint32 y            = fields[6].GetFloat();
+        uint32 z            = fields[7].GetFloat();
+        uint32 o            = fields[8].GetFloat();
+        uint16 map          = fields[9].GetUInt16();
 
         GH_ItemTemp NewItemTemp(id_template, (GH_ItemTemplate_Type)type, x, y, z, o, map);
         uint32 find = 0;
@@ -240,6 +269,7 @@ GH_ItemTemp::GH_ItemTemp(uint32 new_id_template, GH_ItemTemplate_Type newtype, f
     guid = 0;    
     id_template = new_id_template;
     type = newtype;
+    team = 35;
     m_X = X;
     m_Y = Y; 
     m_Z = Z;
@@ -306,4 +336,5 @@ void GuildHouse::ChangeGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add &= NewAdd;
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    AddGuildHouseAdd(Id, NewAdd);
 };

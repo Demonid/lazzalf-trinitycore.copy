@@ -61,6 +61,7 @@ class GH_ItemTemp
         uint32 guid;
         GH_ItemTemplate_Type type;
         uint32               id_template;
+        uint32               team;
         float                m_X, m_Y, m_Z, m_orient;
         uint16               m_map;
 
@@ -97,6 +98,6 @@ bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 bool RemoveGuildHouseAdd(uint32 id);
-bool AddGuildHouseAdd(uint32 add, uint32 id);
+bool AddGuildHouseAdd(uint32 id, uint32 add);
 
 #endif
