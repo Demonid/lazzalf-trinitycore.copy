@@ -71,18 +71,18 @@ class GuildHouse
 {
     public: 
         GuildHouse(uint32 guild_id = 0, uint32 guild_add = 0);
-        GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map, uint32 add);
+        GuildHouse(uint32 guildID, uint32 id, float x, float y, float z, uint32 map, uint32 add);
         
         uint32        GuildId;      
         uint32        Id;    
         uint32        GuildHouse_Add;
         float         m_X, m_Y, m_Z, m_orient;
-        uint16        m_map; 
+        uint32        m_map; 
 
         void ChangeId(uint32 newid);
         void SetGuildHouse_Add(uint32 NewAdd);
         void ChangeGuildHouse_Add(uint32 NewAdd);
-        void SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map);
+        void SetGuildHouse(uint32 guildID, uint32 id, float x, float y, float z, uint32 map);
 };
 
 typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
@@ -98,7 +98,7 @@ void LoadGuildHouseAdd();
 bool CheckGuildGuardID(uint64 creature_guid, uint32 guild_id);
 bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
-bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map);
+bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 bool RemoveGuildHouseAdd(uint32 id);
 bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);

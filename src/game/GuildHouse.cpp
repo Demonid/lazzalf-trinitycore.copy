@@ -28,7 +28,6 @@
  *
  **/
 
-#include "ScriptedPch.h"
 #include "GuildHouse.h"
 
 GuildHouseMap GH_map;
@@ -97,7 +96,7 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     return true;
 }
 
-bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint16 &map)
+bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map)
 {
     GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
@@ -185,7 +184,7 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 void LoadGuildHouse()
 {
     GH_map.clear();
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT * FROM guildhouses WHERE guildId <> 0 ORDER BY guildId ASC");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses WHERE guildId <> 0 ORDER BY guildId ASC");
 
     if (!result)
     {
@@ -207,16 +206,16 @@ void LoadGuildHouse()
 
         uint32 id = fields[0].GetUInt32();
         uint32 guildID = fields[1].GetUInt32();
-        uint32 x   = fields[2].GetFloat();
-        uint32 y   = fields[3].GetFloat();
-        uint32 z   = fields[4].GetFloat();
-        uint16 map = fields[5].GetUInt16();
+        float x   = fields[2].GetFloat();
+        float y   = fields[3].GetFloat();
+        float z   = fields[4].GetFloat();
+        uint32 map = fields[5].GetUInt32();
         uint32 add = 0;
 
         if(!CheckGuildID(guildID))
             continue;
 
-        QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `guildhouses_guildadd` WHERE `guildId` = %u", guildID);
+        QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guildID);
         if(result2)
         {
             Field *fields2 = result2->Fetch();
@@ -239,8 +238,9 @@ void LoadGuildHouseAdd()
 {
     GH_AddHouse.clear();
     mGuildGuardID.clear();
+    sLog.outString( "Loading Baffo GuildHouse System");
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT * FROM guildhouses_add ORDER BY Id ASC");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
 
     if (!result)
     {
@@ -249,7 +249,7 @@ void LoadGuildHouseAdd()
         bar.step();
 
         sLog.outString("");
-        sLog.outErrorDb(">> Loaded 0 guild house add.");
+        sLog.outErrorDb(">> Loaded 0 GuildHouse Add");
         return;
     }
 
@@ -272,7 +272,7 @@ void LoadGuildHouseAdd()
     } while (result->NextRow());
 
     sLog.outString();
-    sLog.outString( ">> Loaded %u GuildHouseAdd", GH_AddHouse.size() );
+    sLog.outString( ">> Loaded %u GuildHouse Add", GH_AddHouse.size() );
 }
 
 GH_ItemTemp::GH_ItemTemp(uint32 new_guid, GH_Item_type new_type, uint32 new_GH_id, uint32 new_GH_AddType)
@@ -296,10 +296,10 @@ GuildHouse::GuildHouse(uint32 guild_id, uint32 guild_add)
     m_map = 0;
 }
 
-GuildHouse::GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map, uint32 add)
+GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float z, uint32 map, uint32 add)
 {
-    GuildId = guildID;
-    Id = id;
+    GuildId = newGuildId;
+    Id = newId;
     m_X = x;
     m_Y = y;  
     m_Z = z;
@@ -308,10 +308,10 @@ GuildHouse::GuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, 
     GuildHouse_Add = add;
 }
 
-void GuildHouse::SetGuildHouse(uint32 guildID, uint32 id, uint32 x, uint32 y, uint32 z, uint16 map)
+void GuildHouse::SetGuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float z, uint32 map)
 {
-    GuildId = guildID;
-    Id = id;
+    GuildId = newGuildId;
+    Id = newId;
     m_X = x;
     m_Y = y;  
     m_Z = z;
@@ -328,7 +328,7 @@ void GuildHouse::ChangeId(uint32 newid)
         m_X = fields[0].GetFloat();
         m_Y = fields[1].GetFloat();
         m_Z = fields[2].GetFloat();
-        m_map = fields[3].GetUInt16();        
+        m_map = fields[3].GetUInt32();        
         return;
     }
 };

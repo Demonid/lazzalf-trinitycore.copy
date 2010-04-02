@@ -128,7 +128,7 @@ void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     }
 
     float x, y, z, o;
-    uint16 map;
+    uint32 map;
 
     if (GetGuildHouseLocation(player->GetGuildId(), x, y, z, o, map))
     {
