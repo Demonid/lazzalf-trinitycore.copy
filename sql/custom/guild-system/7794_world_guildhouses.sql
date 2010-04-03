@@ -11,7 +11,7 @@ CREATE TABLE `guildhouses` (
   `faction` int(8) unsigned NOT NULL default '3',
   `minguildsize` int(16) unsigned NOT NULL default '1',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
 DROP TABLE IF EXISTS `guildhouses_add`;
 CREATE TABLE `guildhouses_add` (
@@ -21,15 +21,15 @@ CREATE TABLE `guildhouses_add` (
   `add_type` int(16) unsigned NOT NULL,
   `comment` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`guid`,`type`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
 /* -- character table
 DROP TABLE IF EXISTS `gh_guildadd`;
 CREATE TABLE `gh_guildadd` (
-  `guildId` int(32) unsigned NOT NULL,  
+  `guildId` int(32) unsigned NOT NULL,
   `GuildHouse_Add` int(32) unsigned NOT NULL,
   PRIMARY KEY  (`guildId`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;*/
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;*/
 
 DELETE FROM `creature_template` WHERE `entry` = 70058;
 INSERT INTO `creature_template` VALUES

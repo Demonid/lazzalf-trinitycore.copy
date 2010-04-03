@@ -165,9 +165,8 @@ enum Yells
  *///----------------------------------------------------
 struct boss_xt002_AI : public BossAI
 {
-    boss_xt002_AI(Creature *pCreature) : BossAI(pCreature, TYPE_XT002), vehicle(me->GetVehicleKit())
+    boss_xt002_AI(Creature *pCreature) : BossAI(pCreature, BOSS_XT002), vehicle(me->GetVehicleKit())
 	{
-		m_creature->SetStandState(UNIT_STAND_STATE_SUBMERGED);
 		assert(vehicle);
 	}
 
@@ -533,7 +532,7 @@ struct mob_xt002_heartAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if (m_pInstance)
-            if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+            if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
                 if (pXT002->AI())
                     pXT002->AI()->DoAction(ACTION_ENTER_HARD_MODE);
 
@@ -543,7 +542,7 @@ struct mob_xt002_heartAI : public ScriptedAI
 
     void DamageTaken(Unit *pDone, uint32 &damage)
     {
-        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
             if (pXT002->AI())
             {
                 uint32 health = m_creature->GetHealth();
@@ -579,13 +578,13 @@ struct mob_scrapbotAI : public ScriptedAI
     {
         m_creature->SetReactState(REACT_PASSIVE);
 
-        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
             m_creature->AI()->AttackStart(pXT002);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
         {
             if (m_creature->GetDistance2d(pXT002) <= 0.5)
             {
@@ -683,7 +682,7 @@ struct mob_boombotAI : public ScriptedAI
     {
         m_creature->SetReactState(REACT_PASSIVE);
 
-        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
             m_creature->AI()->AttackStart(pXT002);
     }
 
@@ -694,7 +693,7 @@ struct mob_boombotAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(NPC_XT002)))
+        if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
         {
             if (m_creature->GetDistance2d(pXT002) <= 0.5)
             {

@@ -113,7 +113,7 @@ const Position Pos[20] =
 
 struct boss_ignis_AI : public BossAI
 {
-    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, TYPE_IGNIS), vehicle(me->GetVehicleKit())
+    boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS), vehicle(me->GetVehicleKit())
     {
         // Do not let Ignis be affected by Scorch Ground haste buff
         me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HEAT, true);
@@ -296,7 +296,7 @@ struct mob_iron_constructAI : public ScriptedAI
         if (m_creature->HasAura(SPELL_BRITTLE) && damage >= 5000)
         {
             DoCast(SPELL_SHATTER);
-            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(NPC_IGNIS)))
+            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
             m_creature->ForcedDespawn();
