@@ -39,7 +39,7 @@
 #include "ObjectMgr.h"
 #include "Log.h"
 
-#include <map>
+//#include <map>
 
 enum GuildAdd_Type
 {
@@ -53,18 +53,6 @@ enum GH_Item_type
 {
     CREATURE        = 0,
     OBJECT          = 1,
-};
-
-class GH_ItemTemp
-{
-    public:
-        uint32              guid;
-        GH_Item_type        type;
-        uint32              GH_id;
-        uint32              GH_AddType;
-        bool                spawned;
-
-        GH_ItemTemp(uint32 new_guid, GH_Item_type new_type, uint32 new_GH_id, uint32 new_GH_AddType);
 };
 
 class GuildHouse
@@ -81,27 +69,37 @@ class GuildHouse
 
         void ChangeId(uint32 newid);
         void SetGuildHouse_Add(uint32 NewAdd);
-        void ChangeGuildHouse_Add(uint32 NewAdd);
-        void SetGuildHouse(uint32 guildID, uint32 id, float x, float y, float z, uint32 map);
+        void AddGuildHouse_Add(uint32 NewAdd);
+};
+
+typedef UNORDERED_MAP<uint32, bool> Item_Vector;
+class GH_Item
+{    
+   public:
+      Item_Vector AddCre;
+      Item_Vector AddGO;
+      GH_Item()
+      {
+          AddCre.clear();
+          AddGO.clear();
+      }
 };
 
 typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
-
-typedef std::list<GH_ItemTemp> GH_Item;
 typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
 typedef UNORDERED_MAP<uint64, uint32> GuildGuardID;
 
-uint32 GetGuildByGuardID(uint64 guid);
 void LoadGuildHouse();
 void LoadGuildHouseAdd();
 //void LoadGuildGuardID();
-bool CheckGuildGuardID(uint64 creature_guid, uint32 guild_id);
 bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
+bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
-bool RemoveGuildHouseAdd(uint32 id);
-bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
-void UpdateGuardMap(uint32 guid, uint32 guild);
+bool RemoveGuildHouseAdd(uint32 id, bool startup = false);
+bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild, bool startup = false);
+void UpdateGuardMap(uint64 guid, uint32 guild);
+uint32 GetGuildByGuardID(uint64 guid);
 
 #endif
