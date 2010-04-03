@@ -124,7 +124,7 @@ bool GetGuildHouseMap(uint32 guild_id, uint32 &map)
 
 bool RemoveGuildHouseAdd(uint32 id)
 {
-    for(uint32 i = 0; i < NPC_MAX; i++)
+    for(uint32 i = 1; i < NPC_MAX; i++)
     {
         uint32 find = ((id << 16) | i);
         GH_Add::iterator itr = GH_AddHouse.find(find);
@@ -159,9 +159,9 @@ bool RemoveGuildHouseAdd(uint32 id)
 
 bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 {
-    for(uint8 i = 0; i < NPC_MAX; i++)
+    for(uint8 i = 1; i < NPC_MAX; i++)
     {
-        if(((uint32)1<<i) & add)
+        if(((uint32)1 << (i-1)) & add)
         {
             uint32 find = ((id << 16) | i);
             GH_Add::iterator itr = GH_AddHouse.find(find);
