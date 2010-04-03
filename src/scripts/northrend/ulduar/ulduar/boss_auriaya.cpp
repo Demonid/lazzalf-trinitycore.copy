@@ -24,28 +24,20 @@
 #define SPELL_SETINEL_BLAST               64679
 #define SPELL_SONIC_SCREECH               64422
 #define SPELL_SUMMON_SWARMING_GUARDIAN    64397
-
-enum Yells
-{
-    SAY_AGGRO                                   = -1603050,
-    SAY_SLAY_1                                  = -1603051,
-    SAY_SLAY_2                                  = -1603052,
-    SAY_DEATH                                   = -1603053,
-    SAY_BERSERK                                 = -1603054,
-};
+//wrong text ids. correct are beetwen -1000000 AND -1999999
+//beetwen -2000000 and -2999999 are custom texts so wtf?
+#define SAY_AGGRO                   -2615016
+#define SAY_SLAY_1                  -2615017
 
 struct boss_auriaya_AI : public BossAI
 {
-    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, TYPE_AURIAYA)
-    {
-    }
+    boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, BOSS_AURIAYA){}
 
     uint32 TERRIFYING_SCREECH_Timer;
     uint32 SONIC_SCREECH_Timer;
 
     void Reset()
     {
-        _Reset();
         TERRIFYING_SCREECH_Timer = 180000;
         SONIC_SCREECH_Timer = 30000;
     }
@@ -55,16 +47,15 @@ struct boss_auriaya_AI : public BossAI
         _EnterCombat();
         DoScriptText(SAY_AGGRO,m_creature);
     }
-
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), m_creature);
+        DoScriptText(SAY_SLAY_1, m_creature);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
+        DoScriptText(SAY_SLAY_1, m_creature);
     }
 
     void MoveInLineOfSight(Unit* who) {}
@@ -77,6 +68,7 @@ struct boss_auriaya_AI : public BossAI
         if (TERRIFYING_SCREECH_Timer <= diff)
         {
             DoCast(SPELL_TERRIFYING_SCREECH);
+            DoScriptText(SAY_SLAY_1, m_creature);
             TERRIFYING_SCREECH_Timer = 180000;
         } else TERRIFYING_SCREECH_Timer -= diff;
 
@@ -94,7 +86,6 @@ CreatureAI* GetAI_boss_auriaya(Creature* pCreature)
 {
     return new boss_auriaya_AI (pCreature);
 }
-
 void AddSC_boss_auriaya()
 {
     Script *newscript;

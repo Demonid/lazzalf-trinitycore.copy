@@ -565,7 +565,7 @@ void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action 
 
         case 1195: // Heal me please
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,38588,false);
+            _Creature->CastSpell(player,/*38588*/25840,false);
             break;
         case 1200: // Ritual of Souls please
             player->CLOSE_GOSSIP_MENU();

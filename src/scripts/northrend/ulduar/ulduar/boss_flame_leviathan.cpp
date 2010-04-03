@@ -22,36 +22,28 @@
 
 enum Spells
 {
-    SPELL_PURSUED                  = 62374,
-    SPELL_GATHERING_SPEED          = 62375,
-    SPELL_BATTERING_RAM            = 62376,
-    SPELL_FLAME_VENTS              = 62396,
-    SPELL_MISSILE_BARRAGE          = 62400,
-    SPELL_SYSTEMS_SHUTDOWN         = 62475,
+    SPELL_PURSUED                               = 62374,
+    SPELL_GATHERING_SPEED                       = 62375,
+    SPELL_BATTERING_RAM                         = 62376,
+    SPELL_FLAME_VENTS                           = 62396,
+    SPELL_MISSILE_BARRAGE                       = 62400,
+    SPELL_SYSTEMS_SHUTDOWN                      = 62475,
 
-    SPELL_FLAME_CANNON             = 62395,
-    //SPELL_FLAME_CANNON           = 64692 trigger the same spell
+    SPELL_FLAME_CANNON                          = 62395,
+    //SPELL_FLAME_CANNON                        = 64692 trigger the same spell
 
-    SPELL_OVERLOAD_CIRCUIT         = 62399,
-
-    SPELL_SEARING_FLAME            = 62402,
-
-    SPELL_BLAZE                    = 62292,
-
-    SPELL_SMOKE_TRAIL              = 63575,
-
-    SPELL_MIMIRON_INFERNO          = 62910,
-
-    SPELL_HODIR_FURY               = 62297,
-
-    SPELL_ELECTROSHOCK             = 62522
+    SPELL_OVERLOAD_CIRCUIT                      = 62399,
+    SPELL_SEARING_FLAME                         = 62402,
+    SPELL_BLAZE                                 = 62292,
+    SPELL_SMOKE_TRAIL                           = 63575,
+    SPELL_ELECTROSHOCK                          = 62522,
 };
 
 enum Mobs
 {
-    MOB_MECHANOLIFT = 33214,
-    MOB_LIQUID      = 33189,
-    MOB_CONTAINER   = 33218,
+    MOB_MECHANOLIFT                             = 33214,
+    MOB_LIQUID                                  = 33189,
+    MOB_CONTAINER                               = 33218,
 };
 
 enum Events
@@ -61,46 +53,111 @@ enum Events
     EVENT_MISSILE,
     EVENT_VENT,
     EVENT_SPEED,
-    EVENT_SUMMON
+    EVENT_SUMMON,
+    EVENT_SHUTDOWN, // not offylike
 };
 
 enum Seats
 {
-    SEAT_PLAYER = 0,
-    SEAT_TURRET = 1,
-    SEAT_DEVICE = 2,
+    SEAT_PLAYER                                 = 0,
+    SEAT_TURRET                                 = 1,
+    SEAT_DEVICE                                 = 2,
+};
+
+#define EMOTE_PURSUE    "Flame Leviathan pursues $N."
+#define EMOTE_OVERLOAD  "Flame Leviathan's circuits overloaded."
+#define EMOTE_REPAIR    "Automatic repair sequence initiated."
+
+enum Yells
+{
+    SAY_AGGRO                                   = -1603060,
+    SAY_SLAY                                    = -1603061,
+    SAY_DEATH                                   = -1603062,
+    SAY_TARGET_1                                = -1603063,
+    SAY_TARGET_2                                = -1603064,
+    SAY_TARGET_3                                = -1603065,
+    SAY_HARDMODE                                = -1603066,
+    SAY_TOWER_NONE                              = -1603067,
+    SAY_TOWER_FROST                             = -1603068,
+    SAY_TOWER_FLAME                             = -1603069,
+    SAY_TOWER_NATURE                            = -1603070,
+    SAY_TOWER_STORM                             = -1603071,
+    SAY_PLAYER_RIDING                           = -1603072,
+    SAY_OVERLOAD_1                              = -1603073,
+    SAY_OVERLOAD_2                              = -1603074,
+    SAY_OVERLOAD_3                              = -1603075,
+};
+
+#define VEHICLE_SIEGE                              33060
+#define VEHICLE_CHOPPER                            33062
+#define VEHICLE_DEMOLISHER                         33109
+
+const Position PosSiege[5] =
+{
+{-814.59,-64.54,429.92,5.969},
+{-784.37,-33.31,429.92,5.096},
+{-808.99,-52.10,429.92,5.668},
+{-798.59,-44.00,429.92,5.663},
+{-812.83,-77.71,429.92,0.046}
+};
+
+const Position PosChopper[5] =
+{
+{-717.83,-106.56,430.02,0.122},
+{-717.83,-114.23,430.44,0.122},
+{-717.83,-109.70,430.22,0.122},
+{-718.45,-118.24,430.26,0.052},
+{-718.45,-123.58,430.41,0.085}
+};
+
+const Position PosDemolisher[5] =
+{
+{-724.12,-176.64,430.03,2.543},
+{-766.70,-225.03,430.50,1.710},
+{-729.54,-186.26,430.12,1.902},
+{-756.01,-219.23,430.50,2.369},
+{-798.01,-227.24,429.84,1.446}
 };
 
 struct boss_flame_leviathanAI : public BossAI
 {
-    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, TYPE_LEVIATHAN), vehicle(me->GetVehicleKit())
+    boss_flame_leviathanAI(Creature *pCreature) : BossAI(pCreature, BOSS_LEVIATHAN), vehicle(me->GetVehicleKit())
     {
         assert(vehicle);
-    }
+        pInstance = pCreature->GetInstanceData();
+	}
 
+    ScriptedInstance* pInstance;
     Vehicle *vehicle;
 
     void Reset()
     {
         _Reset();
         me->SetReactState(REACT_AGGRESSIVE);
+        if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
+            pTrigger->Respawn();
     }
 
     void EnterCombat(Unit *who)
     {
         _EnterCombat();
         me->SetReactState(REACT_DEFENSIVE);
+        DoScriptText(SAY_AGGRO, me);
         events.ScheduleEvent(EVENT_PURSUE, 0);
         events.ScheduleEvent(EVENT_MISSILE, 1500);
-        events.ScheduleEvent(EVENT_VENT, 20000);
-        events.ScheduleEvent(EVENT_SPEED, 15000);
+        events.ScheduleEvent(EVENT_VENT, 30000);
+        events.ScheduleEvent(EVENT_SPEED, 2000);
         events.ScheduleEvent(EVENT_SUMMON, 0);
+        events.ScheduleEvent(EVENT_SHUTDOWN, 120000);
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }
 
     void JustDied(Unit *victim)
     {
+        DoScriptText(SAY_DEATH, me);
+        if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
+			me->Kill(pTrigger);
         _JustDied();
     }
 
@@ -112,6 +169,12 @@ struct boss_flame_leviathanAI : public BossAI
             me->InterruptSpell(CURRENT_CHANNELED_SPELL);
     }
 
+    void KilledUnit(Unit* Victim)
+    {
+        if (!(rand()%5))
+            DoScriptText(SAY_SLAY, me);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -119,16 +182,26 @@ struct boss_flame_leviathanAI : public BossAI
 
         events.Update(diff);
 
+        if (me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
+        {
+            me->SetReactState(REACT_PASSIVE);
+            me->AttackStop();
+            return;
+        }
+		else
+        {
+            me->SetReactState(REACT_DEFENSIVE);
+        }
+
         while(uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
             case 0: break; // this is a must
             case EVENT_PURSUE:
+                DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
                 Pursue();
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
-                if(!me->getVictim()) // all siege engines and demolishers are dead
-                    UpdateVictim(); // begin to kill other things
                 break;
             case EVENT_MISSILE:
                 DoCastAOE(SPELL_MISSILE_BARRAGE);
@@ -140,13 +213,21 @@ struct boss_flame_leviathanAI : public BossAI
                 break;
             case EVENT_SPEED:
                 DoCastAOE(SPELL_GATHERING_SPEED);
-                events.RescheduleEvent(EVENT_SPEED, 15000);
+                events.RescheduleEvent(EVENT_SPEED, 10000);
                 break;
             case EVENT_SUMMON:
                 if(summons.size() < 15) // 4seat+1turret+10lift
                     if(Creature *lift = DoSummonFlyer(MOB_MECHANOLIFT, me, rand()%20 + 20, 50, 0))
                         lift->GetMotionMaster()->MoveRandom(100);
                 events.RescheduleEvent(EVENT_SUMMON, 2000);
+                break;
+            case EVENT_SHUTDOWN:
+                DoScriptText(RAND(SAY_OVERLOAD_1, SAY_OVERLOAD_2, SAY_OVERLOAD_3), me);
+                me->MonsterTextEmote(EMOTE_OVERLOAD, 0, true);
+                DoCast(SPELL_SYSTEMS_SHUTDOWN);
+                me->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
+                me->MonsterTextEmote(EMOTE_REPAIR, 0, true);
+                events.RescheduleEvent(EVENT_SHUTDOWN, 120000);
                 break;
             default:
                 events.PopEvent();
@@ -166,6 +247,8 @@ struct boss_flame_leviathanAI : public BossAI
                 me->GetCreatureListWithEntryInGrid(PursueList, 33060, 200.0f);
                 if (PursueList.empty())
                     me->GetCreatureListWithEntryInGrid(PursueList, 33109, 200.0f);
+                if (!me->getVictim()) // all siege engines and demolishers are dead
+                    UpdateVictim();   // begin to kill other things
             }
 		else
         {
@@ -180,6 +263,7 @@ struct boss_flame_leviathanAI : public BossAI
             }
         }
         me->AddAura(SPELL_PURSUED, me->getVictim());
+        me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
     }
 };
 
@@ -324,6 +408,38 @@ struct spell_pool_of_tarAI : public TriggerAI
     }
 };
 
+struct flame_leviathan_triggerAI : public ScriptedAI
+{
+    flame_leviathan_triggerAI(Creature *c) : ScriptedAI(c), summons(m_creature)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    SummonList summons;
+
+    void JustDied(Unit *victim)
+    {
+        summons.DespawnAll();
+    }
+
+    void Reset()
+    {
+        summons.DespawnAll();
+        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+            DoSummon(VEHICLE_SIEGE, PosSiege[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+            DoSummon(VEHICLE_CHOPPER, PosChopper[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+            DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        summons.Summon(summon);
+    }
+};
+
 CreatureAI* GetAI_boss_flame_leviathan(Creature* pCreature)
 {
     return new boss_flame_leviathanAI (pCreature);
@@ -352,6 +468,11 @@ CreatureAI* GetAI_boss_flame_leviathan_safety_containerAI(Creature* pCreature)
 CreatureAI* GetAI_spell_pool_of_tar(Creature* pCreature)
 {
     return new spell_pool_of_tarAI (pCreature);
+}
+
+CreatureAI* GetAI_flame_leviathan_trigger(Creature* pCreature)
+{
+    return new flame_leviathan_triggerAI (pCreature);
 }
 
 void AddSC_boss_flame_leviathan()
@@ -385,5 +506,10 @@ void AddSC_boss_flame_leviathan()
     newscript = new Script;
     newscript->Name = "spell_pool_of_tar";
     newscript->GetAI = &GetAI_spell_pool_of_tar;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "flame_leviathan_trigger";
+    newscript->GetAI = &GetAI_flame_leviathan_trigger;
     newscript->RegisterSelf();
 }
