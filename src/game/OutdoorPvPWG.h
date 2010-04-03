@@ -98,18 +98,18 @@ typedef uint32 TeamPair[2];
 
 enum OutdoorPvPWGQuest
 {
-    A_VICTORY_IN_WG                              = 13181,
-    H_VICTORY_IN_WG                              = 13183,
-    CRE_PVP_KILL                                 = 31086, //Quest Objective - Fixme: this should be handled by DB
-    CRE_PVP_KILL_V                               = 31093, //Quest Objective - Fixme: this should be handled by DB
+    A_VICTORY_IN_WG = 13181,
+    H_VICTORY_IN_WG = 13183,
+    CRE_PVP_KILL    = 31086, //Quest Objective - Fixme: this should be handled by DB
+    CRE_PVP_KILL_V  = 31093, //Quest Objective - Fixme: this should be handled by DB
 };
 
 enum OutdoorPvPWGCreEntry
 {
-    CRE_ENG_A                                    = 30499,
-    CRE_ENG_H                                    = 30400,
-    CRE_SPI_A                                    = 31842,
-    CRE_SPI_H                                    = 31841,
+    CRE_ENG_A   = 30499,
+    CRE_ENG_H   = 30400,
+    CRE_SPI_A   = 31842,
+    CRE_SPI_H   = 31841,
 };
 
 const TeamPair OutdoorPvPWGCreEntryPair[] =
@@ -134,11 +134,9 @@ typedef std::list<const AreaPOIEntry *> AreaPOIList;
 
 struct BuildingState
 {
-    explicit BuildingState(uint32 _worldState, TeamId _team, bool asDefault)
-        : worldState(_worldState), health(0)
-        , defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), team(_team), damageState(DAMAGE_INTACT)
-        , building(NULL), type(BUILDING_WALL), graveTeam(NULL)
-    {}
+    explicit BuildingState(uint32 _worldState, TeamId _team, bool asDefault) : worldState(_worldState), health(0), defaultTeam(asDefault ? _team : OTHER_TEAM(_team)), team(_team),
+        damageState(DAMAGE_INTACT), building(NULL), type(BUILDING_WALL), graveTeam(NULL) {}
+
     uint32 worldState;
     uint32 health;
     TeamId defaultTeam;
@@ -158,6 +156,7 @@ struct BuildingState
     }
 
     TeamId GetTeam() const { return team; }
+
     void SetTeam(TeamId t)
     {
         team = t;
