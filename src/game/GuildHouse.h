@@ -72,16 +72,18 @@ class GuildHouse
         void AddGuildHouse_Add(uint32 NewAdd);
 };
 
-typedef UNORDERED_MAP<uint32, bool> Item_Vector;
+typedef std::vector<uint32> Item_Vector;
 class GH_Item
 {    
    public:
       Item_Vector AddCre;
       Item_Vector AddGO;
+      bool spawned;
       GH_Item()
       {
           AddCre.clear();
           AddGO.clear();
+          spawned = true;
       }
 };
 
@@ -91,14 +93,13 @@ typedef UNORDERED_MAP<uint64, uint32> GuildGuardID;
 
 void LoadGuildHouse();
 void LoadGuildHouseAdd();
-//void LoadGuildGuardID();
 bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
 bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
-bool RemoveGuildHouseAdd(uint32 id, bool startup = false);
-bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild, bool startup = false);
+bool RemoveGuildHouseAdd(uint32 id);
+bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
 void UpdateGuardMap(uint64 guid, uint32 guild);
 uint32 GetGuildByGuardID(uint64 guid);
 
