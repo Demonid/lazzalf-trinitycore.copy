@@ -66,7 +66,7 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     {
         uint32 add = 0;
 
-        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `guildhouses_guildadd` WHERE `guildId` = %u", guild_id);
+        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
         if(result)
         {
             Field *fields = result->Fetch();
@@ -84,8 +84,8 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     if(newid == 0) // Vendi
     {
         QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
-        itr->second.Id = 0;
-        RemoveGuildHouseAdd(newid);        
+        RemoveGuildHouseAdd(itr->second.Id);
+        itr->second.Id = 0;                
     }
     else // Compra
     {        
@@ -111,72 +111,122 @@ bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float 
     return true;
 }
 
-bool RemoveGuildHouseAdd(uint32 id)
+bool GetGuildHouseMap(uint32 guild_id, uint32 &map)
 {
-    for(uint32 i = 1; i < NPC_MAX; i++)
+    GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
+    if(itr == GH_map.end()) 
+        return false;
+    if(itr->second.Id == 0)
+        return false;
+    map = itr->second.m_map;
+    return true;
+}
+
+bool RemoveGuildHouseAdd(uint32 id, bool startup)
+{
+    for(uint32 i = 0; i < NPC_MAX; i++)
     {
-        uint32 find = id << 16 || i;
+        uint32 find = ((id << 16) | i);
         GH_Add::iterator itr = GH_AddHouse.find(find);
         if(itr == GH_AddHouse.end()) 
             continue;
-        GH_Item::iterator itr2 = (*itr).second.begin();
-        for(; itr2 != (*itr).second.end(); itr2++)
+        Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
+        for(; itr2 != itr->second.AddCre.end(); itr2++)
         {
-            if((*itr2).spawned)
-                if((*itr2).type == CREATURE)
+            if(itr2->second)
+                if( CreatureData const* data = objmgr.GetCreatureData(itr2->first) )
                 {
-                   if (CreatureData const* cre_data = objmgr.GetCreatureData((*itr2).guid))
-                   {
-                       objmgr.RemoveCreatureFromGrid((*itr2).guid, cre_data);
-                       (*itr2).spawned = false;
-                   }
+                    objmgr.RemoveCreatureFromGrid(itr2->first, data);
+                    if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(itr2->first, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
+                        pCreature->AddObjectToRemoveList();
+                    itr2->second = false;
                 }
-                else
-                {
-                   if (GameObjectData const* go_data = objmgr.GetGOData((*itr2).guid))
-                   {
-                       objmgr.RemoveGameobjectFromGrid((*itr2).guid, go_data);
-                       (*itr2).spawned = false;
-                   }
+        }
+        itr2 =  itr->second.AddGO.begin();
+        for(; itr2 != itr->second.AddGO.end(); itr2++)
+        {
+            if(itr2->second)
+                if (GameObjectData const* data = objmgr.GetGOData(itr2->first))
+                { 
+                    objmgr.RemoveGameobjectFromGrid(itr2->first, data);
+                    if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(itr2->first, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
+                         pGameobject->AddObjectToRemoveList();
+                    itr2->second = false;
                 }
-        }           
+        }        
     }
     return true;
 }
 
-bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
+bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild, bool startup)
 {
-    for(uint8 i = 0; i<32; i++)
-        if( (uint32(1)<<i && add) != 0 )
+    for(uint8 i = 0; i < NPC_MAX; i++)
+    {
+        if(((uint32)1<<i) & add)
         {
-            uint32 find = id << 16 || i;
+            uint32 find = ((id << 16) | i);
             GH_Add::iterator itr = GH_AddHouse.find(find);
-            if(itr == GH_AddHouse.end()) 
+            if(itr == GH_AddHouse.end())
                 continue;
-            GH_Item::iterator itr2 = (*itr).second.begin();
-            for(; itr2 != (*itr).second.end(); itr2++)
+            Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
+            for(; itr2 != itr->second.AddCre.end(); itr2++)
             {
-                if(!(*itr2).spawned)
-                    if((*itr2).type == CREATURE)
+                if(!(itr2->second))
+                {
+                    if (CreatureData const* cre_data = objmgr.GetCreatureData(itr2->first))
                     {
-                       if (CreatureData const* cre_data = objmgr.GetCreatureData((*itr2).guid))
-                       {
-                           objmgr.AddCreatureToGrid((*itr2).guid, cre_data);
-                           (*itr2).spawned = true;
-                           if(i == 0) //Guardie
-                               UpdateGuardMap((*itr2).guid,guild);
-                       }
+                        if (CreatureData const* data = objmgr.GetCreatureData(itr2->first))
+                        {
+                            objmgr.AddCreatureToGrid(itr2->first, data);
+
+                            Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+                            
+                            if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+                            {
+                                Creature* pCreature = new Creature;
+                                //sLog.outDebug("Spawning creature %u",itr2->first);
+                                if (!pCreature->LoadFromDB(itr2->first, map))
+                                    delete pCreature;
+                                else
+                                    map->Add(pCreature);
+                            }
+                            itr2->second = true;                             
+                            if(i == 1) //Guardie
+                                UpdateGuardMap(MAKE_NEW_GUID(itr2->first, data->id, HIGHGUID_GAMEOBJECT), guild);
+                        }
+                                                  
                     }
-                    else
+                }
+            }
+            itr2 =  itr->second.AddGO.begin();
+            for(; itr2 != itr->second.AddGO.end(); itr2++)
+            {
+                if(!(itr2->second))
+                {
+                    if (GameObjectData const* data = objmgr.GetGOData(itr2->first))
                     {
-                       if (GameObjectData const* go_data = objmgr.GetGOData((*itr2).guid))  
-                       {
-                           objmgr.AddGameobjectToGrid((*itr2).guid, go_data);
-                           (*itr2).spawned = true;
-                       }
+                        objmgr.AddGameobjectToGrid(itr2->first, data);
+
+                        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+
+                        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+                        {
+                            GameObject* pGameobject = new GameObject;
+                            //sLog.outDebug("Spawning gameobject %u", itr2->first);
+                            if (!pGameobject->LoadFromDB(itr2->first, map))
+                                delete pGameobject;
+                            else
+                            {
+                                if (pGameobject->isSpawnedByDefault())
+                                    map->Add(pGameobject);
+                            }
+                        }                        
+                        itr2->second = true;
                     }
-            }           
+                }
+            }
         }
+    }
     return true;
 }
         
@@ -184,7 +234,7 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 void LoadGuildHouse()
 {
     GH_map.clear();
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses WHERE guildId <> 0 ORDER BY guildId ASC");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses ORDER BY guildId ASC");
 
     if (!result)
     {
@@ -212,22 +262,26 @@ void LoadGuildHouse()
         uint32 map = fields[5].GetUInt32();
         uint32 add = 0;
 
-        if(!CheckGuildID(guildID))
-            continue;
-
-        QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guildID);
-        if(result2)
+        if(guildID)
         {
-            Field *fields2 = result2->Fetch();
-            add = fields2[0].GetUInt32();
+            if(!CheckGuildID(guildID))
+                continue;
+
+            QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guildID);
+            if(result2)
+            {
+                Field *fields2 = result2->Fetch();
+                add = fields2[0].GetUInt32();
+            }
+
+            GuildHouse NewGH(guildID, id, x, y, z, map, add);
+            GH_map[guildID] = NewGH;
+
+            RemoveGuildHouseAdd(id, true);
+            AddGuildHouseAdd(id, add, guildID, true);
         }
-
-        GuildHouse NewGH(guildID, id, x, y, z, map, add);
-        GH_map[guildID] = NewGH;
-
-        RemoveGuildHouseAdd(id);
-        AddGuildHouseAdd(id, add, guildID);
-
+        else
+            RemoveGuildHouseAdd(id, true);
     } while (result->NextRow());
 
     sLog.outString();
@@ -238,7 +292,8 @@ void LoadGuildHouseAdd()
 {
     GH_AddHouse.clear();
     mGuildGuardID.clear();
-    sLog.outString( "Loading Baffo GuildHouse System");
+    sLog.outString( "Loading Guild House System");
+    sLog.outString("");
 
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
 
@@ -265,23 +320,30 @@ void LoadGuildHouseAdd()
         uint16 id           = fields[2].GetUInt16();
         uint16 add_type     = fields[3].GetUInt16();
 
-        GH_ItemTemp NewItemTemp(guid, (GH_Item_type)type, id, add_type);
         uint32 find = 0;
-        find = ( (uint32)id << 16 ) || (uint32)add_type;
-        GH_AddHouse[find].push_back(NewItemTemp);        
+        find = ( (uint32)id << 16 ) | (uint32)add_type;
+        if(type == CREATURE)
+        {
+            if(!objmgr.GetCreatureData(guid))                
+            {                
+                sLog.outString( "Data per Creature Guid %u non esistente", guid );
+                continue;
+            }
+            GH_AddHouse[find].AddCre[guid] = true;
+        }
+        else if(type == OBJECT)
+        {
+            if(!objmgr.GetGOData(guid))
+            {                
+                sLog.outString( "Data per GameObject Guid %u non esistente", guid );
+                continue;
+            }
+            GH_AddHouse[find].AddGO[guid] = true;
+        }
     } while (result->NextRow());
 
     sLog.outString();
     sLog.outString( ">> Loaded %u GuildHouse Add", GH_AddHouse.size() );
-}
-
-GH_ItemTemp::GH_ItemTemp(uint32 new_guid, GH_Item_type new_type, uint32 new_GH_id, uint32 new_GH_AddType)
-{
-    guid = new_guid;
-    type = new_type;
-    GH_id = new_GH_id;
-    GH_AddType = new_GH_AddType;
-    spawned = true;
 }
 
 GuildHouse::GuildHouse(uint32 guild_id, uint32 guild_add)
@@ -308,16 +370,6 @@ GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float 
     GuildHouse_Add = add;
 }
 
-void GuildHouse::SetGuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float z, uint32 map)
-{
-    GuildId = newGuildId;
-    Id = newId;
-    m_X = x;
-    m_Y = y;  
-    m_Z = z;
-    m_map = map;
-}
-
 void GuildHouse::ChangeId(uint32 newid)
 {
     QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
@@ -339,7 +391,7 @@ void GuildHouse::SetGuildHouse_Add(uint32 NewAdd)
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
 };
 
-void GuildHouse::ChangeGuildHouse_Add(uint32 NewAdd)
+void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add &= NewAdd;
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
@@ -394,30 +446,6 @@ void GuildHouse::ChangeGuildHouse_Add(uint32 NewAdd)
     sLog.outString( ">> Loaded %u guild guard", mGuildGuardID.size() );
 }*/
 
-//Check Guardie
-bool CheckGuildGuardID(uint64 creature_guid, uint32 guild_id)
-{
-    if (!guild_id)
-        return false;
-
-    //const CreatureInfo* const npc = GetCreatureInfo(creature_id);
-    Guild* guild = objmgr.GetGuildById(guild_id);  
-    
-    /*if(!npc)
-    {
-        sLog.outError("La Creatura '%u' non esiste in creature_template",creature_id);
-        return false;
-    }*/
-
-    if(!guild_id)
-    {
-        sLog.outError("La gilda %u non esiste",guild_id);
-        return false;
-    }
-
-    return true;
-}
-
 uint32 GetGuildByGuardID(uint64 guid)
 {
     GuildGuardID::const_iterator itr = mGuildGuardID.find(guid);
@@ -426,7 +454,7 @@ uint32 GetGuildByGuardID(uint64 guid)
 }
 
 
-void UpdateGuardMap(uint32 guid, uint32 guild)
+void UpdateGuardMap(uint64 guid, uint32 guild)
 {
     GuildGuardID::iterator itr = mGuildGuardID.find(guid);
     if(itr == mGuildGuardID.end()) 
