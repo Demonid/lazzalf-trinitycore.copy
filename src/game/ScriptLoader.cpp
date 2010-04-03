@@ -395,7 +395,12 @@ void AddSC_boss_zuramat();
 void AddSC_instance_violet_hold();
 void AddSC_violet_hold();
 void AddSC_instance_eye_of_eternity();   // Malygos
-void AddSC_boss_malygos();   
+void AddSC_boss_malygos(); 
+void AddSC_instance_pit_of_saron();     //Pit of Saron
+void AddSC_pit_of_saron();
+void AddSC_boss_garfrost();
+void AddSC_boss_ick();
+void AddSC_boss_tyrannus();  
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -885,6 +890,11 @@ void AddScripts()
     AddSC_violet_hold();
     AddSC_instance_eye_of_eternity();   // Malygos
     AddSC_boss_malygos(); 
+    AddSC_instance_pit_of_saron();      //Pit of Saron
+    AddSC_pit_of_saron();
+    AddSC_boss_garfrost();
+    AddSC_boss_ick();
+    AddSC_boss_tyrannus();
 
     AddSC_dalaran();
     AddSC_borean_tundra();

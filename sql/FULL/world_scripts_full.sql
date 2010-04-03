@@ -6,6 +6,10 @@ UPDATE `item_template` SET `ScriptName`='';
 UPDATE `creature_template` SET `ScriptName`='';
 UPDATE `gameobject_template` SET `ScriptName`='';
 
+/* AREA TRIGGERS */
+UPDATE `areatrigger_scripts` SET `ScriptName`='at_aldurthar_gate' WHERE `entry` IN (5284,5285,5286,5287);
+UPDATE `areatrigger_scripts` SET `ScriptName`='at_warsong_farms' WHERE `entry` IN (4871,4872,4873);
+UPDATE `areatrigger_scripts` SET `ScriptName`='at_stormwright_shelf' WHERE `entry`=5108;
 
 /* WORLD BOSS */
 UPDATE `creature_template` SET `ScriptName`='boss_ysondre' WHERE `entry`=14887;
@@ -403,6 +407,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_fezzix_geartwist' WHERE `entry`
 UPDATE `creature_template` SET `scriptname`='npc_trapped_mammoth_calf' WHERE `entry`=25850;
 UPDATE `item_template` SET `scriptname`='item_dehta_trap_smasher' WHERE `entry`=35228;
 UPDATE `creature_template` SET `ScriptName`='npc_magmoth_crusher' WHERE `entry`=25434;
+
 
 /* BURNING STEPPES */
 UPDATE `creature_template` SET `ScriptName`='npc_ragged_john' WHERE `entry`=9563;
@@ -943,6 +948,31 @@ UPDATE `creature_template` SET `ScriptName`='boss_onyxia' WHERE `entry`=10184;
 UPDATE `creature_template` SET `ScriptName`='npc_neeru_fireblade' WHERE `entry`=3216;
 UPDATE `creature_template` SET `ScriptName`='npc_shenthul' WHERE `entry`=3401;
 UPDATE `creature_template` SET `ScriptName`='npc_thrall_warchief' WHERE `entry`=4949;
+
+/* PIT OF SARON */
+UPDATE `instance_template` SET `script`='instance_pit_of_saron' WHERE `map`=658;
+UPDATE `creature_template` SET `Scriptname`='boss_garfrost' WHERE `entry`=36494;
+UPDATE `creature_template` SET `Scriptname`='boss_ick' WHERE `entry`=36476;
+UPDATE `creature_template` SET `Scriptname`='boss_krick' WHERE `entry`=36477;
+UPDATE `creature_template` SET `Scriptname`='boss_tyrannus' WHERE `entry`=36658;
+UPDATE `creature_template` SET `Scriptname`='boss_rimefang' WHERE `entry`=36661;
+UPDATE `creature_template` SET `Scriptname`='mob_ymirjar_wrathbringer' WHERE `entry`=36840;
+UPDATE `creature_template` SET `Scriptname`='mob_ymirjar_skycaller' WHERE `entry`=31260;
+UPDATE `creature_template` SET `Scriptname`='mob_ymirjar_flamebearer' WHERE `entry`=36893;
+UPDATE `creature_template` SET `Scriptname`='mob_ymirjar_deathbringer' WHERE `entry`=36892;
+UPDATE `creature_template` SET `Scriptname`='mob_wrathbone_laborer' WHERE `entry`=36830;
+UPDATE `creature_template` SET `Scriptname`='mob_wrathbone_coldwraith' WHERE `entry`=36842;
+UPDATE `creature_template` SET `Scriptname`='mob_wrathbone_sorcerer' WHERE `entry`=37728;
+UPDATE `creature_template` SET `Scriptname`='mob_stonespine_gargoyle' WHERE `entry`=36896;
+UPDATE `creature_template` SET `Scriptname`='mob_plagueborn_horror' WHERE `entry`=36879;
+UPDATE `creature_template` SET `Scriptname`='mob_iceborn_protodrake' WHERE `entry`=36891;
+UPDATE `creature_template` SET `Scriptname`='mob_hungering_ghoul' WHERE `entry`=37711;
+UPDATE `creature_template` SET `Scriptname`='mob_fallen_warrior' WHERE `entry`=38487;
+UPDATE `creature_template` SET `Scriptname`='mob_fallen_warrior' WHERE `entry`=36841;
+UPDATE `creature_template` SET `Scriptname`='mob_deathwhisper_torturer' WHERE `entry`=37713;
+UPDATE `creature_template` SET `Scriptname`='mob_deathwhisper_shadowcaster' WHERE `entry`=37712;
+UPDATE `creature_template` SET `Scriptname`='mob_deathwhisper_necrolyte' WHERE `entry`=36788;
+UPDATE `creature_template` SET `Scriptname`='mob_geist_ambusher' WHERE `entry`=36886;
 
 /* RAGEFIRE CHASM */
 UPDATE `gameobject_template` SET `ScriptName`='go_blood_filled_orb' WHERE `entry`=182024;

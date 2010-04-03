@@ -1654,7 +1654,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
         float discreteResistProbability[11];
         for (int i = 0; i < 11; i++)
         {
-            discreteResistProbability[i] = 0.5f - 2.5f * abs(0.1f * i - averageResist);
+            discreteResistProbability[i] = 0.5f - 2.5f * fabs(0.1f * i - averageResist);
             if (discreteResistProbability[i] < 0.0f)
             {
                 discreteResistProbability[i] = 0.0f;
@@ -4963,7 +4963,8 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo *pInfo)
         case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
             data << uint32(pInfo->damage);                  // damage
-            data << uint32(pInfo->overDamage);              // overheal?
+            data << uint32(pInfo->overDamage);              // overheal
+            data << uint32(0);                              // absorb
             data << uint8(pInfo->critical);                 // new 3.1.2 critical tick
             break;
         case SPELL_AURA_OBS_MOD_POWER:
@@ -15996,7 +15997,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
     {
         case TYPEID_UNIT:
             if (canFly())
-                const_cast<Unit*>(this)->AddUnitMovementFlag(MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_LEVITATING);
+                const_cast<Unit*>(this)->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
             break;
         case TYPEID_PLAYER:
             // remove unknown, unused etc flags for now
