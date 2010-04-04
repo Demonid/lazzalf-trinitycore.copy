@@ -64,13 +64,17 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     GuildHouseMap::iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) //Inserisci nuova classe per la gilda
     {
-        uint32 add = 0;
+        uint32 add = 1;
 
         QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
         if(result)
         {
             Field *fields = result->Fetch();
             add = fields[0].GetUInt32();
+        }
+        else
+        {
+            CharacterDatabase.PQuery("INSERT INTO `gh_guildadd` (`guildId`,`GuildHouse_Add`) VALUES ( %u , 1 )", guild_id);
         }
 
         GuildHouse NewGH(guild_id, add);
@@ -255,7 +259,7 @@ void LoadGuildHouse()
         float y   = fields[3].GetFloat();
         float z   = fields[4].GetFloat();
         uint32 map = fields[5].GetUInt32();
-        uint32 add = 0;
+        uint32 add = 1;
 
         if(guildID)
         {
@@ -383,63 +387,15 @@ void GuildHouse::ChangeId(uint32 newid)
 void GuildHouse::SetGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add = NewAdd;
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `GuildHouse_Add` SET `gh_guildadd` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
 };
 
 void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add &= NewAdd;
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `guildhouses_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `GuildHouse_Add` SET `gh_guildadd` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
     AddGuildHouseAdd(Id, NewAdd, GuildId);
 };
-
-// Guardie di gilda
-/*void LoadGuildGuardID()
-{
-    mGuildGuardID.clear();
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT creature_guid, guild_house_id FROM guild_guard ORDER BY creature_guid ASC");
-
-    if (!result)
-    {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
-        sLog.outErrorDb(">> Loaded 0 guild guards. DB table `guild_guards` is empty.");
-        return;
-    }
-
-    barGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-        bar.step();
-
-        uint64 creature_guid = fields[0].GetUInt64();
-        uint32 guid_house_id = fields[1].GetUInt64();
-        QueryResult_AutoPtr result2 = WorldDatabase.PQuery("SELECT guildId FROM guildhouses WHERE id = %u", guid_house_id);
-        
-        if (result2)
-        {
-            Field *fields2 = result2->Fetch();
-            uint32 guild_id = fields2[0].GetUInt32();
-
-            if(CheckGuildGuardID(creature_guid, guild_id))
-                mGuildGuardID[creature_guid] = guild_id;
-            else 
-                mGuildGuardID[creature_guid] = 0;            
-        }
-        else
-        {
-            sLog.outError("La GuildHouse '%u' non esiste in guildhouses per il caricamento delle guardia %u", guid_house_id, creature_guid);
-        }
-    } while (result->NextRow());   
-
-    sLog.outString();
-    sLog.outString( ">> Loaded %u guild guard", mGuildGuardID.size() );
-}*/
 
 uint32 GetGuildByGuardID(uint64 guid)
 {

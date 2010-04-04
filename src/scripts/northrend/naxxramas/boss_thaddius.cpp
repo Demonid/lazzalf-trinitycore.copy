@@ -98,8 +98,7 @@ enum Events
 };
 
 // If Feugen or Stalagg gets too far from the Tesla Coil behind him, the raid will start taking unhealable AoE
-#define CREATURE_TESLA      16218
-#define SPELL_TESLA         32309 // similar spell from Patchwerk
+#define SPELL_TESLA           32309 // similar spell from Patchwerk
 
 #define TESLA_S_X             3450.45 // Stalagg - Tesla
 #define TESLA_S_Y            -2931.42
@@ -294,7 +293,6 @@ struct mob_stalaggAI : public ScriptedAI
 
     uint32 powerSurgeTimer;
     uint32 magneticPullTimer;
-    uint32 TeslaTimer;
 
     void Reset()
     {
@@ -304,7 +302,6 @@ struct mob_stalaggAI : public ScriptedAI
                     pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
         powerSurgeTimer = urand(20000,25000);
         magneticPullTimer = 20000;
-        TeslaTimer = 5000;
     }
 
     void EnterCombat(Unit *pWho)
@@ -333,6 +330,13 @@ struct mob_stalaggAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        // Tesla distance check
+        if(m_creature->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 25)
+        {
+            m_creature->MonsterTextEmote(EMOTE_TESLA, 0, true);
+            DoCastAOE(SPELL_TESLA);
+        }
 
         if (magneticPullTimer <= uiDiff)
         {
@@ -369,22 +373,6 @@ struct mob_stalaggAI : public ScriptedAI
             DoCast(m_creature, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
             powerSurgeTimer = urand(15000,20000);
         } else powerSurgeTimer -= uiDiff;
-
-        if (TeslaTimer <= uiDiff)
-        {
-            Creature* Tesla = me->SummonCreature(CREATURE_TESLA, TESLA_S_X, TESLA_S_Y, TESLA_S_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-            TeslaTimer = 5000;
-            if (Tesla)
-            {
-                Tesla->SetVisibility(VISIBILITY_OFF);
-                if (!me->IsWithinDistInMap(Tesla, 20))
-                {
-                    Tesla->MonsterTextEmote(EMOTE_TESLA, 0, true);
-                    DoCastAOE(SPELL_TESLA);
-                }
-            }
-        }
-        else TeslaTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
@@ -441,6 +429,13 @@ struct mob_feugenAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        // Tesla distance check
+        if(m_creature->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 25)
+        {
+            m_creature->MonsterTextEmote(EMOTE_TESLA, 0, true);
+            DoCastAOE(SPELL_TESLA);
+        }
 
         if (staticFieldTimer <= uiDiff)
         {
