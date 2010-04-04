@@ -157,7 +157,7 @@ struct boss_flame_leviathanAI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
         if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
-			me->Kill(pTrigger);
+            me->Kill(pTrigger);
         _JustDied();
     }
 
@@ -197,7 +197,7 @@ struct boss_flame_leviathanAI : public BossAI
         {
             switch(eventId)
             {
-            case 0: break; // this is a must
+            case 0: break;
             case EVENT_PURSUE:
                 DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
                 Pursue();

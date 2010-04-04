@@ -43,11 +43,12 @@
 
 enum GuildAdd_Type
 {
-    NPC_GUARD        = 0x00000001,
-    NPC_BUFFMAN      = 0x00000002,
-    NPC_TELE         = 0x00000004,
+    NPC_BASIC        = 0x00000001,
+    NPC_GUARD        = 0x00000002,
+    NPC_BUFFMAN      = 0x00000004,
+    NPC_TELE         = 0x00000008,
 };
-#define NPC_MAX 3
+#define NPC_MAX 4
 
 enum GH_Item_type
 {

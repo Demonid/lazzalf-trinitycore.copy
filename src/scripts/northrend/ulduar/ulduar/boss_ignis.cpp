@@ -65,10 +65,10 @@ enum Events
 #define EMOTE_JETS    "Ignis the Furnace Master begins to cast Flame Jets!"
 
 // Mob and triggers
-#define MOB_IRON_CONSTRUCT                      33121
-#define GROUND_SCORCH                           33119
+#define MOB_IRON_CONSTRUCT                        33121
+#define GROUND_SCORCH                             33119
 
-#define ACTION_REMOVE_BUFF                      20
+#define ACTION_REMOVE_BUFF                        20
 
 enum ConstructSpells
 {
@@ -82,10 +82,10 @@ enum ConstructSpells
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
 // Water coords
-#define WATER_1_X                 646.77
-#define WATER_2_X                 526.77
-#define WATER_Y                   277.79
-#define WATER_Z                   359.88
+#define WATER_1_X                                646.77
+#define WATER_2_X                                526.77
+#define WATER_Y                                  277.79
+#define WATER_Z                                  359.88
 
 const Position Pos[20] =
 {
