@@ -151,7 +151,7 @@ bool RemoveGuildHouseAdd(uint32 id)
                 if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
                      pGameobject->AddObjectToRemoveList();
             }
-        }
+        }               
         itr->second.spawned = false;
     }
     return true;
@@ -169,34 +169,7 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                 continue;
             if(itr->second.spawned) //Non rispawnare se è già spawnato
                 continue;
-            Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
-            for(; itr2 != itr->second.AddCre.end(); itr2++)
-            {                
-                if (CreatureData const* cre_data = objmgr.GetCreatureData(*itr2))
-                {
-                    if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
-                    {
-                        objmgr.AddCreatureToGrid(*itr2, data);
-
-                        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
-                        
-                        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
-                        {
-                            Creature* pCreature = new Creature;
-                            //sLog.outDebug("Spawning creature %u",itr2->first);
-                            if (!pCreature->LoadFromDB(*itr2, map))
-                                delete pCreature;
-                            else
-                                map->Add(pCreature);
-                        }                           
-                        if(i == 1) //Guardie
-                            UpdateGuardMap(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), guild);
-                    }
-                                              
-                }
-                
-            }
-            itr2 =  itr->second.AddGO.begin();
+            Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
             for(; itr2 != itr->second.AddGO.end(); itr2++)
             {
                 if (GameObjectData const* data = objmgr.GetGOData(*itr2))
@@ -218,6 +191,33 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                         }
                     }                       
                 }
+            }
+            itr2 =  itr->second.AddCre.begin();
+            for(; itr2 != itr->second.AddCre.end(); itr2++)
+            {                
+                if (CreatureData const* cre_data = objmgr.GetCreatureData(*itr2))
+                {
+                    if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
+                    {
+                        objmgr.AddCreatureToGrid(*itr2, data);
+
+                        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+                        
+                        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+                        {
+                            Creature* pCreature = new Creature;
+                            //sLog.outDebug("Spawning creature %u",itr2->first);
+                            if (!pCreature->LoadFromDB(*itr2, map))
+                                delete pCreature;
+                            else
+                                map->Add(pCreature);
+                        }                           
+                        if(i == 2) //Guardie
+                            UpdateGuardMap(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), guild);
+                    }
+                                              
+                }
+                
             }
             itr->second.spawned = true;
         }

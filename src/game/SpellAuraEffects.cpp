@@ -5611,6 +5611,28 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 case SPELLFAMILY_GENERIC:
                     switch(GetId())
                     {
+                        case 58600: // Restricted Flight Area
+                        {
+                            if (!target || target->GetAreaId() != 4395) break;
+                            // Remove Flight Auras
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_FLY);
+                            target->CastSpell(target, 61286, true);
+                            // Parachute
+                            target->CastSpell(target, 45472, true);
+                            break;
+                        } 
+                        case 58730: // Restricted Flight Area
+                        {
+                            if (!target || ((target->GetAreaId() != 4197) && (target->GetAreaId() != 4585) && (target->GetAreaId() != 4612) && (target->GetAreaId() != 4582) && (target->GetAreaId() != 4583) && (target->GetAreaId() != 4589) && (target->GetAreaId() != 4575) && (target->GetAreaId() != 4538) && (target->GetAreaId() != 4577))) break;
+                            // Remove Flight Auras
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_FLY);
+                            target->CastSpell(target, 61286, true);
+                            // Parachute
+                            target->CastSpell(target, 45472, true);
+                            break;
+                        } 
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if(target->GetTypeId() == TYPEID_PLAYER)
