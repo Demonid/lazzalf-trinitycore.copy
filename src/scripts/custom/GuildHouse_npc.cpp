@@ -45,29 +45,28 @@
 #define MSG_INCOMBAT             "Sei in combat!"
 #define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
 #define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate."
+#define MSG_NOADDGH              "Non hai altre GHAdd da comprare"
 #define MSG_ALREADYHAVEGH        "La tua gilda possiede già una sede. (%s)."
-#define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare la casa. Hai bisogno di %u gold."
+#define MSG_ALREADYHAVEGHADD     "La tua gilda possiede già questo GHAdd."
+#define MSG_NOTENOUGHMONEY       "Non hai abbastanza soldi per acquistare. Hai bisogno di %u gold."
 #define MSG_NOTENOUGHGUILDMEMBERS "Non hai abbastanza membri in gilda per acquistare la casa. Hai bisogno di %u membri."
 #define MSG_GHOCCUPIED           "Sfortunatamente questa casa è già occupata."
 #define MSG_CONGRATULATIONS      "Congratulazioni! La sede è stata creata."
 #define MSG_SOLD                 "La gilda è stata venduta. ??? ???? %u ??????."
 #define MSG_NOTINGUILD           "Non sei in nessuna gilda."
 
-/*#define MSG_GUARD                "Acquista guardie"
-#define GUARD_PRICE              5000
-#define MSG_BUFFNPC              "Acquista NPC Buffatore"
-#define BUFFNPC_PRICE            3000*/
-
 #define CODE_SELL                "SELL"
 #define MSG_CODEBOX_SELL         "Scrivi \"" CODE_SELL "\" in maiuscolo per vendere la casa, dopo premi accept."
 
-#define OFFSET_GH_ID_TO_ACTION   1500
-#define OFFSET_SHOWBUY_FROM      10000
+#define OFFSET_GH_ID_TO_ACTION       1500
+#define OFFSET_SHOWBUY_FROM          10000
+#define OFFSET_GH_ADD_ID_TO_ACTION   11500
+#define OFFSET_SHOWBUY_FROM_ADD      20000
 
 #define ACTION_TELE               1001
-#define ACTION_SHOW_BUYLIST       1002  //deprecated. Use (OFFSET_SHOWBUY_FROM + 0) instead
+#define ACTION_SHOW_BUYLIST       1002
 #define ACTION_SELL_GUILDHOUSE    1003
-//#define ACTION_SHOW_BUYADD_LIST   1004
+#define ACTION_SHOW_BUYADD_LIST   1004
 
 #define ICON_GOSSIP_BALOON       0
 #define ICON_GOSSIP_WING         2
@@ -79,9 +78,6 @@
 #define ICON_GOSSIP_TABARD       8
 #define ICON_GOSSIP_XSWORDS      9
 
-//#define COST_GH_BUY              10000000  //1000 g.
-//#define COST_GH_SELL             5000000   //500 g.
-
 #define GOSSIP_COUNT_MAX         10
 
 bool isPlayerGuildLeader(Player *player)
@@ -89,23 +85,39 @@ bool isPlayerGuildLeader(Player *player)
     return ((player->GetRank() == 0) && (player->GetGuildId() != 0));
 }
 
-bool getGuildHouseCoords(uint32 guildId, float &x, float &y, float &z, uint32 &map)
+bool isPlayerHasGuildhouseAdd(Player *player, Creature *_creature, uint32 add, bool whisper = false)
 {
-    if (guildId == 0)
-    {
-        //if player has no guild
-        return false;
+    uint32 guildadd = GetGuildHouse_Add(player->GetGuildId());
+    bool comprato = ((uint32(1) << (add - 1)) & guildadd);
+    if(comprato)
+    {         
+        if (whisper)
+        {            
+            char msg[200];
+            sprintf(msg, MSG_ALREADYHAVEGHADD);
+            _creature->MonsterWhisper(msg, player->GetGUID());
+        }        
+        return true;
     }
+    return false;
+}
 
+bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = false)
+{
     QueryResult_AutoPtr result;
-    result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `guildId` = %u", guildId);
-    if(result)
+
+    result = WorldDatabase.PQuery("SELECT `comment` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
+
+    if (result)
     {
-        Field *fields = result->Fetch();
-        x = fields[0].GetFloat();
-        y = fields[1].GetFloat();
-        z = fields[2].GetFloat();
-        map = fields[3].GetUInt32();        
+        if (whisper)
+        {
+            //whisper to player "already have etc..."
+            Field *fields = result->Fetch();
+            char msg[200];
+            sprintf(msg, MSG_ALREADYHAVEGH, fields[0].GetString());
+            _creature->MonsterWhisper(msg, player->GetGUID());
+        }        
         return true;
     }
     return false;
@@ -137,15 +149,6 @@ void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     }
     else
         _creature->MonsterWhisper(MSG_NOGUILDHOUSE, player->GetGUID());
-    /*
-    if (getGuildHouseCoords(player->GetGuildId(), x, y, z, map))
-    {
-        //teleport player to the specified location
-        player->TeleportTo(map, x, y, z, 0.0f);
-    }
-    else
-        _creature->MonsterWhisper(MSG_NOGUILDHOUSE, player->GetGUID());*/
-
 }
 
 bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
@@ -220,23 +223,76 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     return false;
 }
 
-bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = false)
+bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
 {
+    if (!player)
+        return false;
+
     QueryResult_AutoPtr result;
 
-    result = WorldDatabase.PQuery("SELECT `comment` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
+    uint32 guildsize = 1;
+    uint32 guild_add = GetGuildHouse_Add(player->GetGuildId());
 
+    Guild *guild = objmgr.GetGuildById(player->GetGuildId());
+    if (guild)
+        guildsize = guild->GetMemberSize();
+    
+    result = WorldDatabase.PQuery("SELECT `add_type`, `comment`, `price` FROM `guildhouses_addtype` WHERE `minguildsize` <= %u AND `add_type` > %u ORDER BY `add_type` ASC LIMIT %u",
+        guildsize, showFromId, GOSSIP_COUNT_MAX);
+ 
     if (result)
     {
-        if (whisper)
+        uint32 add_typeId = 0;
+        std::string comment = "";
+        uint32 price = 0;
+        do
         {
-            //whisper to player "already have etc..."
             Field *fields = result->Fetch();
-            char msg[200];
-            sprintf(msg, MSG_ALREADYHAVEGH, fields[0].GetString());
-            _creature->MonsterWhisper(msg, player->GetGUID());
-        }        
+
+            add_typeId = fields[0].GetInt32();
+            comment = fields[1].GetString();
+            price = fields[2].GetUInt32();
+
+            uint32 comprato = ((uint32(1) << (add_typeId - 1)) & guild_add);
+            
+            std::stringstream complete_comment;
+            if(comprato)
+                complete_comment << "(Comprato) "<< comment;
+            else
+                complete_comment << "price " << price << " - " << comment;
+
+            //send comment as a gossip item
+            //transmit guildhouseId in Action variable
+            player->ADD_GOSSIP_ITEM(ICON_GOSSIP_TABARD, complete_comment.str().c_str(), GOSSIP_SENDER_MAIN,
+                add_typeId + OFFSET_GH_ADD_ID_TO_ACTION);
+
+        } while (result->NextRow());
+
+        if (result->GetRowCount() == GOSSIP_COUNT_MAX)
+        {
+            //assume that we have additional page
+            //add link to next GOSSIP_COUNT_MAX items
+            player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_GOSSIP_NEXTPAGE, GOSSIP_SENDER_MAIN, 
+                add_typeId + OFFSET_SHOWBUY_FROM_ADD);
+        }       
+
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
+
         return true;
+    } 
+    else
+    {
+        if (showFromId = 0)
+        {
+            //all no GhAdd to Show
+            _creature->MonsterWhisper(MSG_NOADDGH, player->GetGUID());
+            player->CLOSE_GOSSIP_MENU();
+        } 
+        else
+        {
+            //just show GHsAdd from beginning
+            showBuyAddList(player, _creature, 0);
+        }
     }
     return false;
 }
@@ -253,29 +309,6 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
     }
 
     QueryResult_AutoPtr result;
-
-    
-    /*uint32 guildsize = 1;
-
-    Guild *guild = objmgr.GetGuildById(player->GetGuildId());
-    if (guild)
-        guildsize = guild->GetMemberSize();
-
-    result = WorldDatabase.PQuery("SELECT `minguildsize` FROM `guildhouses` WHERE `id` = %u", guildhouseId);
-    
-    if (!result)
-        return; 
-
-    Field *fields = result->Fetch();
-    uint32 minguildsize = fields[0].GetUInt32();
-
-    if (guildsize < minguildsize)
-    {
-        char msg[100];
-        sprintf(msg, MSG_NOTENOUGHGUILDMEMBERS, minguildsize);
-        _creature->MonsterWhisper(msg, player->GetGUID());
-        return;
-    }*/
 
     result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u AND `guildId` = 0" , guildhouseId);
 
@@ -299,13 +332,43 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
 
     ChangeGuildHouse(player->GetGuildId(), guildhouseId);
 
-    //update DB
-    /*result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u",
-        player->GetGuildId(), guildhouseId);*/
-
     player->ModifyMoney(-(price*10000));
-    _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, player->GetGUID());
+    _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, player->GetGUID());    
+}
+
+void buyGuildhouseAdd(Player *player, Creature *_creature, uint32 gh_Add)
+{
+    if (!player)
+        return;
+
+    if (isPlayerHasGuildhouseAdd(player, _creature, gh_Add, true))
+    {
+        //player already have GHAdd
+        return;
+    }
+
+    QueryResult_AutoPtr result;
+    result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses_addtype` WHERE `add_type` = %u ", gh_Add);
+    if (!result)
+    {
+        return;
+    }   
     
+    Field *fields = result->Fetch();
+    int32 price = fields[0].GetInt32();
+
+    if (player->GetMoney() < price * 10000)
+    {
+        //show how much money player need to buy GH (in gold)
+        char msg[200];
+        sprintf(msg, MSG_NOTENOUGHMONEY, price);
+        _creature->MonsterWhisper(msg, player->GetGUID());
+        return;
+    }
+
+    Add_GuildhouseAdd(player->GetGuildId(), gh_Add);
+
+    player->ModifyMoney(-(price*10000));    
 }
 
 void sellGuildhouse(Player *player, Creature *_creature)
@@ -323,8 +386,7 @@ void sellGuildhouse(Player *player, Creature *_creature)
         uint32 price = fields[0].GetUInt32();
 
         ChangeGuildHouse(player->GetGuildId(),0);
-        //result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", player->GetGuildId());
-        
+
         player->ModifyMoney(price*5000);
 
         //display message e.g. "here your money etc."
@@ -347,7 +409,7 @@ bool GossipHello_guildmaster(Player *player, Creature *_creature)
         {
             //and additional for guildhouse owner
             player->PlayerTalkClass->GetGossipMenu().AddMenuItem(ICON_GOSSIP_GOLD, MSG_GOSSIP_SELL, GOSSIP_SENDER_MAIN, ACTION_SELL_GUILDHOUSE, MSG_CODEBOX_SELL, 0, true);
-            //player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_GOSSIP_ADD, GOSSIP_SENDER_MAIN, ACTION_SHOW_BUYADD_LIST);
+            player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_GOSSIP_ADD, GOSSIP_SENDER_MAIN, ACTION_SHOW_BUYADD_LIST);
         }
     }
     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
@@ -371,8 +433,24 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             //show list of GHs which currently not occupied
             showBuyList(player, _creature);
             break;
-        default:
-            if (action > OFFSET_SHOWBUY_FROM)
+        case ACTION_SHOW_BUYADD_LIST:
+            //show list of GHs add
+            showBuyAddList(player, _creature);
+            break;
+        default:            
+            if (action > OFFSET_SHOWBUY_FROM_ADD)
+            {
+                showBuyAddList(player, _creature, action - OFFSET_SHOWBUY_FROM_ADD);
+            } 
+            else if (action > OFFSET_GH_ADD_ID_TO_ACTION)
+            {
+                //player clicked on buy list
+                player->CLOSE_GOSSIP_MENU();
+                //get guildhouseId from action
+                //guildhouseId = action - OFFSET_GH_ID_TO_ACTION
+                buyGuildhouseAdd(player, _creature, action - OFFSET_GH_ADD_ID_TO_ACTION);
+            }
+            else if (action > OFFSET_SHOWBUY_FROM)
             {
                 showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
             } 

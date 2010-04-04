@@ -69,7 +69,6 @@ class GuildHouse
         uint32        m_map; 
 
         void ChangeId(uint32 newid);
-        void SetGuildHouse_Add(uint32 NewAdd);
         void AddGuildHouse_Add(uint32 NewAdd);
 };
 
@@ -98,6 +97,9 @@ bool CheckGuildID(uint32 guild_id);
 bool CheckGuildHouse(uint32 guild_id);
 bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
 bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
+uint32 GetGuildHouse_Add(uint32 guild_id);
+bool Add_GuildhouseAdd(uint32 guild_id, uint32 add);
+bool haveGuildHouse(uint32 guild_id);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 bool RemoveGuildHouseAdd(uint32 id);
 bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);

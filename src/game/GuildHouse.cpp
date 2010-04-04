@@ -43,7 +43,9 @@ bool CheckGuildID(uint32 guild_id)
     
     if(!guild_id)
     {
-        sLog.outError("La gilda %u non esiste", guild_id);
+        //sLog.outError("La gilda %u non esiste o è stata cancellata", guild_id);
+        QueryResult_AutoPtr result = CharacterDatabase.PQuery("DELETE FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
+        result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         return false;
     }
     return true;
@@ -125,6 +127,34 @@ bool GetGuildHouseMap(uint32 guild_id, uint32 &map)
     map = itr->second.m_map;
     return true;
 }
+
+uint32 GetGuildHouse_Add(uint32 guild_id)
+{
+    GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
+    if(itr == GH_map.end()) 
+        return 0;
+    return itr->second.GuildHouse_Add;
+};
+
+bool Add_GuildhouseAdd(uint32 guild_id, uint32 add)
+{
+    GuildHouseMap::iterator itr = GH_map.find(guild_id);
+    if(itr == GH_map.end()) 
+        return false;  
+    uint32 NewAdd = (uint32(1) << (add-1));
+    itr->second.AddGuildHouse_Add(NewAdd);
+    return true;
+};
+
+bool haveGuildHouse(uint32 guild_id)
+{
+    GuildHouseMap::iterator itr = GH_map.find(guild_id);
+    if(itr == GH_map.end()) 
+        return false;
+     if(itr->second.Id == 0)
+        return false;
+    return true;
+};
 
 bool RemoveGuildHouseAdd(uint32 id)
 {
@@ -384,16 +414,10 @@ void GuildHouse::ChangeId(uint32 newid)
     }
 };
 
-void GuildHouse::SetGuildHouse_Add(uint32 NewAdd)
-{
-    GuildHouse_Add = NewAdd;
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `GuildHouse_Add` SET `gh_guildadd` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
-};
-
 void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
-    GuildHouse_Add &= NewAdd;
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `GuildHouse_Add` SET `gh_guildadd` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    GuildHouse_Add |= NewAdd;
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `gh_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
     AddGuildHouseAdd(Id, NewAdd, GuildId);
 };
 
