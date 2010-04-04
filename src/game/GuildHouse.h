@@ -68,16 +68,15 @@ class GuildHouse
         float         m_X, m_Y, m_Z, m_orient;
         uint32        m_map; 
 
-        void ChangeId(uint32 newid);
         void AddGuildHouse_Add(uint32 NewAdd);
 };
 
-typedef std::vector<uint32> Item_Vector;
+typedef std::vector<uint32> gh_Item_Vector;
 class GH_Item
 {    
    public:
-      Item_Vector AddCre;
-      Item_Vector AddGO;
+      gh_Item_Vector AddCre;
+      gh_Item_Vector AddGO;
       bool spawned;
       GH_Item()
       {
@@ -99,7 +98,6 @@ bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float 
 bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
 uint32 GetGuildHouse_Add(uint32 guild_id);
 bool Add_GuildhouseAdd(uint32 guild_id, uint32 add);
-bool haveGuildHouse(uint32 guild_id);
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
 bool RemoveGuildHouseAdd(uint32 id);
 bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
