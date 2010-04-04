@@ -43,9 +43,7 @@ bool CheckGuildID(uint32 guild_id)
     
     if(!guild_id)
     {
-        //sLog.outError("La gilda %u non esiste o è stata cancellata", guild_id);
-        QueryResult_AutoPtr result = CharacterDatabase.PQuery("DELETE FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
-        result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
+        sLog.outError("La gilda %u non esiste", guild_id);
         return false;
     }
     return true;
@@ -56,19 +54,41 @@ bool CheckGuildHouse(uint32 guild_id)
     GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
         return false;
-    if(itr->second.Id == 0)
-        return false;
     return true;
 }
 
 bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
 {
-    GuildHouseMap::iterator itr = GH_map.find(guild_id);
-    if(itr == GH_map.end()) //Inserisci nuova classe per la gilda
+    if(newid == 0) // Vendi
+    {        
+        GuildHouseMap::iterator itr = GH_map.find(guild_id);
+        if(itr == GH_map.end())
+            return true;
+        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
+        RemoveGuildHouseAdd(itr->second.Id);
+        GH_map.erase(guild_id);
+    }
+    else // Compra
     {
+        QueryResult_AutoPtr result;
+        GuildHouseMap::iterator itr = GH_map.find(guild_id);
+        if(!(itr == GH_map.end()))
+            ChangeGuildHouse(guild_id, 0); // rimuovi precedente casa
+        
+        result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
+        if (!result)
+            return false; // Id non valido
+        
+        uint32 id = newid;
+        Field *fields = result->Fetch();
+        float x = fields[0].GetFloat();
+        float y = fields[1].GetFloat();
+        float z = fields[2].GetFloat();
+        uint32 map = fields[3].GetUInt32();
+
         uint32 add = 1;
 
-        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
+        result = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guild_id);
         if(result)
         {
             Field *fields = result->Fetch();
@@ -79,25 +99,11 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
             CharacterDatabase.PQuery("INSERT INTO `gh_guildadd` (`guildId`,`GuildHouse_Add`) VALUES ( %u , 1 )", guild_id);
         }
 
-        GuildHouse NewGH(guild_id, add);
+        GuildHouse NewGH(guild_id, id, x, y, z, map, add);
         GH_map[guild_id] = NewGH;
 
-        itr = GH_map.find(guild_id);
-        if(itr == GH_map.end())
-            return false;
-    }
-
-    if(newid == 0) // Vendi
-    {
-        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
-        RemoveGuildHouseAdd(itr->second.Id);
-        itr->second.Id = 0;                
-    }
-    else // Compra
-    {        
-        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
-        itr->second.ChangeId(newid);
-        AddGuildHouseAdd(newid, itr->second.GuildHouse_Add, guild_id);
+        result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
+        AddGuildHouseAdd(newid, add, guild_id);
     }
     return true;
 }
@@ -106,8 +112,6 @@ bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float 
 {
     GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
-        return false;
-    if(itr->second.Id == 0)
         return false;
     x = itr->second.m_X;
     y = itr->second.m_Y;
@@ -121,8 +125,6 @@ bool GetGuildHouseMap(uint32 guild_id, uint32 &map)
 {
     GuildHouseMap::const_iterator itr = GH_map.find(guild_id);
     if(itr == GH_map.end()) 
-        return false;
-    if(itr->second.Id == 0)
         return false;
     map = itr->second.m_map;
     return true;
@@ -146,16 +148,6 @@ bool Add_GuildhouseAdd(uint32 guild_id, uint32 add)
     return true;
 };
 
-bool haveGuildHouse(uint32 guild_id)
-{
-    GuildHouseMap::iterator itr = GH_map.find(guild_id);
-    if(itr == GH_map.end()) 
-        return false;
-     if(itr->second.Id == 0)
-        return false;
-    return true;
-};
-
 bool RemoveGuildHouseAdd(uint32 id)
 {
     for(uint32 i = 1; i < NPC_MAX; i++)
@@ -166,7 +158,7 @@ bool RemoveGuildHouseAdd(uint32 id)
             continue;
         if(!(itr->second.spawned))  // Non despawnare se è già despawnato
                 continue;
-        Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
+        gh_Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
         for(; itr2 != itr->second.AddCre.end(); itr2++)
         {
             if( CreatureData const* data = objmgr.GetCreatureData(*itr2) )
@@ -203,7 +195,7 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                 continue;
             if(itr->second.spawned) //Non rispawnare se è già spawnato
                 continue;
-            Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
+            gh_Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
             for(; itr2 != itr->second.AddGO.end(); itr2++)
             {
                 if (GameObjectData const* data = objmgr.GetGOData(*itr2))
@@ -257,8 +249,7 @@ bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
         }
     }
     return true;
-}
-        
+}        
 
 void LoadGuildHouse()
 {
@@ -399,27 +390,12 @@ GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float 
     GuildHouse_Add = add;
 }
 
-void GuildHouse::ChangeId(uint32 newid)
-{
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
-    if(result)
-    {
-        Id = newid;
-        Field *fields = result->Fetch();
-        m_X = fields[0].GetFloat();
-        m_Y = fields[1].GetFloat();
-        m_Z = fields[2].GetFloat();
-        m_map = fields[3].GetUInt32();        
-        return;
-    }
-};
-
 void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add |= NewAdd;
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `gh_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
     AddGuildHouseAdd(Id, NewAdd, GuildId);
-};
+}
 
 uint32 GetGuildByGuardID(uint64 guid)
 {
@@ -427,7 +403,6 @@ uint32 GetGuildByGuardID(uint64 guid)
     if(itr == mGuildGuardID.end()) return 0;
     return itr->second;
 }
-
 
 void UpdateGuardMap(uint64 guid, uint32 guild)
 {
