@@ -44,6 +44,7 @@ EndContentData */
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
+#include "Guild.h"
 
 /*########
 # npc_air_force_bots
@@ -1903,6 +1904,14 @@ struct npc_training_dummy : Scripted_NoMovementAI
         m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
         ResetTimer = 10000;
         DespawnTimer = 15000;
+    }
+
+    void EnterEvadeMode() //Fix evade mode
+    {
+        if (!_EnterEvadeMode())
+            return;
+
+        Reset();
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
