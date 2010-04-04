@@ -34,7 +34,6 @@ enum Events
     EVENT_FEVER,
     EVENT_ERUPT,
     EVENT_PHASE,
-    EVENT_CHECK,
 };
 
 enum Phases
@@ -44,8 +43,6 @@ enum Phases
 };
 
 // Anti-cheaters position check
-#define CREATURE_CHECK      22418
-
 #define CHECK_X             2821.88
 #define CHECK_Y            -3684.89
 #define CHECK_Z             273.62
@@ -99,7 +96,6 @@ struct boss_heiganAI : public BossAI
             events.ScheduleEvent(EVENT_FEVER, urand(15000, 20000));
             events.ScheduleEvent(EVENT_PHASE, 90000);
             events.ScheduleEvent(EVENT_ERUPT, 15000);
-            events.ScheduleEvent(EVENT_CHECK, 5000);
         }
         else
         {
@@ -118,6 +114,15 @@ struct boss_heiganAI : public BossAI
             return;
 
         events.Update(diff);
+
+        // Distance check
+        if(me->GetDistance(CHECK_X, CHECK_Y, CHECK_Z) <= 4)
+        {
+            std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
+                if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
+                    (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
+        }
 
         while(uint32 eventId = events.ExecuteEvent())
         {
@@ -147,19 +152,6 @@ struct boss_heiganAI : public BossAI
                     eruptDirection ? ++eruptSection : --eruptSection;
 
                     events.ScheduleEvent(EVENT_ERUPT, phase == PHASE_FIGHT ? 10000 : 3000);
-                    break;
-                case EVENT_CHECK:
-                    Creature* Check = me->SummonCreature(CREATURE_CHECK, CHECK_X, CHECK_Y, CHECK_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-                    events.ScheduleEvent(EVENT_CHECK, 5000);
-                    if (Check){
-                        Check->SetVisibility(VISIBILITY_OFF);
-                        if (me->IsWithinDistInMap(Check, 4)){
-                            std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
-                            for (std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
-                                if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
-                                    (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
-                            }
-                        }
                     break;
             }
         }
