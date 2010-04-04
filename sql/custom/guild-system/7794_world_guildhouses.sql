@@ -23,6 +23,15 @@ CREATE TABLE `guildhouses_add` (
   PRIMARY KEY  (`guid`,`type`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
 
+DROP TABLE IF EXISTS `guildhouses_addtype`;
+CREATE TABLE `guildhouses_addtype` (
+  `add_type` int(8) unsigned NOT NULL,
+  `comment` varchar(255) NOT NULL default '',
+  `price` bigint(20) NOT NULL default '1000',
+  `minguildsize` int(16) unsigned NOT NULL default '1',
+  PRIMARY KEY  (`add_type`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;
+
 /* -- character table
 DROP TABLE IF EXISTS `gh_guildadd`;
 CREATE TABLE `gh_guildadd` (
