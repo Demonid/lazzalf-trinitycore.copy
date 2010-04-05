@@ -1,11 +1,11 @@
 ﻿DROP TABLE IF EXISTS `guildhouses`;
 CREATE TABLE `guildhouses` (
-  `id` int(8) unsigned NOT NULL auto_increment,
+  `id` int(16) unsigned NOT NULL auto_increment,
   `guildId` bigint(20) NOT NULL default '0',
   `x` double NOT NULL,
   `y` double NOT NULL,
   `z` double NOT NULL,
-  `map` int(11) NOT NULL,
+  `map` int(16) NOT NULL,
   `comment` varchar(255) NOT NULL default '',
   `price` bigint(20) NOT NULL default '0',
   `faction` int(8) unsigned NOT NULL default '3',
@@ -25,7 +25,7 @@ CREATE TABLE `guildhouses_add` (
 
 DROP TABLE IF EXISTS `guildhouses_addtype`;
 CREATE TABLE `guildhouses_addtype` (
-  `add_type` int(8) unsigned NOT NULL,
+  `add_type` int(16) unsigned NOT NULL,
   `comment` varchar(255) NOT NULL default '',
   `price` bigint(20) NOT NULL default '1000',
   `minguildsize` int(16) unsigned NOT NULL default '1',
@@ -39,11 +39,11 @@ CREATE TABLE `gh_guildadd` (
   `GuildHouse_Add` int(32) unsigned NOT NULL,
   PRIMARY KEY  (`guildId`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC AUTO_INCREMENT=22 ;*/
-
+/*
 DELETE FROM `creature_template` WHERE `entry` = 70058;
 INSERT INTO `creature_template` VALUES
 ('70058','0','0','0','0','0','16042','0','0','0','Guardia','Guild Housing', NULL,'0','80','80','1','14','14','4224','1.71','2','1','1','252','357','0','304','4.6','2000','0','1','33024','0','0','0','0','0','0','215','320','44','7','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','','1','3','1','1','1','0','0','0','0','0','0','0','0','1','310','0','2','guild_guard','0');
-
+*/
 /*
 INSERT INTO `guildhouses` (`id`, `guildId`, `x`, `y`, `z`, `map`, `comment`) VALUES
 ('2','0','-10711','2483','8','1','Tauren village at Veiled Sea (Silithus)'),

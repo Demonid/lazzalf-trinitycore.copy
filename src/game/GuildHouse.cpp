@@ -72,12 +72,13 @@ bool ChangeGuildHouse(uint32 guild_id, uint32 newid)
     {
         QueryResult_AutoPtr result;
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
-        if(!(itr == GH_map.end()))
-            ChangeGuildHouse(guild_id, 0); // rimuovi precedente casa
         
         result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
         if (!result)
             return false; // Id non valido
+
+        if(!(itr == GH_map.end()))
+            ChangeGuildHouse(guild_id, 0); // rimuovi precedente casa        
         
         uint32 id = newid;
         Field *fields = result->Fetch();

@@ -37,7 +37,7 @@ struct boss_moraggAI : public ScriptedAI
     {
         uiOpticLinkTimer = 10000;
         uiCorrosiveSalivaTimer = 5000;
-        uiRayOfPainTimer = 15000; // Not Offy-Like
+        uiRayOfPainTimer = 8000; // Not Offy-Like
 
         if (pInstance)
         {
@@ -103,7 +103,7 @@ struct boss_moraggAI : public ScriptedAI
         if (uiRayOfPainTimer <= diff)
         { 
             DoCast(m_creature->getVictim(), SPELL_RAY_OF_PAIN);
-            uiRayOfPainTimer = 20000;
+            uiRayOfPainTimer = 12000;
         } else uiRayOfPainTimer -= diff;
 
         DoMeleeAttackIfReady();
