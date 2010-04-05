@@ -48,7 +48,7 @@ enum GuildAdd_Type
     NPC_BUFFMAN      = 0x00000004,
     NPC_TELE         = 0x00000008,
 };
-#define NPC_MAX 4
+#define NPC_MAX 32
 
 enum GH_Item_type
 {
