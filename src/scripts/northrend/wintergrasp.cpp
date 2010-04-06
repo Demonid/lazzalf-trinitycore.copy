@@ -1,5 +1,6 @@
 #include "ScriptedPch.h"
 #include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 #include "World.h"
 
 struct npc_demolisher_engineererAI : public ScriptedAI
