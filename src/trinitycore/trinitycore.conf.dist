@@ -2071,6 +2071,47 @@ ArenaMod.TimeToReset = 24
 ArenaMod.ControllIp = 0
 
 ###############################################################################
+# MOVEMENT ANTICHEAT
+#
+#    Anticheat.Movement.Enable
+#        Enable Movement Anticheat
+#        Default: 1 - on
+#                 0 - off
+#
+#    Anticheat.Movement.TeleportToPlaneAlarms
+#        maximum alarms before logging mode will be switched from debug to error (default 50, allowed 20 - 100)
+#
+#    Anticheat.Movement.MistimingDelta
+#        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
+#
+#    Anticheat.Movement.MistimingAlarms
+#        mistiming alarms before logging mode will be switched from debug to error (default 200, allowed 100 - 500)
+#
+###################################################################################################################
+
+Anticheat.Movement.Enable = 1
+Anticheat.Movement.MovementBlock.Enable         = 1;
+Anticheat.Movement.AntiGravity.Enable           = 1;
+Anticheat.Movement.AntiGravityBlock.Enable      = 1;
+Anticheat.Movement.AntiMultiJump.Enable         = 1;
+Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1;
+Anticheat.Movement.AntiSpeedTele.Enable         = 1;
+Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1;
+Anticheat.Movement.AntiMountainHack.Enable      = 1;
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1;
+Anticheat.Movement.AntiFlyHack.Enable           = 1;
+Anticheat.Movement.AntiFlyHackBlock.Enable      = 1;
+Anticheat.Movement.AntiMountainHack.Enable      = 1;
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1;
+Anticheat.Movement.AntiWaterwalk.Enable         = 1;
+Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1;
+Anticheat.Movement.TeleportToPlane.Enable       = 1;
+Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1;
+Anticheat.Movement.TeleportToPlaneAlarms = 50
+Anticheat.Movement.MistimingDelta = 15000
+Anticheat.Movement.MistimingAlarms = 200
+
+###############################################################################
 # CONSOLE AND REMOTE ACCESS
 #
 #    Console.Enable
