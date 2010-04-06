@@ -16,7 +16,8 @@ update creature_template set scriptname = '' where entry = '';
 enum Spells
 {
     SPELL_CORROSIVE_SALIVA                     = 54527,
-    SPELL_OPTIC_LINK                           = 54396
+    SPELL_OPTIC_LINK                           = 54396,
+    SPELL_RAY_OF_PAIN                          = 59525
 };
 
 struct boss_moraggAI : public ScriptedAI
@@ -28,6 +29,7 @@ struct boss_moraggAI : public ScriptedAI
 
     uint32 uiOpticLinkTimer;
     uint32 uiCorrosiveSalivaTimer;
+    uint32 uiRayOfPainTimer;
 
     ScriptedInstance* pInstance;
 
@@ -35,6 +37,7 @@ struct boss_moraggAI : public ScriptedAI
     {
         uiOpticLinkTimer = 10000;
         uiCorrosiveSalivaTimer = 5000;
+        uiRayOfPainTimer = 8000; // Not Offy-Like
 
         if (pInstance)
         {
@@ -96,6 +99,12 @@ struct boss_moraggAI : public ScriptedAI
             DoCast(m_creature->getVictim(), SPELL_CORROSIVE_SALIVA);
             uiCorrosiveSalivaTimer = 10000;
         } else uiCorrosiveSalivaTimer -= diff;
+
+        if (uiRayOfPainTimer <= diff)
+        { 
+            DoCast(m_creature->getVictim(), SPELL_RAY_OF_PAIN);
+            uiRayOfPainTimer = 12000;
+        } else uiRayOfPainTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

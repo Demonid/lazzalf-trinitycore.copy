@@ -25,6 +25,7 @@
 #define SPELL_SPELL_DISRUPTION  29310
 #define SPELL_DECREPIT_FEVER    RAID_MODE(29998,55011)
 #define SPELL_PLAGUE_CLOUD      29350
+#define ACHIEV_SAFETY_DANCE     RAID_MODE(1996,2139)
 
 enum Events
 {
@@ -41,16 +42,29 @@ enum Phases
     PHASE_DANCE,
 };
 
+// Anti-cheaters position check
+#define CHECK_X             2821.88
+#define CHECK_Y            -3684.89
+#define CHECK_Z             273.62
+
 struct boss_heiganAI : public BossAI
 {
     boss_heiganAI(Creature *c) : BossAI(c, BOSS_HEIGAN) {}
 
     uint32 eruptSection;
     bool eruptDirection;
+    bool bIsSomeoneDied;
     Phases phase;
+
+    void Reset()
+    {
+        bIsSomeoneDied = false;
+        _Reset();
+    }
 
     void KilledUnit(Unit* Victim)
     {
+        bIsSomeoneDied = true;
         if (!(rand()%5))
             DoScriptText(SAY_SLAY, me);
     }
@@ -59,6 +73,9 @@ struct boss_heiganAI : public BossAI
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
+
+        if (instance && !bIsSomeoneDied)
+            instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
     }
 
     void EnterCombat(Unit *who)
@@ -97,6 +114,15 @@ struct boss_heiganAI : public BossAI
             return;
 
         events.Update(diff);
+
+        // Distance check
+        if(me->GetDistance(CHECK_X, CHECK_Y, CHECK_Z) <= 4)
+        {
+            std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
+                if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
+                    (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
+        }
 
         while(uint32 eventId = events.ExecuteEvent())
         {
