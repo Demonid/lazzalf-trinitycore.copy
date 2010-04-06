@@ -629,6 +629,28 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
+        // movement anticheat
+        static bool GetEnableMvAnticheat()           { return m_EnableMvAnticheat;         }
+        static bool GetEnableMvAnticheatBlock()      { return m_EnableMvAnticheatBlock;    }
+        static bool GetEnableAntiGravity()           { return m_EnableAntiGravity;         }
+        static bool GetEnableAntiMultiJump()         { return m_EnableAntiMultiJump;       }
+        static bool GetEnableAntiSpeedTele()         { return m_EnableAntiSpeedTele;       }
+        static bool GetEnableAntiMountainHack()      { return m_EnableAntiMountainHack;    }
+        static bool GetEnableAntiFlyHack()           { return m_EnableAntiFlyHack;         }
+        static bool GetEnableAntiWaterwalk()         { return m_EnableAntiWaterwalk;       }
+        static bool GetEnableTeleportToPlane()       { return m_EnableTeleportToPlane;     }
+        static bool GetEnableAntiGravityBlock()      { return m_EnableAntiGravityBlock;         }
+        static bool GetEnableAntiMultiJumpBlock()    { return m_EnableAntiMultiJumpBlock;       }
+        static bool GetEnableAntiSpeedTeleBlock()    { return m_EnableAntiSpeedTeleBlock;       }
+        static bool GetEnableAntiMountainHackBlock() { return m_EnableAntiMountainHackBlock;    }
+        static bool GetEnableAntiFlyHackBlock()      { return m_EnableAntiFlyHackBlock;         }
+        static bool GetEnableAntiWaterwalkBlock()    { return m_EnableAntiWaterwalkBlock;       }
+        static bool GetEnableTeleportToPlaneBlock()  { return m_EnableTeleportToPlaneBlock;     }
+        static uint32 GetTeleportToPlaneAlarms()     { return m_TeleportToPlaneAlarms;     }
+        static uint32 GetMistimingDelta()            { return m_MistimingDelta;            }
+        static uint32 GetMistimingAlarms()           { return m_MistimingAlarms;           }
+        // end movement anticheat
+
      void SetWintergrapsTimer(uint32 timer, uint32 state)
      {
          m_WintergrapsTimer = timer;
@@ -738,6 +760,27 @@ class World
         static int32 m_visibility_notify_periodOnContinents;
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
+
+        // movement anticheat enable flag
+        static bool m_EnableMvAnticheat;
+        static bool m_EnableMvAnticheatBlock;
+        static bool m_EnableAntiGravity;
+        static bool m_EnableAntiMultiJump;
+        static bool m_EnableAntiSpeedTele;
+        static bool m_EnableAntiMountainHack;
+        static bool m_EnableAntiFlyHack;
+        static bool m_EnableAntiWaterwalk;
+        static bool m_EnableTeleportToPlane;
+        static bool m_EnableAntiGravityBlock;
+        static bool m_EnableAntiMultiJumpBlock;
+        static bool m_EnableAntiSpeedTeleBlock;
+        static bool m_EnableAntiMountainHackBlock;
+        static bool m_EnableAntiFlyHackBlock;
+        static bool m_EnableAntiWaterwalkBlock;
+        static bool m_EnableTeleportToPlaneBlock;
+        static uint32 m_TeleportToPlaneAlarms;
+        static uint32 m_MistimingDelta;
+        static uint32 m_MistimingAlarms;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
