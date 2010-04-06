@@ -120,7 +120,6 @@ struct boss_ignis_AI : public BossAI
         assert(vehicle);
     }
 
-    std::vector<Creature*> triggers;
     Vehicle *vehicle;
     uint32 EncounterTime;
 
@@ -140,15 +139,6 @@ struct boss_ignis_AI : public BossAI
         events.ScheduleEvent(EVENT_END_POT, 40000);
         events.ScheduleEvent(EVENT_BERSERK, 480000);
         EncounterTime = 0;
-
-        for(uint32 i = 0; i < 20; ++i)
-            if (Creature *trigger = DoSummon(WORLD_TRIGGER, Pos[i]))
-                triggers.push_back(trigger);
-        if (triggers.size() < 20)
-        {
-            EnterEvadeMode();
-            return;
-        }
     }
 
     void JustDied(Unit *victim)
@@ -224,7 +214,7 @@ struct boss_ignis_AI : public BossAI
                     break;
                 case EVENT_CONSTRUCT:
                     DoScriptText(SAY_SUMMON, me);
-                    DoSummon(MOB_IRON_CONSTRUCT, triggers[rand()%20]);
+                    DoSummon(MOB_IRON_CONSTRUCT, Pos[rand()%20]);
                     DoCast(SPELL_STRENGHT);
                     DoCast(me, SPELL_ACTIVATE_CONSTRUCT);
                     events.ScheduleEvent(EVENT_CONSTRUCT, RAID_MODE(40000, 30000));
@@ -247,9 +237,6 @@ struct boss_ignis_AI : public BossAI
 
     void JustSummoned(Creature *summon)
     {
-        if (summon->GetEntry() == WORLD_TRIGGER)
-            summon->setActive(true);
-
         if (summon->GetEntry() == MOB_IRON_CONSTRUCT)
             summon->setFaction(16);
 	
