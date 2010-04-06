@@ -2089,9 +2089,10 @@ void Spell::EffectDummy(uint32 i)
             // Death Grip
             if(m_spellInfo->Id == 49560)
             {
-                if(unitTarget == m_caster)
-  	                    return;
-
+                if (unitTarget == m_caster)
+  	                return;
+                if (unitTarget->GetEntry() == 28366) // Hackfix per non grippare le torrette a winter
+                    return;
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
                     return;
                 else
