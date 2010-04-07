@@ -19,6 +19,11 @@ SET(scripts_STAT_SRCS
    custom/on_events.cpp
    custom/npc_teleport.cpp
    custom/GuildHouse_npc.cpp
+   eastern_kingdoms/alterac_valley/alterac_valley.cpp
+   eastern_kingdoms/alterac_valley/boss_balinda.cpp
+   eastern_kingdoms/alterac_valley/boss_drekthar.cpp
+   eastern_kingdoms/alterac_valley/boss_galvangar.cpp
+   eastern_kingdoms/alterac_valley/boss_vanndar.cpp
    eastern_kingdoms/blackrock_depths/blackrock_depths.cpp
    eastern_kingdoms/blackrock_depths/boss_ambassador_flamelash.cpp
    eastern_kingdoms/blackrock_depths/boss_anubshiah.cpp
@@ -565,5 +570,16 @@ SET(scripts_STAT_SRCS
    world/npc_taxi.cpp
 )
 message("-- Added Script Engine to SCRIPTS lib")
+
+include_directories(
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/src/framework
+  ${CMAKE_SOURCE_DIR}/src/game
+  ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/dep/include
+  ${MYSQL_INCLUDE_DIR}
+)
+
 add_library(scripts STATIC ${scripts_STAT_SRCS})
 
