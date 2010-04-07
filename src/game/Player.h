@@ -561,6 +561,7 @@ enum AtLoginFlags
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
+typedef std::map<uint32, TimedQuestStatusData> TimedQuestStatusMap;
 
 enum QuestSlotOffsets
 {
@@ -821,7 +822,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
     PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
+    PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS     = 6,
     PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
     PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
     PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
@@ -1324,7 +1325,7 @@ class Player : public Unit, public GridObject<Player>
         QuestStatus GetQuestStatus( uint32 quest_id ) const;
         void SetQuestStatus( uint32 quest_id, QuestStatus status );
 
-        void SetDailyQuestStatus( uint32 quest_id );
+        void SetTimedQuestStatus(uint32 quest_id);
         void ResetDailyQuestStatus();
 
         uint16 FindQuestSlot( uint32 quest_id ) const;
@@ -1465,7 +1466,8 @@ class Player : public Unit, public GridObject<Player>
         }
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
-
+        TimedQuestStatusMap& GetTimedQuestStatusMap() { return mTimedQuestStatus; };
+ 
         const uint64& GetSelection( ) const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
@@ -2384,7 +2386,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
         void _LoadQuestStatus(QueryResult_AutoPtr result);
-        void _LoadDailyQuestStatus(QueryResult_AutoPtr result);
+        void _LoadTimedQuestStatus(QueryResult_AutoPtr result);
         void _LoadGroup(QueryResult_AutoPtr result);
         void _LoadSkills(QueryResult_AutoPtr result);
         void _LoadSpells(QueryResult_AutoPtr result);
@@ -2406,7 +2408,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveInventory();
         void _SaveMail();
         void _SaveQuestStatus();
-        void _SaveDailyQuestStatus();
         void _SaveSkills();
         void _SaveSpells();
         void _SaveEquipmentSets();
@@ -2456,6 +2457,7 @@ class Player : public Unit, public GridObject<Player>
         int8 m_comboPoints;
 
         QuestStatusMap mQuestStatus;
+        TimedQuestStatusMap mTimedQuestStatus;
 
         SkillStatusMap mSkillStatus;
 
@@ -2507,9 +2509,6 @@ class Player : public Unit, public GridObject<Player>
         bool acceptTrade;
         uint64 tradeItems[TRADE_SLOT_COUNT];
         uint32 tradeGold;
-
-        bool   m_DailyQuestChanged;
-        time_t m_lastDailyQuestTime;
 
         uint32 m_drunkTimer;
         uint16 m_drunk;

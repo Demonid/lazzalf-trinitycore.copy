@@ -408,6 +408,18 @@ enum RealmZone
     REALM_ZONE_CN9           = 29                           // basic-Latin at create, any at login
 };
 
+// Daily/Weekly quest last time entries within the worldstates table
+enum LastTimesPoolQuest
+{
+    LAST_TIME_DAILY     = 90101,
+    LAST_TIME_WEEKLY    = 90102
+};
+
+enum ArenaModSystem
+{
+    LAST_TIME_MOD_RESET = 80001
+};
+
 // DB scripting commands
 #define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong (0=say, 1=whisper, 2=yell, 3=emote text, 4=boss emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
@@ -543,9 +555,16 @@ class World
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
         void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
-        /// Next daily quests reset time
-        time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
 
+        /// Next daily quest reset time
+        time_t GetNextDailyQuestReset() const { return m_NextDailyQuestReset; }
+        /// Next weekly quest reset time
+        time_t GetNextWeeklyQuestReset() const { return m_NextWeeklyQuestReset; }
+        /// Last daily quest reset time
+        time_t GetLastDailyQuestReset() const { return m_LastDailyQuestReset; }
+        /// Last weekly quest reset time
+        time_t GetLastWeeklyQuestReset() const { return m_LastWeeklyQuestReset; }
+ 
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
         {
@@ -700,8 +719,8 @@ class World
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId);
 
-        void InitDailyQuestResetTime();
-        void ResetDailyQuests();
+        void InitTimedQuestResetTime();
+        void ResetTimedQuests(bool daily);
     private:
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
@@ -790,8 +809,14 @@ class World
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
         SqlResultQueue *m_resultQueue;
 
-        // next daily quests reset time
-        time_t m_NextDailyQuestReset;
+        // Next daily quest reset time
+         time_t m_NextDailyQuestReset;
+        // Last daily quest reset time
+        time_t m_LastDailyQuestReset;
+        // Next weekly quest reset time
+        time_t m_NextWeeklyQuestReset;
+        // Last weekly quest reset time
+        time_t m_LastWeeklyQuestReset;
 
         //Player Queue
         Queue m_QueuedPlayer;
@@ -811,4 +836,3 @@ extern uint32 realmID;
 
 #define sWorld Trinity::Singleton<World>::Instance()
 #endif
-/// @}

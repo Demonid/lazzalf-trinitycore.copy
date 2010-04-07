@@ -1411,7 +1411,8 @@ void BattleGroundMgr::Update(uint32 diff)
             {
                 CharacterDatabase.PExecute("DELETE FROM arena_mod");
                 m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
-                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaModReset = '"UI64FMTD"'", m_NextArenaModResetTime);
+                //CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaModReset = '"UI64FMTD"'", m_NextArenaModResetTime);
+                sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
             }
             m_ArenaModResetChecker = 600000; // check 10 minutes
         }
@@ -1973,16 +1974,18 @@ void BattleGroundMgr::InitAutomaticArenaModTimer()
     if(enabled)
     {
         sLog.outDebug("Initializing Automatic Arena Mod Timer");
-        QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
-        if(!result)
+        uint64 m_NextArenaModResetTime_temp = sWorld.getWorldState(LAST_TIME_MOD_RESET);
+        //QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
+        if(!m_NextArenaModResetTime_temp)
         {
             sLog.outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");
             m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
-            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaModReset) VALUES ('"UI64FMTD"')", m_NextArenaModResetTime);
+            //CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaModReset) VALUES ('"UI64FMTD"')", m_NextArenaModResetTime);
+            sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
         }
         else
         {
-            m_NextArenaModResetTime = time_t((*result)[0].GetUInt64());
+            m_NextArenaModResetTime = time_t(m_NextArenaModResetTime_temp);
         }
         sLog.outDebug("Automatic Arena Mod Reset initialized.");
     }

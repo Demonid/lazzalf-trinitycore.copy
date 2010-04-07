@@ -377,9 +377,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     PlayerTalkClass = new PlayerMenu( GetSession() );
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
-    m_DailyQuestChanged = false;
-    m_lastDailyQuestTime = 0;
-
     for (uint8 i=0; i<MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
 
@@ -4448,7 +4445,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 	CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_battleground_data WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_glyphs WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",guid);
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus_timed WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_talent WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
 
@@ -6696,6 +6693,8 @@ void Player::ModifyHonorPoints(int32 value)
     }
     else
         SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, GetHonorPoints() < sWorld.getConfig(CONFIG_MAX_HONOR_POINTS) - value ? GetHonorPoints() + value : sWorld.getConfig(CONFIG_MAX_HONOR_POINTS));
+    
+    UpdateAllStats();
 }
 
 void Player::ModifyArenaPoints(int32 value)
@@ -6709,6 +6708,8 @@ void Player::ModifyArenaPoints(int32 value)
     }
     else
         SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() < sWorld.getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld.getConfig(CONFIG_MAX_ARENA_POINTS));
+
+    UpdateAllStats();
 }
 
 uint32 Player::GetGuildIdFromDB(uint64 guid)
@@ -14243,9 +14244,9 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
         MailDraft(mail_template_id).SendMailTo(this, questGiver, MAIL_CHECK_MASK_NONE, pQuest->GetRewMailDelaySecs());
 
-    if (pQuest->IsDaily())
+    if (pQuest->IsDaily() || pQuest->IsWeekly())
     {
-        SetDailyQuestStatus(quest_id);
+        SetTimedQuestStatus(quest_id);
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
     }
 
@@ -14673,27 +14674,55 @@ bool Player::SatisfyQuestPrevChain( Quest const* qInfo, bool msg )
 
 bool Player::SatisfyQuestDay( Quest const* qInfo, bool msg )
 {
-    if(!qInfo->IsDaily())
+    if (!qInfo->IsDaily() && !qInfo->IsWeekly())
         return true;
 
-    bool have_slot = false;
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    bool daily = qInfo->IsDaily();
+    uint32 quest_id = qInfo->GetQuestId();
+
+    // Check the players quest cool downs...
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
     {
-        uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
-        if(qInfo->GetQuestId()==id)
+        if ((*itr).first == quest_id)
+        {
+            if (daily && (*itr).second.ltime > sWorld.GetLastDailyQuestReset())
+                return false;
+
+            if (!daily && (*itr).second.ltime > sWorld.GetLastWeeklyQuestReset())
+                return false;
+        }
+    }
+
+    // Check the players daily slots...
+    if (daily)
+    {
+        bool have_slot = false;
+
+        for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        {
+            uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
+
+            if (!id)
+                have_slot = true;
+
+            if (id == quest_id)
+            {
+                if (msg)
+                    SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUEST_COMPLETED_TODAY);
+
+                return false;
+            }
+
+        }
+        if (!have_slot)
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
+
             return false;
-
-        if(!id)
-            have_slot = true;
+        }
     }
-
-    if(!have_slot)
-    {
-        if( msg )
-            SendCanTakeQuestResponse( INVALIDREASON_DAILY_QUESTS_REMAINING );
-        return false;
-    }
-
+    
     return true;
 }
 
@@ -16187,7 +16216,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
-    _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
+    _LoadTimedQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS));
 
     // after spell and quest load
     InitTalentForLevel();
@@ -16990,12 +17019,12 @@ void Player::_LoadQuestStatus(QueryResult_AutoPtr result)
         SetQuestSlot(i, 0);
 }
 
-void Player::_LoadDailyQuestStatus(QueryResult_AutoPtr result)
+void Player::_LoadTimedQuestStatus(QueryResult_AutoPtr result)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
+    mTimedQuestStatus.clear();
 
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT quest,time FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
 
     if (result)
     {
@@ -17003,32 +17032,40 @@ void Player::_LoadDailyQuestStatus(QueryResult_AutoPtr result)
 
         do
         {
-            if (quest_daily_idx >= PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
-            {
-                sLog.outError("Player (GUID: %u) have more 25 daily quest records in `charcter_queststatus_daily`",GetGUIDLow());
-                break;
-            }
-
             Field *fields = result->Fetch();
 
             uint32 quest_id = fields[0].GetUInt32();
 
-            // save _any_ from daily quest times (it must be after last reset anyway)
-            m_lastDailyQuestTime = (time_t)fields[1].GetUInt64();
-
             Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
             if (!pQuest)
+            {
+                sLog.outError("The player (GUID: %u) has a not existing quest (%u) within the table `character_queststatus_timed`!", GetGUIDLow(), quest_id);
+                sLog.outError("The quest %u for player GUID: %u will be deleted!", GetGUIDLow(), quest_id);
+
+                CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE guid='%u' AND quest='%u' LIMIT 1", GetGUIDLow(), quest_id);
+
                 continue;
+            }
+            mTimedQuestStatus[quest_id].daily = fields[1].GetBool();
+            mTimedQuestStatus[quest_id].ltime = (time_t)fields[2].GetUInt64();
 
-            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,quest_id);
-            ++quest_daily_idx;
+            if (pQuest->IsDaily())
+            {
+                ++quest_daily_idx;
 
-            sLog.outDebug("Daily quest {%u} cooldown for player (GUID: %u)", quest_id, GetGUIDLow());
+                if (quest_daily_idx > PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
+                {
+                    sLog.outError("The player (GUID: %u) has more as 25 daily quest records in `character_queststatus_timed`!", GetGUIDLow());
+                    break;
+                }
+
+                SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
+
+                sLog.outDebug("Daily quest (%u) cooldown for player GUID: %u", quest_id, GetGUIDLow());
+            }
         }
         while (result->NextRow());
     }
-
-    m_DailyQuestChanged = false;
 }
 
 void Player::_LoadSpells(QueryResult_AutoPtr result)
@@ -17645,7 +17682,6 @@ void Player::SaveToDB()
     _SaveBGData();
     _SaveInventory();
     _SaveQuestStatus();
-    _SaveDailyQuestStatus();
     _SaveTalents();
     _SaveSpells();
     _SaveSpellCooldowns();
@@ -17920,23 +17956,6 @@ void Player::_SaveQuestStatus()
         };
         i->second.uState = QUEST_UNCHANGED;
     }
-}
-
-void Player::_SaveDailyQuestStatus()
-{
-    if(!m_DailyQuestChanged)
-        return;
-
-    m_DailyQuestChanged = false;
-
-    // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
-
-    // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        if(GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
-                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
 }
 
 void Player::_SaveSkills()
@@ -21117,28 +21136,39 @@ void Player::SendAurasForTarget(Unit *target)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SetDailyQuestStatus( uint32 quest_id )
+void Player::SetTimedQuestStatus(uint32 quest_id)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    Quest const* quest = objmgr.GetQuestTemplate(quest_id);
+
+    if (quest)
     {
-        if(!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
+        time_t curTime = time(NULL);
+        tm localTm = *localtime(&curTime);
+        time_t now = mktime(&localTm);
+
+        if (quest->IsDaily())
         {
-            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,quest_id);
-            m_lastDailyQuestTime = time(NULL);              // last daily quest time
-            m_DailyQuestChanged = true;
-            break;
+            for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+                if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx))
+                {
+                    SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
+                    CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
+                    break;
+                }
         }
+        // Weekly
+        else
+            CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
+
+        mTimedQuestStatus[quest_id].daily = quest->IsDaily();
+        mTimedQuestStatus[quest_id].ltime = now;
     }
 }
 
 void Player::ResetDailyQuestStatus()
 {
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
-
-    // DB data deleted in caller
-    m_DailyQuestChanged = false;
-    m_lastDailyQuestTime = 0;
+        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
 }
 
 BattleGround* Player::GetBattleGround() const

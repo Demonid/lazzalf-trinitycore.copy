@@ -127,6 +127,9 @@ World::World()
     m_MaxPlayerCount = 0;
     m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
+    m_LastDailyQuestReset = 0;
+    m_NextWeeklyQuestReset = 0;
+    m_LastWeeklyQuestReset = 0;
     m_scheduledScripts = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
@@ -1523,6 +1526,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Quests...");
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
+    sLog.outString();
+    sLog.outString("Loading Quest Pool...");
+    objmgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
+
     sLog.outString( "Loading Quest POI" );
     objmgr.LoadQuestPOI();
 
@@ -1784,8 +1791,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Deleting expired bans...");
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
-    sLog.outString("Calculate next daily quest reset time...");
-    InitDailyQuestResetTime();
+    sLog.outString("Calculating next daily/weekly quest reset times...");
+    InitTimedQuestResetTime();
 
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();
@@ -1944,12 +1951,13 @@ void World::Update(uint32 diff)
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
 
-    /// Handle daily quests reset time
+    /// Handle daily quest reset time
     if (m_gameTime > m_NextDailyQuestReset)
-    {
-        ResetDailyQuests();
-        m_NextDailyQuestReset += DAY;
-    }
+        ResetTimedQuests(true);
+
+    /// Handle weekly quest reset time
+    if (m_gameTime > m_NextWeeklyQuestReset)
+        ResetTimedQuests(false);
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
@@ -2593,51 +2601,93 @@ void World::_UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 ac
     }
 }
 
-void World::InitDailyQuestResetTime()
+void World::InitTimedQuestResetTime()
 {
-    time_t mostRecentQuestTime;
-
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
-    if (result)
-    {
-        Field *fields = result->Fetch();
-
-        mostRecentQuestTime = (time_t)fields[0].GetUInt64();
-    }
-    else
-        mostRecentQuestTime = 0;
-
-    // client built-in time for reset is 6:00 AM
-    // FIX ME: client not show day start time
     time_t curTime = time(NULL);
-    tm localTm = *localtime(&curTime);
-    localTm.tm_hour = 6;
-    localTm.tm_min  = 0;
-    localTm.tm_sec  = 0;
 
-    // current day reset time
-    time_t curDayResetTime = mktime(&localTm);
+    m_LastDailyQuestReset = (time_t)getWorldState(LAST_TIME_DAILY);
+    m_LastWeeklyQuestReset = (time_t)getWorldState(LAST_TIME_WEEKLY);
 
-    // last reset time before current moment
-    time_t resetTime = (curTime < curDayResetTime) ? curDayResetTime - DAY : curDayResetTime;
-
-    // need reset (if we have quest time before last reset time (not processed by some reason)
-    if (mostRecentQuestTime && mostRecentQuestTime <= resetTime)
-        m_NextDailyQuestReset = mostRecentQuestTime;
+    // Dailies must restart/reset always at 03:00am (german wintertime) _on npc side_!
+    if (m_LastDailyQuestReset)
+        m_NextDailyQuestReset = m_LastDailyQuestReset + DAY;
     else
     {
-        // plan next reset time
-        m_NextDailyQuestReset = (curTime >= curDayResetTime) ? curDayResetTime + DAY : curDayResetTime;
+        sLog.outString("Creating the very first start time for dailies...");
+
+        // TODO: Calculate and set the very first last reset time correct and remove this default time (it's wrong because of timezones!)
+        time_t newTime = 1268103600; // Default first last reset time (if no time is set yet): Tue, 09 Mar 2010 03:00:00 GMT
+
+        do { newTime += DAY; }
+        while (newTime < curTime);
+
+        m_NextDailyQuestReset = newTime;
+
+        ResetTimedQuests(true);
+    }
+
+    // Weeklies must restart/reset always at 03:00am on tuesday (german wintertime) _on npc side_!
+    if (m_LastWeeklyQuestReset)
+         m_NextWeeklyQuestReset = m_LastWeeklyQuestReset + WEEK;
+    else
+    {
+        sLog.outString("Creating the very first start time for weeklies...");
+
+        // TODO: Calculate and set the very first last reset time correct and remove this default time (it's wrong because of timezones!)
+        time_t newTime = 1268103600; // Default first last reset time (if no time is set yet): Tue, 09 Mar 2010 03:00:00 GMT
+
+        do { newTime += WEEK; }
+        while (newTime < curTime);
+
+        m_NextWeeklyQuestReset = newTime;
+
+        ResetTimedQuests(false);
     }
 }
 
-void World::ResetDailyQuests()
+void World::ResetTimedQuests(bool daily)
 {
-    sLog.outDetail("Daily quests reset for all characters.");
-    CharacterDatabase.Execute("DELETE FROM character_queststatus_daily");
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if (itr->second->GetPlayer())
-            itr->second->GetPlayer()->ResetDailyQuestStatus();
+    if (daily)
+    {
+        sLog.outDetail("Reset of the daily quests.");
+
+        // Happens only at the very first time... else the first last time is in the future...
+        if (!m_LastDailyQuestReset)
+            m_LastDailyQuestReset = m_NextDailyQuestReset - DAY;
+        else
+        {
+            m_LastDailyQuestReset = m_NextDailyQuestReset;
+            m_NextDailyQuestReset += DAY;
+        }
+
+        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='1' AND time<'%lu'", uint64(m_LastDailyQuestReset));
+        
+        setWorldState(LAST_TIME_DAILY, uint64(m_LastDailyQuestReset));
+
+        // Reset player daily slots for online chars - offline chars get their reset @ login
+        for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+            if (itr->second->GetPlayer())
+                itr->second->GetPlayer()->ResetDailyQuestStatus();
+    }
+    // Weekly
+    else
+    {
+        sLog.outDetail("Reset of the weekly quests.");
+
+        // Happens only at the very first time... else the first last time is in the future...
+        if (!m_LastWeeklyQuestReset)
+            m_LastWeeklyQuestReset = m_NextWeeklyQuestReset - WEEK;
+        else
+        {
+            m_LastWeeklyQuestReset = m_NextWeeklyQuestReset;
+            m_NextWeeklyQuestReset += WEEK;
+        }
+
+        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='0' AND time<'%lu'", uint64(m_LastWeeklyQuestReset));
+        
+        setWorldState(LAST_TIME_WEEKLY, uint64(m_LastWeeklyQuestReset));  
+    }
+    objmgr.ResetQuestPool(daily);
 }
 
 void World::UpdateAllowedSecurity()
