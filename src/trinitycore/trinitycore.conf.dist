@@ -358,6 +358,10 @@ MapUpdate.Threads = 1
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
 #
+#    CheatLogFile
+#        Log file of AntiCheat exception
+#        Default: "" - do not create cheat log file
+#
 #    LogColors
 #        Color for messages (format "normal basic detail debug")
 #        Default: "" - no colors
@@ -486,6 +490,7 @@ GmLogTimestamp = 0
 GmLogPerAccount = 0
 RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
+CheatLogFile = ""
 LogColors = ""
 EnableLogDB = 0
 DBLogLevel = 2
@@ -2090,26 +2095,27 @@ ArenaMod.ControllIp = 0
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 1
-Anticheat.Movement.MovementBlock.Enable         = 1;
-Anticheat.Movement.AntiGravity.Enable           = 1;
-Anticheat.Movement.AntiGravityBlock.Enable      = 1;
-Anticheat.Movement.AntiMultiJump.Enable         = 1;
-Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1;
-Anticheat.Movement.AntiSpeedTele.Enable         = 1;
-Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1;
-Anticheat.Movement.AntiMountainHack.Enable      = 1;
-Anticheat.Movement.AntiMountainHackBlock.Enable = 1;
-Anticheat.Movement.AntiFlyHack.Enable           = 1;
-Anticheat.Movement.AntiFlyHackBlock.Enable      = 1;
-Anticheat.Movement.AntiMountainHack.Enable      = 1;
-Anticheat.Movement.AntiMountainHackBlock.Enable = 1;
-Anticheat.Movement.AntiWaterwalk.Enable         = 1;
-Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1;
-Anticheat.Movement.TeleportToPlane.Enable       = 1;
-Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1;
+Anticheat.Movement.MovementBlock.Enable         = 1
+Anticheat.Movement.AntiGravity.Enable           = 1
+Anticheat.Movement.AntiGravityBlock.Enable      = 1
+Anticheat.Movement.AntiMultiJump.Enable         = 1
+Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1
+Anticheat.Movement.AntiSpeedTele.Enable         = 1
+Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1
+Anticheat.Movement.AntiMountainHack.Enable      = 1
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+Anticheat.Movement.AntiFlyHack.Enable           = 1
+Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
+Anticheat.Movement.AntiMountainHack.Enable      = 1
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+Anticheat.Movement.AntiWaterwalk.Enable         = 1
+Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
+Anticheat.Movement.TeleportToPlane.Enable       = 1
+Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
 Anticheat.Movement.TeleportToPlaneAlarms = 50
 Anticheat.Movement.MistimingDelta = 15000
 Anticheat.Movement.MistimingAlarms = 200
+Anticheat.LogCheatDeltaTime = 0
 
 ###############################################################################
 # CONSOLE AND REMOTE ACCESS

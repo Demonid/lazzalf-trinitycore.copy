@@ -447,6 +447,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_anti_JumpCount = 0;                // Jump already began, anti air jump check
     m_anti_JumpBaseZ = 0;                // Z coord before jump (AntiGrav)
+    m_logcheat_time = 0;                 // Time for logs
     // end movement anticheat
 
     m_mailsLoaded = false;
