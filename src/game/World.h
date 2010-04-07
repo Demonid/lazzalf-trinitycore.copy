@@ -631,7 +631,8 @@ class World
 
         // movement anticheat
         static bool GetEnableMvAnticheat()           { return m_EnableMvAnticheat;         }
-        static bool GetEnableMvAnticheatBlock()      { return m_EnableMvAnticheatBlock;    }
+        static bool GetEnableMistiming()             { return m_EnableMistiming;           }
+        static bool GetEnableMistimingBlock()        { return m_EnableMistimingBlock;      }
         static bool GetEnableAntiGravity()           { return m_EnableAntiGravity;         }
         static bool GetEnableAntiMultiJump()         { return m_EnableAntiMultiJump;       }
         static bool GetEnableAntiSpeedTele()         { return m_EnableAntiSpeedTele;       }
@@ -764,7 +765,8 @@ class World
 
         // movement anticheat enable flag
         static bool m_EnableMvAnticheat;
-        static bool m_EnableMvAnticheatBlock;
+        static bool m_EnableMistiming;
+        static bool m_EnableMistimingBlock;  
         static bool m_EnableAntiGravity;
         static bool m_EnableAntiMultiJump;
         static bool m_EnableAntiSpeedTele;

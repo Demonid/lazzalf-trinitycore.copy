@@ -91,7 +91,8 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 
 // movement anticheat
 bool World::m_EnableMvAnticheat = true;
-bool World::m_EnableMvAnticheatBlock = true;
+bool World::m_EnableMistiming = true;
+bool World::m_EnableMistimingBlock = true;
 bool World::m_EnableAntiGravity = true;
 bool World::m_EnableAntiGravityBlock = true;
 bool World::m_EnableAntiMultiJump = true;
@@ -614,8 +615,9 @@ void World::LoadConfigSettings(bool reload)
     }
 
     // movement anticheat
-    m_EnableMvAnticheat = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);
-    m_EnableMvAnticheatBlock = sConfig.GetBoolDefault("Anticheat.Movement.MovementBlock.Enable", true);
+    m_EnableMvAnticheat = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);    
+    m_EnableMistiming = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
+    m_EnableMistimingBlock = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
     m_EnableAntiGravity = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravity.Enable", true);
     m_EnableAntiGravityBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravityBlock.Enable", true);
     m_EnableAntiMultiJump = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJump.Enable", true);

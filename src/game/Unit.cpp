@@ -11008,8 +11008,8 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
                 {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
  
-                    if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
-                        i = mModDamagePercentDone.begin();
+                    /*if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+                        i = mModDamagePercentDone.begin();*/
                 }
         }
 
