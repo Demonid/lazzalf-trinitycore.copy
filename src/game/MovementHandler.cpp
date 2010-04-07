@@ -422,7 +422,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
             // mistiming checks
             const int32 GetMistimingDelta = abs(int32(World::GetMistimingDelta()));
-            if (sync_time > GetMistimingDelta)
+            if (World::GetEnableMistiming() && (sync_time > GetMistimingDelta))
             {
                 cClientTimeDelta = cServerTimeDelta;
                 ++(plMover->m_anti_MistimingCount);
@@ -438,25 +438,29 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                         sLog.outCheat("AC2-%s, mistiming exception #%d, mistiming: %dms", plMover->GetName(), plMover->m_anti_MistimingCount, sync_time);
                     }
                     #endif
-                    check_passed = false;
-                }                   
-                if (vehMover)
-                    vehMover->Die();
-                // Tell the player "Sure, you can fly!"
-                {
-                    WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
-                    data.append(plMover->GetPackGUID());
-                    data << uint32(0);
-                    SendPacket(&data);
+                    if (World::GetEnableMistimingBlock())
+                        check_passed = false;
                 }
-                // Then tell the player "Wait, no, you can't."
+                if (World::GetEnableMistimingBlock())
                 {
-                    WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
-                    data.append(plMover->GetPackGUID());
-                    data << uint32(0);
-                    SendPacket(&data);
+                    if (vehMover)
+                        vehMover->Die();
+                    // Tell the player "Sure, you can fly!"
+                    {
+                        WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
+                        data.append(plMover->GetPackGUID());
+                        data << uint32(0);
+                        SendPacket(&data);
+                    }
+                    // Then tell the player "Wait, no, you can't."
+                    {
+                        WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
+                        data.append(plMover->GetPackGUID());
+                        data << uint32(0);
+                        SendPacket(&data);
+                    }
+                    plMover->FallGround(2);
                 }
-                plMover->FallGround(2);
 
                 /* Disabled, not passive at all, and apparently causing crashes:
                 if (plMover->m_anti_MistimingCount > World::GetMistimingAlarms())
@@ -765,7 +769,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         }
     }
 
-    if (!World::GetEnableMvAnticheatBlock() || check_passed)
+    if (check_passed)
     {
 
     /* process position-change */
