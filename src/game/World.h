@@ -649,6 +649,7 @@ class World
         static uint32 GetTeleportToPlaneAlarms()     { return m_TeleportToPlaneAlarms;     }
         static uint32 GetMistimingDelta()            { return m_MistimingDelta;            }
         static uint32 GetMistimingAlarms()           { return m_MistimingAlarms;           }
+        static uint32 GetLogCheatDeltaTime()         { return m_LogCheatDeltaTime;         }
         // end movement anticheat
 
      void SetWintergrapsTimer(uint32 timer, uint32 state)
@@ -781,6 +782,7 @@ class World
         static uint32 m_TeleportToPlaneAlarms;
         static uint32 m_MistimingDelta;
         static uint32 m_MistimingAlarms;
+        static uint32 m_LogCheatDeltaTime;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;

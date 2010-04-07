@@ -109,7 +109,7 @@ bool World::m_EnableTeleportToPlaneBlock = true;
 uint32 World::m_TeleportToPlaneAlarms = 50;
 uint32 World::m_MistimingAlarms = 200;
 uint32 World::m_MistimingDelta = 15000;
-
+uint32 World::m_LogCheatDeltaTime = 0;
 /// World constructor
 World::World()
 {
@@ -664,6 +664,17 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog.outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <= 500. Using 500 instead.", m_MistimingAlarms);
         m_MistimingAlarms = 500;    
+    }
+    m_LogCheatDeltaTime = sConfig.GetIntDefault("Anticheat.LogCheatDeltaTime", 5000);
+    if (m_LogCheatDeltaTime < 0)
+    {
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be >= 0. Using 0 instead.", m_LogCheatDeltaTime);
+        m_LogCheatDeltaTime = 0;
+    }
+    if (m_LogCheatDeltaTime > 60000)
+    {
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_LogCheatDeltaTime);
+        m_LogCheatDeltaTime = 0;    
     }
     ///- Read other configuration items from the config file
 

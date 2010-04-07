@@ -397,6 +397,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 plMover->m_anti_LastClientTime = movementInfo.time;
 
             const uint64 cServerTime = getMSTime();
+
+            uint32 difftime_log = cServerTime - plMover->m_logcheat_time;
+
             uint32 cServerTimeDelta = 1500;
             if (plMover->m_anti_LastServerTime != 0)
             {
@@ -429,7 +432,11 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (bMistimingModulo)
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO
-                    sLog.outCheat("AC2-%s, mistiming exception #%d, mistiming: %dms", plMover->GetName(), plMover->m_anti_MistimingCount, sync_time);
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        sLog.outCheat("AC2-%s, mistiming exception #%d, mistiming: %dms", plMover->GetName(), plMover->m_anti_MistimingCount, sync_time);
+                    }
                     #endif
                     check_passed = false;
                 }                   
@@ -528,8 +535,12 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (World::GetEnableAntiGravity() && no_fly_auras && no_swim_in_water && plMover->m_anti_JumpBaseZ != 0 && JumpHeight < plMover->m_anti_Last_VSpeed)
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO
-                    sLog.outCheat("AC2-%s, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
-                        plMover->GetName(), JumpHeight, plMover->m_anti_Last_VSpeed);
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        sLog.outCheat("AC2-%s, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
+                            plMover->GetName(), JumpHeight, plMover->m_anti_Last_VSpeed);
+                    }
                     #endif
                     if (World::GetEnableAntiGravityBlock())
                     {
@@ -562,7 +573,11 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                         if (plMover->m_anti_JumpCount >= 1)
                         {
                             #ifdef ANTICHEAT_EXCEPTION_INFO
-                            sLog.outCheat("AC2-%s, multi jump  exception", plMover->GetName());
+                            if( difftime_log > World::GetLogCheatDeltaTime() )
+                            {
+                                plMover->m_logcheat_time = cServerTime;
+                                sLog.outCheat("AC2-%s, multi jump  exception", plMover->GetName());
+                            }
                             #endif
                             if (World::GetEnableAntiMultiJumpBlock())
                             {
@@ -601,10 +616,14 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (World::GetEnableAntiSpeedTele() && (real_delta > allowed_delta))
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO
-                    if (real_delta < 4900.0f)
-                        sLog.outCheat("AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
-                    else
-                        sLog.outCheat("AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        if (real_delta < 4900.0f)
+                            sLog.outCheat("AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                        else
+                            sLog.outCheat("AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                    }
                     #endif
                     if (World::GetEnableAntiSpeedTeleBlock())
                     {
@@ -619,7 +638,11 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (World::GetEnableAntiMountainHack() && (delta_z < plMover->m_anti_Last_VSpeed && plMover->m_anti_JumpCount == 0 && tg_z > 2.37f))
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO
-                    sLog.outCheat("AC2-%s, mountain exception | tg_z=%f", plMover->GetName(), tg_z);
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        sLog.outCheat("AC2-%s, mountain exception | tg_z=%f", plMover->GetName(), tg_z);
+                    }
                     #endif
                     if (World::GetEnableAntiMountainHackBlock())
                     {
@@ -633,11 +656,15 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (World::GetEnableAntiFlyHack() && no_fly_auras && !no_fly_flags)
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO // Aura numbers: 201, 206, 207, 208, 209, 211
-                    sLog.outCheat("AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
-                        plMover->GetName(),
-                        plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-                        plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
-                        plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        sLog.outCheat("AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
+                            plMover->GetName(),
+                            plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
+                            plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
+                            plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());
+                    }
                     #endif
                     if (World::GetEnableAntiFlyHackBlock())
                     {
@@ -666,8 +693,12 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (World::GetEnableAntiWaterwalk() && no_waterwalk_auras && !no_waterwalk_flags)
                 {
                     #ifdef ANTICHEAT_EXCEPTION_INFO
-                    sLog.outCheat("AC2-%s, waterwalk exception. [%X]{SPELL_AURA_WATER_WALK=[%X]}",
-                        plMover->GetName(), movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
+                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    {
+                        plMover->m_logcheat_time = cServerTime;
+                        sLog.outCheat("AC2-%s, waterwalk exception. [%X]{SPELL_AURA_WATER_WALK=[%X]}",
+                            plMover->GetName(), movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
+                    }
                     #endif
                     if (World::GetEnableAntiWaterwalkBlock())
                     {
@@ -707,7 +738,11 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                             #ifdef ANTICHEAT_EXCEPTION_INFO
                             if (plMover->m_anti_TeleToPlane_Count > World::GetTeleportToPlaneAlarms())
                             {
-                                sLog.outCheat("AC2-%s, teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->m_anti_TeleToPlane_Count);
+                                if( difftime_log > World::GetLogCheatDeltaTime() )
+                                {
+                                    plMover->m_logcheat_time = cServerTime;
+                                    sLog.outCheat("AC2-%s, teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->m_anti_TeleToPlane_Count);
+                                }
                                 /* Disabled, not passive at all, and apparently causing crashes:
                                 sWorld.SendWorldText(3, strcat("Kicking cheater: ", plMover->GetName()));
                                 KickPlayer();

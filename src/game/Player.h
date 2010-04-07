@@ -2548,6 +2548,7 @@ class Player : public Unit, public GridObject<Player>
         time_t m_anti_DeltaClientTime;          // client side session time
         time_t m_anti_DeltaServerTime;          // server side session time
         uint32 m_anti_MistimingCount;           // mistiming count
+        time_t m_logcheat_time;
 
         time_t m_anti_LastSpeedChangeTime;      // last speed change time
 
