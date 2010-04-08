@@ -226,7 +226,7 @@ struct boss_taldaramAI : public ScriptedAI
                             uiPhaseTimer = 500;
                             if (Unit* pEmbraceTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                                 uiEmbraceTarget = pEmbraceTarget->GetGUID();
-                            
+
                         }
                         uiVanishTimer = urand(25*IN_MILISECONDS,35*IN_MILISECONDS);
                     } else uiVanishTimer -= diff;
@@ -279,7 +279,7 @@ struct boss_taldaramAI : public ScriptedAI
 
     bool CheckSpheres()
     {
-        if(!pInstance)
+        if (!pInstance)
             return false;
 
         uint64 uiSphereGuids[2];
@@ -308,7 +308,7 @@ struct boss_taldaramAI : public ScriptedAI
 
     void RemovePrison()
     {
-        if(!pInstance)
+        if (!pInstance)
             return;
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);

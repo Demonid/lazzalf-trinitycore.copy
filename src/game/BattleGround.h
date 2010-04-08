@@ -452,7 +452,7 @@ class BattleGround
         void BlockMovement(Player *plr);
 
         void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = NULL);
-        void PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...  );
+        void PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...);
 
         // specialized version with 2 string id args
         void SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
@@ -495,8 +495,8 @@ class BattleGround
         virtual void EventPlayerCapturedFlag(Player* /*player*/) {}
         void EventPlayerLoggedIn(Player* player, uint64 plr_guid);
         void EventPlayerLoggedOut(Player* player);
-	virtual void EventPlayerDamagedGO(Player* /*player*/, GameObject* /*target_obj*/, uint32 /*eventId*/) {}
-	virtual void EventPlayerUsedGO(Player* player, GameObject* go){}
+    virtual void EventPlayerDamagedGO(Player* /*player*/, GameObject* /*target_obj*/, uint32 /*eventId*/) {}
+    virtual void EventPlayerUsedGO(Player* player, GameObject* go){}
 
         /* Death related */
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);

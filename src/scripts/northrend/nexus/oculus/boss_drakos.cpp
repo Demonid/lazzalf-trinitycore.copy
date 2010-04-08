@@ -52,7 +52,7 @@ struct boss_drakosAI : public ScriptedAI
     {
         pInstance = c->GetInstanceData();
     }
-    
+
     uint32 uiMagicPullTimer ;
     uint32 uiStompTimer ;
     uint32 uiBombSummonTimer ;
@@ -73,18 +73,18 @@ struct boss_drakosAI : public ScriptedAI
         if (pInstance)
             pInstance->SetData(DATA_DRAKOS_EVENT, NOT_STARTED);
     }
-    
+
     void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
-        
+
         if (pInstance)
             pInstance->SetData(DATA_DRAKOS_EVENT, IN_PROGRESS);
     }
-	void JustSummoned(Creature* summon)
-	{
-		lSummons.Summon(summon);
-	}
+    void JustSummoned(Creature* summon)
+    {
+        lSummons.Summon(summon);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -92,9 +92,9 @@ struct boss_drakosAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(uiBombSummonTimer < diff)
+        if (uiBombSummonTimer < diff)
         {
-            if(bPostPull)
+            if (bPostPull)
             {
                 m_creature->SummonCreature(NPC_UNSTABLE_SPHERE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
                 m_creature->SummonCreature(NPC_UNSTABLE_SPHERE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
@@ -104,9 +104,9 @@ struct boss_drakosAI : public ScriptedAI
             uiBombSummonTimer = 2*IN_MILISECONDS;
         } else uiBombSummonTimer -= diff;
 
-        if(uiMagicPullTimer < diff)
+        if (uiMagicPullTimer < diff)
         {
-            if(bIsPulling)
+            if (bIsPulling)
             {
                 if (pInstance)
                 {
@@ -128,26 +128,26 @@ struct boss_drakosAI : public ScriptedAI
             }
         } else uiMagicPullTimer -= diff;
 
-        if(bPostPull)
+        if (bPostPull)
         {
             if (uiPostPullTimer < diff)
                 bPostPull = false;
             else uiPostPullTimer -= diff;
         }
 
-        if(uiStompTimer < diff)
+        if (uiStompTimer < diff)
         {
             DoScriptText(RAND(SAY_STOMP_1,SAY_STOMP_2,SAY_STOMP_3), m_creature);
             DoCast(DUNGEON_MODE(SPELL_THUNDERING_STOMP, SPELL_THUNDERING_STOMP_H));
             uiStompTimer = urand(15*IN_MILISECONDS, 18*IN_MILISECONDS);
-		} else uiStompTimer -= diff ;
+        } else uiStompTimer -= diff ;
 
         DoMeleeAttackIfReady();
     }
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        
+
         if (pInstance)
             pInstance->SetData(DATA_DRAKOS_EVENT, DONE);
     }
@@ -183,13 +183,13 @@ struct npc_unstable_sphereAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(uiPulseTimer < diff)
+        if (uiPulseTimer < diff)
         {
             DoCast(SPELL_UNSTABLE_SPHERE_PULSE);
             uiPulseTimer = 3*IN_MILISECONDS;
         } else uiPulseTimer -= diff;
 
-        if(uiDeathTimer < diff)
+        if (uiDeathTimer < diff)
             m_creature->DisappearAndDie();
         else uiDeathTimer -= diff;
     }

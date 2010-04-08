@@ -154,7 +154,7 @@ struct boss_algalonAI : public BossAI
     {
         if (m_lCollapsingStarGUIDList.empty())
             return;
-        for(std::list<uint64>::iterator itr = m_lCollapsingStarGUIDList.begin(); itr != m_lCollapsingStarGUIDList.end(); ++itr)
+        for (std::list<uint64>::iterator itr = m_lCollapsingStarGUIDList.begin(); itr != m_lCollapsingStarGUIDList.end(); ++itr)
         {
             if (Creature* pTemp = (Creature*)Unit::GetUnit(*me, *itr))
             {
@@ -283,7 +283,7 @@ struct boss_algalonAI : public BossAI
         {
             if (Enrage)
             {
-                if (Ascend_Timer  <= diff)
+                if (Ascend_Timer <= diff)
                 {
                     DoCast(me, SPELL_ASCEND);
                     DoScriptText(SAY_BERSERK, me);

@@ -177,7 +177,7 @@ struct mob_ymirjar_wrathbringerAI : public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -223,7 +223,7 @@ struct mob_ymirjar_skyCallerAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -273,7 +273,7 @@ struct mob_ymirjar_flamebearerAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -328,7 +328,7 @@ struct mob_ymirjar_deathbringerAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -375,7 +375,7 @@ struct mob_wrathbone_laborerAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -430,7 +430,7 @@ struct mob_wrathbone_coldwraithAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -446,7 +446,7 @@ struct mob_wrathbone_coldwraithAI: public ScriptedAI
                     return;
             }
         }
-        
+
         DoMeleeAttackIfReady();
     }
 };
@@ -480,7 +480,7 @@ struct mob_stonespine_gargoyleAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -531,7 +531,7 @@ struct mob_plagueborn_horrorAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -584,7 +584,7 @@ struct mob_iceborn_protodrakeAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -628,7 +628,7 @@ struct mob_hungering_ghoulAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -674,7 +674,7 @@ struct mob_fallen_warriorAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -727,7 +727,7 @@ struct mob_deathwhisper_torturerAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -777,7 +777,7 @@ struct mob_deathwhisper_shadowcasterAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -788,7 +788,7 @@ struct mob_deathwhisper_shadowcasterAI: public ScriptedAI
                     return;
             }
         }
-    
+
         DoMeleeAttackIfReady();
     }
 };
@@ -823,7 +823,7 @@ struct mob_deathwhisper_necrolyteAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -839,7 +839,7 @@ struct mob_deathwhisper_necrolyteAI: public ScriptedAI
                     return;
             }
         }
-        
+
         DoMeleeAttackIfReady();
     }
 };
@@ -873,7 +873,7 @@ struct mob_wrathbone_sorcererAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -904,7 +904,7 @@ struct mob_geist_ambusherAI: public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-    	//Only here so when I figure out how to make it cast on an NPC i can do that.
+        //Only here so when I figure out how to make it cast on an NPC i can do that.
         events.ScheduleEvent(EVENT_LEAPING_FACE_MAUL, 99999);
     }
 
@@ -919,11 +919,11 @@ struct mob_geist_ambusherAI: public ScriptedAI
         if (m_creature->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
-    			//Should only be used on NPCs
+                //Should only be used on NPCs
                 case EVENT_LEAPING_FACE_MAUL:
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_LEAPING_FACE_MAUL);
@@ -931,7 +931,7 @@ struct mob_geist_ambusherAI: public ScriptedAI
                     return;
             }
         }
-    
+
         DoMeleeAttackIfReady();
     }
 };

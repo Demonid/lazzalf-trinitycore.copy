@@ -174,7 +174,7 @@ struct boss_supremusAI : public ScriptedAI
 
         events.Update(diff);
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -250,7 +250,7 @@ struct npc_volcanoAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (wait<=diff)//wait 3secs before casting
+        if (wait <= diff)//wait 3secs before casting
         {
             DoCast(m_creature, SPELL_VOLCANIC_ERUPTION);
             wait = 60000;

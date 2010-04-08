@@ -227,7 +227,7 @@ struct boss_ichoronAI : public ScriptedAI
                         m_creature->AttackStop();
                         //m_creature->SetVisibility(VISIBILITY_OFF);
                         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        for(uint8 i = 0; i < 10; i++)
+                        for (uint8 i = 0; i < 10; i++)
                         {
                             int tmp = urand(0, MAX_SPAWN_LOC-1);
                             m_creature->SummonCreature(NPC_ICHOR_GLOBULE, SpawnLoc[tmp], TEMPSUMMON_CORPSE_DESPAWN);
@@ -307,7 +307,7 @@ struct boss_ichoronAI : public ScriptedAI
     }
 
 
-    void SummonedCreatureDespawn(Creature *pSummoned) 
+    void SummonedCreatureDespawn(Creature *pSummoned)
     {
         m_waterElements.remove(pSummoned->GetGUID());
     }
@@ -329,7 +329,7 @@ struct mob_ichor_globuleAI : public ScriptedAI
 {
     mob_ichor_globuleAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-    	pInstance = pCreature->GetInstanceData();
+        pInstance = pCreature->GetInstanceData();
     }
 
     ScriptedInstance* pInstance;

@@ -124,7 +124,7 @@ struct boss_heiganAI : public BossAI
                     (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
         }
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {

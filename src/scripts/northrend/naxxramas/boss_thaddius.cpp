@@ -242,13 +242,13 @@ struct boss_thaddiusAI : public BossAI
 
         if (!UpdateVictim())
             return;
-        
+
         events.Update(diff);
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -284,7 +284,7 @@ CreatureAI* GetAI_boss_thaddius(Creature* pCreature)
 
 struct mob_stalaggAI : public ScriptedAI
 {
-    mob_stalaggAI(Creature *c) : ScriptedAI(c) 
+    mob_stalaggAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
     }
@@ -385,7 +385,7 @@ CreatureAI* GetAI_mob_stalagg(Creature* pCreature)
 
 struct mob_feugenAI : public ScriptedAI
 {
-    mob_feugenAI(Creature *c) : ScriptedAI(c) 
+    mob_feugenAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
     }

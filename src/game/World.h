@@ -435,7 +435,7 @@ enum ArenaModSystem
 #define SCRIPT_COMMAND_OPEN_DOOR            11              // source = unit, datalong=db_guid, datalong2=reset_delay
 #define SCRIPT_COMMAND_CLOSE_DOOR           12              // source = unit, datalong=db_guid, datalong2=reset_delay
 #define SCRIPT_COMMAND_ACTIVATE_OBJECT      13              // source = unit, target=GO
-#define SCRIPT_COMMAND_REMOVE_AURA          14              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
+#define SCRIPT_COMMAND_REMOVE_AURA          14              // source (datalong2 != 0) or target (datalong == 0) unit, datalong = spell_id
 #define SCRIPT_COMMAND_CAST_SPELL           15              // source/target cast spell at target/source (script->datalong2: 0: s->t 1: s->s 2: t->t 3: t->s
 #define SCRIPT_COMMAND_PLAY_SOUND           16              // source = any object, target=any/player, datalong (sound_id), datalong2 (bitmask: 0/1=anyone/target, 0/2=with distance dependent, so 1|2 = 3 is target with distance dependent)
 #define SCRIPT_COMMAND_LOAD_PATH            20              // source = unit, path = datalong, repeatable datalong2
@@ -554,7 +554,7 @@ class World
         uint32 GetUptime() const { return uint32(m_gameTime - m_startTime); }
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
-        void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
+        void SetRecordDiffInterval(int32 t) { if (t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
         /// Next daily quest reset time
         time_t GetNextDailyQuestReset() const { return m_NextDailyQuestReset; }
@@ -595,7 +595,7 @@ class World
 
         void Update(uint32 diff);
 
-        void UpdateSessions( uint32 diff );
+        void UpdateSessions(uint32 diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
@@ -685,7 +685,7 @@ class World
      uint32 m_WintergrapsState;
 
         void ProcessCliCommands();
-        void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
+        void QueueCliCommand(CliCommandHolder::Print* zprintf, char const* input) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
 
         void UpdateResultQueue();
         void InitResultQueue();
@@ -696,7 +696,7 @@ class World
 
         void UpdateAllowedSecurity();
 
-        LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if(m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
+        LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if (m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
 
         //used World DB version
         void LoadDBVersion();
@@ -757,7 +757,7 @@ class World
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
         typedef std::map<uint32,uint64> WorldStatesMap;
-        WorldStatesMap m_worldstates;       
+        WorldStatesMap m_worldstates;
         int32 m_playerLimit;
         AccountTypes m_allowedSecurityLevel;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales

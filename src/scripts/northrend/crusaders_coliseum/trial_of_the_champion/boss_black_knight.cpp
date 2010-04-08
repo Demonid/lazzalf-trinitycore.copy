@@ -55,8 +55,8 @@ enum eSpells
 
     SPELL_BLACK_KNIGHT_RES  = 67693,
 
-    SPELL_LEAP				= 67749,
-    SPELL_LEAP_H			= 67880
+    SPELL_LEAP                = 67749,
+    SPELL_LEAP_H            = 67880
 };
 
 enum eModels
@@ -131,7 +131,7 @@ struct boss_black_knightAI : public ScriptedAI
         if (SummonList.empty())
             return;
 
-        for(std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
+        for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
         {
             if (Creature* pTemp = Unit::GetCreature(*m_creature, *itr))
                 if (pTemp)

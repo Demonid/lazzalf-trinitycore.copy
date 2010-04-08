@@ -37,6 +37,7 @@ SET(scripts_STAT_SRCS
    eastern_kingdoms/blackrock_depths/boss_tomb_of_seven.cpp
    eastern_kingdoms/blackrock_depths/blackrock_depths.h
    eastern_kingdoms/blackrock_depths/instance_blackrock_depths.cpp
+   eastern_kingdoms/blackrock_spire/blackrock_spire.cpp
    eastern_kingdoms/blackrock_spire/boss_drakkisath.cpp
    eastern_kingdoms/blackrock_spire/boss_gyth.cpp
    eastern_kingdoms/blackrock_spire/boss_halycon.cpp
@@ -49,6 +50,8 @@ SET(scripts_STAT_SRCS
    eastern_kingdoms/blackrock_spire/boss_shadow_hunter_voshgajin.cpp
    eastern_kingdoms/blackrock_spire/boss_the_beast.cpp
    eastern_kingdoms/blackrock_spire/boss_warmaster_voone.cpp
+   eastern_kingdoms/blackrock_spire/blackrock_spire.h
+   eastern_kingdoms/blackrock_spire/instance_blackrock_spire.cpp
    eastern_kingdoms/blackwing_lair/boss_broodlord_lashlayer.cpp
    eastern_kingdoms/blackwing_lair/boss_chromaggus.cpp
    eastern_kingdoms/blackwing_lair/boss_ebonroc.cpp
@@ -572,6 +575,7 @@ SET(scripts_STAT_SRCS
 message("-- Added Script Engine to SCRIPTS lib")
 
 include_directories(
+  ${ACE_INCLUDE_DIR}
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/framework

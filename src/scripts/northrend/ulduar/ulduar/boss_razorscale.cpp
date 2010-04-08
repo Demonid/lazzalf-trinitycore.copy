@@ -110,7 +110,7 @@ struct boss_razorscaleAI : public BossAI
         if (!UpdateVictim())
             return;
 
-        if(m_creature->GetPositionY() > -60 || m_creature->GetPositionX() < 450) // Not Blizzlike, anti-exploit to prevent players from pulling bosses to vehicles.
+        if (m_creature->GetPositionY() > -60 || m_creature->GetPositionX() < 450) // Not Blizzlike, anti-exploit to prevent players from pulling bosses to vehicles.
         {
             m_creature->RemoveAllAuras();
             m_creature->DeleteThreatList();
@@ -267,7 +267,7 @@ struct boss_razorscaleAI : public BossAI
         const float y = -174.92;
         const float GroundLevel = m_creature->GetBaseMap()->GetHeight(x, y, MAX_HEIGHT);
         const float FlightHeight = GroundLevel + 4.0f; // TODO: Fly out of range of attacks (442 is sufficient height for this), minus ~(10*number of harpoon gun chains attached to Razorscale)
-        
+
         if (Phase == 1) // Always flying during Phase 1
             IsFlying = true;
 

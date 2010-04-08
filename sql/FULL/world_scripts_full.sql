@@ -336,6 +336,10 @@ UPDATE `gameobject_template` SET `ScriptName`='go_shadowforge_brazier' WHERE `en
 
 /* BLACKROCK SPIRE */
 
+UPDATE `instance_template` SET `script`='instance_blackrock_spire' WHERE `map`=229;
+UPDATE `creature_template` SET `ScriptName`='npc_rookey_whelp' WHERE `entry`=10161;
+UPDATE `gameobject_template` SET `ScriptName`='go_rookey_egg' WHERE `entry`=175124;
+
 /* BLACKROCK SPIRE Lower bosses */
 UPDATE `creature_template` SET `ScriptName`='boss_highlord_omokk' WHERE `entry`=9196;
 UPDATE `creature_template` SET `ScriptName`='boss_shadow_hunter_voshgajin' WHERE `entry`=9236;
@@ -416,6 +420,7 @@ UPDATE `item_template` SET `scriptname`='item_dehta_trap_smasher' WHERE `entry`=
 UPDATE `creature_template` SET `ScriptName`='npc_magmoth_crusher' WHERE `entry`=25434;
 UPDATE `creature_template` SET `ScriptName`='npc_valiance_keep_cannoneer' WHERE `entry`=25306;
 UPDATE `creature_template` SET `ScriptName`='npc_warmage_coldarra' WHERE `entry` IN (27173,27904,27906);
+UPDATE `creature_template` SET `ScriptName`= 'npc_valiance_keep_cannoneer' WHERE `entry`=25306;
 
 /* BURNING STEPPES */
 UPDATE `creature_template` SET `ScriptName`='npc_ragged_john' WHERE `entry`=9563;
