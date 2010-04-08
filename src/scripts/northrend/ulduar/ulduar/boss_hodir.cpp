@@ -19,45 +19,33 @@
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
-enum Yells
-{
-    SAY_AGGRO                                   = -1603210,
-    SAY_SLAY_1                                  = -1603211,
-    SAY_SLAY_2                                  = -1603212,
-    SAY_FLASH_FREEZE                            = -1603213,
-    SAY_STALACTITE                              = -1603214,
-    SAY_DEATH                                   = -1603215,
-    SAY_BERSERK                                 = -1603216,
-    SAY_YS_HELP                                 = -1603217,
-    SAY_HARD_MODE_MISSED                        = -1603218,
-};
+/*
+#define SAY_AGGRO -1
+#define SAY_SLAY -1
+*/
 
 struct boss_hodirAI : public BossAI
 {
-    boss_hodirAI(Creature *pCreature) : BossAI(pCreature, TYPE_HODIR)
-    {
-    }
+    boss_hodirAI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR){}
 
     void Reset()
     {
-        _Reset();
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
         _EnterCombat();
+//        DoScriptText(SAY_AGGRO, m_creature);
+        m_creature->SetInCombatWithZone();
     }
 
     void UpdateAI(const uint32 diff)
@@ -70,7 +58,9 @@ struct boss_hodirAI : public BossAI
         DoMeleeAttackIfReady();
 
         EnterEvadeIfOutOfCombatArea(diff);
+
     }
+
 };
 
 CreatureAI* GetAI_boss_hodir(Creature* pCreature)
@@ -87,3 +77,4 @@ void AddSC_boss_hodir()
     newscript->RegisterSelf();
 
 }
+
