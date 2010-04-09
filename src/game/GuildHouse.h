@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2009-2010 Trilogy <http://www.wowtrilogy.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,12 +32,7 @@
 #define SC_GUILDHOUSE_SYSTEM
 
 #include "Common.h"
-#include "ProgressBar.h"
-#include "Map.h"
-#include "World.h"
-#include "Guild.h"
-#include "ObjectMgr.h"
-#include "Log.h"
+#include "ObjectAccessor.h"
 
 enum GuildAdd_Type
 {
