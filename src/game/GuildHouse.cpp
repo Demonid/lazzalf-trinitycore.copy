@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2009-2010 Trilogy <http://www.wowtrilogy.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,10 @@
  **/
 
 #include "GuildHouse.h"
+#include "ProgressBar.h"
+#include "Guild.h"
+#include "ObjectAccessor.h"
+#include "MapManager.h"
 
 GuildHouseObject GHobj;
 
@@ -48,7 +52,7 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
     
     if (!guild_id)
     {
-        sLog.outError("La gilda %u non esiste", guild_id);
+        sLog.outError("The guild %u not found", guild_id);
         return false;
     }
     return true;
@@ -80,10 +84,10 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         
         result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
         if (!result)
-            return false; // Id non valido
+            return false; // Id doesn't valid
 
         if (!(itr == GH_map.end()))
-            ChangeGuildHouse(guild_id, 0); // rimuovi precedente casa        
+            ChangeGuildHouse(guild_id, 0); // remove old House        
         
         uint32 id = newid;
         Field *fields = result->Fetch();
@@ -244,7 +248,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                             else
                                 map->Add(pCreature);
                         }                           
-                        if (i == 2) //Guardie
+                        if (((uint32)1 << (i-1)) == NPC_GUARD) //Guard
                             UpdateGuardMap(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), guild);
                     }
                                               

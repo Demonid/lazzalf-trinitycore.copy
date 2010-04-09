@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2009-2010 Trilogy <http://www.wowtrilogy.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
  *
  * @File : GuildHouse_npc.cpp
  *
- * @Authors : Lazzalf
+ * @Authors : ?
+ * @Modific : Lazzalf
  *
  * @Date : 31/03/2010
  *
