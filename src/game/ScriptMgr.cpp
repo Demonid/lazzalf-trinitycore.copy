@@ -61,8 +61,7 @@ void ScriptMgr::ScriptsInit()
 	// Load TeleNPC2 - maybe not the best place to load it ...
     LoadNpcTele();
     //GuildHouse System
-    LoadGuildHouseAdd();
-    LoadGuildHouse();
+    LoadGuildHouseSystem();
 
     outstring_log("TSCR: Loading C++ scripts");
     barGoLink bar(1);

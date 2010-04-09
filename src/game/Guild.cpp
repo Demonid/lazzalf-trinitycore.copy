@@ -712,7 +712,7 @@ void Guild::Disband()
     CharacterDatabase.PExecute("DELETE FROM gh_guildadd WHERE guildId = '%u'", m_Id);
     CharacterDatabase.CommitTransaction();
 
-    ChangeGuildHouse(m_Id,0); //Sell GuildHouse
+    GHobj.ChangeGuildHouse(m_Id,0); //Sell GuildHouse
 
     objmgr.RemoveGuild(m_Id);
 }
