@@ -32,7 +32,6 @@
 #define SC_GUILDHOUSE_SYSTEM
 
 #include "Common.h"
-#include "ObjectAccessor.h"
 
 enum GuildAdd_Type
 {
