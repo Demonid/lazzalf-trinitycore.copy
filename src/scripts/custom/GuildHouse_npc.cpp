@@ -87,7 +87,7 @@ bool isPlayerGuildLeader(Player *player)
 
 bool isPlayerHasGuildhouseAdd(Player *player, Creature *_creature, uint32 add, bool whisper = false)
 {
-    uint32 guildadd = GetGuildHouse_Add(player->GetGuildId());
+    uint32 guildadd = GHobj.GetGuildHouse_Add(player->GetGuildId());
     bool comprato = ((uint32(1) << (add - 1)) & guildadd);
     if(comprato)
     {         
@@ -142,7 +142,7 @@ void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     float x, y, z, o;
     uint32 map;
 
-    if (GetGuildHouseLocation(player->GetGuildId(), x, y, z, o, map))
+    if (GHobj.GetGuildHouseLocation(player->GetGuildId(), x, y, z, o, map))
     {
         //teleport player to the specified location
         player->TeleportTo(map, x, y, z, o);
@@ -231,7 +231,7 @@ bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
     QueryResult_AutoPtr result;
 
     uint32 guildsize = 1;
-    uint32 guild_add = GetGuildHouse_Add(player->GetGuildId());
+    uint32 guild_add = GHobj.GetGuildHouse_Add(player->GetGuildId());
 
     Guild *guild = objmgr.GetGuildById(player->GetGuildId());
     if (guild)
@@ -330,7 +330,7 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
         return;
     }
 
-    ChangeGuildHouse(player->GetGuildId(), guildhouseId);
+    GHobj.ChangeGuildHouse(player->GetGuildId(), guildhouseId);
 
     player->ModifyMoney(-(price*10000));
     _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, player->GetGUID());    
@@ -366,7 +366,7 @@ void buyGuildhouseAdd(Player *player, Creature *_creature, uint32 gh_Add)
         return;
     }
 
-    Add_GuildhouseAdd(player->GetGuildId(), gh_Add);
+    GHobj.Add_GuildhouseAdd(player->GetGuildId(), gh_Add);
 
     player->ModifyMoney(-(price*10000));    
 }
@@ -385,7 +385,7 @@ void sellGuildhouse(Player *player, Creature *_creature)
         Field *fields = result->Fetch();
         uint32 price = fields[0].GetUInt32();
 
-        ChangeGuildHouse(player->GetGuildId(),0);
+        GHobj.ChangeGuildHouse(player->GetGuildId(),0);
 
         player->ModifyMoney(price*5000);
 
@@ -526,7 +526,7 @@ struct guild_guardAI : public ScriptedAI
 
         uint32 guild =((Player*)who)->GetGuildId();
 
-        uint32 guardguild = GetGuildByGuardID(m_creature->GetGUID());
+        uint32 guardguild = GHobj.GetGuildByGuardID(m_creature->GetGUID());
 
         if ( guardguild && guild != guardguild && m_creature->Attack(who, true) )
         {

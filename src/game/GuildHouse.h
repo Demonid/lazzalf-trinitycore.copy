@@ -39,8 +39,6 @@
 #include "ObjectMgr.h"
 #include "Log.h"
 
-//#include <map>
-
 enum GuildAdd_Type
 {
     NPC_BASIC        = 0x00000001,
@@ -90,18 +88,31 @@ typedef UNORDERED_MAP<uint32, GuildHouse> GuildHouseMap;
 typedef UNORDERED_MAP<uint32, GH_Item> GH_Add;
 typedef UNORDERED_MAP<uint64, uint32> GuildGuardID;
 
-void LoadGuildHouse();
-void LoadGuildHouseAdd();
-bool CheckGuildID(uint32 guild_id);
-bool CheckGuildHouse(uint32 guild_id);
-bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
-bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
-uint32 GetGuildHouse_Add(uint32 guild_id);
-bool Add_GuildhouseAdd(uint32 guild_id, uint32 add);
-bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
-bool RemoveGuildHouseAdd(uint32 id);
-bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
-void UpdateGuardMap(uint64 guid, uint32 guild);
-uint32 GetGuildByGuardID(uint64 guid);
+class GuildHouseObject
+{    
+    public:
+    GuildHouseMap GH_map;
+    GH_Add GH_AddHouse;
+    GuildGuardID mGuildGuardID;
 
+    GuildHouseObject();
+
+    void LoadGuildHouse();
+    void LoadGuildHouseAdd();
+    bool CheckGuildID(uint32 guild_id);
+    bool CheckGuildHouse(uint32 guild_id);
+    bool GetGuildHouseLocation(uint32 guild_id, float &x, float &y, float &z, float &o, uint32 &map);
+    bool GetGuildHouseMap(uint32 guild_id, uint32 &map);
+    uint32 GetGuildHouse_Add(uint32 guild_id);
+    bool Add_GuildhouseAdd(uint32 guild_id, uint32 add);
+    bool ChangeGuildHouse(uint32 guild_id, uint32 newid);
+    bool RemoveGuildHouseAdd(uint32 id);
+    bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
+    void UpdateGuardMap(uint64 guid, uint32 guild);
+    uint32 GetGuildByGuardID(uint64 guid);
+};
+
+void LoadGuildHouseSystem();
+
+extern GuildHouseObject GHobj;
 #endif
