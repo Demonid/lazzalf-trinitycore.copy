@@ -29,6 +29,7 @@
  **/
 
 #include "GuildHouse.h"
+#include "ObjectMgr.h"
 #include "ProgressBar.h"
 #include "Guild.h"
 #include "ObjectAccessor.h"
