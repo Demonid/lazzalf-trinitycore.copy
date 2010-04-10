@@ -15886,6 +15886,7 @@ void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId)
 
     if (GetTypeId() == TYPEID_PLAYER)
     {
+        this->ToPlayer()->InterruptNonMeleeSpells(false);
         this->ToPlayer()->StopCastingCharm();
         this->ToPlayer()->StopCastingBindSight();
         this->ToPlayer()->Unmount();

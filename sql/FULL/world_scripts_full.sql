@@ -7,9 +7,16 @@ UPDATE `creature_template` SET `ScriptName`='';
 UPDATE `gameobject_template` SET `ScriptName`='';
 
 /* AREA TRIGGERS */
-UPDATE `areatrigger_scripts` SET `ScriptName`='at_aldurthar_gate' WHERE `entry` IN (5284,5285,5286,5287);
-UPDATE `areatrigger_scripts` SET `ScriptName`='at_warsong_farms' WHERE `entry` IN (4871,4872,4873);
-UPDATE `areatrigger_scripts` SET `ScriptName`='at_stormwright_shelf' WHERE `entry`=5108;
+DELETE FROM `areatrigger_scripts` WHERE `entry` IN (5284,5285,5286,5287,4871,4872,4873,5108);
+INSERT INTO `areatrigger_scripts` (`entry`,`ScriptName`) VALUES 
+(5284, 'at_aldurthar_gate'),
+(5285, 'at_aldurthar_gate'),
+(5286, 'at_aldurthar_gate'),
+(5287, 'at_aldurthar_gate'),
+(4871, 'at_warsong_farms'),
+(4872, 'at_warsong_farms'),
+(4873, 'at_warsong_farms'),
+(5108, 'at_stormwright_shelf');
 
 /* WORLD BOSS */
 UPDATE `creature_template` SET `ScriptName`='boss_ysondre' WHERE `entry`=14887;
@@ -606,6 +613,22 @@ UPDATE `creature_template` SET `ScriptName`='npcs_riverbreeze_and_silversky' WHE
 UPDATE `creature_template` SET `ScriptName`='npc_gregan_brewspewer' WHERE `entry`=7775;
 UPDATE `creature_template` SET `ScriptName`='npc_screecher_spirit' WHERE `entry`=8612;
 UPDATE `creature_template` SET `ScriptName`='npc_oox22fe' WHERE `entry`=7807;
+
+/* FORGE OF SOULS */
+UPDATE `instance_template` SET `script`='instance_forge_of_souls' WHERE `map`=632;
+UPDATE `creature_template` SET `Scriptname`='boss_devourer_of_souls' WHERE `entry`=36502;
+UPDATE `creature_template` SET `Scriptname`='boss_bronjahm' WHERE `entry`=36497;
+UPDATE `creature_template` SET `Scriptname`='npc_jaina_fos' WHERE `entry`=37597;
+UPDATE `creature_template` SET `Scriptname`='npc_sylvanas_fos' WHERE `entry`=37596;
+UPDATE `creature_template` SET `Scriptname`='mob_soul_horror' WHERE `entry`=36522;
+UPDATE `creature_template` SET `Scriptname`='mob_soulguard_adept' WHERE `entry`=36620;
+UPDATE `creature_template` SET `Scriptname`='mob_soulguard_animator' WHERE `entry`=36516;
+UPDATE `creature_template` SET `Scriptname`='mob_soulguard_bonecaster' WHERE `entry`=36564;
+UPDATE `creature_template` SET `Scriptname`='mob_soulguard_reaper' WHERE `entry`=36499;
+UPDATE `creature_template` SET `Scriptname`='mob_soulguard_watchman' WHERE `entry`=36478;
+UPDATE `creature_template` SET `Scriptname`='mob_spectral_warden' WHERE `entry`=36666;
+UPDATE `creature_template` SET `Scriptname`='mob_spiteful_apparition' WHERE `entry`=36551;
+UPDATE `creature_template` SET `Scriptname`='mob_corrupted_soul_fragment' WHERE `entry`=36535;
 
 /* GHOSTLANDS */
 UPDATE `creature_template` SET `ScriptName`='npc_blood_knight_dawnstar' WHERE `entry`=17832;
