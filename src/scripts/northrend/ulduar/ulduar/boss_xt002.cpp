@@ -21,8 +21,6 @@
         Add achievments
         Boombot explosion only hurt allies to the npc at the moment
         Boombot explosion visual
-        Test the enrage timer
-        Fix gravity bomb - tractor beam.
         Fix void zone spell
         If the boss is to close to a scrap pile -> no summon
         make the life sparks visible...
@@ -39,8 +37,6 @@ enum Spells
 
     SPELL_GRAVITY_BOMB_10                       = 63024,
     SPELL_GRAVITY_BOMB_25                       = 63234,
-    SPELL_GRAVITY_BOMB_AURA_10                  = 63025,
-    SPELL_GRAVITY_BOMB_AURA_25                  = 63233,
 
     SPELL_HEARTBREAK_10                         = 65737,
     SPELL_HEARTBREAK_25                         = 64193,
@@ -77,7 +73,6 @@ enum Timers
     TIMER_GRAVITY_BOMB                          = 20000,
     TIMER_HEART_PHASE                           = 30000,
     TIMER_ENRAGE                                = 600000,
-    TIMER_GRAVITY_BOMB_AURA                     = 8900,
 
     TIMER_VOID_ZONE                             = 3000,
 
@@ -129,11 +124,9 @@ enum Yells
 #define EMOTE_TYMPANIC    "XT-002 Deconstructor begins to cause the earth to quake."
 #define EMOTE_HEART       "XT-002 Deconstructor's heart is exposed and leaking energy."
 
-//#define GRAVITY_BOMB_DMG_MIN_10                11700
-//#define GRAVITY_BOMB_DMG_MAX_10                12300
-//#define GRAVITY_BOMB_DMG_MIN_25                14625
-//#define GRAVITY_BOMB_DMG_MAX_25                15375
-//#define GRAVITY_BOMB_RADIUS                    12
+#define ACHIEVEMENT_DECONSTRUCT_FASTER        RAID_MODE(2937, 2938)
+#define ACHIEVEMENT_HEARTBREAKER              RAID_MODE(3058, 3059)
+#define MAX_ENCOUNTER_TIME                    205 * 1000
 
 //#define VOID_ZONE_DMG_10                      5000
 //#define VOID_ZONE_DMG_25                      7500
@@ -171,10 +164,10 @@ struct boss_xt002_AI : public BossAI
 	}
 
     Vehicle *vehicle;
+    uint32 EncounterTime;
     uint32 uiSearingLightTimer;
     uint32 uiSpawnLifeSparkTimer;
     uint32 uiGravityBombTimer;
-    uint32 uiGravityBombAuraTimer;
     uint32 uiTympanicTantrumTimer;
     uint32 uiHeartPhaseTimer;
     uint32 uiSpawnAddTimer;
@@ -182,9 +175,6 @@ struct boss_xt002_AI : public BossAI
 
     bool searing_light_active;
     uint64 uiSearingLightTarget;
-
-    bool gravity_bomb_active;
-    uint64 uiGravityBombTarget;
 
     uint8 phase;
     uint8 heart_exposed;
@@ -196,20 +186,21 @@ struct boss_xt002_AI : public BossAI
 
     void Reset()
     {
+        _Reset();
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetReactState(REACT_AGGRESSIVE);
 
         //Makes XT-002 to cast a light bomb 10 seconds after aggro.
         uiSearingLightTimer = TIMER_SEARING_LIGHT/2;
         uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
         uiGravityBombTimer = TIMER_GRAVITY_BOMB;
-        uiGravityBombAuraTimer = TIMER_GRAVITY_BOMB_AURA;
         uiHeartPhaseTimer = TIMER_HEART_PHASE;
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
         uiEnrageTimer = TIMER_ENRAGE;
         uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+        EncounterTime = 0;
 
         searing_light_active = false;
-        gravity_bomb_active = false;
         enraged = false;
         hardMode = false;
         enterHardMode = false;
@@ -265,6 +256,38 @@ struct boss_xt002_AI : public BossAI
     {
         DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
+
+        // Achievement Heartbreaker
+        if (hardMode = true)
+        {
+            AchievementEntry const *AchievHeartbreaker = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HEARTBREAKER);
+            if(AchievHeartbreaker)
+            {
+                Map *pMap = m_creature->GetMap();
+                if(pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievHeartbreaker);
+                }
+            }
+        }
+
+        // Achievement Must Deconstruct Faster
+        if (EncounterTime <= MAX_ENCOUNTER_TIME)
+        {
+            AchievementEntry const *AchievDeconstructFaster = GetAchievementStore()->LookupEntry(ACHIEVEMENT_DECONSTRUCT_FASTER);
+            if(AchievDeconstructFaster)
+            {
+                Map *pMap = m_creature->GetMap();
+                if(pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievDeconstructFaster);
+                }
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -277,6 +300,8 @@ struct boss_xt002_AI : public BossAI
             SetPhaseOne();
             enterHardMode = false;
         }
+
+        EncounterTime += diff;
 
         // Handles spell casting. These spells only occur during phase 1 and hard mode
         if (phase == 1 || hardMode)
@@ -299,10 +324,8 @@ struct boss_xt002_AI : public BossAI
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
                     DoCast(pTarget, RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
-                    uiGravityBombTarget = pTarget->GetGUID();
                 }
                 uiGravityBombTimer = TIMER_GRAVITY_BOMB;
-                gravity_bomb_active = true;
             } else uiGravityBombTimer -= diff;
 
             if (uiTympanicTantrumTimer <= diff)
@@ -381,7 +404,6 @@ struct boss_xt002_AI : public BossAI
                     SetPhaseOne();
                 }
                 else uiHeartPhaseTimer -= diff;
-
             }
         }
         else
@@ -399,26 +421,6 @@ struct boss_xt002_AI : public BossAI
             }
 
             DoMeleeAttackIfReady();
-        }
-
-        if (gravity_bomb_active)
-        {
-            if (uiGravityBombAuraTimer <= diff)
-            {
-                if (Unit *pGravityBombTarget = m_creature->GetUnit(*m_creature, uiGravityBombTarget))
-                {
-                    pGravityBombTarget->RemoveAurasDueToSpell(RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
-                    if (hardMode)
-                    {
-                        //Remains spawned for 3 minutes
-                        pGravityBombTarget->SummonCreature(NPC_VOID_ZONE, pGravityBombTarget->GetPositionX(), pGravityBombTarget->GetPositionY(), pGravityBombTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 180000);
-                    }
-                }
-
-                gravity_bomb_active = false;
-                uiGravityBombAuraTimer = TIMER_GRAVITY_BOMB_AURA;
-                //gravityBomb();
-            } else uiGravityBombAuraTimer -= diff;
         }
 
         //Enrage stuff
@@ -440,11 +442,11 @@ struct boss_xt002_AI : public BossAI
         m_creature->AttackStop();
 
         //Summon the heart npc
-        Creature* Heart = m_creature->SummonCreature(NPC_XT002_HEART, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 7, 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
-        if (Heart)
+        Creature* Heart = m_creature->SummonCreature(NPC_XT002_HEART, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 4, m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
+        /*if (Heart)
             {
-               //Heart->EnterVehicle(vehicle);
-            }
+               Heart->EnterVehicle(vehicle);
+            }*/
 
         // Start "end of phase 2 timer"
         uiHeartPhaseTimer = TIMER_HEART_PHASE;
@@ -477,34 +479,6 @@ struct boss_xt002_AI : public BossAI
         DoZoneInCombat();
         phase = 1;
     }
-
-    // TODO: put in comment and kept for reference. The spell should be fixed properly in spell system, if necessary.
-    ////Have to do this the custom way since the original spell messes up player movement
-    //void gravityBomb()
-    //{
-    //    uint32 maxDamage = RAID_MODE(GRAVITY_BOMB_DMG_MAX_10, GRAVITY_BOMB_DMG_MAX_25);
-    //    uint32 minDamage = RAID_MODE(GRAVITY_BOMB_DMG_MIN_10, GRAVITY_BOMB_DMG_MIN_25);
-    //    uint16 range = GRAVITY_BOMB_RADIUS;
-    //    Map* pMap = me->GetMap();
-    //    if (pMap && pMap->IsDungeon())
-    //    {
-    //        Map::PlayerList const &PlayerList = pMap->GetPlayers();
-    //        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-    //        {
-    //            //If a player is within the range of the spell
-    //            if (i->getSource() && i->getSource()->GetDistance2d(pGravityBombTarget) <= range)
-    //            {
-    //                //Deal damage to the victim
-    //                int32 damage = urand(minDamage, maxDamage);
-    //                i->getSource()->ModifyHealth(-damage);
-    //                m_creature->SendSpellNonMeleeDamageLog(i->getSource(), SPELL_GRAVITY_BOMB_AURA_10, damage, SPELL_SCHOOL_MASK_SHADOW, 0, 0, false, 0);
-
-    //                //Replacing the tractor beam effect
-    //                i->getSource()->JumpTo(pGravityBombTarget, 5);
-    //            }
-    //        }
-    //    }
-    //}
 };
 
 CreatureAI* GetAI_boss_xt002(Creature* pCreature)
@@ -523,6 +497,7 @@ struct mob_xt002_heartAI : public ScriptedAI
     {
         m_pInstance = pCreature->GetInstanceData();
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED);
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         DoCast(m_creature, SPELL_EXPOSED_HEART);
     }
