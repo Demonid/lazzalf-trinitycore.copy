@@ -7,6 +7,8 @@
 #define POS_X_CENTER                5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
 #define WG_MAP                      571
+#define WG_MIN_SAVE                 300000
+#define WG_STALKER_CHECKTIME        5000
 
 const uint32 WintergraspFaction[3] = {1732, 1735, 35};
 const uint32 WG_MARK_OF_HONOR = 43589;
@@ -94,51 +96,54 @@ const std::string WG_STRING_LOCALE[MAX_WG_STRINGS][MAX_LOCALE] =
     {"UNKNOWN", "", "", "UNBEKANNT", "", "", "", "", ""}
 };
 
-enum WG_QUESTGIVER_POS_INDEX
-{   // Order is important! See WG_QUESTGIVER_POS_MAP!
-    WG_ENHANCEMENT_A_POS = 0,
-    WG_ENHANCEMENT_H_POS,
-    WG_QUESTGIVER_1_A_POS,
-    WG_QUESTGIVER_1_H_POS,
-    WG_QUESTGIVER_2_A_POS,
-    WG_QUESTGIVER_2_H_POS,
-    WG_QUESTGIVER_3_A_POS,
-    WG_QUESTGIVER_3_H_POS,
-    WG_QUESTGIVER_4_A_POS,
-    WG_QUESTGIVER_4_H_POS,
-    WG_QUESTGIVER_5_A_POS,
-    WG_QUESTGIVER_5_H_POS,
-    WG_QUESTGIVER_6_A_POS,
-    WG_QUESTGIVER_6_H_POS,
-    // TODO: Don't know pos for these atm...
-    WG_QUESTGIVER_PVP_1_A_POS,
-    WG_QUESTGIVER_PVP_1_H_POS,
-    WG_QUESTGIVER_PVP_2_A_POS,
-    WG_QUESTGIVER_PVP_2_H_POS,
+enum WG_QUESTGIVER_MOVEPOS_INDEX
+{   // Order is important! See WG_QUESTGIVER_XXX_MOVEPOS_MAP!
+    WG_QUESTGIVER_1_POS = 0,
+    WG_QUESTGIVER_2_POS,
+    WG_QUESTGIVER_3_POS,
+    WG_QUESTGIVER_4_POS,
+    WG_QUESTGIVER_5_POS,
+    WG_QUESTGIVER_6_POS,
+
+    WG_ENHANCEMENT_POS, // Vendor and Questgiver
+
     MAX_WG_QUESTGIVER
+ };
+
+typedef float MovePosPair[MAX_WG_QUESTGIVER][2][4];
+
+const MovePosPair WG_QUESTGIVER_ATTACKER_MOVEPOS_MAP =
+{   // Order is important! See WG_QUESTGIVER_MOVEPOS_INDEX! (Ally,Horde)
+    {{5100.07f,2168.89f,365.779f,1.97222f},     {5030.44f,3659.82f,363.194f,1.83336f}},
+    {{5080.4f,2199.0f,359.489f,2.96706f},       {5008.64f,3659.91f,361.07f,4.0796f}},
+    {{5088.49f,2188.18f,365.647f,5.25344f},     {5032.33f,3680.7f,363.018f,3.43167f}},
+    {{5095.67f,2193.28f,365.924f,4.93928f},     {5032.66f,3674.28f,363.053f,2.9447f}},
+    {{5088.61f,2167.66f,365.689f,0.680678f},    {5032.44f,3668.66f,363.11f,2.87402f}},
+    {{5078.28f,2183.7f,365.029f,1.46608f},      {5022.43f,3659.91f,361.61f,1.35426f}},
+    {{5081.7f,2173.73f,365.878f,0.855211f},     {5016.57f,3677.53f,362.982f,5.7525f}}
 };
 
-const float WG_QUESTGIVER_POS_MAP[MAX_WG_QUESTGIVER][4] =
-{   // Order is important! See WG_QUESTGIVER_POS_INDEX!
-    {5016.57f, 3677.53f, 362.982f, 5.7525f},
-    {5081.7f, 2173.73f, 365.878f, 0.855211f},
-    {5030.44f, 3659.82f, 363.194f, 1.83336f},
-    {5100.07f, 2168.89f, 365.779f, 1.97222f},
-    {5008.64f, 3659.91f, 361.07f, 4.0796f},
-    {5080.4f, 2199.0f, 359.489f, 2.96706f},
-    {5032.33f, 3680.7f, 363.018f, 3.43167f},
-    {5088.49f, 2188.18f, 365.647f, 5.25344f},
-    {5032.66f, 3674.28f, 363.053f, 2.9447f},
-    {5095.67f, 2193.28f, 365.924f, 4.93928f},
-    {5032.44f, 3668.66f, 363.11f, 2.87402f},
-    {5088.61f, 2167.66f, 365.689f, 0.680678f},
-    {5022.43f, 3659.91f, 361.61f, 1.35426f},
-    {5078.28f, 2183.7f, 365.029f, 1.46608f},
-    // TODO: Don't know pos for these atm...
-    {0.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.0f, 0.0f}
+const MovePosPair WG_QUESTGIVER_DEFENDER_MOVEPOS_MAP =
+{   // Order is important! See WG_QUESTGIVER_MOVEPOS_INDEX! (Ally,Horde)
+    {{5298.43f,2738.76f,409.316f,3.97174f},             {5298.43f,2738.76f,409.316f,3.97174f}},
+    {{5234.97f,2883.4f,409.275f,4.29351f},              {5234.97f,2883.4f,409.275f,4.29351f}},
+    {{5366.13f,2833.4f,409.323f,3.14159f},              {5366.13f,2833.4f,409.323f,3.14159f}},
+    {{5295.56f,2926.67f,409.275f,0.872665f},            {5295.56f,2926.67f,409.275f,0.872665f}},
+    {{5371.4f,3026.51f,409.206f,3.25003f},              {5371.4f,3026.51f,409.206f,3.25003f}},
+    {{5359.13f,2837.99f,409.364f,4.69893f},             {5359.13f,2837.99f,409.364f,4.69893f}},
+    {{5299.141113f,2887.309814f,409.192352f,5.557559f}, {5296.56f,2789.87f,409.275f,0.733038f}}
+};
+
+const float WG_VEHICLE_TRANPORTER_POS_MAP[2][2][4] =
+{   // Transporter POS                              Teleport POS
+    {{5314.51f, 2703.69f, 408.55f, -0.890117f},     {5244.017090f, 2976.173584f, 409.189819f, 2.436377f}},
+    {{5316.25f, 2977.04f, 408.539f, -0.820303f},    {5245.081543f, 2703.663330f, 409.190155f, 3.500594f}}
+};
+
+const float WG_VEHICLE_TRANSPORTER_INVISIBLE_STALKER_POS_MAP[2][4] =
+{
+    {5314.51f, 2703.69f, 409.430115f, -0.890117f},
+    {5316.25f, 2977.04f, 409.419250f, -0.820303f}
 };
 
 // Index and Type defines. Order is important! See WG_NPC_Entry_Pair!
@@ -156,12 +161,14 @@ enum WG_NPC_TYPE_AND_INDEX
     WG_CREATURE_ENGINEER,
 
     WG_CREATURE_ENHANCEMENT,
+
     WG_CREATURE_QUESTGIVER_1,
     WG_CREATURE_QUESTGIVER_2,
     WG_CREATURE_QUESTGIVER_3,
     WG_CREATURE_QUESTGIVER_4,
     WG_CREATURE_QUESTGIVER_5,
     WG_CREATURE_QUESTGIVER_6,
+
     WG_CREATURE_QUESTGIVER_PVP_1,
     WG_CREATURE_QUESTGIVER_PVP_2,
 
@@ -175,65 +182,83 @@ enum WG_NPC_TYPE_AND_INDEX
 
     WG_CREATURE_WEAPON_CONTROL,
 
+    WG_CREATURE_TRIGGER,
+
     WG_CREATURE_OTHER
 };
 
 enum WG_NPC_ENTRIES
 {
-    WG_CREATURE_GUARD_A             = 32308,
-    WG_CREATURE_GUARD_H             = 32307,
-    WG_CREATURE_CHAMPION_A          = 30740,
-    WG_CREATURE_CHAMPION_H          = 30739,
+    WG_CREATURE_GUARD_A                 = 32308,
+    WG_CREATURE_GUARD_H                 = 32307,
+    WG_CREATURE_CHAMPION_A              = 30740,
+    WG_CREATURE_CHAMPION_H              = 30739,
 
-    WG_CREATURE_QUARTERMASTER_1_A   = 32294,
-    WG_CREATURE_QUARTERMASTER_1_H   = 32296,
-    WG_CREATURE_QUARTERMASTER_2_A   = 39172,
-    WG_CREATURE_QUARTERMASTER_2_H   = 39173,
+    WG_CREATURE_QUARTERMASTER_1_A       = 32294,
+    WG_CREATURE_QUARTERMASTER_1_H       = 32296,
+    WG_CREATURE_QUARTERMASTER_2_A       = 39172,
+    WG_CREATURE_QUARTERMASTER_2_H       = 39173,
 
-    WG_CREATURE_SPIRIT_GUIDE_A      = 31842,
-    WG_CREATURE_SPIRIT_GUIDE_H      = 31841,
-    WG_CREATURE_SPIRIT_HEALER_A     = 6491,
-    WG_CREATURE_SPIRIT_HEALER_H     = 6491,
+    WG_CREATURE_SPIRIT_GUIDE_A          = 31842,
+    WG_CREATURE_SPIRIT_GUIDE_H          = 31841,
+    WG_CREATURE_SPIRIT_HEALER_A         = 6491,
+    WG_CREATURE_SPIRIT_HEALER_H         = 6491,
 
-    WG_CREATURE_ENGINEER_A          = 30499,
-    WG_CREATURE_ENGINEER_H          = 30400,
-    WG_CREATURE_ENHANCEMENT_A       = 31051,
-    WG_CREATURE_ENHANCEMENT_H       = 31101,
+    WG_CREATURE_ENGINEER_A              = 30499,
+    WG_CREATURE_ENGINEER_H              = 30400,
 
-    WG_CREATURE_QUESTGIVER_1_A      = 31052,
-    WG_CREATURE_QUESTGIVER_1_H      = 31102,
-    WG_CREATURE_QUESTGIVER_2_A      = 31109,
-    WG_CREATURE_QUESTGIVER_2_H      = 31107,
-    WG_CREATURE_QUESTGIVER_3_A      = 31153,
-    WG_CREATURE_QUESTGIVER_3_H      = 31151,
-    WG_CREATURE_QUESTGIVER_4_A      = 31108,
-    WG_CREATURE_QUESTGIVER_4_H      = 31106,
-    WG_CREATURE_QUESTGIVER_5_A      = 31054,
-    WG_CREATURE_QUESTGIVER_5_H      = 31053,
-    WG_CREATURE_QUESTGIVER_6_A      = 31036,
-    WG_CREATURE_QUESTGIVER_6_H      = 31091,
+    WG_CREATURE_ENHANCEMENT_A           = 31051,
+    WG_CREATURE_ENHANCEMENT_H           = 31101,
+    WG_CREATURE_QUESTGIVER_1_A          = 31052,
+    WG_CREATURE_QUESTGIVER_1_H          = 31102,
+    WG_CREATURE_QUESTGIVER_2_A          = 31109,
+    WG_CREATURE_QUESTGIVER_2_H          = 31107,
+    WG_CREATURE_QUESTGIVER_3_A          = 31153,
+    WG_CREATURE_QUESTGIVER_3_H          = 31151,
+    WG_CREATURE_QUESTGIVER_4_A          = 31108,
+    WG_CREATURE_QUESTGIVER_4_H          = 31106,
+    WG_CREATURE_QUESTGIVER_5_A          = 31054,
+    WG_CREATURE_QUESTGIVER_5_H          = 31053,
+    WG_CREATURE_QUESTGIVER_6_A          = 31036,
+    WG_CREATURE_QUESTGIVER_6_H          = 31091,
 
-    WG_CREATURE_QUESTGIVER_PVP_1_A  = 32626,
-    WG_CREATURE_QUESTGIVER_PVP_1_H  = 32615,
-    WG_CREATURE_QUESTGIVER_PVP_2_A  = 15351,
-    WG_CREATURE_QUESTGIVER_PVP_2_H  = 15350,
+    WG_CREATURE_QUESTGIVER_PVP_1_A      = 15351,
+    WG_CREATURE_QUESTGIVER_PVP_1_H      = 15350,
+    WG_CREATURE_QUESTGIVER_PVP_2_A      = 32626,
+    WG_CREATURE_QUESTGIVER_PVP_2_H      = 32615,
 
-    WG_CREATURE_SIEGE_VEHICLE_A     = 28312,
-    WG_CREATURE_SIEGE_VEHICLE_H     = 32627,
-    WG_CREATURE_SIEGE_TURRET_A      = 28319,
-    WG_CREATURE_SIEGE_TURRET_H      = 32629,
-    WG_CREATURE_CATAPULT_A          = 27881,
-    WG_CREATURE_CATAPULT_H          = 27881,
-    WG_CREATURE_DEMOLISHER_A        = 28094,
-    WG_CREATURE_DEMOLISHER_H        = 28094,
-    WG_CREATURE_TOWER_CANNON_A      = 28366,
-    WG_CREATURE_TOWER_CANNON_H      = 28366,
+    WG_CREATURE_SIEGE_VEHICLE_A         = 28312,
+    WG_CREATURE_SIEGE_VEHICLE_H         = 32627,
+    WG_CREATURE_SIEGE_TURRET_A          = 28319,
+    WG_CREATURE_SIEGE_TURRET_H          = 32629,
+    WG_CREATURE_CATAPULT_A              = 27881,
+    WG_CREATURE_CATAPULT_H              = 27881,
+    WG_CREATURE_DEMOLISHER_A            = 28094,
+    WG_CREATURE_DEMOLISHER_H            = 28094,
+    WG_CREATURE_TOWER_CANNON_A          = 28366,
+    WG_CREATURE_TOWER_CANNON_H          = 28366,
 
-    WG_CREATURE_FLIGHTMASTER_A      = 30869,
-    WG_CREATURE_FLIGHTMASTER_H      = 30870,
+    WG_CREATURE_FLIGHTMASTER_A          = 30869,
+    WG_CREATURE_FLIGHTMASTER_H          = 30870,
 
-    WG_CREATURE_WEAPON_CONTROL_A    = 27852,
-    WG_CREATURE_WEAPON_CONTROL_H    = 27852
+    WG_CREATURE_WEAPON_CONTROL_A        = 27852,
+    WG_CREATURE_WEAPON_CONTROL_H        = 27852,
+
+    // Elementals
+    WG_CREATURE_LIVING_LASHER           = 30845,
+    WG_CREATURE_MATURE_LASHER           = 34300,
+    WG_CREATURE_WANDERING_SHADOW        = 30842,
+    WG_CREATURE_SHADOW_REVENANT         = 30872,
+    WG_CREATURE_GLACIAL_SPIRIT          = 30846,
+    WG_CREATURE_WATER_REVENANT          = 30877,
+    WG_CREATURE_CHILLED_EARTH_ELEMENTAL = 30849,
+    WG_CREATURE_EARTHBOUND_REVENANT     = 30876,
+    WG_CREATURE_WHISPERING_WIND         = 30848,
+    WG_CREATURE_TEMPEST_REVENANT        = 30875,
+    WG_CREATURE_RAGING_FLAME            = 30847,
+    WG_CREATURE_FLAME_REVENANT          = 30873,
+
+    WG_CREATURE_INVISIBLE_STALKER       = 23033
 };
 
 typedef uint32 TeamPairs[2];
@@ -267,10 +292,6 @@ const TeamPairs WG_NPC_Entry_Pair[] =
     {WG_CREATURE_DEMOLISHER_A,      WG_CREATURE_DEMOLISHER_H},
     {WG_CREATURE_TOWER_CANNON_A,    WG_CREATURE_TOWER_CANNON_H},
 
-    {WG_CREATURE_FLIGHTMASTER_A,    WG_CREATURE_FLIGHTMASTER_H},
-
-    {WG_CREATURE_WEAPON_CONTROL_A,  WG_CREATURE_WEAPON_CONTROL_H},
-
     {    0,     0}  // END
 };
 
@@ -285,31 +306,22 @@ const TeamPairs WG_GO_Display_Pair[] =
 
 enum WG_GO_DISPLAYIDS
 {
-    // 194162: Doodad_WG_Keep_Door01_collision01 - "Invisible Wall"
-    // 194323: Wintergrasp Keep Collision Wall - "Invisible Wall"
-    WG_GO_DISPLAY_COLLISION     = 8556,
-    // Defender's Portal
-    // Vehicle Teleporter
-    WG_GO_DISPLAY_TELEPORTER    = 8244,
-    // Titan relic
     WG_GO_DISPLAY_RELICT        = 7967,
-    // Wintergrasp Keep Door
+
     WG_GO_DISPLAY_KEEP_DOOR     = 8165,
-    // Wintergrasp Fortress Wall
-    WG_GO_DISPLAY_FORTRESS_WALL = 7877,
-    // Wintergrasp Keep Tower
-    WG_GO_DISPLAY_KEEP_TOWER    = 7878,
-    // Wintergrasp Fortress Gate
     WG_GO_DISPLAY_FORTRESS_GATE = 7906,
-    // Wintergrasp Wall
-    WG_GO_DISPLAY_WALL          = 7909,
-    // Flamewatch Tower
-    // Shadowsight Tower
-    // Winter's Edge Tower
+    WG_GO_DISPLAY_COLLISION     = 8556,
+
+    WG_GO_DISPLAY_TELEPORTER    = 8244,
+
     WG_GO_DISPLAY_TOWER         = 7900,
-    // Goblin Workshop
+    WG_GO_DISPLAY_KEEP_TOWER    = 7878,
+
+    WG_GO_DISPLAY_WALL          = 7909,
+    WG_GO_DISPLAY_FORTRESS_WALL = 7877,
+
     WG_GO_DISPLAY_WORKSHOP      = 8208,
-    // Banner
+
     WG_GO_DISPLAY_BANNER_1_A    = 5651,
     WG_GO_DISPLAY_BANNER_1_H    = 5652,
     WG_GO_DISPLAY_BANNER_2_A    = 8256,
@@ -318,71 +330,43 @@ enum WG_GO_DISPLAYIDS
 
 enum WG_GO_ENTRIES
 {
-    // Titan Reilc (click to win)
     WG_GO_TITAN_RELIC           = 192829,
 
-    // Fortress Gate (destroy to reach the relict)
     WG_GO_FORTRESS_GATE         = 190375,
 
-    // Doodad_WG_Keep_Door01_collision01 - "Invisible Wall"
     WG_GO_KEEP_DOOR01_COLLISION = 194162,
-    // Wintergrasp Keep Collision Wall - "Invisible Wall"
     WG_GO_KEEP_COLLISION_WALL   = 194323,
 
-    // Workshop NW
     WG_GO_WORKSHOP_NW           = 192028,
-    // Workshop W
     WG_GO_WORKSHOP_W            = 192030,
-    // Workshop SW
     WG_GO_WORKSHOP_SW           = 192032,
-    // Workshop NE
     WG_GO_WORKSHOP_NE           = 192029,
-    // Workshop E
     WG_GO_WORKSHOP_E            = 192031,
-    // Workshop SE
     WG_GO_WORKSHOP_SE           = 192033,
 
-    // Workshop Banner NO
     WG_GO_WORKSHOP_BANNER_NO    = 190475,
-    // Workshop Banner NW
     WG_GO_WORKSHOP_BANNER_NW    = 190487,
 
-    // Shadowsight Tower
     WG_GO_TOWER_SHADOWSIGHT     = 190356,
-    // Winter's Edge Tower
     WG_GO_TOWER_WINTERS_EDGE    = 190357,
-    // Flamewatch Tower
     WG_GO_TOWER_FLAMEWATCH      = 190358,
 
-    // Keep Tower NW
     WG_GO_KEEP_TOWER_NW         = 190221,
-    // Keep Tower NE
     WG_GO_KEEP_TOWER_NE         = 190378,
-    // Keep Tower SW
     WG_GO_KEEP_TOWER_SW         = 190373,
-    // Keep Tower SE
     WG_GO_KEEP_TOWER_SE         = 190377,
 
-    // Wall 1
     WG_GO_WALL_1                = 191797,
-    // Wall 2
     WG_GO_WALL_2                = 191798,
-    // Wall 3
     WG_GO_WALL_3                = 191805,
 
-    // Fortress Wall 1
     WG_GO_FORTRESS_WALL_1       = 191799,
-    // Fortress Wall 2
     WG_GO_FORTRESS_WALL_2       = 191809,
 
-    // Fortress Door
     WG_GO_FORTRESS_DOOR         = 191810,
 
-    // Defender's Portal 1
     WG_GO_DEFENDER_PORTAL_1     = 190763,
-    // Defender's Portal 2
     WG_GO_DEFENDER_PORTAL_2     = 191575,
-    // Defender's Portal 3
     WG_GO_DEFENDER_PORTAL_3     = 192819,
 
     // Vehicle Teleporter - GAMEOBJECT_TYPE_GENERIC - Faction 114 and no dataX entries - must be scripted!
@@ -397,61 +381,47 @@ enum WG_GO_EVENTIDS
     // (190375,192028,192030,192032,192029,192031,192033,90356,190357,190358,190221,190378,190373,190377,191797,191798,191805,191799,191809,191810,190356);
     WG_GO_FORTRESS_GATE_DAMAGED         = 19956,
     WG_GO_FORTRESS_GATE_DESTROYED       = 19957,
-
     WG_GO_FORTRESS_DOOR_DAMAGED         = 19448,
     WG_GO_FORTRESS_DOOR_DESTROYED       = 19607,
 
     WG_GO_KEEP_TOWER_NW_DAMAGED         = 19657,
     WG_GO_KEEP_TOWER_NW_DESTROYED       = 19661,
-
     WG_GO_KEEP_TOWER_SW_DAMAGED         = 19659,
     WG_GO_KEEP_TOWER_SW_DESTROYED       = 19662,
-
     WG_GO_KEEP_TOWER_SE_DAMAGED         = 19660,
     WG_GO_KEEP_TOWER_SE_DESTROYED       = 19664,
-
     WG_GO_KEEP_TOWER_NE_DAMAGED         = 19658,
     WG_GO_KEEP_TOWER_NE_DESTROYED       = 19663,
 
     WG_GO_TOWER_WINTERS_EDGE_DAMAGED    = 19673,
     WG_GO_TOWER_WINTERS_EDGE_DESTROYED  = 19676,
-
     WG_GO_TOWER_FLAMEWATCH_DAMAGED      = 19672,
     WG_GO_TOWER_FLAMEWATCH_DESTROYED    = 19675,
-
     WG_GO_TOWER_SHADOWSIGHT_DAMAGED     = 19674,
     WG_GO_TOWER_SHADOWSIGHT_DESTROYED   = 19677,
 
     WG_GO_WALL_1_DAMAGED                = 19934,
     WG_GO_WALL_1_DESTROYED              = 19943,
-
     WG_GO_WALL_2_DAMAGED                = 19940,
     WG_GO_WALL_2_DESTROYED              = 19949,
-
     WG_GO_WALL_3_DAMAGED                = 19937,
     WG_GO_WALL_3_DESTROYED              = 19946,
 
     WG_GO_FORTRESS_WALL_1_DAMAGED       = 19909,
     WG_GO_FORTRESS_WALL_1_DESTROYED     = 19923,
-
     WG_GO_FORTRESS_WALL_2_DAMAGED       = 19908,
     WG_GO_FORTRESS_WALL_2_DESTROYED     = 19922,
 
     WG_GO_WORKSHOP_NW_DAMAGED           = 19782,
     WG_GO_WORKSHOP_NW_DESTROYED         = 19786,
-
     WG_GO_WORKSHOP_NE_DAMAGED           = 19783,
     WG_GO_WORKSHOP_NE_DESTROYED         = 19787,
-
     WG_GO_WORKSHOP_W_DAMAGED            = 19777,
     WG_GO_WORKSHOP_W_DESTROYED          = 19779,
-
     WG_GO_WORKSHOP_E_DAMAGED            = 19776,
     WG_GO_WORKSHOP_E_DESTROYED          = 19778,
-
     WG_GO_WORKSHOP_SW_DAMAGED           = 19784,
     WG_GO_WORKSHOP_SW_DESTROYED         = 19788,
-
     WG_GO_WORKSHOP_SE_DAMAGED           = 19785,
     WG_GO_WORKSHOP_SE_DESTROYED         = 19789
 };
@@ -481,9 +451,11 @@ enum OutdoorPvPWGSpell
     SPELL_BUILD_SIEGE_ENGINE_H  = 61408,
 
     SPELL_TELEPORT_DALARAN      = 53360,
-    SPELL_VICTORY_AURA          = 60044
+    SPELL_VICTORY_AURA          = 60044,
+    SPELL_WINTEGRASP_WATER      = 36444 // For trigger within the waters of wintergrasp (aura)
 };
 
+// To be deleted soon!
 enum OutdoorPvPWGCreType
 {
     CREATURE_OTHER,
@@ -494,23 +466,24 @@ enum OutdoorPvPWGCreType
     CREATURE_SPECIAL,
     CREATURE_SPIRIT_GUIDE,
     CREATURE_SPIRIT_HEALER,
-    CREATURE_QUESTGIVER,
+    CREATURE_QUESTGIVER
 };
 
 enum OutdoorPvPWGBuildingType
 {
     BUILDING_WALL,
     BUILDING_WORKSHOP,
-    BUILDING_TOWER,
+    BUILDING_TOWER
 };
 
 enum OutdoorPvPWGDamageState
-{ // Do not change order
+{   // Do not change order
     DAMAGE_INTACT,
     DAMAGE_DAMAGED,
-    DAMAGE_DESTROYED,
+    DAMAGE_DESTROYED
 };
 
+// To be deleted soon!
 typedef uint32 TeamPair[2];
 
 enum OutdoorPvPWGQuest
@@ -521,6 +494,7 @@ enum OutdoorPvPWGQuest
     CRE_PVP_KILL_V  = 31093, //Quest Objective - Fixme: this should be handled by DB
 };
 
+// To be deleted soon!
 enum OutdoorPvPWGCreEntry
 {
     CRE_ENG_A   = 30499,
@@ -529,6 +503,7 @@ enum OutdoorPvPWGCreEntry
     CRE_SPI_H   = 31841,
 };
 
+// To be deleted soon!
 const TeamPair OutdoorPvPWGCreEntryPair[] =
 {
     {32307, 32308}, // Guards
@@ -539,6 +514,7 @@ const TeamPair OutdoorPvPWGCreEntryPair[] =
     {0,0} // Do not delete Used in LoadTeamPair
 };
 
+// To be deleted soon!
 const TeamPair OutdoorPvPWGGODisplayPair[] =
 {
     {5651, 5652},
@@ -548,6 +524,24 @@ const TeamPair OutdoorPvPWGGODisplayPair[] =
 
 const uint32 AreaPOIIconId[3][3] = {{7,8,9},{4,5,6},{1,2,3}};
 typedef std::list<const AreaPOIEntry *> AreaPOIList;
+
+struct CreatureMapEntry
+{
+    uint32      lguid;  // Low GUID
+    Creature    *cr;    // Pointer to the Creature
+
+    bool        def;    // Is the current pos the defender pos?
+    bool        isQg;   // Is it a Questgiver?
+
+    Position    pos;    // Current position of the Creature
+    TeamId      team;   // Team if the Creature
+
+    WG_QUESTGIVER_MOVEPOS_INDEX idx;    // If Questgiver then here is his idx
+
+    CreatureMapEntry() : lguid(0), cr(NULL), def(false), isQg(false), pos(), team(TEAM_NEUTRAL), idx() {}
+    CreatureMapEntry(uint32 _lguid, Creature *_cr, bool _def, bool _isQg, Position _pos, TeamId _team, WG_QUESTGIVER_MOVEPOS_INDEX _idx) : lguid(_lguid), cr(_cr), def(_def), isQg(_isQg), pos(_pos), team(_team), idx(_idx) {}
+};
+typedef std::map<uint64, CreatureMapEntry> CreatureMap;
 
 struct BuildingState
 {
@@ -572,7 +566,7 @@ struct BuildingState
         data << worldState << AreaPOIIconId[team][damageState];
     }
 
-    TeamId GetTeam() const { return team; }
+    TeamId GetTeamId() const { return team; }
 
     void SetTeam(TeamId t)
     {
@@ -596,13 +590,13 @@ class OutdoorPvPWG : public OutdoorPvP
         typedef std::map<uint32, BuildingState *> BuildingStateMap;
         typedef std::set<Creature*> CreatureSet;
         typedef std::set<GameObject*> GameObjectSet;
+        // To be deleted soon!
         typedef std::map<std::pair<uint32, bool>, Position> QuestGiverPositionMap;
+        // To be deleted soon!
         typedef std::map<uint32, Creature*> QuestGiverMap;
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
-
-        uint32 GetCreatureEntry(uint32 guidlow, const CreatureData *data);
 
         std::string GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleConstant loc);
 
@@ -665,14 +659,21 @@ class OutdoorPvPWG : public OutdoorPvP
         GameObject *m_gate_collision1;
         GameObject *m_gate_collision2;
 
+        Creature *m_stalker1;
+        Creature *m_stalker2;
+        // To be deleted soon!
         CreatureSet m_creatures;
         CreatureSet m_vehicles[2];
         CreatureSet m_turrets[2];
+        // The new type - will be enabled soon.
+//        CreatureMap m_creatures;
 
         GameObjectSet m_gobjects;
+        // To be deleted soon!
         QuestGiverMap m_questgivers;
 
         TeamPairMap m_creEntryPair, m_goDisplayPair;
+        // To be deleted soon!
         QuestGiverPositionMap m_qgPosMap;
 
         bool m_wartime;
@@ -684,6 +685,8 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 m_towerDamagedCount[2];
         uint32 m_VehicleCnt[2];
         uint32 m_saveinterval; // Minimum save interval if nothing happends - 300000 - 5 Min.
+        uint32 m_checktime;
+
         int32 m_tenacityStack;
 
         OPvPCapturePointWG *GetWorkshop(uint32 lowguid) const;
@@ -709,10 +712,18 @@ class OutdoorPvPWG : public OutdoorPvP
         void SendInitWorldStatesTo(Player *player = NULL) const;
         void RewardMarkOfHonor(Player *player, uint32 count);
         void MoveQuestGiver(uint32 guid);
+        // To be deleted soon!
         void LoadQuestGiverMap(uint32 guid, Position posHorde, Position posAlli);
+        // To be deleted soon!
         bool UpdateQuestGiverPosition(uint32 guid, Creature *creature);
 
     private:
+        // To be enabled soon.
+//        void LoadCreatureMap(uint64 guid, WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
+        // To be enabled soon.
+//        Position SetQuestgiverPos(WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
+        Creature *SearchVehicleForTeleport(Creature* cr, uint32 CEntry);
+        void CheckVehicleTeleport();
         void LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair);
         void SaveData();
 };
