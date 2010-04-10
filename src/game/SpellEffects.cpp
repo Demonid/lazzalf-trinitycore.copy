@@ -5902,8 +5902,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 63521:
                 {
                     // Divine Plea
-                    if (Aura* aura = unitTarget->GetAura(54428))
-                        aura->RefreshDuration();
+                    for(uint8 i = 0; i < 3; ++i)
+                        if (Aura* aura = unitTarget->GetAura(54428, (i)))
+                            aura->RefreshDuration();
                     return;
                 }
             }
