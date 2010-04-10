@@ -1291,10 +1291,16 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
                 damage -= target->GetSpellCritDamageReduction(damage);
             }
-
-            // only from players
-            if (IS_PLAYER_GUID(GetCasterGUID()))
-                damage -= target->GetSpellDamageReduction(damage);
+            
+            // Reduce damage from resilience for players and pets only.
+            // As of patch 3.3 pets inherit 100% of master resilience.
+            if (caster->GetSpellModOwner())
+                if (Player* modOwner = target->GetSpellModOwner())
+                {
+                    if (crit)
+                        damage -= modOwner->GetSpellCritDamageReduction(damage);
+                    damage -= modOwner->GetSpellDamageReduction(damage);
+                }
 
             caster->CalcAbsorbResist(target, GetSpellSchoolMask(GetSpellProto()), DOT, damage, &absorb, &resist, m_spellProto);
 
@@ -1365,9 +1371,15 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 damage = damageReductedArmor;
             }
 
-            // Reduce dot damage from resilience for players.
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                damage-=target->GetSpellDamageReduction(damage);
+            // Reduce damage from resilience for players and pets only.
+            // As of patch 3.3 pets inherit 100% of master resilience.
+            if (caster->GetSpellModOwner())
+                if (Player* modOwner = target->GetSpellModOwner())
+                {
+                    if (crit)
+                        damage -= modOwner->GetSpellCritDamageReduction(damage);
+                    damage -= modOwner->GetSpellDamageReduction(damage);
+                }
 
             caster->CalcAbsorbResist(target, GetSpellSchoolMask(GetSpellProto()), DOT, damage, &absorb, &resist, m_spellProto);
 
