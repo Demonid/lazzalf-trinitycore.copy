@@ -1250,11 +1250,11 @@ void Player::Update(uint32 p_time)
 	
 	if(m_jail_warning == true)
 	{
-		m_jail_warning  = false;
+		m_jail_warning = false;
 		
 		if(objmgr.m_jailconf_warn_player == m_jail_times || objmgr.m_jailconf_warn_player <= m_jail_times)
 		{
-			if ((objmgr.m_jailconf_max_jails-1 == m_jail_times-1) && objmgr.m_jailconf_ban-1)
+			if (((objmgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (objmgr.m_jailconf_ban - 1))
 			{
 				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING_BAN, m_jail_times , objmgr.m_jailconf_max_jails-1);
 			}
@@ -1264,7 +1264,7 @@ void Player::Update(uint32 p_time)
 			}
 		        
 		}
-				return;
+		return;
 	}
     if(m_jail_amnestie == true && objmgr.m_jailconf_amnestie > 0 )
     {

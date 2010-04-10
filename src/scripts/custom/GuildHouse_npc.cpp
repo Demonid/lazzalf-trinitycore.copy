@@ -648,19 +648,19 @@ void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action 
             break;
         case 1200: // Ritual of Souls please
             player->CLOSE_GOSSIP_MENU();
-            player->CastSpell(player,29886,false);
+            player->CastSpell(player,58889,false);
             break;
         case 1205: // Table please
             player->CLOSE_GOSSIP_MENU();
-            player->CastSpell(player,43985,false);
+            player->CastSpell(player,58661,false);
             break;
         case 1210: // Buff me Arcane Intelect
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,27126,false);
+            _Creature->CastSpell(player,42995,false);
             break;
         case 1215: // Buff me Mark of the Wild
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player,26990,false);
+            _Creature->CastSpell(player,48469,false);
             break;
         case 1220: // Buff me Thorns
             player->CLOSE_GOSSIP_MENU();
