@@ -601,6 +601,13 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
         }
+        // Scourge Strike
+        if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
+        {
+            int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
+            if (shadowdmg > 0)
+                CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
+        }
     }
 
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
@@ -1084,11 +1091,6 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 if (critPctDamageMod != 0)
                     damage = int32(damage * float((100.0f + critPctDamageMod)/100.0f));
 
-                // Resilience - reduce crit damage
-                if (attackType != RANGED_ATTACK)
-                    damage -= pVictim->GetMeleeCritDamageReduction(damage);
-                else
-                    damage -= pVictim->GetRangedCritDamageReduction(damage);
             }
             // Spell weapon based damage CAN BE crit & blocked at same time
             if (blocked)
@@ -1101,6 +1103,23 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                     damageInfo->blocked = damage;
                 damage -= damageInfo->blocked;
             }
+            // Reduce damage from resilience for players and pets only.
+            // As of patch 3.3 pets inherit 100% of master resilience.
+            if (GetSpellModOwner())
+                if (Player* modOwner = pVictim->GetSpellModOwner())
+                {
+                    if (crit)
+                    {
+                        if (attackType != RANGED_ATTACK)
+                            damage -= modOwner->GetMeleeCritDamageReduction(damage);
+                        else
+                            damage -= modOwner->GetRangedCritDamageReduction(damage);
+                    }
+                    if (attackType != RANGED_ATTACK)
+                        damage -= modOwner->GetMeleeDamageReduction(damage);
+                    else
+                        damage -= modOwner->GetRangedDamageReduction(damage);
+                }
         }
         break;
         // Magical Attacks
@@ -1110,18 +1129,22 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
             // If crit add critical bonus
             if (crit)
             {
-                damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
+                damageInfo->HitInfo |= SPELL_HIT_TYPE_CRIT;
                 damage = SpellCriticalDamageBonus(spellInfo, damage, pVictim);
-                // Resilience - reduce crit damage
-                damage -= pVictim->GetSpellCritDamageReduction(damage);
             }
+
+            // Reduce damage from resilience for players and pets only.
+            // As of patch 3.3 pets inherit 100% of master resilience.
+            if (GetSpellModOwner())
+                if (Player* modOwner = pVictim->GetSpellModOwner())
+                {
+                    if (crit)
+                        damage -= modOwner->GetSpellCritDamageReduction(damage);
+                    damage -= modOwner->GetSpellDamageReduction(damage);
+                }
         }
         break;
     }
-
-    // only from players
-    if (GetTypeId() == TYPEID_PLAYER)
-        damage -= pVictim->GetSpellDamageReduction(damage);
 
     // Calculate absorb resist
     if (damage > 0)
@@ -1295,10 +1318,20 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
             if (mod != 0)
                 damageInfo->damage = int32((damageInfo->damage) * float((100.0f + mod)/100.0f));
 
-            // Resilience - reduce crit damage
-            uint32 resilienceReduction = pVictim->GetMeleeCritDamageReduction(damageInfo->damage);
-            damageInfo->damage      -= resilienceReduction;
-            damageInfo->cleanDamage += resilienceReduction;
+            // Reduce damage from resilience for players and pets only.
+            // As of patch 3.3 pets inherit 100% of master resilience.
+            if (GetSpellModOwner())
+                if (Player* modOwner = pVictim->GetSpellModOwner())
+                {
+                    uint32 resilienceReduction;
+                    if (attackType != RANGED_ATTACK)
+                        resilienceReduction = modOwner->GetMeleeCritDamageReduction(damageInfo->damage);
+                    else
+                        resilienceReduction = modOwner->GetRangedCritDamageReduction(damageInfo->damage);
+
+                    damageInfo->damage      -= resilienceReduction;
+                    damageInfo->cleanDamage += resilienceReduction;
+                }
             break;
         }
         case MELEE_HIT_PARRY:
@@ -1360,9 +1393,20 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
             break;
     }
 
-    // only from players
-    if (GetTypeId() == TYPEID_PLAYER)
-        damage -= pVictim->GetMeleeDamageReduction(damage);
+    // Reduce damage from resilience for players and pets only.
+    // As of patch 3.3 pets inherit 100% of master resilience.
+    if (GetSpellModOwner())
+        if (Player* modOwner = pVictim->GetSpellModOwner())
+        {
+            uint32 resilienceReduction;
+            if (attackType != RANGED_ATTACK)
+                resilienceReduction = modOwner->GetMeleeDamageReduction(damageInfo->damage);
+            else
+                resilienceReduction = modOwner->GetRangedDamageReduction(damageInfo->damage);
+
+            damageInfo->damage      -= resilienceReduction;
+            damageInfo->cleanDamage += resilienceReduction;
+        }
 
     // Calculate absorb resist
     if (int32(damageInfo->damage) > 0)
@@ -1745,7 +1789,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                 if (spellProto->SpellIconID == 3006)
                 {
                     // You have a chance equal to your Parry chance
-                    if (damagetype == DIRECT_DAMAGE &&                   // Only for direct damage
+                    if (damagetype == SPELL_DIRECT_DAMAGE &&                   // Only for direct damage
                         roll_chance_f(pVictim->GetUnitParryChance()))    // Roll chance
                         RemainingDamage -= RemainingDamage * currentAbsorb / 100;
                     continue;
@@ -3090,13 +3134,18 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit *pVict
     // reduce crit chance from Rating for players
     if (attackType != RANGED_ATTACK)
     {
-        crit -= pVictim->GetMeleeCritChanceReduction();
-     // Glyph of barkskin
-     if (pVictim->HasAura(63057) && pVictim->HasAura(22812))
-         crit-=25.0f;
+        // Reduce crit chance from resilience for players and pets only.
+        // As of patch 3.3 pets inherit 100% of master resilience.
+        if (GetSpellModOwner())
+            if (Player* modOwner = pVictim->GetSpellModOwner())
+                crit -= modOwner->GetMeleeCritChanceReduction();
+        // Glyph of barkskin
+        if (pVictim->HasAura(63057) && pVictim->HasAura(22812))
+            crit -= 25.0f;
     }
-    else
-        crit -= pVictim->GetRangedCritChanceReduction();
+    else if (GetSpellModOwner())
+        if (Player* modOwner = pVictim->GetSpellModOwner())
+            crit -= modOwner->GetRangedCritChanceReduction();
 
     // Apply crit chance from defence skill
     crit += (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
@@ -3468,8 +3517,17 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
         // find current aura from spell and change it's stackamount
         if (Aura * foundAura = GetOwnedAura(aura->GetId(), aura->GetCasterGUID(), 0, aura))
         {
-            if (aura->GetSpellProto()->StackAmount)
+            if (aura->GetSpellProto()->StackAmount) 
+            {
                 aura->ModStackAmount(foundAura->GetStackAmount());
+                for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS ; ++effIndex)
+                    {
+                        if (!aura->HasEffect(effIndex))
+                            continue;
+                        if (aura->GetEffect(effIndex)->IsPeriodic())
+                            aura->GetEffect(effIndex)->SetPeriodic(foundAura->GetEffect(effIndex)->GetPeriodic());
+                    }
+            }
 
             // Use the new one to replace the old one
             // This is the only place where AURA_REMOVE_BY_STACK should be used
@@ -6461,7 +6519,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 float ap = GetTotalAttackPowerValue(BASE_ATTACK);
                 int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
                              SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
-                basepoints0 = (int32)GetAttackTime(BASE_ATTACK) * int32(ap*0.022f + 0.044f * holy) / 1000;
+                basepoints0 = int32(GetAttackTime(BASE_ATTACK)) * int32(ap*0.022f + 0.044f * holy) / 1000;
                 break;
             }
             // Light's Beacon - Beacon of Light
@@ -6938,6 +6996,22 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     triggered_spell_id = 58879;
                     break;
                 }
+                // Glyph of Totem of Wrath
+                case 63280:
+                {
+                    if (procSpell->SpellIconID != 2019)
+                        return false;
+                    // we need the sp of the totem's spell
+                    CreatureInfo const * cinfo = GetCreatureInfo(procSpell->EffectMiscValue[0]);
+                    if (cinfo && cinfo->spells[0])
+                    {
+                        SpellEntry const * spell = sSpellStore.LookupEntry(cinfo->spells[0]);
+                        basepoints0 = triggerAmount * spell->CalculateSimpleValue(0) / 100;
+                        target = GetSpellModOwner();
+                        triggered_spell_id = 63283;
+                    }
+                    break;
+                }
                 // Shaman T8 Elemental 4P Bonus
                 case 64928:
                 {
@@ -7210,7 +7284,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             // Unholy Blight
             if (dummySpell->Id == 49194)
             {
-                basepoints0 = triggerAmount * damage / 100;
+                basepoints0 = triggerAmount * damage / 1000;
                 // Glyph of Unholy Blight
                 if (AuraEffect *glyph=GetAuraEffect(63332,0))
                     basepoints0 += basepoints0 * glyph->GetAmount() / 100;
@@ -7248,9 +7322,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Must Dual Wield
                 if (!procSpell || !haveOffhandWeapon())
                     return false;
-                // Chance as basepoints for dummy aura
-                if (!roll_chance_i(triggerAmount))
-                    return false;
 
                 switch (procSpell->Id)
                 {
@@ -7266,7 +7337,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     case 51417: triggered_spell_id = 66959; break;                            // Rank 3
                     case 51418: triggered_spell_id = 66960; break;                            // Rank 4
                     case 51419: triggered_spell_id = 66961; break;                            // Rank 5
-                    case 51420: triggered_spell_id = 66962; break;                            // Rank 6
+                    case 55268: triggered_spell_id = 66962; break;                            // Rank 6
 
                     // Plague Strike
                     case 45462: triggered_spell_id = 66216; break;                            // Rank 1
@@ -8177,6 +8248,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
             if (!(procSpell->SpellFamilyFlags[0] & 0x20))
                 return false;
             break;
+        }        
+        // Glyph of Death's Embrace
+        case 58677:
+        {
+            if (procSpell->Id != 47633)
+                return false;
+            break;
         }
         // Blessing of Ancient Kings (Val'anyr, Hammer of Ancient Kings)
         case 64411:
@@ -8201,7 +8279,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         if (this->GetTypeId() != TYPEID_PLAYER || !this->ToPlayer()->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
             return false;
     }
-
     // Rime
     else if (auraSpellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && auraSpellInfo->SpellIconID == 56)
     {
@@ -9683,7 +9760,15 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) &&
             (*i)->GetSpellProto()->EquippedItemClass == -1 &&          // -1 == any item class (not wand)
             (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0) // 0 == any inventory type (not wand)
+        {
             DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+            /*
+            if ((*i)->GetId() == 36032) // Arcane Blast debuff should not be removed here
+  	            continue;
+            
+ 	        if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+               i = mModDamagePercentDone.begin();*/
+        }
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
     // Add flat bonus from spell damage versus
@@ -9997,7 +10082,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Pets just add their bonus damage to their spell damage
     // note that their spell damage is just gain of their own auras
     if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
-        DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
+        if (!(GetSpellSchoolMask(spellProto) & SPELL_SCHOOL_MASK_NORMAL))                 // Do not add Spellpower to melee abilities
+            DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
+        else if (((Guardian*)this)->GetBonusDamage())                                     // Instead add a fixed amount of AP
+            DoneAdvertisedBenefit += GetTotalAttackPowerValue(BASE_ATTACK) * 0.2f;
 
     // Check for table values
     float coeff = 0;
@@ -10200,8 +10288,11 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                     crit_chance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
                     // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE
                     crit_chance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
-                    // Modify by player victim resilience
-                    crit_chance -= pVictim->GetSpellCritChanceReduction();
+                    // Reduce crit chance from resilience for players and pets only.
+                    // As of patch 3.3 pets inherit 100% of master resilience.
+                    if (GetSpellModOwner())
+                        if (Player* modOwner = pVictim->GetSpellModOwner())
+                            crit_chance -= modOwner->GetSpellCritChanceReduction();
                 }
                 // scripted (increase crit chance ... against ... target by x%
                 AuraEffectList const& mOverrideClassScript = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -10301,12 +10392,12 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                             break;
                         }
                     break;
-                    case SPELLFAMILY_PALADIN:
+                    /*case SPELLFAMILY_PALADIN:
                         // Judgement of Command proc always crits on stunned target
                         if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
                             if (spellProto->SpellFamilyFlags[0] & 0x0000000000800000LL && spellProto->SpellIconID == 561)
                                 if (pVictim->hasUnitState(UNIT_STAT_STUNNED))
-                                    return true;
+                                    return true;*/
                 }
             }
         case SPELL_DAMAGE_CLASS_RANGED:
@@ -10891,7 +10982,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
 
     if (attType == RANGED_ATTACK && pVictim->GetTypeId() == TYPEID_UNIT)
     {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
+        //APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
 
         // ..done (base at attack power and creature type)
         AuraEffectList const& mCreatureAttackPower = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS);
@@ -10959,7 +11050,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
                 if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+                {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
+ 
+                    /*if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+                        i = mModDamagePercentDone.begin();*/
+                }
         }
 
     AuraEffectList const &mDamageDoneVersus = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS);
@@ -11351,7 +11447,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         return;
 
     if (PvP)
-        m_CombatTimer = 5000;
+        m_CombatTimer = 6000;
 
     if (isInCombat() || hasUnitState(UNIT_STAT_EVADE))
         return;
@@ -12297,7 +12393,7 @@ int32 Unit::ModSpellDuration(SpellEntry const* spellProto, Unit const* target, i
         return duration;
 
     //cut duration only of negative effects
-    if (!positive)
+    if (!positive && !(spellProto->SpellFamilyName == SPELLFAMILY_ROGUE && spellProto->SpellFamilyFlags[1] == 0x8))
     {
         int32 mechanic = GetAllSpellMechanicMask(spellProto);
 
@@ -13412,7 +13508,7 @@ bool InitTriggerAuraData()
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
-    isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
+    //isTriggerAura[SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS] = true;
 
     return true;
 }

@@ -191,7 +191,9 @@ struct boss_ichoronAI : public ScriptedAI
             DoCast(m_creature, SPELL_PROTECTIVE_BUBBLE, true);
         }
 
-        m_creature->SetVisibility(VISIBILITY_ON);
+        //m_creature->SetVisibility(VISIBILITY_ON);
+        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
     }
 
@@ -219,11 +221,12 @@ struct boss_ichoronAI : public ScriptedAI
                     if (!m_creature->HasAura(SPELL_PROTECTIVE_BUBBLE, 0))
                     {
                         DoScriptText(SAY_SHATTER, m_creature);
-                        DoCast(m_creature, SPELL_WATER_BLAST);
+                        DoCast(m_creature->getVictim(), SPELL_WATER_BLAST);
                         DoCast(m_creature, SPELL_DRAINED);
                         bIsExploded = true;
                         m_creature->AttackStop();
-                        m_creature->SetVisibility(VISIBILITY_OFF);
+                        //m_creature->SetVisibility(VISIBILITY_OFF);
+                        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         for (uint8 i = 0; i < 10; i++)
                         {
                             int tmp = urand(0, MAX_SPAWN_LOC-1);

@@ -409,6 +409,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (!unitTarget->HasAura(27825))
                             return;
                         break;
+                    // Polarity Shift charges 
+                    case 28059: 
+                    case 28084: 
+                    case 39088:
+                    case 39091:
+                        // only affects players
+                        if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                            return;
                     // Cataclysmic Bolt
                     case 38441:
                     {
@@ -496,9 +504,12 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // found Immolate or Shadowflame
                     if (aura)
                     {
-                        uint32 pdamage = aura->GetAmount() > 0 ? aura->GetAmount() : 0;
-                        pdamage = m_caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), pdamage, DOT, aura->GetBase()->GetStackAmount());
-                        damage += pdamage * aura->GetTotalTicks() * 60 / 100;
+                        //uint32 damagetick = aura->GetAmount() > 0 ? aura->GetAmount() : 0;
+						// Conflagrate DOT
+                        int32 damagetick = m_caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aura->GetBase()->GetStackAmount(), DOT);
+                        // Save value of further damage
+                        m_currentBasePoints[1] = damagetick * 2 / 3;
+                        damage += damagetick * 3;
                         apply_direct_bonus = false;
                         // Glyph of Conflagrate
                         if (!m_caster->HasAura(56235))
@@ -567,6 +578,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                     }
                 }
+                // Improved Devouring Plague should not get any bonus
+                else if (m_spellInfo->Id == 63675)
+  	                apply_direct_bonus = false;
                 break;
             }
             case SPELLFAMILY_DRUID:
@@ -718,7 +732,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     damage += int32(0.2f*ap + 0.32f*sp);
                 }
                 // Judgement of Wisdom, Light, Justice
-                else if (m_spellInfo->Id == 54158)
+                else if (m_spellInfo->SpellFamilyFlags[0] & 0x00800000 && m_spellInfo->Id != 31804 && m_spellInfo->Id != 53733)//else if(m_spellInfo->Id == 54158)
                 {
                     float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     float sp = m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
@@ -1075,12 +1089,12 @@ void Spell::EffectDummy(uint32 i)
                 }
                 // Polarity Shift
                 case 28089:
-                    if (unitTarget)
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                         unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
                     break;
                 // Polarity Shift
                 case 39096:
-                    if (unitTarget)
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                         unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 39088 : 39091, true, NULL, NULL, m_caster->GetGUID());
                     break;
                 case 29200:                                 // Purify Helboar Meat
@@ -1740,6 +1754,19 @@ void Spell::EffectDummy(uint32 i)
                             continue;
 
                         m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                          // Deadly Poison
+                        if (combatEntry->SpellFamilyName == SPELLFAMILY_ROGUE && combatEntry->SpellFamilyFlags[0] == 0x10000 && combatEntry->SpellFamilyFlags[1] == 0x80000) 
+                        {
+                            if (Aura * aur = unitTarget->GetAura(pEnchant->spellid[s], pCaster->GetGUID()))
+                                if (aur->GetStackAmount() == 5)
+                                    if (Item* Weapon = pCaster->GetWeaponForAttack(BASE_ATTACK))
+                                        if (SpellItemEnchantmentEntry const *Poison = sSpellItemEnchantmentStore.LookupEntry(Weapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))) 
+                                        {
+                                            SpellEntry const* poisonEntry = sSpellStore.LookupEntry(Poison->spellid[s]);
+                                            if (poisonEntry && poisonEntry->Dispel == DISPEL_POISON)
+                                                m_caster->CastSpell(unitTarget, poisonEntry, true, Weapon);
+                                        }
+                        }
                     }
 
                     m_caster->CastSpell(unitTarget, 5940, true);
@@ -2041,12 +2068,6 @@ void Spell::EffectDummy(uint32 i)
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
                 return;
             }
-            // Scourge Strike
-            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
-            {
-                m_damage = float (m_damage) * (float(damage * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) + 100.0f) / 100.0f);
-                return;
-            }
             // Death Coil
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
             {
@@ -2071,8 +2092,12 @@ void Spell::EffectDummy(uint32 i)
             // Death Grip
             if (m_spellInfo->Id == 49560)
             {
+                if (unitTarget == m_caster)
+  	                return;
+                if (unitTarget->GetEntry() == 28366) // Hackfix per non grippare le torrette a winter
+                    return;
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
-                    unit->CastSpell(m_caster, damage, true);
+                    return;
                 else
                     unitTarget->CastSpell(m_caster, damage, true);
                 return;
@@ -2136,7 +2161,7 @@ void Spell::EffectDummy(uint32 i)
                 unitTarget->SetDisplayId(25537+urand(0,3));
             }
             // Runic Power Feed (keeping Gargoyle alive)
-            else if (m_spellInfo->Id == 50524)
+            /*else if (m_spellInfo->Id == 50524)
             {
                 // No power, dismiss Gargoyle
                 if (m_caster->GetPower(POWER_RUNIC_POWER)<30)
@@ -2145,7 +2170,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->ModifyPower(POWER_RUNIC_POWER,-30);
 
                 return;
-            }
+            }*/
             break;
     }
 
@@ -3235,6 +3260,23 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, damage, power);
+
+    // Scripted Mods
+ 	Unit::AuraEffectList const &mOverrideClassScript= m_caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+ 
+ 	for (Unit::AuraEffectList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
+  	{
+ 	    if (!(*i)->IsAffectedOnSpell(m_spellInfo))
+  	        continue;
+
+ 	    switch ((*i)->GetMiscValue())
+  	    {
+  	        case 5497:                // Improved Mana Gems (T6 trinket - T7 bonus)
+ 	        int32 basepoints = (*i)->GetAmount();
+  	        m_caster->CastCustomSpell(unitTarget, 37445, &basepoints, &basepoints, NULL, true, NULL);
+  	        break;
+  	    }
+  	}
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
@@ -4624,6 +4666,11 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                        totalDamagePercentMod *= float((20 + 100.0f) / 100.0f);
                 }
             }
+            // Heart Strike
+ 	        else if (m_spellInfo->SpellFamilyFlags[0] &  0x1000000)
+ 	        {
+  	            totalDamagePercentMod *= (float(unitTarget->GetDiseasesByCaster(m_caster->GetGUID())) * 10.0f + 100.0f) / 100.0f;
+  	        }
             // Death Strike
             else if (m_spellInfo->SpellFamilyFlags[0] & 0x00000010)
             {
@@ -4655,6 +4702,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Blood-Caked Strike - Blood-Caked Blade
             else if (m_spellInfo->SpellIconID == 1736)
                 totalDamagePercentMod *= (float(unitTarget->GetDiseasesByCaster(m_caster->GetGUID())) * 12.5f + 100.0f) / 100.0f;
+            // Rune Strike
+            else if (m_spellInfo->SpellFamilyFlags[1] & 0x20000000)
+                m_damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.15f);
             break;
         }
     }
@@ -4696,6 +4746,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         float weapon_total_pct = 1.0f;
         if (m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL)
              weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
+
+        if (m_attackType == OFF_ATTACK) // Off-Hand fixed_bonus is not reduced by Off-Hand Penality (50%)
+ 	            weapon_total_pct *= 2;
 
         if (fixed_bonus)
             fixed_bonus = int32(fixed_bonus * weapon_total_pct);
@@ -5852,8 +5905,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 63521:
                 {
                     // Divine Plea
-                    if (Aura * aura = m_caster->GetAura(54428))
-                        aura->RefreshDuration();
+                    for(uint8 i = 0; i < 3; ++i)
+                        if (Aura* aura = unitTarget->GetAura(54428, (i)))
+                            aura->RefreshDuration();
                     return;
                 }
             }
@@ -7074,13 +7128,52 @@ void Spell::EffectTransmitted(uint32 effIndex)
     Map *cMap = m_caster->GetMap();
     if (goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
+        bool hackzone = false; // Customization
         //dirty way to hack serpent shrine pool
         if (cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)//center of strange pool
         {
             fx = 36.69+irand(-8,8);//random place for the bobber
             fy = -416.38+irand(-8,8);
             fz = -19.9645;//serpentshrine water level
-        }else if (!cMap->IsInWater(fx, fy, fz-0.5f, 0.5f))             // Hack to prevent fishing bobber from failing to land on fishing hole
+        }
+        // Customization Start
+        else if ( cMap->GetId() == 571 && m_caster->GetDistance(5699.62, 605.35, 646.38) <= 10 ) //Northrend Dalaran Fontana
+        {
+            fx = 5699.62+irand(-3,3);
+            fy = 605.35+irand(-3,3);
+            fz = 646.38;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 571 && m_caster->GetDistance(5720.65, 660.13, 612.14) <= 10 ) //Northrend Dalaran Fogne
+        {
+            fx = 5720.65+irand(-3,3);
+            fy = 660.13+irand(-3,3);
+            fz = 612.14;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 0 && m_caster->GetDistance(-4651.49, -1086.20, 500.45) <= 20 ) //The Forlorn Cavern[Ironforge]
+        {
+            fx = -4651.49+irand(-3,3);//random place for the bobber
+            fy = -1086.20+irand(-3,3);
+            fz = 500.45;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 1 && m_caster->GetDistance(1507.66, -4189.09, 40.03) <= 20 ) //Valley of Spirits[Orgrimmar]
+        {
+            fx = 1507.66+irand(-3,3);//random place for the bobber
+            fy =-4189.09+irand(-3,3);
+            fz = 41.0;
+            hackzone = true;
+        }
+        else if ( cMap->GetId() == 1 && m_caster->GetDistance(1969.20, -4655.43, 24.55) <= 20 ) //Valley of Honor[Orgrimmar]
+        {
+            fx = 1969.20+irand(-3,3);//random place for the bobber
+            fy =-4655.43+irand(-3,3);
+            fz = 24.55;
+            hackzone = true;
+        }
+        // Customization End
+        else if ( !cMap->IsInWater(fx, fy, fz-0.5f, 0.5f))             // Hack to prevent fishing bobber from failing to land on fishing hole
         { // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
             SendChannelUpdate(0);
@@ -7088,7 +7181,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         }
 
         // replace by water level in this case
-        if (cMap->GetId() != 548)//if map is not serpentshrine caverns
+        if (cMap->GetId() != 548 && !hackzone)//if map is not serpentshrine caverns
             fz = cMap->GetWaterLevel(fx, fy);
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
@@ -7404,7 +7497,12 @@ void Spell::EffectTitanGrip(uint32 /*eff_idx*/)
 void Spell::EffectRedirectThreat(uint32 /*i*/)
 {
     if (unitTarget)
-        m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());
+    {
+        if (m_spellInfo->Id == 59665) // Vigilance
+            unitTarget->SetReducedThreatPercent((uint32)damage, m_caster->GetGUID());
+        else
+            m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());
+     } 
 }
 
 void Spell::EffectWMODamage(uint32 /*i*/)
@@ -7506,6 +7604,13 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
                 summon->SetDisplayId(1126);
 
         summon->AI()->EnterEvadeMode();
+
+        if (AuraEffect *avoidance = m_originalCaster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2718, 0)) 
+        {
+            int32 bp = avoidance->GetAmount() / 1000;
+ 
+            summon->CastCustomSpell(summon, 62137, &bp, NULL, NULL, true);
+        }
     }
 }
 
@@ -7598,9 +7703,19 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
     switch(m_spellInfo->Id)
     {
         case 58730: // Restricted Flight Area
-        case 58600: // Restricted Flight Area
+        {
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+            unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+            unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
             break;
+        }
+        case 58600: // Restricted Flight Area
+        {
+            unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+            unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+            unitTarget->MonsterTextEmote("The air over Dalaran is protected. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
+            break;
+        }
     }
 }
 

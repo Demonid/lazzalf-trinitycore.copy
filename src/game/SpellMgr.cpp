@@ -747,6 +747,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case 34700:                                         // Allergic Reaction
         case 61987:                                         // Avenging Wrath Marker
         case 61988:                                         // Divine Shield exclude aura
+        case 61248:                                         // Power of Tenebron
+        case 61251:                                         // Power of Vesperon
+        case 58105:                                         // Power of Shadron
         case 50524:                                         // Runic Power Feed
             return false;
         case 12042:                                         // Arcane Power
@@ -3107,6 +3110,22 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
                 return false;
             break;
+        case 58730: // No fly Zone - Wintergrasp
+            if (!player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+                || player->HasAura(45472) || player->HasAura(44795))
+                return false;
+            break;
+        case SPELL_ESSENCE_OF_WINTERGRASP_WINNER:   // Essence of Wintergrasp - Wintergrasp
+        case SPELL_ESSENCE_OF_WINTERGRASP_WORLD:    // Essence of Wintergrasp - Northrend
+            if (sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+            {
+                if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                    return false;
+            }
+            else
+                return false;
+
+            break;
     }
 
     return true;
@@ -3621,6 +3640,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39365: // Thundering Storm
         case 41071: // Raise Dead (HACK)
         case 52124: // Sky Darkener Assault
+        case 63024: // Gravity Bomb Normal
+        case 64234: // Gravity Bomb Hero
+        case 63018: // Searing Light Normal
+        case 65121: // Searing Light Hero
             spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
@@ -3718,6 +3741,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 29809:     // Desecration Arm - 36 instead of 37 - typo? :/
             spellInfo->EffectRadiusIndex[0] = 37;
             count++;
+            break;
+        case 47573:     // Twisted Faith
+        case 47577:
+        case 47578:
+        case 51166:
+        case 51167:
+            spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
             break;
         // Master Shapeshifter: missing stance data for forms other than bear - bear version has correct data
         // To prevent aura staying on target after talent unlearned

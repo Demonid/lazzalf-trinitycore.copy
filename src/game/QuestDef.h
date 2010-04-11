@@ -239,7 +239,8 @@ class Quest
         bool   IsRepeatable() const { return QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE; }
         bool   IsAutoComplete() const { return QuestMethod ? false : true; }
         uint32 GetFlags() const { return QuestFlags; }
-        bool   IsDaily() const { return QuestFlags & (QUEST_FLAGS_DAILY | QUEST_FLAGS_WEEKLY); }
+        bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
+        bool   IsWeekly() const { return QuestFlags & QUEST_FLAGS_WEEKLY; }
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
@@ -364,5 +365,14 @@ struct QuestStatusData
 
     uint32 m_itemcount[ QUEST_ITEM_OBJECTIVES_COUNT ];
     uint32 m_creatureOrGOcount[ QUEST_OBJECTIVES_COUNT ];
+};
+
+struct TimedQuestStatusData
+{
+    bool    daily;  // Is the quest a daily? (if not it's a weekly!)
+    time_t  ltime;  // Time of last complete of this quest
+
+    TimedQuestStatusData() : daily(0), ltime(0) {}
+    TimedQuestStatusData(bool _daily, time_t _ltime) : daily(_daily), ltime(_ltime) {}
 };
 #endif
