@@ -66,8 +66,7 @@ enum Spells
 
 enum Timers
 {
-    TIMER_TYMPANIC_TANTRUM_MIN                  = 32000,
-    TIMER_TYMPANIC_TANTRUM_MAX                  = 36000,
+    TIMER_TYMPANIC_TANTRUM                      = 60000,
     TIMER_SEARING_LIGHT                         = 20000,
     TIMER_SPAWN_LIFE_SPARK                      = 9000,
     TIMER_GRAVITY_BOMB                          = 20000,
@@ -123,6 +122,7 @@ enum Yells
 
 #define EMOTE_TYMPANIC    "XT-002 Deconstructor begins to cause the earth to quake."
 #define EMOTE_HEART       "XT-002 Deconstructor's heart is exposed and leaking energy."
+#define EMOTE_REPAIR      "XT-002 Deconstructor consumes a scrap bot to repair himself!"
 
 #define ACHIEVEMENT_DECONSTRUCT_FASTER        RAID_MODE(2937, 2938)
 #define ACHIEVEMENT_HEARTBREAKER              RAID_MODE(3058, 3059)
@@ -191,13 +191,13 @@ struct boss_xt002_AI : public BossAI
         m_creature->SetReactState(REACT_AGGRESSIVE);
 
         //Makes XT-002 to cast a light bomb 10 seconds after aggro.
-        uiSearingLightTimer = TIMER_SEARING_LIGHT/2;
+        uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
         uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
         uiGravityBombTimer = TIMER_GRAVITY_BOMB;
         uiHeartPhaseTimer = TIMER_HEART_PHASE;
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
         uiEnrageTimer = TIMER_ENRAGE;
-        uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+        uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM / 2;
         EncounterTime = 0;
 
         searing_light_active = false;
@@ -258,7 +258,7 @@ struct boss_xt002_AI : public BossAI
         _JustDied();
 
         // Achievement Heartbreaker
-        if (hardMode = true)
+        if (hardMode)
         {
             AchievementEntry const *AchievHeartbreaker = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HEARTBREAKER);
             if(AchievHeartbreaker)
@@ -310,7 +310,7 @@ struct boss_xt002_AI : public BossAI
             {
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
-                    DoCast(pTarget, RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25));
+                    m_creature->AddAura(RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25), pTarget);
                     uiSearingLightTarget = pTarget->GetGUID();
                 }
                 uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
@@ -323,7 +323,7 @@ struct boss_xt002_AI : public BossAI
             {
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
-                    DoCast(pTarget, RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
+                    m_creature->AddAura(RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25), pTarget);
                 }
                 uiGravityBombTimer = TIMER_GRAVITY_BOMB;
             } else uiGravityBombTimer -= diff;
@@ -333,7 +333,7 @@ struct boss_xt002_AI : public BossAI
                 DoScriptText(SAY_TYMPANIC_TANTRUM, m_creature);
                 m_creature->MonsterTextEmote(EMOTE_TYMPANIC, 0, true);
                 DoCast(SPELL_TYMPANIC_TANTRUM);
-                uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+                uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM;
             } else uiTympanicTantrumTimer -= diff;
         }
 
@@ -467,7 +467,7 @@ struct boss_xt002_AI : public BossAI
     {
         uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
         uiGravityBombTimer = TIMER_GRAVITY_BOMB;
-        uiTympanicTantrumTimer = urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX);
+        uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM / 2;
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
 
         if (!hardMode)
@@ -563,7 +563,7 @@ struct mob_scrapbotAI : public ScriptedAI
         {
             if (m_creature->GetDistance2d(pXT002) <= 0.5)
             {
-                // TODO Send raid message
+                m_creature->MonsterTextEmote(EMOTE_REPAIR, 0, true);
 
                 // Increase health with 1 percent
                 pXT002->ModifyHealth(pXT002->GetMaxHealth() * 0.01);
@@ -661,11 +661,6 @@ struct mob_boombotAI : public ScriptedAI
             m_creature->AI()->AttackStart(pXT002);
     }
 
-    void JustDied(Unit *killer)
-    {
-        DoCast(SPELL_BOOM);
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if (Creature* pXT002 = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_XT002)))
@@ -678,6 +673,14 @@ struct mob_boombotAI : public ScriptedAI
                 //Despawns the boombot
                 m_creature->ForcedDespawn();
             }
+        }
+        if (HealthBelowPct(50))
+        {
+            //Explosion
+            DoCast(m_creature, SPELL_BOOM);
+
+            //Despawns the boombot
+            m_creature->ForcedDespawn();
         }
     }
 };
