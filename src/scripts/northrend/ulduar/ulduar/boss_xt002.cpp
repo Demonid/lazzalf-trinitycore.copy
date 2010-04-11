@@ -20,10 +20,7 @@
     TODO:
         Add achievments
         Boombot explosion only hurt allies to the npc at the moment
-        Boombot explosion visual
-        Fix void zone spell
         If the boss is to close to a scrap pile -> no summon
-        make the life sparks visible...
 */
 
 #include "ScriptedPch.h"
@@ -46,6 +43,7 @@ enum Spells
     //------------------VOID ZONE--------------------
     SPELL_VOID_ZONE_10                          = 64203,
     SPELL_VOID_ZONE_25                          = 64235,
+    SPELL_VOID_ZONE                             = 46264,
 
     // Life Spark
     SPELL_STATIC_CHARGED_10                     = 64227,
@@ -70,10 +68,11 @@ enum Timers
     TIMER_SEARING_LIGHT                         = 20000,
     TIMER_SPAWN_LIFE_SPARK                      = 9000,
     TIMER_GRAVITY_BOMB                          = 20000,
+    TIMER_SPAWN_GRAVITY_BOMB                    = 9000,
     TIMER_HEART_PHASE                           = 30000,
     TIMER_ENRAGE                                = 600000,
 
-    TIMER_VOID_ZONE                             = 3000,
+    TIMER_VOID_ZONE                             = 2000,
 
     // Life Spark
     TIMER_SHOCK                                 = 12000,
@@ -100,6 +99,7 @@ enum Creatures
 enum Actions
 {
     ACTION_ENTER_HARD_MODE                      = 0,
+    ACHI_NERF_ENGINEERING                       = 1,
 };
 
 enum XT002Data
@@ -126,12 +126,8 @@ enum Yells
 
 #define ACHIEVEMENT_DECONSTRUCT_FASTER        RAID_MODE(2937, 2938)
 #define ACHIEVEMENT_HEARTBREAKER              RAID_MODE(3058, 3059)
+#define ACHIEVEMENT_NERF                      RAID_MODE(2931, 2932)
 #define MAX_ENCOUNTER_TIME                    205 * 1000
-
-//#define VOID_ZONE_DMG_10                      5000
-//#define VOID_ZONE_DMG_25                      7500
-//#define VOID_ZONE_RADIUS
-
 
 /************************************************
 -----------------SPAWN LOCATIONS-----------------
@@ -168,13 +164,16 @@ struct boss_xt002_AI : public BossAI
     uint32 uiSearingLightTimer;
     uint32 uiSpawnLifeSparkTimer;
     uint32 uiGravityBombTimer;
+    uint32 uiSpawnGravityBombTimer;
     uint32 uiTympanicTantrumTimer;
     uint32 uiHeartPhaseTimer;
     uint32 uiSpawnAddTimer;
     uint32 uiEnrageTimer;
 
     bool searing_light_active;
+    bool gravity_bomb_active;
     uint64 uiSearingLightTarget;
+    uint64 uiGravityBombTarget;
 
     uint8 phase;
     uint8 heart_exposed;
@@ -183,6 +182,7 @@ struct boss_xt002_AI : public BossAI
     uint32 transferHealth;
     bool enterHardMode;
     bool hardMode;
+    bool achievement_nerf;
 
     void Reset()
     {
@@ -194,6 +194,7 @@ struct boss_xt002_AI : public BossAI
         uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
         uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
         uiGravityBombTimer = TIMER_GRAVITY_BOMB;
+        uiSpawnGravityBombTimer = TIMER_SPAWN_GRAVITY_BOMB;
         uiHeartPhaseTimer = TIMER_HEART_PHASE;
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
         uiEnrageTimer = TIMER_ENRAGE;
@@ -201,9 +202,11 @@ struct boss_xt002_AI : public BossAI
         EncounterTime = 0;
 
         searing_light_active = false;
+        gravity_bomb_active = false;
         enraged = false;
         hardMode = false;
         enterHardMode = false;
+        achievement_nerf = true;
 
         phase = 1;
         heart_exposed = 0;
@@ -234,6 +237,9 @@ struct boss_xt002_AI : public BossAI
                     m_creature->CastSpell(m_creature, RAID_MODE(SPELL_HEARTBREAK_10, SPELL_HEARTBREAK_25), true);
                 }
                 break;
+            case ACHI_NERF_ENGINEERING:
+                achievement_nerf = false;
+                break;
         }
     }
 
@@ -257,35 +263,25 @@ struct boss_xt002_AI : public BossAI
         DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
 
-        // Achievement Heartbreaker
-        if (hardMode)
-        {
-            AchievementEntry const *AchievHeartbreaker = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HEARTBREAKER);
-            if(AchievHeartbreaker)
-            {
-                Map *pMap = m_creature->GetMap();
-                if(pMap && pMap->IsDungeon())
-                {
-                    Map::PlayerList const &players = pMap->GetPlayers();
-                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        itr->getSource()->CompletedAchievement(AchievHeartbreaker);
-                }
-            }
-        }
+        AchievementEntry const *AchievHeartbreaker = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HEARTBREAKER);
+        AchievementEntry const *AchievDeconstructFaster = GetAchievementStore()->LookupEntry(ACHIEVEMENT_DECONSTRUCT_FASTER);
+        AchievementEntry const *AchievNerfEng = GetAchievementStore()->LookupEntry(ACHIEVEMENT_NERF);
 
-        // Achievement Must Deconstruct Faster
-        if (EncounterTime <= MAX_ENCOUNTER_TIME)
+        Map *pMap = m_creature->GetMap();
+        if(pMap && pMap->IsDungeon())
         {
-            AchievementEntry const *AchievDeconstructFaster = GetAchievementStore()->LookupEntry(ACHIEVEMENT_DECONSTRUCT_FASTER);
-            if(AchievDeconstructFaster)
+            Map::PlayerList const &players = pMap->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
-                Map *pMap = m_creature->GetMap();
-                if(pMap && pMap->IsDungeon())
-                {
-                    Map::PlayerList const &players = pMap->GetPlayers();
-                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        itr->getSource()->CompletedAchievement(AchievDeconstructFaster);
-                }
+                // Achievement Heartbreaker
+                if (hardMode && AchievHeartbreaker)
+                    itr->getSource()->CompletedAchievement(AchievHeartbreaker);
+                // Achievement Must Deconstruct Faster
+                if (EncounterTime <= MAX_ENCOUNTER_TIME && AchievDeconstructFaster)
+                    itr->getSource()->CompletedAchievement(AchievDeconstructFaster);
+                 // Achievement Nerf Engineering
+                if (achievement_nerf && AchievNerfEng)
+                    itr->getSource()->CompletedAchievement(AchievNerfEng);
             }
         }
     }
@@ -324,8 +320,11 @@ struct boss_xt002_AI : public BossAI
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
                     m_creature->AddAura(RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25), pTarget);
+                    uiGravityBombTarget = pTarget->GetGUID();
                 }
                 uiGravityBombTimer = TIMER_GRAVITY_BOMB;
+                if (hardMode)
+                    gravity_bomb_active = true;
             } else uiGravityBombTimer -= diff;
 
             if (uiTympanicTantrumTimer <= diff)
@@ -372,7 +371,7 @@ struct boss_xt002_AI : public BossAI
                         case 3: m_creature->SummonCreature(NPC_XM024_PUMMELLER, UL_X, UL_Y, SPAWN_Z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000); break;
                     }
 
-                    // Spawn 5 Bombs
+                    //Spawn 5 Scrapbots
                     for (int8 n = 0; n < 5; n++)
                     {
                         //Some randomes are added so they wont spawn in a pile
@@ -385,7 +384,7 @@ struct boss_xt002_AI : public BossAI
                         }
                     }
 
-                    //Spawn 5 Scrapbots
+                    //Spawn 5 Bombs
                     switch (rand() % 4)
                     {
                         case 0: m_creature->SummonCreature(NPC_XE321_BOOMBOT, LR_X, LR_Y, SPAWN_Z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000); break;
@@ -418,6 +417,18 @@ struct boss_xt002_AI : public BossAI
                     uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
                     searing_light_active = false;
                 } else uiSpawnLifeSparkTimer -= diff;
+            }
+
+            // Adding void zones when gravity bomb debuff runs out if hard mode
+            if (gravity_bomb_active)
+            {
+                if (uiSpawnGravityBombTimer <= diff)
+                {
+                    if (Unit *pGravityBombTarget = m_creature->GetUnit(*m_creature, uiGravityBombTarget))
+                        DoCast(pGravityBombTarget, RAID_MODE(SPELL_VOID_ZONE_10, SPELL_VOID_ZONE_25));
+                    uiSpawnGravityBombTimer = TIMER_SPAWN_GRAVITY_BOMB;
+                    gravity_bomb_active = false;
+                } else uiSpawnGravityBombTimer -= diff;
             }
 
             DoMeleeAttackIfReady();
@@ -511,8 +522,7 @@ struct mob_xt002_heartAI : public ScriptedAI
                 if (pXT002->AI())
                     pXT002->AI()->DoAction(ACTION_ENTER_HARD_MODE);
 
-        //removes the aura
-        m_creature->RemoveAurasDueToSpell(SPELL_EXPOSED_HEART);
+        m_creature->ForcedDespawn();
     }
 
     void DamageTaken(Unit *pDone, uint32 &damage)
@@ -567,6 +577,10 @@ struct mob_scrapbotAI : public ScriptedAI
 
                 // Increase health with 1 percent
                 pXT002->ModifyHealth(pXT002->GetMaxHealth() * 0.01);
+
+                // Disable Nerf Engineering Achievement
+                if (pXT002->AI())
+                    pXT002->AI()->DoAction(ACHI_NERF_ENGINEERING);
 
                 // Despawns the scrapbot
                 m_creature->ForcedDespawn();
@@ -715,30 +729,10 @@ struct mob_void_zoneAI : public ScriptedAI
     {
         if (uiVoidZoneTimer <= diff)
         {
-            //voidZone();
+            DoCast(SPELL_VOID_ZONE);
             uiVoidZoneTimer = TIMER_VOID_ZONE;
         } else uiVoidZoneTimer -= diff;
     }
-
-    // TODO: put in comment and kept for reference. The spell should be fixed properly in spell system, if necessary.
-    //void voidZone()
-    //{
-    //    Map* pMap = me->GetMap();
-    //    if (pMap && pMap->IsDungeon())
-    //    {
-    //        Map::PlayerList const &PlayerList = pMap->GetPlayers();
-    //        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-    //        {
-    //            // If a player is within the range of the spell
-    //            if (i->getSource() && i->getSource()->GetDistance2d(m_creature) <= 16)
-    //            {
-    //                // Deal damage to the victim
-    //                int32 damage = RAID_MODE(VOID_ZONE_DMG_10, VOID_ZONE_DMG_25);
-    //                m_creature->DealDamage(i->getSource(), damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_SHADOW);
-    //            }
-    //        }
-    //    }
-    //}
 };
 
 CreatureAI* GetAI_mob_void_zone(Creature* pCreature)
