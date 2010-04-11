@@ -5662,16 +5662,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                             target->CastSpell(target, 28240, true, NULL, this);
                             return;
                         }
-                        case 63024:                                     // Gravity Bomb Normal
-                        {
-                            target->CastSpell(target, 63025, true, NULL, this);
-                            break;
-                        }
-                        case 64234:                                     // Gravity Bomb Hero
-                        {
-                            target->CastSpell(target, 64233, true, NULL, this);
-                            break;
-                        }
                         case 36730:                                     // Flame Strike
                         {
                             target->CastSpell(target, 36731, true, NULL, this);
