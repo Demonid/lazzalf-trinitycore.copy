@@ -1040,7 +1040,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
     case CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE:
         {
             uint64 guid;        // current vehicle guid
-            if (!recv_data.readPackGUID(guid) || vehicle_base->GetGUID() != guid)
+            if (!recv_data.readPackGUID(guid))
                 return;
 
             ReadMovementInfo(recv_data, &vehicle_base->m_movementInfo);
@@ -1051,6 +1051,9 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
 
             int8 seatId;
             recv_data >> seatId;
+
+            if (vehicle_base->GetGUID() != guid)
+                return;
 
             if (!accessory)
                 GetPlayer()->ChangeSeat(-1, seatId > 0); // prev/next
@@ -1065,14 +1068,19 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket &recv_data)
     case CMSG_REQUEST_VEHICLE_SWITCH_SEAT:
         {
             uint64 guid;        // current vehicle guid
-            if (!recv_data.readPackGUID(guid) || vehicle_base->GetGUID() != guid)
+            if (!recv_data.readPackGUID(guid))
                 return;
 
             int8 seatId;
             recv_data >> seatId;
 
-            GetPlayer()->ChangeSeat(-1, seatId > 0); // prev/next
-        }
+            if (vehicle_base->GetGUID() == guid)
+                GetPlayer()->ChangeSeat(seatId);
+            else if (Unit *vehUnit = Unit::GetUnit(*GetPlayer(), guid))
+                if (Vehicle *vehicle = vehUnit->GetVehicleKit())
+                    if (vehicle->HasEmptySeat(seatId))
+                        GetPlayer()->EnterVehicle(vehicle, seatId);
+		}
         break;
     default:
         break;
