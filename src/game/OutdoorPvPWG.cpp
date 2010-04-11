@@ -1547,7 +1547,7 @@ void OutdoorPvPWG::UpdateClock()
 
 Creature *OutdoorPvPWG::SearchVehicleForTeleport(Creature* pCr, uint32 CEntry)
 {
-    if (!pCr || !isWarTime())
+    if (!isWarTime() || !pCr || !pCr->FindMap() || !pCr->GetMap()->IsLoaded(pCr->GetPositionX(), pCr->GetPositionY()))
         return NULL;
 
     std::list<Creature*> VehicleList;
@@ -1556,8 +1556,10 @@ Creature *OutdoorPvPWG::SearchVehicleForTeleport(Creature* pCr, uint32 CEntry)
     {
         for (std::set<Creature*>::iterator iter2 = m_vehicles[getDefenderTeamId()].begin(); iter2 != m_vehicles[getDefenderTeamId()].end(); ++iter)
         {
-            if ((*iter) == (*iter2))
-                return (*iter);
+            if ((*iter2) && (*iter2)->FindMap() && (*iter2)->GetMap()->IsLoaded((*iter2)->GetPositionX(), (*iter2)->GetPositionY()))
+                if ((*iter) && (*iter)->FindMap() && (*iter)->GetMap()->IsLoaded((*iter)->GetPositionX(), (*iter)->GetPositionY()))
+                    if ((*iter) == (*iter2))
+                        return (*iter);
         }
     }
     return NULL;
@@ -1581,30 +1583,24 @@ void OutdoorPvPWG::CheckVehicleTeleport()
     m_stalker2Pos.m_orientation = WG_VEHICLE_TRANPORTER_POS_MAP[0][1][3];
 
     // m_stalker1
-    if (m_stalker1 && m_stalker1->FindMap())
-    {
-        if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_A))
-            pVehicle->SetPosition(m_stalker1Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_H))
-            pVehicle->SetPosition(m_stalker1Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_CATAPULT_A))
-            pVehicle->SetPosition(m_stalker1Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_DEMOLISHER_A))
-            pVehicle->SetPosition(m_stalker1Pos, true);
-    }
+    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_A))
+        pVehicle->SetPosition(m_stalker1Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_H))
+        pVehicle->SetPosition(m_stalker1Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_CATAPULT_A))
+        pVehicle->SetPosition(m_stalker1Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_DEMOLISHER_A))
+        pVehicle->SetPosition(m_stalker1Pos, true);
 
     // m_stalker2
-    if (m_stalker2 && m_stalker2->FindMap())
-    {
-        if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_A))
-            pVehicle->SetPosition(m_stalker2Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_H))
-            pVehicle->SetPosition(m_stalker2Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_CATAPULT_A))
-            pVehicle->SetPosition(m_stalker2Pos, true);
-        if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_DEMOLISHER_A))
-            pVehicle->SetPosition(m_stalker2Pos, true);
-    }
+    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_A))
+        pVehicle->SetPosition(m_stalker2Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_H))
+        pVehicle->SetPosition(m_stalker2Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_CATAPULT_A))
+        pVehicle->SetPosition(m_stalker2Pos, true);
+    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_DEMOLISHER_A))
+        pVehicle->SetPosition(m_stalker2Pos, true);
 
     m_checktime = WG_STALKER_CHECKTIME;
 }
