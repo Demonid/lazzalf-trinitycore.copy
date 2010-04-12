@@ -51,9 +51,10 @@ enum Data
 
 enum Data64
 {
+    DATA_LEVIATHAN,
+    DATA_LEVIATHAN_TRIGGER,
     DATA_IGNIS,
     DATA_XT002,
-    DATA_LEVIATHAN_TRIGGER,
 };
 
 enum Npcs

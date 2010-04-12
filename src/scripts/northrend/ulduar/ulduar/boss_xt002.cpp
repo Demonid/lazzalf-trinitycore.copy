@@ -99,7 +99,7 @@ enum Creatures
 enum Actions
 {
     ACTION_ENTER_HARD_MODE                      = 0,
-    ACHI_NERF_ENGINEERING                       = 1,
+    ACTION_DISABLE_NERF_ACHI                    = 1,
 };
 
 enum XT002Data
@@ -126,7 +126,7 @@ enum Yells
 
 #define ACHIEVEMENT_DECONSTRUCT_FASTER        RAID_MODE(2937, 2938)
 #define ACHIEVEMENT_HEARTBREAKER              RAID_MODE(3058, 3059)
-#define ACHIEVEMENT_NERF                      RAID_MODE(2931, 2932)
+#define ACHIEVEMENT_NERF_ENG                  RAID_MODE(2931, 2932)
 #define MAX_ENCOUNTER_TIME                    205 * 1000
 
 /************************************************
@@ -157,9 +157,12 @@ struct boss_xt002_AI : public BossAI
     boss_xt002_AI(Creature *pCreature) : BossAI(pCreature, BOSS_XT002), vehicle(me->GetVehicleKit())
 	{
 		assert(vehicle);
+		pInstance = pCreature->GetInstanceData();
 	}
 
+    ScriptedInstance *pInstance;
     Vehicle *vehicle;
+    
     uint32 EncounterTime;
     uint32 uiSearingLightTimer;
     uint32 uiSpawnLifeSparkTimer;
@@ -237,7 +240,7 @@ struct boss_xt002_AI : public BossAI
                     m_creature->CastSpell(m_creature, RAID_MODE(SPELL_HEARTBREAK_10, SPELL_HEARTBREAK_25), true);
                 }
                 break;
-            case ACHI_NERF_ENGINEERING:
+            case ACTION_DISABLE_NERF_ACHI:
                 achievement_nerf = false;
                 break;
         }
@@ -263,26 +266,17 @@ struct boss_xt002_AI : public BossAI
         DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
 
-        AchievementEntry const *AchievHeartbreaker = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HEARTBREAKER);
-        AchievementEntry const *AchievDeconstructFaster = GetAchievementStore()->LookupEntry(ACHIEVEMENT_DECONSTRUCT_FASTER);
-        AchievementEntry const *AchievNerfEng = GetAchievementStore()->LookupEntry(ACHIEVEMENT_NERF);
-
-        Map *pMap = m_creature->GetMap();
-        if(pMap && pMap->IsDungeon())
+        if (pInstance)
         {
-            Map::PlayerList const &players = pMap->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            {
-                // Achievement Heartbreaker
-                if (hardMode && AchievHeartbreaker)
-                    itr->getSource()->CompletedAchievement(AchievHeartbreaker);
-                // Achievement Must Deconstruct Faster
-                if (EncounterTime <= MAX_ENCOUNTER_TIME && AchievDeconstructFaster)
-                    itr->getSource()->CompletedAchievement(AchievDeconstructFaster);
-                 // Achievement Nerf Engineering
-                if (achievement_nerf && AchievNerfEng)
-                    itr->getSource()->CompletedAchievement(AchievNerfEng);
-            }
+            // Heartbreaker
+            if (hardMode)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_HEARTBREAKER);
+            // Must Deconstruct Faster
+            if (EncounterTime <= MAX_ENCOUNTER_TIME)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_DECONSTRUCT_FASTER);
+            // Nerf Engineering
+            if (achievement_nerf)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_NERF_ENG);
         }
     }
 
@@ -580,7 +574,7 @@ struct mob_scrapbotAI : public ScriptedAI
 
                 // Disable Nerf Engineering Achievement
                 if (pXT002->AI())
-                    pXT002->AI()->DoAction(ACHI_NERF_ENGINEERING);
+                    pXT002->AI()->DoAction(ACTION_DISABLE_NERF_ACHI);
 
                 // Despawns the scrapbot
                 m_creature->ForcedDespawn();
