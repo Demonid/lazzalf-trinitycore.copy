@@ -75,11 +75,16 @@ enum ConstructSpells
     SPELL_HEAT                                  = 65667,
     SPELL_MOLTEN                                = 62373,
     SPELL_BRITTLE                               = 62382,
-    SPELL_SHATTER                               = 62383
+    SPELL_SHATTER                               = 62383,
+    SPELL_GROUND_10                             = 62548,
+    SPELL_GROUND_25                             = 63476
 };
 
+// Achievements
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
+#define ACHIEVEMENT_SHATTERED                 RAID_MODE(2925, 2926)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
+bool Shattered = false;
 
 // Water coords
 #define WATER_1_X                                646.77
@@ -118,14 +123,19 @@ struct boss_ignis_AI : public BossAI
         // Do not let Ignis be affected by Scorch Ground haste buff
         me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HEAT, true);
         assert(vehicle);
+        pInstance = pCreature->GetInstanceData();
     }
 
     Vehicle *vehicle;
+    ScriptedInstance *pInstance;
+    
     uint32 EncounterTime;
+    uint32 ConstructTimer;
 
     void Reset()
     {
         _Reset();
+        Shattered = false;
     }
 
     void EnterCombat(Unit *who)
@@ -139,6 +149,7 @@ struct boss_ignis_AI : public BossAI
         events.ScheduleEvent(EVENT_END_POT, 40000);
         events.ScheduleEvent(EVENT_BERSERK, 480000);
         EncounterTime = 0;
+        ConstructTimer = 0;
     }
 
     void JustDied(Unit *victim)
@@ -146,19 +157,15 @@ struct boss_ignis_AI : public BossAI
         _JustDied();
         DoScriptText(SAY_DEATH, me);
 
-        if(EncounterTime <= MAX_ENCOUNTER_TIME)
+        // Achievements
+        if (pInstance)
         {
-            AchievementEntry const *AchievStokinTheFurnace = GetAchievementStore()->LookupEntry(ACHIEVEMENT_STOKIN_THE_FURNACE);
-            if(AchievStokinTheFurnace)
-            {
-                Map *pMap = m_creature->GetMap();
-                if(pMap && pMap->IsDungeon())
-                {
-                    Map::PlayerList const &players = pMap->GetPlayers();
-                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        itr->getSource()->CompletedAchievement(AchievStokinTheFurnace);
-                }
-            }
+            // Shattered
+            if (Shattered)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_SHATTERED);
+            // Stokin' the Furnace
+            if (EncounterTime <= MAX_ENCOUNTER_TIME)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_STOKIN_THE_FURNACE);
         }
     }
 
@@ -181,6 +188,7 @@ struct boss_ignis_AI : public BossAI
             return;
 
         EncounterTime += diff;
+        ConstructTimer += diff;
 
         while(uint32 eventId = events.ExecuteEvent())
         {
@@ -252,6 +260,10 @@ struct boss_ignis_AI : public BossAI
         {
             case ACTION_REMOVE_BUFF:
                 me->RemoveAuraFromStack(SPELL_STRENGHT);
+                // Shattered Achievement
+                if (ConstructTimer >= 5000)
+                    ConstructTimer = 0;
+                else Shattered = true;
                 break;
         }
     }
@@ -299,7 +311,7 @@ struct mob_iron_constructAI : public ScriptedAI
 
         if (Aura * aur = m_creature->GetAura((SPELL_HEAT), GetGUID()))
         {
-            if (aur->GetStackAmount() == 20)
+            if (aur->GetStackAmount() >= 10)
             {
                 m_creature->RemoveAura(SPELL_HEAT);
                 DoCast(SPELL_MOLTEN);
@@ -325,6 +337,24 @@ CreatureAI* GetAI_mob_iron_construct(Creature* pCreature)
     return new mob_iron_constructAI (pCreature);
 }
 
+struct mob_scorch_groundAI : public ScriptedAI
+{
+    mob_scorch_groundAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+    }
+
+    void Reset()
+    {
+        DoCast(m_creature, RAID_MODE(SPELL_GROUND_10, SPELL_GROUND_25));
+    }
+};
+
+CreatureAI* GetAI_mob_scorch_ground(Creature* pCreature)
+{
+    return new mob_scorch_groundAI(pCreature);
+}
+
 void AddSC_boss_ignis()
 {
     Script *newscript;
@@ -337,6 +367,11 @@ void AddSC_boss_ignis()
     newscript = new Script;
     newscript->Name = "mob_iron_construct";
     newscript->GetAI = &GetAI_mob_iron_construct;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_scorch_ground";
+    newscript->GetAI = &GetAI_mob_scorch_ground;
     newscript->RegisterSelf();
 
 }
