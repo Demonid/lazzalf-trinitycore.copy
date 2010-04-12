@@ -16,13 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-/*
-    TODO:
-        Add achievments
-        Boombot explosion only hurt allies to the npc at the moment
-        If the boss is to close to a scrap pile -> no summon
-*/
-
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
@@ -266,6 +259,7 @@ struct boss_xt002_AI : public BossAI
         DoScriptText(SAY_DEATH, m_creature);
         _JustDied();
 
+        // Achievements
         if (pInstance)
         {
             // Heartbreaker
