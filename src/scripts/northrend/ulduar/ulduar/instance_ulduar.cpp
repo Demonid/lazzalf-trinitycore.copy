@@ -35,9 +35,10 @@ struct instance_ulduar : public InstanceData
         LoadDoorData(doorData);
     }
 
+    uint64 uiLeviathan;
+    uint64 uiLeviathan_Trigger;
     uint64 uiIgnis;
     uint64 uiXT002;
-    uint64 uiLeviathan_Trigger;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -48,9 +49,10 @@ struct instance_ulduar : public InstanceData
     {
         switch(pCreature->GetEntry())
         {
+            case 33113: uiLeviathan = pCreature->GetGUID(); return;
+            case 33115: uiLeviathan_Trigger = pCreature->GetGUID(); return;
             case 33118: uiIgnis = pCreature->GetGUID(); return;
             case 33293: uiXT002 = pCreature->GetGUID(); return;
-            case 33115: uiLeviathan_Trigger = pCreature->GetGUID(); return;
         }
 
         AddMinion(pCreature, add);
@@ -60,13 +62,14 @@ struct instance_ulduar : public InstanceData
     {
         switch(id)
         {
+        case DATA_LEVIATHAN:
+            return uiLeviathan;
+        case DATA_LEVIATHAN_TRIGGER:
+            return uiLeviathan_Trigger;
         case DATA_IGNIS:
             return uiIgnis;
         case DATA_XT002:
             return uiXT002;
-        case DATA_LEVIATHAN_TRIGGER:
-            return uiLeviathan_Trigger;
-
         }
         return 0;
     }
