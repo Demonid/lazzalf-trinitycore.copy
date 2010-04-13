@@ -84,7 +84,7 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
  
     void JustSummoned(Creature* mob)
     {
-	mob->AddThreat(m_creature->getVictim(), 0);
+	    mob->AddThreat(m_creature->getVictim(), 0);
     }
  
     void UpdateAI(const uint32 diff)

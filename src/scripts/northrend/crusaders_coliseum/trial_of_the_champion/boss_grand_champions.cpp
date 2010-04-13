@@ -92,17 +92,17 @@ void AggroAllPlayers(Creature* pTemp)
 {
     Map::PlayerList const &PlList = pTemp->GetMap()->GetPlayers();
 
-    if (PlList.isEmpty())
+    if(PlList.isEmpty())
             return;
 
     for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
     {
-        if (Player* pPlayer = i->getSource())
+        if(Player* pPlayer = i->getSource())
         {
-            if (pPlayer->isGameMaster())
+            if(pPlayer->isGameMaster())
                 continue;
 
-            if (pPlayer->isAlive())
+            if(pPlayer->isAlive())
             {
                 pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 pTemp->SetReactState(REACT_AGGRESSIVE);
@@ -399,7 +399,7 @@ struct boss_warrior_toc5AI : public ScriptedAI
 
         if (uiMortalStrikeTimer <= uiDiff)
         {
-            DoCastVictim(SPELL_MORTAL_STRIKE);
+            DoCastVictim(DUNGEON_MODE(SPELL_MORTAL_STRIKE, SPELL_MORTAL_STRIKE_H));
             uiMortalStrikeTimer = urand(8000,12000);
         } else uiMortalStrikeTimer -= uiDiff;
 
@@ -409,7 +409,7 @@ struct boss_warrior_toc5AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+            pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
     }
 };
 
@@ -484,7 +484,7 @@ struct boss_mage_toc5AI : public ScriptedAI
                 m_creature->SetHomePosition(754.34,660.70,412.39,4.79);
 
             if (pInstance)
-                pInstance->SetData(BOSS_GRAND_CHAMPIONS, IN_PROGRESS);
+                pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
 
             EnterEvadeMode();
             bHome = true;
@@ -502,7 +502,7 @@ struct boss_mage_toc5AI : public ScriptedAI
         if (uiFireBallTimer <= uiDiff)
         {
             if (m_creature->getVictim())
-                DoCastVictim(SPELL_FIREBALL);
+                DoCastVictim(DUNGEON_MODE(SPELL_FIREBALL,SPELL_FIREBALL_H));
             uiFireBallTimer = 5000;
         } else uiFireBallTimer -= uiDiff;
 
@@ -512,20 +512,20 @@ struct boss_mage_toc5AI : public ScriptedAI
 
         if (uiFireBallTimer <= uiDiff)
         {
-            DoCastVictim(SPELL_FIREBALL);
+            DoCastVictim(DUNGEON_MODE(SPELL_FIREBALL,SPELL_FIREBALL_H));
             uiFireBallTimer = 5000;
         } else uiFireBallTimer -= uiDiff;
 
         if (uiPolymorphTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget, SPELL_POLYMORPH);
+                DoCast(pTarget, DUNGEON_MODE(SPELL_POLYMORPH,SPELL_POLYMORPH_H));
             uiPolymorphTimer = 8000;
         } else uiPolymorphTimer -= uiDiff;
 
         if (uiBlastWaveTimer <= uiDiff)
         {
-            DoCastAOE(SPELL_BLAST_WAVE,false);
+            DoCastAOE(DUNGEON_MODE(SPELL_BLAST_WAVE,SPELL_BLAST_WAVE_H),false);
             uiBlastWaveTimer = 13000;
         } else uiBlastWaveTimer -= uiDiff;
 
@@ -543,7 +543,7 @@ struct boss_mage_toc5AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+            pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
     }
 };
 
@@ -624,7 +624,7 @@ struct boss_shaman_toc5AI : public ScriptedAI
                 m_creature->SetHomePosition(754.34,660.70,412.39,4.79);
 
             if (pInstance)
-                pInstance->SetData(BOSS_GRAND_CHAMPIONS, IN_PROGRESS);
+                pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
 
             EnterEvadeMode();
             bHome = true;
@@ -645,7 +645,7 @@ struct boss_shaman_toc5AI : public ScriptedAI
         if (uiChainLightningTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget,SPELL_CHAIN_LIGHTNING);
+                DoCast(pTarget,DUNGEON_MODE(SPELL_CHAIN_LIGHTNING,SPELL_CHAIN_LIGHTNING_H));
 
             uiChainLightningTimer = 16000;
         } else uiChainLightningTimer -= uiDiff;
@@ -657,9 +657,9 @@ struct boss_shaman_toc5AI : public ScriptedAI
             if (!bChance)
             {
                 if (Unit* pFriend = DoSelectLowestHpFriendly(40))
-                    DoCast(pFriend,SPELL_HEALING_WAVE);
+                    DoCast(pFriend,DUNGEON_MODE(SPELL_HEALING_WAVE,SPELL_HEALING_WAVE_H));
             } else
-                DoCast(m_creature,SPELL_HEALING_WAVE);
+                DoCast(m_creature,DUNGEON_MODE(SPELL_HEALING_WAVE,SPELL_HEALING_WAVE_H));
 
             uiHealingWaveTimer = 12000;
         } else uiHealingWaveTimer -= uiDiff;
@@ -684,7 +684,7 @@ struct boss_shaman_toc5AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+            pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
     }
 };
 
@@ -764,7 +764,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
                 m_creature->SetHomePosition(754.34,660.70,412.39,4.79);
 
             if (pInstance)
-                pInstance->SetData(BOSS_GRAND_CHAMPIONS, IN_PROGRESS);
+                pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
 
             EnterEvadeMode();
             bHome = true;
@@ -793,7 +793,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST,0,30.0f))
             {
                 uiTargetGUID = pTarget->GetGUID();
-                DoCast(pTarget, SPELL_SHOOT);
+                DoCast(pTarget, DUNGEON_MODE(SPELL_SHOOT,SPELL_SHOOT_H));
             }
             uiShootTimer = 12000;
             uiMultiShotTimer = 3000;
@@ -833,7 +833,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+            pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
     }
 };
 
@@ -905,7 +905,7 @@ struct boss_rouge_toc5AI : public ScriptedAI
                 m_creature->SetHomePosition(754.34,660.70,412.39,4.79);
 
             if (pInstance)
-                pInstance->SetData(BOSS_GRAND_CHAMPIONS, IN_PROGRESS);
+                pInstance->SetData(TYPE_GRAND_CHAMPIONS, IN_PROGRESS);
 
             EnterEvadeMode();
             bHome = true;
@@ -925,7 +925,7 @@ struct boss_rouge_toc5AI : public ScriptedAI
 
         if (uiEviscerateTimer <= uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_EVISCERATE);
+            DoCast(m_creature->getVictim(),DUNGEON_MODE(SPELL_EVISCERATE,SPELL_EVISCERATE_H));
             uiEviscerateTimer = 8000;
         } else uiEviscerateTimer -= uiDiff;
 
@@ -948,7 +948,7 @@ struct boss_rouge_toc5AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+            pInstance->SetData(TYPE_GRAND_CHAMPIONS, DONE);
     }
 };
 

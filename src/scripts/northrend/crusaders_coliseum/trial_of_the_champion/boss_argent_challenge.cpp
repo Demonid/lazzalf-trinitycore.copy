@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
+ * Original Author: Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
+ *
+ * Copyright (C) 2008-2010 RibonCore <http://www.riboncore.com/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -216,13 +218,13 @@ struct boss_paletressAI : public ScriptedAI
         }
     }
 
-    void MovementInform(uint32 MovementType, uint32 Point)
+    void MovementInform(uint32 MovementType, uint32 Data)
     {
-        if (MovementType != POINT_MOTION_TYPE || Point != 0)
+        if (MovementType != POINT_MOTION_TYPE)
             return;
 
         if (pInstance)
-            pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
+            pInstance->SetData(TYPE_ARGENT_CHALLENGE, DONE);
 
         m_creature->DisappearAndDie();
     }
@@ -243,7 +245,7 @@ struct boss_paletressAI : public ScriptedAI
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
             {
                 if (pTarget && pTarget->isAlive())
-                    DoCast(pTarget,SPELL_HOLY_FIRE);
+                    DoCast(pTarget,DUNGEON_MODE(SPELL_HOLY_FIRE,SPELL_HOLY_FIRE_H));
             }
              if (m_creature->HasAura(SPELL_SHIELD))
                 uiHolyFireTimer = 13000;
@@ -256,7 +258,7 @@ struct boss_paletressAI : public ScriptedAI
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
             {
                 if (pTarget && pTarget->isAlive())
-                    DoCast(pTarget,SPELL_SMITE);
+                    DoCast(pTarget,DUNGEON_MODE(SPELL_SMITE,SPELL_SMITE_H));
             }
             if (m_creature->HasAura(SPELL_SHIELD))
                 uiHolySmiteTimer = 9000;
@@ -272,12 +274,12 @@ struct boss_paletressAI : public ScriptedAI
                 switch(uiTarget)
                 {
                     case 0:
-                        DoCast(m_creature,SPELL_RENEW);
+                        DoCast(m_creature,DUNGEON_MODE(SPELL_RENEW,SPELL_RENEW_H));
                         break;
                     case 1:
                         if (Creature *pMemory = Unit::GetCreature(*m_creature, MemoryGUID))
                             if (pMemory->isAlive())
-                                DoCast(pMemory, SPELL_RENEW);
+                                DoCast(pMemory, DUNGEON_MODE(SPELL_RENEW,SPELL_RENEW_H));
                         break;
                 }
                 uiRenewTimer = urand(15000,17000);
@@ -334,14 +336,14 @@ struct npc_memoryAI : public ScriptedAI
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
             {
                 if (pTarget && pTarget->isAlive())
-                    DoCast(pTarget, SPELL_OLD_WOUNDS);
+                    DoCast(pTarget, DUNGEON_MODE(SPELL_OLD_WOUNDS,SPELL_OLD_WOUNDS_H));
             }
             uiOldWoundsTimer = 12000;
         }else uiOldWoundsTimer -= uiDiff;
 
         if (uiWakingNightmare <= uiDiff)
         {
-            DoCast(m_creature, SPELL_WAKING_NIGHTMARE);
+            DoCast(m_creature, DUNGEON_MODE(SPELL_WAKING_NIGHTMARE,SPELL_WAKING_NIGHTMARE_H));
             uiWakingNightmare = 7000;
         }else uiWakingNightmare -= uiDiff;
 
@@ -350,7 +352,7 @@ struct npc_memoryAI : public ScriptedAI
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
             {
                 if (pTarget && pTarget->isAlive())
-                    DoCast(pTarget,SPELL_SHADOWS_PAST);
+                    DoCast(pTarget,DUNGEON_MODE(SPELL_SHADOWS_PAST,SPELL_SHADOWS_PAST_H));
             }
             uiShadowPastTimer = 5000;
         }else uiShadowPastTimer -= uiDiff;
@@ -477,7 +479,7 @@ struct npc_argent_soldierAI : public npc_escortAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
-            pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);
+            pInstance->SetData(DATA_BLACK_KNIGHT_MINION,pInstance->GetData(DATA_BLACK_KNIGHT_MINION) + 1);
     }
 };
 

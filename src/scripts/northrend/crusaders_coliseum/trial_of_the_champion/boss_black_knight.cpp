@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2010 Trinity <http://www.trinitycore.org/>
+ * Original Author: Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
+ *
+ * Copyright (C) 2008-2010 RibonCore <http://www.riboncore.com/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +57,8 @@ enum eSpells
 
     SPELL_BLACK_KNIGHT_RES  = 67693,
 
-    SPELL_LEAP                = 67749,
-    SPELL_LEAP_H            = 67880
+    SPELL_LEAP				= 67749,
+    SPELL_LEAP_H			= 67880
 };
 
 enum eModels
@@ -131,7 +133,7 @@ struct boss_black_knightAI : public ScriptedAI
         if (SummonList.empty())
             return;
 
-        for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
+        for(std::list<uint64>::iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
         {
             if (Creature* pTemp = Unit::GetCreature(*m_creature, *itr))
                 if (pTemp)
@@ -170,17 +172,17 @@ struct boss_black_knightAI : public ScriptedAI
             {
                 if (uiIcyTouchTimer <= uiDiff)
                 {
-                    DoCastVictim(SPELL_ICY_TOUCH);
+                    DoCastVictim(DUNGEON_MODE(SPELL_ICY_TOUCH,SPELL_ICY_TOUCH_H));
                     uiIcyTouchTimer = urand(5000,7000);
                 } else uiIcyTouchTimer -= uiDiff;
                 if (uiPlagueStrikeTimer <= uiDiff)
                 {
-                    DoCastVictim(SPELL_ICY_TOUCH);
+                    DoCastVictim(DUNGEON_MODE(SPELL_ICY_TOUCH,SPELL_ICY_TOUCH_H));
                     uiPlagueStrikeTimer = urand(12000,15000);
                 } else uiPlagueStrikeTimer -= uiDiff;
                 if (uiObliterateTimer <= uiDiff)
                 {
-                    DoCastVictim(SPELL_OBLITERATE);
+                    DoCastVictim(DUNGEON_MODE(SPELL_OBLITERATE,SPELL_OBLITERATE_H));
                     uiObliterateTimer = urand(17000,19000);
                 } else uiObliterateTimer -= uiDiff;
                 switch(uiPhase)
@@ -237,7 +239,7 @@ struct boss_black_knightAI : public ScriptedAI
             {
                 if (uiDeathBiteTimer <= uiDiff)
                 {
-                    DoCastAOE(SPELL_DEATH_BITE);
+                    DoCastAOE(DUNGEON_MODE(SPELL_DEATH_BITE,SPELL_DEATH_BITE_H));
                     uiDeathBiteTimer = urand (2000, 4000);
                 } else uiDeathBiteTimer -= uiDiff;
                 if (uiMarkedDeathTimer <= uiDiff)
@@ -311,7 +313,7 @@ struct npc_risen_ghoulAI : public ScriptedAI
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
             {
                 if (pTarget && pTarget->isAlive())
-                DoCast(pTarget, (SPELL_LEAP));
+                DoCast(pTarget, (DUNGEON_MODE(SPELL_LEAP,SPELL_LEAP_H)));
             }
             uiAttackTimer = 3500;
         } else uiAttackTimer -= uiDiff;
