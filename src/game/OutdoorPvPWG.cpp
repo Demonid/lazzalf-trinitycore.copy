@@ -1547,7 +1547,7 @@ void OutdoorPvPWG::UpdateClock()
 
 Creature *OutdoorPvPWG::SearchVehicleForTeleport(Creature* pCr, uint32 CEntry)
 {
-    if (!isWarTime() || !pCr || !pCr->FindMap() || !pCr->GetMap()->IsLoaded(pCr->GetPositionX(), pCr->GetPositionY()))
+    if (!isWarTime() || !pCr || !pCr->IsInWorld())
         return NULL;
 
     std::list<Creature*> VehicleList;
@@ -1555,12 +1555,8 @@ Creature *OutdoorPvPWG::SearchVehicleForTeleport(Creature* pCr, uint32 CEntry)
     for (std::list<Creature*>::iterator iter = VehicleList.begin(); iter != VehicleList.end(); ++iter)
     {
         for (std::set<Creature*>::iterator iter2 = m_vehicles[getDefenderTeamId()].begin(); iter2 != m_vehicles[getDefenderTeamId()].end(); ++iter)
-        {
-            if ((*iter2) && (*iter2)->FindMap() && (*iter2)->GetMap()->IsLoaded((*iter2)->GetPositionX(), (*iter2)->GetPositionY()))
-                if ((*iter) && (*iter)->FindMap() && (*iter)->GetMap()->IsLoaded((*iter)->GetPositionX(), (*iter)->GetPositionY()))
-                    if ((*iter) == (*iter2))
-                        return (*iter);
-        }
+            if ((*iter) == (*iter2) && (*iter)->IsInWorld())
+                return (*iter);
     }
     return NULL;
 }
