@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2010 Trinity <http://www.trinitycore.org/>
+ * Original Author: Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
+ *
+ * Copyright (C) 2008-2010 RibonCore <http://www.riboncore.com/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +143,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                             break;
                     }
 
-                    for (std::list<uint64>::const_iterator itr = TempList.begin(); itr != TempList.end(); ++itr)
+                    for(std::list<uint64>::iterator itr = TempList.begin(); itr != TempList.end(); ++itr)
                         if (Creature* pSummon = Unit::GetCreature(*m_creature, *itr))
                             AggroAllPlayers(pSummon);
                 }else if (uiLesserChampions == 9)
@@ -322,7 +324,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
     {
         uiFirstBoss = urand(0,4);
 
-        while (uiSecondBoss == uiFirstBoss || uiThirdBoss == uiFirstBoss || uiThirdBoss == uiSecondBoss)
+        while(uiSecondBoss == uiFirstBoss || uiThirdBoss == uiFirstBoss || uiThirdBoss == uiSecondBoss)
         {
             uiSecondBoss = urand(0,4);
             uiThirdBoss = urand(0,4);
@@ -353,18 +355,18 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
         if (pInstance->GetData(BOSS_BLACK_KNIGHT) == NOT_STARTED)
         {
-            if (pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED && pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == NOT_STARTED)
+            if (pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED && pInstance->GetData(TYPE_ARGENT_CHALLENGE) == NOT_STARTED)
             {
-                if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
+                if (pInstance->GetData(TYPE_GRAND_CHAMPIONS) == NOT_STARTED)
                     m_creature->AI()->SetData(DATA_START,0);
 
-                if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE)
+                if (pInstance->GetData(TYPE_GRAND_CHAMPIONS) == DONE)
                     DoStartArgentChampionEncounter();
             }
 
-           if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
+           if (pInstance->GetData(TYPE_GRAND_CHAMPIONS) == DONE &&
                pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
-               pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
+               pInstance->GetData(TYPE_ARGENT_CHALLENGE) == DONE)
                 m_creature->SummonCreature(VEHICLE_BLACK_KNIGHT,769.834,651.915,447.035,0);
         }
     }
@@ -373,17 +375,17 @@ struct npc_announcer_toc5AI : public ScriptedAI
     {
         Map::PlayerList const &PlList = m_creature->GetMap()->GetPlayers();
 
-        if (PlList.isEmpty())
+        if(PlList.isEmpty())
             return;
 
         for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
         {
-            if (Player* pPlayer = i->getSource())
+            if(Player* pPlayer = i->getSource())
             {
-                if (pPlayer->isGameMaster())
+                if(pPlayer->isGameMaster())
                     continue;
 
-                if (pPlayer->isAlive())
+                if(pPlayer->isAlive())
                 {
                     pTemp->SetHomePosition(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
@@ -416,7 +418,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                 case 3:
                     if (!Champion1List.empty())
                     {
-                        for (std::list<uint64>::const_iterator itr = Champion1List.begin(); itr != Champion1List.end(); ++itr)
+                        for(std::list<uint64>::iterator itr = Champion1List.begin(); itr != Champion1List.end(); ++itr)
                             if (Creature* pSummon = Unit::GetCreature(*m_creature, *itr))
                                 AggroAllPlayers(pSummon);
                         NextStep(0,false);
@@ -431,7 +433,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
     void JustSummoned(Creature* pSummon)
     {
-        if (pInstance && pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
+        if (pInstance && pInstance->GetData(TYPE_GRAND_CHAMPIONS) == NOT_STARTED)
         {
             pSummon->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
             pSummon->SetReactState(REACT_PASSIVE);
@@ -468,7 +470,7 @@ bool GossipHello_npc_announcer_toc5(Player* pPlayer, Creature* pCreature)
     ScriptedInstance* pInstance = pCreature->GetInstanceData();
 
     if (pInstance &&
-        pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE &&
+        pInstance->GetData(TYPE_GRAND_CHAMPIONS) == DONE &&
         pInstance->GetData(BOSS_BLACK_KNIGHT) == DONE &&
         pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
         pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)

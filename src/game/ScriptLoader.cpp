@@ -414,15 +414,16 @@ void AddSC_boss_zuramat();
 void AddSC_instance_violet_hold();
 void AddSC_violet_hold();
 /* ToC - start */
-void AddSC_boss_tc_alliance_champions();
-void AddSC_boss_anubarak_trial();
-void AddSC_boss_lord_jaraxxus();
-void AddSC_boss_northrend_beasts();
-void AddSC_boss_twin_valkyr();
-void AddSC_boss_tc_horde_champions();
-void AddSC_instance_trial_of_the_crussader();
-void AddSC_trial_of_the_crussader();
-/* ToC - end */
+void AddSC_boss_champions();
+void AddSC_boss_anub_arak_crusader();
+void AddSC_the_two_jormungar();
+void AddSC_boss_twin_fjola();
+void AddSC_boss_gormok();
+void AddSC_boss_icehowl();
+void AddSC_boss_lord_jaraksus();
+void AddSC_instance_trial_of_the_crusader();
+void AddSC_npc_toc6_announcer();
+/* ToC - end */ 
 void AddSC_instance_eye_of_eternity();   // Malygos
 void AddSC_boss_malygos(); 
 void AddSC_instance_forge_of_souls();   //Forge of Souls
@@ -929,14 +930,15 @@ void AddScripts()
     AddSC_instance_violet_hold();
     AddSC_violet_hold();
     /* ToC - start */
-    AddSC_boss_tc_alliance_champions();
-    AddSC_boss_anubarak_trial();
-    AddSC_boss_lord_jaraxxus();
-    AddSC_boss_northrend_beasts();
-    AddSC_boss_twin_valkyr();
-    AddSC_boss_tc_horde_champions();
-    AddSC_instance_trial_of_the_crussader();
-    AddSC_trial_of_the_crussader();
+    AddSC_boss_champions();
+    AddSC_boss_anub_arak_crusader();
+    AddSC_the_two_jormungar();
+    AddSC_boss_twin_fjola();
+    AddSC_boss_gormok();
+    AddSC_boss_icehowl();
+    AddSC_boss_lord_jaraksus();
+    AddSC_instance_trial_of_the_crusader();
+    AddSC_npc_toc6_announcer();
     /* ToC - end */
     AddSC_instance_eye_of_eternity();   // Malygos
     AddSC_boss_malygos();

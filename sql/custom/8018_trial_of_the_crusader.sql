@@ -2,43 +2,48 @@ UPDATE `instance_template` SET `script`='instance_trial_of_the_crussader' WHERE 
 DELETE FROM `creature` WHERE `map` = 649 AND `id` IN
 (34797,34796,34799,35144,34780,34460,34463,34461,34471,34475,34472,34453,34455,34458,34454,34451,34456,34497,34496,34564,34467,35465,34468,35610,34473,34474,34441,34449,34448,34450);
 
--- announcers
-UPDATE `creature_template` SET `npcflag`=1, `scriptname`='npc_tcrus_announcer' WHERE `entry`=34816;
-UPDATE `creature_template` SET `scriptname`='npc_tcrus_fizzlebang' WHERE `entry`=35458;
-UPDATE `creature_template` SET `scriptname`='npc_tcrus_tirion' WHERE `entry`=34996;
-
--- grand crusaders alliance
-UPDATE `creature_template` SET `scriptname`='boss_tyrius_duskblade' WHERE `entry`=34461;
-UPDATE `creature_template` SET `scriptname`='boss_kavina_grovesong' WHERE `entry`=34460;
-UPDATE `creature_template` SET `scriptname`='boss_melador_valestrider' WHERE `entry`=34469;
-UPDATE `creature_template` SET `scriptname`='boss_alyssia_moonstalker' WHERE `entry`=34467;
-UPDATE `creature_template` SET `scriptname`='boss_noozle_whizzlestick' WHERE `entry`=34468;
-UPDATE `creature_template` SET `scriptname`='boss_velanaa' WHERE `entry`=34465;
-UPDATE `creature_template` SET `scriptname`='boss_baelnor_lightbearer' WHERE `entry`=34471;
-UPDATE `creature_template` SET `scriptname`='boss_anthar_forgemender' WHERE `entry`=34466;
-UPDATE `creature_template` SET `scriptname`='boss_brienna_nightfell' WHERE `entry`=34473;
-UPDATE `creature_template` SET `scriptname`='boss_irieth_shadowstepe' WHERE `entry`=34472;
-UPDATE `creature_template` SET `scriptname`='boss_shaabad' WHERE `entry`=34463;
-UPDATE `creature_template` SET `scriptname`='boss_saamul' WHERE `entry`=34470;
-UPDATE `creature_template` SET `scriptname`='boss_serissa_grimdabbler' WHERE `entry`=34474;
-UPDATE `creature_template` SET `scriptname`='boss_shocuul' WHERE `entry`=34475;
-
--- grand crusaders horde
-UPDATE `creature_template` SET `scriptname`='boss_gorgrim_shadowcleave' WHERE `entry`=34458;
-UPDATE `creature_template` SET `scriptname`='boss_birana_stormhoof' WHERE `entry`=34451;
-UPDATE `creature_template` SET `scriptname`='boss_erin_misthoof' WHERE `entry`=34459;
-UPDATE `creature_template` SET `scriptname`='boss_rujkah' WHERE `entry`=34448;
-UPDATE `creature_template` SET `scriptname`='boss_ginselle_blightslinger' WHERE `entry`=34449;
-UPDATE `creature_template` SET `scriptname`='boss_liandra_suncaller' WHERE `entry`=34445;
-UPDATE `creature_template` SET `scriptname`='boss_malithas_brightblader' WHERE `entry`=34456;
-UPDATE `creature_template` SET `scriptname`='boss_caiphus_the_stern' WHERE `entry`=34447;
-UPDATE `creature_template` SET `scriptname`='boss_vivienne_blackwhisper' WHERE `entry`=34441;
-UPDATE `creature_template` SET `scriptname`='boss_mazdinah' WHERE `entry`=34454;
-UPDATE `creature_template` SET `scriptname`='boss_broln_stouthorn' WHERE `entry`=34455;
-UPDATE `creature_template` SET `scriptname`='boss_thrakgar' WHERE `entry`=34444;
-UPDATE `creature_template` SET `scriptname`='boss_harkzog' WHERE `entry`=34450;
-UPDATE `creature_template` SET `scriptname`='boss_narrhok_steelbreaker' WHERE `entry`=34453;
-
+update creature_template set ScriptName='boss_gormok' where entry='34796';
+update creature_template set ScriptName='boss_icehowl' where entry='34797';
+update creature_template set ScriptName='npc_dreadscale' where entry='34799';
+update creature_template set ScriptName='npc_acidmaw' where entry='35144';
+update creature_template set ScriptName='boss_eydis' where entry='34496';
+update creature_template set ScriptName='boss_fjola' where entry='34497';
+update creature_template set ScriptName='mob_essence_of_twin' where entry='34567';
+update creature_template set ScriptName='mob_essence_of_twin' where entry='34568';
+update creature_template set ScriptName='mob_power_of_twin' where entry='34628';
+update creature_template set ScriptName='mob_power_of_twin' where entry='34630';
+update creature_template set ScriptName='boss_lord_jaraksus' where entry='34780';
+update creature_template set ScriptName='boss_anub_arak_crusader' where entry='34564';
+update creature_template set ScriptName='npc_borrower' where entry='34607';
+update creature_template set ScriptName='npc_warrior' where entry='34453';
+update creature_template set ScriptName='npc_mage' where entry='34449';
+update creature_template set ScriptName='npc_shaman_ench' where entry='34455';
+update creature_template set ScriptName='npc_shaman_restor' where entry='34444';
+update creature_template set ScriptName='npc_hunter' where entry='34448';
+update creature_template set ScriptName='npc_rogue' where entry='34454';
+update creature_template set ScriptName='npc_paladin_retro' where entry='34456';
+update creature_template set ScriptName='npc_death_knight' where entry='34458';
+update creature_template set ScriptName='npc_paladin_holy' where entry='34445';
+update creature_template set ScriptName='npc_druid_balans' where entry='34451';
+update creature_template set ScriptName='npc_druid_restor' where entry='34459';
+update creature_template set ScriptName='npc_priest_disc' where entry='34447';
+update creature_template set ScriptName='npc_priest_shadow' where entry='34441';
+update creature_template set ScriptName='npc_warlock' where entry='34450';
+update creature_template set ScriptName='npc_warrior' where entry='34475';
+update creature_template set ScriptName='npc_mage' where entry='34468';
+update creature_template set ScriptName='npc_shaman_ench' where entry='34463';
+update creature_template set ScriptName='npc_shaman_restor' where entry='34470';
+update creature_template set ScriptName='npc_hunter' where entry='34467';
+update creature_template set ScriptName='npc_rogue' where entry='34472';
+update creature_template set ScriptName='npc_paladin_retro' where entry='34471';
+update creature_template set ScriptName='npc_death_knight' where entry='34461';
+update creature_template set ScriptName='npc_paladin_holy' where entry='34465';
+update creature_template set ScriptName='npc_druid_balans' where entry='34460';
+update creature_template set ScriptName='npc_druid_restor' where entry='34469';
+update creature_template set ScriptName='npc_priest_disc' where entry='34466';
+update creature_template set ScriptName='npc_priest_shadow' where entry='34473';
+update creature_template set ScriptName='npc_warlock' where entry='34474';
+update creature_template set ScriptName='npc_toc6_announcer' where entry='34816';
 
 UPDATE `creature_template` SET `lootid`= 0 WHERE  `entry` IN
 (34460,34463,34461,34471,34475,34472,34453,34455,34458,34454,34451,34456,34467,35465,34468,35610,34473,34474,34441,34449,34448,34450);
