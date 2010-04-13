@@ -320,13 +320,13 @@ struct mob_iron_constructAI : public ScriptedAI
         }
 
         // Water pools
-        if(cMap->GetId() == 603 && !Brittled && m_creature->HasAura(SPELL_MOLTEN) 
-            && m_creature->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || m_creature->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
-        {
-            DoCast(SPELL_BRITTLE);
-            m_creature->RemoveAura(SPELL_MOLTEN);
-            Brittled = true;
-        }
+        if(cMap->GetId() == 603 && !Brittled && m_creature->HasAura(SPELL_MOLTEN))
+            if (m_creature->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || m_creature->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
+            {
+                DoCast(SPELL_BRITTLE);
+                m_creature->RemoveAura(SPELL_MOLTEN);
+                Brittled = true;
+            }
 
         DoMeleeAttackIfReady();
     }
