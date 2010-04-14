@@ -341,7 +341,7 @@ struct mob_scorch_groundAI : public ScriptedAI
 {
     mob_scorch_groundAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
 
     void Reset()

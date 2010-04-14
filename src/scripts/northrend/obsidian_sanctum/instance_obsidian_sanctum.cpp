@@ -17,6 +17,10 @@ struct instance_obsidian_sanctum : public ScriptedInstance
     uint64 m_uiShadronGUID;
     uint64 m_uiVesperonGUID;
 
+    bool m_bTenebronKilled;
+    bool m_bShadronKilled;
+    bool m_bVesperonKilled;
+
     void Initialize()
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
@@ -25,6 +29,10 @@ struct instance_obsidian_sanctum : public ScriptedInstance
         m_uiTenebronGUID   = 0;
         m_uiShadronGUID    = 0;
         m_uiVesperonGUID   = 0;
+
+        m_bTenebronKilled = false;
+        m_bShadronKilled = false;
+        m_bVesperonKilled = false;
     }
 
     void OnCreatureCreate(Creature* pCreature, bool add)
@@ -55,12 +63,24 @@ struct instance_obsidian_sanctum : public ScriptedInstance
     {
         if (uiType == TYPE_SARTHARION_EVENT)
             m_auiEncounter[0] = uiData;
+        else if(uiType == TYPE_TENEBRON_PREKILLED)
+            m_bTenebronKilled = true;
+        else if(uiType == TYPE_SHADRON_PREKILLED)
+            m_bShadronKilled = true;
+        else if(uiType == TYPE_VESPERON_PREKILLED)
+            m_bVesperonKilled = true;
     }
 
     uint32 GetData(uint32 uiType)
     {
         if (uiType == TYPE_SARTHARION_EVENT)
             return m_auiEncounter[0];
+        else if(uiType == TYPE_TENEBRON_PREKILLED)
+            return m_bTenebronKilled;
+        else if(uiType == TYPE_SHADRON_PREKILLED)
+            return m_bShadronKilled;
+        else if(uiType == TYPE_VESPERON_PREKILLED)
+            return m_bVesperonKilled;
 
         return 0;
     }
