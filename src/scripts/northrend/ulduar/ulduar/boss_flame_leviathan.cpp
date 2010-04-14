@@ -95,6 +95,7 @@ enum Yells
 };
 
 uint32 ColossusCount = 0;
+bool wipe = false;
 
 #define VEHICLE_SIEGE                              33060
 #define VEHICLE_CHOPPER                            33062
@@ -158,10 +159,11 @@ struct boss_flame_leviathanAI : public BossAI
         
         // vehicles respawn
         if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
-        {
-            me->Kill(pTrigger);
-            pTrigger->Respawn(true);
-        }
+            if (wipe)
+            {
+                me->Kill(pTrigger);
+                pTrigger->Respawn(true);
+            }
     }
 
     void EnterCombat(Unit *who)
@@ -174,6 +176,7 @@ struct boss_flame_leviathanAI : public BossAI
         events.ScheduleEvent(EVENT_SPEED, 2000);
         events.ScheduleEvent(EVENT_SUMMON, 0);
         events.ScheduleEvent(EVENT_SHUTDOWN, 120000);
+        wipe = true;
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }

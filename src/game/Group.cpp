@@ -1608,9 +1608,9 @@ void Group::SetDungeonDifficulty(Difficulty difficulty)
         player->SetDungeonDifficulty(difficulty);
         player->SendDungeonDifficulty(true);
         // Send player to recall position is a dungeon (to avoid an exploit)
-        Map *map = MapManager::Instance().FindMap(player->GetMapId(), player->GetInstanceId());
+        /*Map *map = MapManager::Instance().FindMap(player->GetMapId(), player->GetInstanceId());
         if (map && map->IsDungeon() && map->HavePlayers())
-            player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);
+            player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);*/
     }
 }
 

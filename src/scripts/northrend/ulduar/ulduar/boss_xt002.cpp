@@ -702,7 +702,7 @@ struct mob_void_zoneAI : public ScriptedAI
     mob_void_zoneAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = pCreature->GetInstanceData();
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_PACIFIED);
     }
 
     ScriptedInstance* m_pInstance;
