@@ -67,7 +67,7 @@ struct boss_cyanigosaAI : public ScriptedAI
 
     void DeleteFromThreatList(uint64 TargetGUID)
     {
-        for (std::list<HostileReference*>::const_iterator itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
+        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
         {
             if ((*itr)->getUnitGuid() == TargetGUID)
             {
@@ -103,7 +103,7 @@ struct boss_cyanigosaAI : public ScriptedAI
         if (uiArcaneVacuumTimer <= diff)
         {
             DoCast(SPELL_ARCANE_VACUUM);
-            Map* pMap = m_creature->GetMap();
+            Map* pMap = me->GetMap();
             if (pMap && pMap->IsDungeon())
             {
                 Map::PlayerList const &PlayerList = pMap->GetPlayers();
@@ -111,9 +111,9 @@ struct boss_cyanigosaAI : public ScriptedAI
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         if (i->getSource()->isAlive())
-                            DoTeleportPlayer(i->getSource(), m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), i->getSource()->GetOrientation());
+                            DoTeleportPlayer(i->getSource(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), i->getSource()->GetOrientation());
             }
-            CAST_AI(boss_cyanigosaAI, m_creature->AI())->DeleteFromThreatList(m_creature->GetGUID());
+            CAST_AI(boss_cyanigosaAI, me->AI())->DeleteFromThreatList(me->GetGUID());
             uiArcaneVacuumTimer = 30000;
         } else uiArcaneVacuumTimer -= diff;
 

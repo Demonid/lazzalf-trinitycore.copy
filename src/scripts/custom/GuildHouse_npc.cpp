@@ -514,7 +514,7 @@ struct guild_guardAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        m_creature->MonsterYell(SAY_AGGRO, LANG_UNIVERSAL, 0);
+        me->MonsterYell(SAY_AGGRO, LANG_UNIVERSAL, 0);
     }
 
     void AttackStart(Unit *who) 
@@ -527,15 +527,15 @@ struct guild_guardAI : public ScriptedAI
 
         uint32 guild =((Player*)who)->GetGuildId();
 
-        uint32 guardguild = GHobj.GetGuildByGuardID(m_creature->GetGUID());
+        uint32 guardguild = GHobj.GetGuildByGuardID(me->GetGUID());
 
-        if ( guardguild && guild != guardguild && m_creature->Attack(who, true) )
+        if ( guardguild && guild != guardguild && me->Attack(who, true) )
         {
-            m_creature->AddThreat(who, 0.0f);
+            me->AddThreat(who, 0.0f);
 
-            if (!m_creature->isInCombat())
+            if (!me->isInCombat())
             {
-                m_creature->SetInCombatWith(who);                
+                me->SetInCombatWith(who);                
             }
         }
     }
@@ -547,7 +547,7 @@ struct guild_guardAI : public ScriptedAI
         
         if (Check_Timer <= uiDiff)
         {
-            m_creature->Kill(m_creature->getVictim());
+            me->Kill(me->getVictim());
         } else Check_Timer -= uiDiff;
 
         DoMeleeAttackIfReady();

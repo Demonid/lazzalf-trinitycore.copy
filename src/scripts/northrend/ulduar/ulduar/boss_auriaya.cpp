@@ -45,17 +45,17 @@ struct boss_auriaya_AI : public BossAI
     void EnterCombat(Unit* who)
     {
         _EnterCombat();
-        DoScriptText(SAY_AGGRO,m_creature);
+        DoScriptText(SAY_AGGRO,me);
     }
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(SAY_SLAY_1, m_creature);
+        DoScriptText(SAY_SLAY_1, me);
     }
 
     void JustDied(Unit *victim)
     {
         _JustDied();
-        DoScriptText(SAY_SLAY_1, m_creature);
+        DoScriptText(SAY_SLAY_1, me);
     }
 
     void MoveInLineOfSight(Unit* who) {}
@@ -68,7 +68,7 @@ struct boss_auriaya_AI : public BossAI
         if (TERRIFYING_SCREECH_Timer <= diff)
         {
             DoCast(SPELL_TERRIFYING_SCREECH);
-            DoScriptText(SAY_SLAY_1, m_creature);
+            DoScriptText(SAY_SLAY_1, me);
             TERRIFYING_SCREECH_Timer = 180000;
         } else TERRIFYING_SCREECH_Timer -= diff;
 

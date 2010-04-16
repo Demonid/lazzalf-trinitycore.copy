@@ -151,7 +151,7 @@ struct npc_wg_miscAI : public ScriptedAI
 
         events.Update(uiDiff);
 
-        if (m_creature->hasUnitState(UNIT_STAT_CASTING))
+        if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
 
         while(uint32 eventId = events.ExecuteEvent())

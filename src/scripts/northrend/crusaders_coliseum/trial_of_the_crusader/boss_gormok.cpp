@@ -38,7 +38,7 @@ struct  boss_gormokAI : public ScriptedAI
 	{
 	if (pInstance)
             pInstance->SetData(DATA_BOSS_GORMOK, NOT_STARTED);
-	    m_creature->GetMotionMaster()->MovePoint(0, 563.539551, 213.565628, 395.098206);
+	    me->GetMotionMaster()->MovePoint(0, 563.539551, 213.565628, 395.098206);
 	
 	Phase = 0;
 	PhaseTimer = 60000; // 2 minute
@@ -52,7 +52,7 @@ struct  boss_gormokAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        m_creature->MonsterSay("ROAR!", LANG_UNIVERSAL, 0);
+        me->MonsterSay("ROAR!", LANG_UNIVERSAL, 0);
         if (pInstance)
             pInstance->SetData(DATA_BOSS_GORMOK, IN_PROGRESS);
     }
@@ -64,16 +64,16 @@ struct  boss_gormokAI : public ScriptedAI
 	
 		if(Stomp_Timer < diff)
 		{
-			m_creature->MonsterSay("I STOMP ON YOUR FACE!", LANG_UNIVERSAL, 0);
-			DoCast(m_creature->getVictim(),Stomp);
+			me->MonsterSay("I STOMP ON YOUR FACE!", LANG_UNIVERSAL, 0);
+			DoCast(me->getVictim(),Stomp);
 			Stomp_Timer = 30000;
 		}else Stomp_Timer -= diff;
  
 		if(Impale_Timer < diff)
 		{	
-			DoCast(m_creature->getVictim(),Impale);
+			DoCast(me->getVictim(),Impale);
 			Impale_Timer = 10000;
-			m_creature->MonsterSay("IMPALE!", LANG_UNIVERSAL, 0);
+			me->MonsterSay("IMPALE!", LANG_UNIVERSAL, 0);
 		}else Impale_Timer -= diff;
 
 		if(Summon_Timer < diff && Summon_Count <= 4)
@@ -82,14 +82,14 @@ struct  boss_gormokAI : public ScriptedAI
 			{
 			if (Creature *pLarva1 = pTarget1->SummonCreature(34800,pTarget1->GetPositionX() ,pTarget1->GetPositionY()+1, pTarget1->GetPositionZ()+1, 0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000))
 			{
-			DoCast(m_creature,RisingAnger);	
+			DoCast(me,RisingAnger);	
 			pLarva1->AI()->AttackStart(pTarget1); 
 			pLarva1->MonsterSay("Boss Enjoy the buff :D", LANG_UNIVERSAL, 0);
 			Summon_Count = (Summon_Count + 1);
 			}
 			}
 			Summon_Timer = 60000;
-			m_creature->MonsterSay("Enjoy my little friends", LANG_UNIVERSAL, 0);
+			me->MonsterSay("Enjoy my little friends", LANG_UNIVERSAL, 0);
 		}else Summon_Timer -= diff;
  
  

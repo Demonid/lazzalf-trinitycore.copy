@@ -112,7 +112,7 @@ struct boss_gal_darahAI : public ScriptedAI
 
         Phase = TROLL;
 
-        m_creature->SetDisplayId(DISPLAY_TROLL);
+        me->SetDisplayId(DISPLAY_TROLL);
 
         if (pInstance)
             pInstance->SetData(DATA_GAL_DARAH_EVENT, NOT_STARTED);
@@ -120,7 +120,7 @@ struct boss_gal_darahAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
 
         if (pInstance)
             pInstance->SetData(DATA_GAL_DARAH_EVENT, IN_PROGRESS);
@@ -139,14 +139,14 @@ struct boss_gal_darahAI : public ScriptedAI
                 {
                     if (uiTransformationTimer <= diff)
                     {
-                        m_creature->SetDisplayId(DISPLAY_RHINO);
+                        me->SetDisplayId(DISPLAY_RHINO);
                         Phase = RHINO;
                         uiPhaseCounter = 0;
-                        DoScriptText(SAY_TRANSFORM_1, m_creature);
+                        DoScriptText(SAY_TRANSFORM_1, me);
                         uiTransformationTimer = 5*IN_MILISECONDS;
                         bStartOfTransformation = true;
-                        m_creature->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
-                        m_creature->SetReactState(REACT_AGGRESSIVE);
+                        me->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
+                        me->SetReactState(REACT_AGGRESSIVE);
                     }
                     else
                     {
@@ -155,8 +155,8 @@ struct boss_gal_darahAI : public ScriptedAI
                         if (bStartOfTransformation)
                         {
                             bStartOfTransformation = false;
-                            m_creature->addUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
-                            m_creature->SetReactState(REACT_PASSIVE);
+                            me->addUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
+                            me->SetReactState(REACT_PASSIVE);
                         }
                     }
                 }
@@ -164,14 +164,14 @@ struct boss_gal_darahAI : public ScriptedAI
                 {
                     if (uiStampedeTimer <= diff)
                     {
-                        DoCast(m_creature, SPELL_STAMPEDE);
-                        DoScriptText(RAND(SAY_SUMMON_RHINO_1,SAY_SUMMON_RHINO_2,SAY_SUMMON_RHINO_3),m_creature);
+                        DoCast(me, SPELL_STAMPEDE);
+                        DoScriptText(RAND(SAY_SUMMON_RHINO_1,SAY_SUMMON_RHINO_2,SAY_SUMMON_RHINO_3),me);
                         uiStampedeTimer = 15*IN_MILISECONDS;
                     } else uiStampedeTimer -= diff;
 
                     if (uiWhirlingSlashTimer <= diff)
                     {
-                        DoCast(m_creature->getVictim(), DUNGEON_MODE(SPELL_WHIRLING_SLASH, H_SPELL_WHIRLING_SLASH));
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_WHIRLING_SLASH, H_SPELL_WHIRLING_SLASH));
                         uiWhirlingSlashTimer = 21*IN_MILISECONDS;
                         ++uiPhaseCounter;
                     } else uiWhirlingSlashTimer -= diff;
@@ -182,14 +182,14 @@ struct boss_gal_darahAI : public ScriptedAI
                 {
                     if (uiTransformationTimer <= diff)
                     {
-                        m_creature->SetDisplayId(DISPLAY_TROLL);
+                        me->SetDisplayId(DISPLAY_TROLL);
                         Phase = TROLL;
                         uiPhaseCounter = 0;
-                        DoScriptText(SAY_TRANSFORM_2, m_creature);
+                        DoScriptText(SAY_TRANSFORM_2, me);
                         uiTransformationTimer = 9*IN_MILISECONDS;
                         bStartOfTransformation = true;
-                        m_creature->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
-                        m_creature->SetReactState(REACT_AGGRESSIVE);
+                        me->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
+                        me->SetReactState(REACT_AGGRESSIVE);
                     }
                     else
                     {
@@ -198,8 +198,8 @@ struct boss_gal_darahAI : public ScriptedAI
                         if (bStartOfTransformation)
                         {
                             bStartOfTransformation = false;
-                            m_creature->addUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
-                            m_creature->SetReactState(REACT_PASSIVE);
+                            me->addUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
+                            me->SetReactState(REACT_PASSIVE);
                         }
                     }
                 }
@@ -207,19 +207,19 @@ struct boss_gal_darahAI : public ScriptedAI
                 {
                     if (uiPunctureTimer <= diff)
                     {
-                        DoCast(m_creature->getVictim(), DUNGEON_MODE(SPELL_PUNCTURE, H_SPELL_PUNCTURE));
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_PUNCTURE, H_SPELL_PUNCTURE));
                         uiPunctureTimer = 8*IN_MILISECONDS;
                     } else uiPunctureTimer -= diff;
 
                     if (uiEnrageTimer <= diff)
                     {
-                        DoCast(m_creature->getVictim(), DUNGEON_MODE(SPELL_ENRAGE, H_SPELL_ENRAGE));
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_ENRAGE, H_SPELL_ENRAGE));
                         uiEnrageTimer = 20*IN_MILISECONDS;
                     } else uiEnrageTimer -= diff;
 
                     if (uiStompTimer <= diff)
                     {
-                        DoCast(m_creature->getVictim(), DUNGEON_MODE(SPELL_STOMP, H_SPELL_STOMP));
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_STOMP, H_SPELL_STOMP));
                         uiStompTimer = 20*IN_MILISECONDS;
                     } else uiStompTimer -= diff;
 
@@ -242,7 +242,7 @@ struct boss_gal_darahAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
         {
@@ -268,10 +268,10 @@ struct boss_gal_darahAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        if (victim == m_creature)
+        if (victim == me)
             return;
 
-        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), m_creature);
+        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), me);
     }
 
     void JustSummoned(Creature *summon)

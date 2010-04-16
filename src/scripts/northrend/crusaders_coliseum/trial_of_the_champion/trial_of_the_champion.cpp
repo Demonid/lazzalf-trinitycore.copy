@@ -92,7 +92,7 @@ struct npc_anstartAI : public ScriptedAI
     {
         pInstance = c->GetInstanceData();
 		
-	m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+	me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
 
     }
 
@@ -128,32 +128,32 @@ struct npc_anstartAI : public ScriptedAI
     {
         if (!pWho)
             return;
-        if (Phase == IDLE && pWho->isTargetableForAttack() && m_creature->IsHostileTo(pWho) && m_creature->IsWithinDistInMap(pWho, 20))
+        if (Phase == IDLE && pWho->isTargetableForAttack() && me->IsHostileTo(pWho) && me->IsWithinDistInMap(pWho, 20))
         {
             Phase = INTRO;
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-            if (pTrall = m_creature->SummonCreature(CREATURE_TRALL, 685.569, 615.103, 435.396, 6.23544, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+            if (pTrall = me->SummonCreature(CREATURE_TRALL, 685.569, 615.103, 435.396, 6.23544, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
             {
 			    pTrall->SetReactState(REACT_PASSIVE);	
                 pTrall->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            if (pGarrosh = m_creature->SummonCreature(CREATURE_GARROSH, 685.7, 621.134, 435.396, 6.259, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+            if (pGarrosh = me->SummonCreature(CREATURE_GARROSH, 685.7, 621.134, 435.396, 6.259, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
             {
 			    pGarrosh->SetReactState(REACT_PASSIVE);	
                 pGarrosh->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            if (pKing = m_creature->SummonCreature(CREATURE_KING, 807.724, 617.9, 435.396, 3.18416, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+            if (pKing = me->SummonCreature(CREATURE_KING, 807.724, 617.9, 435.396, 3.18416, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
             {
 			    pKing->SetReactState(REACT_PASSIVE);	
                 pKing->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            if (pLady = m_creature->SummonCreature(CREATURE_LADY, 807.401, 613.667, 435.397, 3.0585, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+            if (pLady = me->SummonCreature(CREATURE_LADY, 807.401, 613.667, 435.397, 3.0585, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
             {
 			    pLady->SetReactState(REACT_PASSIVE);	
                 pLady->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            if (pHighlord = m_creature->SummonCreature(CREATURE_HIGHLORD, 746.482, 556.857, 435.396, 1.5898, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+            if (pHighlord = me->SummonCreature(CREATURE_HIGHLORD, 746.482, 556.857, 435.396, 1.5898, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
             {
 			    pHighlord->SetReactState(REACT_PASSIVE);	
                 pHighlord->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -189,12 +189,12 @@ struct npc_anstartAI : public ScriptedAI
                     uiIntroTimer = 4000;
                     break;
                 case 1:
-                    DoScriptText(AN_1, m_creature);
+                    DoScriptText(AN_1, me);
                     ++uiIntroPhase;
                     uiIntroTimer = 10000;
                     break;
                 case 2:
-                    DoScriptText(AN_2, m_creature);
+                    DoScriptText(AN_2, me);
                     ++uiIntroPhase;
                     uiIntroTimer = 13000;
                     break;
@@ -224,14 +224,14 @@ struct npc_anstartAI : public ScriptedAI
                     uiIntroTimer = 3000;
                     break;			
                 case 8:
-                    DoScriptText(AN_8, m_creature);
+                    DoScriptText(AN_8, me);
                     ++uiIntroPhase;
                     uiIntroTimer = 4000;
                     break;							
                 case 9:
-                    if (Creature* pAnnouncertoc5 = m_creature->SummonCreature(CREATURE_ANNOUNCER, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000))
+                    if (Creature* pAnnouncertoc5 = me->SummonCreature(CREATURE_ANNOUNCER, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000))
                     {	
-						m_creature->DisappearAndDie();             
+						me->DisappearAndDie();             
        					pAnnouncertoc5->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         pAnnouncertoc5->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         pAnnouncertoc5->SetReactState(REACT_PASSIVE);
@@ -272,9 +272,9 @@ struct npc_announcer_toc5AI : public ScriptedAI
         Champion2List.clear();
         Champion3List.clear();
 	
-        m_creature->SetReactState(REACT_PASSIVE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         SetGrandChampionsForEncounter();
         SetArgentChampion();
     }
@@ -318,19 +318,19 @@ struct npc_announcer_toc5AI : public ScriptedAI
         switch (uiType)
         {
             case DATA_START:
-                if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
-			    if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+			    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);	
-                DoScriptText(SAY_START, m_creature);			
+                DoScriptText(SAY_START, me);			
                 DoSummonGrandChampion(uiFirstBoss);
                 NextStep(10000,false,1);
                 break;
             case DATA_IN_POSITION: //movement done.		
-		        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);			
-                m_creature->GetMotionMaster()->MovePoint(1,735.898, 651.961, 411.93);
-				DoScriptText(SAY_START2, m_creature);
-                if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+		        me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);			
+                me->GetMotionMaster()->MovePoint(1,735.898, 651.961, 411.93);
+				DoScriptText(SAY_START2, me);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
                 NextStep(20000,false,3);
                 break;
@@ -351,7 +351,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                     }
 
                     for(std::list<uint64>::const_iterator itr = TempList.begin(); itr != TempList.end(); ++itr)
-                        if (Creature* pSummon = Unit::GetCreature(*m_creature, *itr))
+                        if (Creature* pSummon = Unit::GetCreature(*me, *itr))
                             AggroAllPlayers(pSummon);
                 }else if (uiLesserChampions == 9)
                     StartGrandChampionsAttack();
@@ -363,9 +363,9 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
     void StartGrandChampionsAttack()
     {
-        Creature* pGrandChampion1 = Unit::GetCreature(*m_creature, uiVehicle1GUID);
-        Creature* pGrandChampion2 = Unit::GetCreature(*m_creature, uiVehicle2GUID);
-        Creature* pGrandChampion3 = Unit::GetCreature(*m_creature, uiVehicle3GUID);
+        Creature* pGrandChampion1 = Unit::GetCreature(*me, uiVehicle1GUID);
+        Creature* pGrandChampion2 = Unit::GetCreature(*me, uiVehicle2GUID);
+        Creature* pGrandChampion3 = Unit::GetCreature(*me, uiVehicle3GUID);
 
         if (pGrandChampion1 && pGrandChampion2 && pGrandChampion3)
         {
@@ -382,8 +382,8 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
         if (uiPointId == 1)
         {
-            m_creature->SetOrientation(ORIENTATION);
-            m_creature->SendMovementFlagUpdate();
+            me->SetOrientation(ORIENTATION);
+            me->SendMovementFlagUpdate();
         }
     }
 
@@ -418,7 +418,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                 return;
         }
 
-        if (Creature* pBoss = m_creature->SummonCreature(VEHICLE_TO_SUMMON1,SpawnPosition))
+        if (Creature* pBoss = me->SummonCreature(VEHICLE_TO_SUMMON1,SpawnPosition))
         {
             switch(uiSummonTimes)
             {
@@ -426,7 +426,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                 {
                     uiVehicle1GUID = pBoss->GetGUID();
                     uint64 uiGrandChampionBoss1 = 0;
-                    if (Creature* pBoss = Unit::GetCreature(*m_creature, uiVehicle1GUID))
+                    if (Creature* pBoss = Unit::GetCreature(*me, uiVehicle1GUID))
                         if (Vehicle* pVehicle = pBoss->GetVehicleKit())
                             if (Unit* pUnit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss1 = pUnit->GetGUID();
@@ -442,7 +442,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                 {
                     uiVehicle2GUID = pBoss->GetGUID();
                     uint64 uiGrandChampionBoss2 = 0;
-                    if (Creature* pBoss = Unit::GetCreature(*m_creature, uiVehicle2GUID))
+                    if (Creature* pBoss = Unit::GetCreature(*me, uiVehicle2GUID))
                         if (Vehicle* pVehicle = pBoss->GetVehicleKit())
                             if (Unit* pUnit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss2 = pUnit->GetGUID();
@@ -458,7 +458,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                 {
                     uiVehicle3GUID = pBoss->GetGUID();
                     uint64 uiGrandChampionBoss3 = 0;
-                    if (Creature* pBoss = Unit::GetCreature(*m_creature, uiVehicle3GUID))
+                    if (Creature* pBoss = Unit::GetCreature(*me, uiVehicle3GUID))
                         if (Vehicle* pVehicle = pBoss->GetVehicleKit())
                             if (Unit* pUnit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss3 = pUnit->GetGUID();
@@ -476,7 +476,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
             for (uint8 i = 0; i < 3; ++i)
             {
-                if (Creature* pAdd = m_creature->SummonCreature(VEHICLE_TO_SUMMON2,SpawnPosition,TEMPSUMMON_CORPSE_DESPAWN))
+                if (Creature* pAdd = me->SummonCreature(VEHICLE_TO_SUMMON2,SpawnPosition,TEMPSUMMON_CORPSE_DESPAWN))
                 {			
                     switch(uiSummonTimes)
                     {
@@ -511,17 +511,17 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
     void DoStartArgentChampionEncounter()
     {
-		DoScriptText(SAY_START3, m_creature);
-        if (Creature* pBoss = m_creature->SummonCreature(uiArgentChampion,SpawnPosition))
+		DoScriptText(SAY_START3, me);
+        if (Creature* pBoss = me->SummonCreature(uiArgentChampion,SpawnPosition))
         {
 		pBoss->GetMotionMaster()->MovePoint(1,746.71,661.02,411.69);
             for (uint8 i = 0; i < 3; ++i)
             {
-                if (Creature* pTrash = m_creature->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
+                if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
                     pTrash->AI()->SetData(i,0);
-                if (Creature* pTrash = m_creature->SummonCreature(NPC_ARGENT_MONK,SpawnPosition))
+                if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_MONK,SpawnPosition))
                     pTrash->AI()->SetData(i,0);
-                if (Creature* pTrash = m_creature->SummonCreature(NPC_PRIESTESS,SpawnPosition))
+                if (Creature* pTrash = me->SummonCreature(NPC_PRIESTESS,SpawnPosition))
                     pTrash->AI()->SetData(i,0);
             }
         }
@@ -529,9 +529,9 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
 		    void EnterCombat(Unit* pWho)
     {
-		DoScriptText(SAY_START11, m_creature);
-		m_creature->SetReactState(REACT_PASSIVE);
-        if (Creature* pGhoul = m_creature->SummonCreature(NPC_RISEN_JAEREN,742.835, 639.134, 411.571, 1.05731))
+		DoScriptText(SAY_START11, me);
+		me->SetReactState(REACT_PASSIVE);
+        if (Creature* pGhoul = me->SummonCreature(NPC_RISEN_JAEREN,742.835, 639.134, 411.571, 1.05731))
         {
             pGhoul->setFaction(14);
         }
@@ -571,8 +571,8 @@ struct npc_announcer_toc5AI : public ScriptedAI
         if (!pInstance)
             return;
 
-        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
 
         if (pInstance->GetData(BOSS_BLACK_KNIGHT) == NOT_STARTED)
@@ -580,7 +580,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
             if (pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED && pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == NOT_STARTED)
             {
                 if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
-                    m_creature->AI()->SetData(DATA_START,0);
+                    me->AI()->SetData(DATA_START,0);
 
                 if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE)
                     DoStartArgentChampionEncounter();
@@ -590,13 +590,13 @@ struct npc_announcer_toc5AI : public ScriptedAI
                pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
                pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
             {
-			m_creature->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507, 640.574280, 469.314362, 3.97124);
-                DoCast(m_creature, SPELL_SVALA_TRANSFORMING1);
-				m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-				m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-				m_creature->SetReactState(REACT_AGGRESSIVE);
-				m_creature->setFaction(2054);
-				DoScriptText(SAY_START5, m_creature);
+			me->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507, 640.574280, 469.314362, 3.97124);
+                DoCast(me, SPELL_SVALA_TRANSFORMING1);
+				me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+				me->SetReactState(REACT_AGGRESSIVE);
+				me->setFaction(2054);
+				DoScriptText(SAY_START5, me);
 		    }
 
         }
@@ -604,7 +604,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
     void AggroAllPlayers(Creature* pTemp)
     {
-        Map::PlayerList const &PlList = m_creature->GetMap()->GetPlayers();
+        Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
 
         if(PlList.isEmpty())
             return;
@@ -618,7 +618,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
                 if(pPlayer->isAlive())
                 {
-                    pTemp->SetHomePosition(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
+                    pTemp->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                     pTemp->SetReactState(REACT_AGGRESSIVE);
                     pTemp->SetInCombatWith(pPlayer);
@@ -649,7 +649,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
                     if (!Champion1List.empty())
                     {
                         for(std::list<uint64>::const_iterator itr = Champion1List.begin(); itr != Champion1List.end(); ++itr)
-                            if (Creature* pSummon = Unit::GetCreature(*m_creature, *itr))
+                            if (Creature* pSummon = Unit::GetCreature(*me, *itr))
                                 AggroAllPlayers(pSummon);
                         NextStep(0,false);
                     }
@@ -684,7 +684,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
             case VEHICLE_ORGRIMMAR_WOLF:
             case VEHICLE_SILVERMOON_HAWKSTRIDER:
             case VEHICLE_DARKSPEAR_RAPTOR:
-                m_creature->AI()->SetData(DATA_LESSER_CHAMPIONS_DEFEATED,0);
+                me->AI()->SetData(DATA_LESSER_CHAMPIONS_DEFEATED,0);
                 break;
         }
     }

@@ -288,7 +288,7 @@ struct boss_malygosAI : public ScriptedAI
         if(m_pInstance)
             m_pInstance->SetData(TYPE_MALYGOS, NOT_STARTED);
         else
-            m_creature->ForcedDespawn();
+            me->ForcedDespawn();
         m_uiPhase = PHASE_NOSTART;
         m_uiSubPhase = 0;
         m_uiSpeechCount = 0;
@@ -320,28 +320,28 @@ struct boss_malygosAI : public ScriptedAI
         m_uiArcanePulseTimer = 1000;
         m_uiSurgeOfPowerTimer = 30000;
         
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
-        m_creature->SetSpeed(MOVE_FLIGHT, 3.5f, true);
-        m_creature->SetSpeed(MOVE_RUN, 3.5f, true);
-        m_creature->SetSpeed(MOVE_WALK, 3.5f, true);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
+        me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+        me->SetSpeed(MOVE_RUN, 3.5f, true);
+        me->SetSpeed(MOVE_WALK, 3.5f, true);
     }
 
     void JustReachedHome()
     {
         Reset();
         //Summon Platform
-        if(!GetClosestGameObjectWithEntry(m_creature, GO_PLATFORM, 120.0f))
-            m_creature->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
+        if(!GetClosestGameObjectWithEntry(me, GO_PLATFORM, 120.0f))
+            me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
  
         //Summon focusing iris
-        if(!GetClosestGameObjectWithEntry(m_creature, GO_FOCUSING_IRIS, 120.0f))
-            m_creature->SummonGameObject(GO_FOCUSING_IRIS, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
+        if(!GetClosestGameObjectWithEntry(me, GO_FOCUSING_IRIS, 120.0f))
+            me->SummonGameObject(GO_FOCUSING_IRIS, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
  
         //Summon exit portal
-        if(!GetClosestGameObjectWithEntry(m_creature, GO_EXIT_PORTAL, 120.0f))
-            m_creature->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
+        if(!GetClosestGameObjectWithEntry(me, GO_EXIT_PORTAL, 120.0f))
+            me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
  
         //Despawn all summoned creatures	 
         DespawnCreatures(NPC_POWER_SPARK, 150.0f);
@@ -354,26 +354,26 @@ struct boss_malygosAI : public ScriptedAI
  
     void AttackStart(Unit* pWho)
     {
-        if(m_uiPhase != PHASE_FLOOR && m_uiPhase != PHASE_DRAGONS && !m_creature->HasAura(SPELL_BERSERK))
+        if(m_uiPhase != PHASE_FLOOR && m_uiPhase != PHASE_DRAGONS && !me->HasAura(SPELL_BERSERK))
             return;
  
-        if (m_creature->Attack(pWho, true))
+        if (me->Attack(pWho, true))
         {
-            m_creature->AddThreat(pWho, 1.0f);
-            m_creature->SetInCombatWith(pWho);
-            pWho->SetInCombatWith(m_creature);
-            if(m_uiPhase != PHASE_DRAGONS && !m_creature->HasAura(SPELL_BERSERK))
-                m_creature->GetMotionMaster()->MoveChase(pWho);
+            me->AddThreat(pWho, 1.0f);
+            me->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(me);
+            if(m_uiPhase != PHASE_DRAGONS && !me->HasAura(SPELL_BERSERK))
+                me->GetMotionMaster()->MoveChase(pWho);
         }
     }
  
     void EnterCombat(Unit* pWho)
     {
-        m_creature->SetSpeed(MOVE_FLIGHT, 1.0f, true);
-        m_creature->SetSpeed(MOVE_RUN, 1.0f, true);
-        m_creature->SetSpeed(MOVE_WALK, 1.0f, true);
+        me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
+        me->SetSpeed(MOVE_RUN, 1.0f, true);
+        me->SetSpeed(MOVE_WALK, 1.0f, true);
         m_pInstance->SetData(TYPE_MALYGOS, IN_PROGRESS);
-        DoScriptText(SAY_AGGRO1, m_creature);
+        DoScriptText(SAY_AGGRO1, me);
  
         if(m_pInstance->GetData(TYPE_OUTRO_CHECK) == 1) //Should be enought to trigger outro immediatly
         {
@@ -398,7 +398,7 @@ struct boss_malygosAI : public ScriptedAI
             return;
         }
  
-        if (uiDamage >= m_creature->GetHealth() && m_uiSubPhase != SUBPHASE_DIE)
+        if (uiDamage >= me->GetHealth() && m_uiSubPhase != SUBPHASE_DIE)
         {
             m_uiPhase = PHASE_OUTRO;
             m_uiSubPhase = SUBPHASE_STOP_COMBAT;
@@ -431,17 +431,17 @@ struct boss_malygosAI : public ScriptedAI
         }
         switch(text)
         {
-            case 0: DoScriptText(SAY_KILL1_1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL1_2, m_creature); break;
-            case 2: DoScriptText(SAY_KILL1_3, m_creature); break;
+            case 0: DoScriptText(SAY_KILL1_1, me); break;
+            case 1: DoScriptText(SAY_KILL1_2, me); break;
+            case 2: DoScriptText(SAY_KILL1_3, me); break;
  
-            case 3: DoScriptText(SAY_KILL2_1, m_creature); break;
-            case 4: DoScriptText(SAY_KILL2_2, m_creature); break;
-            case 5: DoScriptText(SAY_KILL2_3, m_creature); break;
+            case 3: DoScriptText(SAY_KILL2_1, me); break;
+            case 4: DoScriptText(SAY_KILL2_2, me); break;
+            case 5: DoScriptText(SAY_KILL2_3, me); break;
  
-            case 6: DoScriptText(SAY_KILL3_1, m_creature); break;
-            case 7: DoScriptText(SAY_KILL3_2, m_creature); break;
-            case 8: DoScriptText(SAY_KILL3_3, m_creature); break;
+            case 6: DoScriptText(SAY_KILL3_1, me); break;
+            case 7: DoScriptText(SAY_KILL3_2, me); break;
+            case 8: DoScriptText(SAY_KILL3_3, me); break;
         }
             
     }
@@ -449,9 +449,9 @@ struct boss_malygosAI : public ScriptedAI
     void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
     {
         if(pSpell->Id == SPELL_POWER_SPARK && m_uiPhase == PHASE_FLOOR)
-            DoScriptText(SAY_POWER_SPARK_BUFF, m_creature);
+            DoScriptText(SAY_POWER_SPARK_BUFF, me);
         else if(pSpell->Id == SPELL_POWER_SPARK && m_uiPhase != PHASE_FLOOR)
-            m_creature->RemoveAurasDueToSpell(SPELL_POWER_SPARK);
+            me->RemoveAurasDueToSpell(SPELL_POWER_SPARK);
     }
     
     void SummonedCreatureDespawn(Creature* pDespawned)
@@ -462,24 +462,24 @@ struct boss_malygosAI : public ScriptedAI
         float x,y,z;
         pDespawned->GetPosition(x,y,z);
         z = FLOOR_Z;
-        if(Unit *pDisc = m_creature->SummonCreature(NPC_HOVER_DISC, x, y, z, 0))
+        if(Unit *pDisc = me->SummonCreature(NPC_HOVER_DISC, x, y, z, 0))
         {
             ((Creature*)pDisc)->SetSpeed(MOVE_FLIGHT, 3.5f, true);
             ((Creature*)pDisc)->SetSpeed(MOVE_RUN, 3.5f, true);
             ((Creature*)pDisc)->SetSpeed(MOVE_WALK, 3.5f, true);
-            ((Creature*)pDisc)->SetHealth(m_creature->GetMaxHealth());
+            ((Creature*)pDisc)->SetHealth(me->GetMaxHealth());
             m_lDiscGUIDList.push_back(((Creature*)pDisc)->GetGUID());
         }
     }
     
     void CastSpellToTrigger(uint32 uiSpellId, bool triggered = true, bool triggerCast = false)
     {      
-        if(Creature *pTrigger = m_creature->SummonCreature(35642, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z, 0)){ //TODO: Wrong trigger entry (it's used only for example)
+        if(Creature *pTrigger = me->SummonCreature(35642, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z, 0)){ //TODO: Wrong trigger entry (it's used only for example)
            if(!triggerCast){
              pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
              pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
              pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-             pTrigger->setFaction(m_creature->getFaction());
+             pTrigger->setFaction(me->getFaction());
              pTrigger->CastSpell(pTrigger, uiSpellId, triggered);
            }else DoCast(pTrigger, uiSpellId, triggered);
         }      
@@ -489,15 +489,15 @@ struct boss_malygosAI : public ScriptedAI
     {
         if(phase == 0)
         {
-            m_creature->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->Clear(false);
             SetCombatMovement(false);
-            m_creature->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+20);
+            me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+20);
         }
         else if(phase == 1)
         {
             CastSpellToTrigger(SPELL_VORTEX_AOE_VISUAL, false);
 
-            Map* pMap = m_creature->GetMap();
+            Map* pMap = me->GetMap();
             if(!pMap)
                 return;
  
@@ -507,18 +507,18 @@ struct boss_malygosAI : public ScriptedAI
                 if(!itr->getSource()->isAlive())
                     continue;
                 itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, VORTEX_Z, 0); 
-                itr->getSource()->CastSpell(itr->getSource(), SPELL_VORTEX, true, NULL, NULL, m_creature->GetGUID());
-                if(Creature *pVortex = m_creature->SummonCreature(NPC_VORTEX, OtherLoc[1].x, OtherLoc[1].y, OtherLoc[1].z, OtherLoc[1].o, TEMPSUMMON_TIMED_DESPAWN, 11000))
+                itr->getSource()->CastSpell(itr->getSource(), SPELL_VORTEX, true, NULL, NULL, me->GetGUID());
+                if(Creature *pVortex = me->SummonCreature(NPC_VORTEX, OtherLoc[1].x, OtherLoc[1].y, OtherLoc[1].z, OtherLoc[1].o, TEMPSUMMON_TIMED_DESPAWN, 11000))
                 {                    
                     pVortex->SetVisibility(VISIBILITY_OFF);            
                 }
             }        
         }
         else if(phase > 1 && phase < 26){
-            Map* pMap = m_creature->GetMap();
+            Map* pMap = me->GetMap();
             if(!pMap)
                 return;
-            if(Creature *pVortex = m_creature->SummonCreature(NPC_VORTEX, VortexLoc[phase-1].x, VortexLoc[phase-1].y, VORTEX_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            if(Creature *pVortex = me->SummonCreature(NPC_VORTEX, VortexLoc[phase-1].x, VortexLoc[phase-1].y, VORTEX_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
             {
                 pVortex->SetVisibility(VISIBILITY_OFF);
                 Map::PlayerList const &lPlayers = pMap->GetPlayers();
@@ -529,20 +529,20 @@ struct boss_malygosAI : public ScriptedAI
  
                     float z = itr->getSource()->GetPositionZ() - VORTEX_Z;
 //                     itr->getSource()->KnockBackFrom(pVortex,-float(pVortex->GetDistance2d(itr->getSource())),7);
-                    itr->getSource()->SetFacingToObject(m_creature);
+                    itr->getSource()->SetFacingToObject(me);
                 }
             }
         }else if (phase == 30 || phase == 31)
         {    
             if(phase == 31)
             {
-                if(m_creature->getVictim())
-                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                if(me->getVictim())
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
                 
                 m_uiSubPhase = 0;
                 return;
             }
-            Map* pMap = m_creature->GetMap();
+            Map* pMap = me->GetMap();
             if(!pMap)
                 return;
             Map::PlayerList const &lPlayers = pMap->GetPlayers();
@@ -552,12 +552,12 @@ struct boss_malygosAI : public ScriptedAI
                 itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, VORTEX_Z, 0);
             }
             
-            m_creature->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->Clear(false);
             SetCombatMovement(true);
             float x, y, z;
-            m_creature->GetPosition(x, y, z);
+            me->GetPosition(x, y, z);
             z = FLOOR_Z;
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
         }
         
     }
@@ -566,29 +566,29 @@ struct boss_malygosAI : public ScriptedAI
         if(action == 1) //Summon
         {
             uint8 random = urand(0, 3);
-            if(Creature *pSpark = m_creature->SummonCreature(NPC_POWER_SPARK, SparkLoc[random].x, SparkLoc[random].y, FLOOR_Z+10, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+            if(Creature *pSpark = me->SummonCreature(NPC_POWER_SPARK, SparkLoc[random].x, SparkLoc[random].y, FLOOR_Z+10, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
             {
                 pSpark->CastSpell(pSpark, SPELL_POWER_SPARK_VISUAL, false);
-                pSpark->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
+                pSpark->GetMotionMaster()->MoveFollow(me, 0, 0);
                 m_lSparkGUIDList.push_back(pSpark->GetGUID());
             }
         }
         else if(action == 2 || action == 3) // Start/stop movement
         {
             if(action == 3)
-                m_creature->RemoveAurasDueToSpell(SPELL_POWER_SPARK);
+                me->RemoveAurasDueToSpell(SPELL_POWER_SPARK);
  
             if (m_lSparkGUIDList.empty())
                 return;
  
             for(std::list<uint64>::iterator itr = m_lSparkGUIDList.begin(); itr != m_lSparkGUIDList.end(); ++itr)
             {
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                if (Creature* pTemp = (Creature*)Unit::GetUnit(*me, *itr))
                 {
                     if (pTemp->isAlive())
                     {
                         if(action == 2)
-                            pTemp->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
+                            pTemp->GetMotionMaster()->MoveFollow(me, 0, 0);
                         else
                             pTemp->GetMotionMaster()->Clear(false);
                     }
@@ -603,15 +603,15 @@ struct boss_malygosAI : public ScriptedAI
         int max_lords = m_uiIs10Man ? NEXUS_LORD_COUNT :NEXUS_LORD_COUNT_H;
         for(int i=0; i < max_lords;i++)
         {
-            if(Creature *pLord = m_creature->SummonCreature(NPC_NEXUS_LORD, m_creature->getVictim()->GetPositionX()-5+rand()%10, m_creature->getVictim()->GetPositionY()-5+rand()%10, m_creature->getVictim()->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
-                pLord->AI()->AttackStart(m_creature->getVictim());
+            if(Creature *pLord = me->SummonCreature(NPC_NEXUS_LORD, me->getVictim()->GetPositionX()-5+rand()%10, me->getVictim()->GetPositionY()-5+rand()%10, me->getVictim()->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                pLord->AI()->AttackStart(me->getVictim());
         }
         //Scions of eternity
         int max_scions = m_uiIs10Man ? SCION_OF_ETERNITY_COUNT : SCION_OF_ETERNITY_COUNT_H;
         for(int i=0; i < max_scions;i++)
         {
             uint32 tmp = urand(1, 10);
-            if(Creature *pScion = m_creature->SummonCreature(NPC_SCION_OF_ETERNITY, VortexLoc[tmp].x, VortexLoc[tmp].y, FLOOR_Z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+            if(Creature *pScion = me->SummonCreature(NPC_SCION_OF_ETERNITY, VortexLoc[tmp].x, VortexLoc[tmp].y, FLOOR_Z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     pScion->AI()->AttackStart(pTarget);
         }       
@@ -619,11 +619,11 @@ struct boss_malygosAI : public ScriptedAI
     bool IsThereAnyAdd()
     {
         //Search for Nexus lords
-        if(GetClosestCreatureWithEntry(m_creature, NPC_NEXUS_LORD, 180.0f))
+        if(GetClosestCreatureWithEntry(me, NPC_NEXUS_LORD, 180.0f))
             return true;
  
         //Search for Scions of eternity
-        if(GetClosestCreatureWithEntry(m_creature, NPC_SCION_OF_ETERNITY, 180.0f))
+        if(GetClosestCreatureWithEntry(me, NPC_SCION_OF_ETERNITY, 180.0f))
             return true;
  
         return false;
@@ -632,7 +632,7 @@ struct boss_malygosAI : public ScriptedAI
     {
         uint32 x = urand(SHELL_MIN_X, SHELL_MAX_X);
         uint32 y = urand(SHELL_MIN_Y, SHELL_MAX_Y);
-        if(Creature *pShell = m_creature->SummonCreature(NPC_ARCANE_OVERLOAD, x, y, FLOOR_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 45000))
+        if(Creature *pShell = me->SummonCreature(NPC_ARCANE_OVERLOAD, x, y, FLOOR_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 45000))
         {
              pShell->CastSpell(pShell, SPELL_ARCANE_BOMB, false);
         }
@@ -640,7 +640,7 @@ struct boss_malygosAI : public ScriptedAI
     
     void PrepareMounts()
     {
-        Map *pMap = m_creature->GetMap();
+        Map *pMap = me->GetMap();
  
         if(!pMap)
             return;
@@ -653,7 +653,7 @@ struct boss_malygosAI : public ScriptedAI
         {
            if (Player* pPlayer = itr->getSource())
             { 
-                if(Creature *pTemp = m_creature->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 210, 0))
+                if(Creature *pTemp = me->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 210, 0))
                 {
                    m_uiMounts.push_back(pTemp);
                 }
@@ -663,7 +663,7 @@ struct boss_malygosAI : public ScriptedAI
     
     void MountPlayers()
    {
-        Map *pMap = m_creature->GetMap();
+        Map *pMap = me->GetMap();
  
         if(!pMap)
            return;
@@ -685,14 +685,14 @@ struct boss_malygosAI : public ScriptedAI
                       pTemp->SetArmor(pPlayer->GetArmor());  // ???
                       pTemp->SetMaxHealth(health);
                      pTemp->SetHealth(health);
-                      m_creature->AddThreat(pTemp, 1.0f);  // To not leave combat
+                      me->AddThreat(pTemp, 1.0f);  // To not leave combat
                       pPlayer->EnterVehicle(pTemp, 0);
                       if(pTemp->GetHealth() != health)
                       {
                           pTemp->SetMaxHealth(health);
                           pTemp->SetHealth(health);
                       }
-                      pTemp->SetFacingToObject(m_creature);
+                      pTemp->SetFacingToObject(me);
                   }
                 }
             }
@@ -708,14 +708,14 @@ struct boss_malygosAI : public ScriptedAI
                 return;
                 
             for(std::list<uint64>::iterator iter = m_lDiscGUIDList.begin(); iter != m_lDiscGUIDList.end(); ++iter)
-                ObjectAccessor::GetCreatureOrPetOrVehicle(*m_creature,*iter)->ForcedDespawn();
+                ObjectAccessor::GetCreatureOrPetOrVehicle(*me,*iter)->ForcedDespawn();
                 
             m_lDiscGUIDList.clear();
             return;
         }
  
         std::list<Creature*> m_pCreatures;
-        GetCreatureListWithEntryInGrid(m_pCreatures, m_creature, entry, distance);
+        GetCreatureListWithEntryInGrid(m_pCreatures, me, entry, distance);
  
         if (m_pCreatures.empty())
             return;
@@ -728,9 +728,9 @@ struct boss_malygosAI : public ScriptedAI
     void SendDeepBreathCast()
     {
         WorldPacket data(SMSG_SPELL_GO, 50);
-        data.append(m_creature->GetPackGUID());
+        data.append(me->GetPackGUID());
  
-        data.append(m_creature->GetPackGUID());
+        data.append(me->GetPackGUID());
         data << uint8(1);
         data << uint32(SPELL_DEEP_BREATH);
         data << uint32(256);
@@ -740,7 +740,7 @@ struct boss_malygosAI : public ScriptedAI
         data << uint8(0);
         data << uint8(0);
  
-        m_creature->SendMessageToSet(&data, false);
+        me->SendMessageToSet(&data, false);
     }
  
     void UpdateAI(const uint32 uiDiff)
@@ -753,17 +753,17 @@ struct boss_malygosAI : public ScriptedAI
                m_uiIsDown = true;
             }else m_uiIsDownTimer -= uiDiff;
             if(m_uiSubPhase == SUBPHASE_FLY_DOWN1){
-                m_creature->InterruptNonMeleeSpells(false);
-                m_creature->RemoveAurasDueToSpell(SPELL_PORTAL_BEAM);
-                m_creature->GetMotionMaster()->Clear(false);
-                m_creature->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5);
+                me->InterruptNonMeleeSpells(false);
+                me->RemoveAurasDueToSpell(SPELL_PORTAL_BEAM);
+                me->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5);
                 m_uiSubPhase = SUBPHASE_FLY_DOWN2;
                 m_uiTimer = 3500;
             }
             else if(m_uiSubPhase == SUBPHASE_FLY_DOWN2){
                 if(m_uiTimer <= uiDiff)
                 {
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     m_uiSubPhase = 0;
                     m_uiPhase = PHASE_FLOOR;
                 }else m_uiTimer -= uiDiff;
@@ -773,7 +773,7 @@ struct boss_malygosAI : public ScriptedAI
                 //Speech
                 if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
                 {
-                    DoScriptText(SAY_INTRO1-m_uiSpeechCount, m_creature);
+                    DoScriptText(SAY_INTRO1-m_uiSpeechCount, me);
                     m_uiSpeechCount++;
                     if(m_uiSpeechCount == 5){
                         m_uiSpeechCount = 0;
@@ -789,7 +789,7 @@ struct boss_malygosAI : public ScriptedAI
                 if(m_uiTimer <= uiDiff)
                 {
                     uint8 tmp = urand(0,3);
-                    m_creature->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
+                    me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
                     m_uiTimer = 25000;
                 }else m_uiTimer -= uiDiff;
             }
@@ -800,12 +800,12 @@ struct boss_malygosAI : public ScriptedAI
         //Enrage timer.....
         if(m_uiEnrageTimer <= uiDiff)
         {
-            DoCast(m_creature, SPELL_BERSERK);
+            DoCast(me, SPELL_BERSERK);
             m_uiEnrageTimer = 600000;
-            m_creature->SetSpeed(MOVE_FLIGHT, 3.5f, true);
-            m_creature->SetSpeed(MOVE_RUN, 3.5f, true);
-            m_creature->SetSpeed(MOVE_WALK, 3.5f, true);
-            m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+            me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+            me->SetSpeed(MOVE_RUN, 3.5f, true);
+            me->SetSpeed(MOVE_WALK, 3.5f, true);
+            me->GetMotionMaster()->MoveChase(me->getVictim());
         }else m_uiEnrageTimer -= uiDiff;
  
         if(m_uiPhase == PHASE_FLOOR)
@@ -818,7 +818,7 @@ struct boss_malygosAI : public ScriptedAI
                     
                     if(m_uiVortexPhase == 1 || m_uiVortexPhase == 11){
                         if(m_uiVortexPhase == 1)
-                            DoCast(m_creature, SPELL_VORTEX_DUMMY);
+                            DoCast(me, SPELL_VORTEX_DUMMY);
                         m_uiTimer = 300;
                     }else
                         m_uiTimer = 500;
@@ -845,14 +845,14 @@ struct boss_malygosAI : public ScriptedAI
                 m_uiSubPhase = SUBPHASE_VORTEX;
                 m_uiVortexTimer = 56000;
                 m_uiTimer = 6000;
-                DoScriptText(SAY_VORTEX, m_creature);
+                DoScriptText(SAY_VORTEX, me);
                 return;
             }else m_uiVortexTimer -= uiDiff;
  
             //Arcane Breath
             if(m_uiArcaneBreathTimer <= uiDiff)
             {
-                DoCast(m_creature,  m_uiIs10Man ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
+                DoCast(me,  m_uiIs10Man ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
                 m_uiArcaneBreathTimer = 15000 + urand(3000, 8000);
             }else m_uiArcaneBreathTimer -= uiDiff;
  
@@ -860,21 +860,21 @@ struct boss_malygosAI : public ScriptedAI
             if(m_uiPowerSparkTimer<= uiDiff)
             {
                 PowerSpark(1);
-                DoScriptText(SAY_POWER_SPARK, m_creature);
+                DoScriptText(SAY_POWER_SPARK, me);
                 m_uiPowerSparkTimer = 30000;
             }else m_uiPowerSparkTimer -= uiDiff;
  
             //Health check
             if(m_uiTimer<= uiDiff)
             {
-                uint8 health = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();                    
+                uint8 health = me->GetHealth()*100 / me->GetMaxHealth();                    
                 if(health <= 50)
                 {
-                    m_creature->InterruptNonMeleeSpells(true);
+                    me->InterruptNonMeleeSpells(true);
                     SetCombatMovement(false);
-                    m_creature->GetMotionMaster()->Clear(false);
-                    DoScriptText(SAY_END_PHASE1, m_creature);
-                    m_creature->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+40);
+                    me->GetMotionMaster()->Clear(false);
+                    DoScriptText(SAY_END_PHASE1, me);
+                    me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+40);
                     //Despawn power sparks
                     DespawnCreatures(NPC_POWER_SPARK, 180.0f);
                     m_uiPhase = PHASE_ADDS;
@@ -892,8 +892,8 @@ struct boss_malygosAI : public ScriptedAI
             {
                 if(m_uiTimer <= uiDiff)
                 {
-                    DoScriptText(SAY_AGGRO2, m_creature);
-                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    DoScriptText(SAY_AGGRO2, me);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     DoSpawnAdds();
                     DoSpawnShell();
                     m_uiShellTimer = 30000;
@@ -907,15 +907,15 @@ struct boss_malygosAI : public ScriptedAI
             if(m_uiShellTimer <= uiDiff)
            {
                 DoSpawnShell();
-                DoScriptText(SAY_ARCANE_OVERLOAD, m_creature);
+                DoScriptText(SAY_ARCANE_OVERLOAD, me);
                 m_uiShellTimer = 20000;
             }else m_uiShellTimer -= uiDiff;
  
             // Deep breath
             if(m_uiDeepBreathTimer <= uiDiff)
             {
-                DoScriptText(SAY_ARCANE_PULSE, m_creature);
-                DoScriptText(SAY_ARCANE_PULSE_WARN, m_creature);
+                DoScriptText(SAY_ARCANE_PULSE, me);
+                DoScriptText(SAY_ARCANE_PULSE_WARN, me);
                 SendDeepBreathCast();
                 CastSpellToTrigger(SPELL_SURGE_OF_POWER_BREATH, true, true);
                 m_uiDeepBreathTimer = 60000;
@@ -924,7 +924,7 @@ struct boss_malygosAI : public ScriptedAI
             // Arcane Storm
             if(m_uiArcaneStormTimer <= uiDiff)
             {
-                DoCast(m_creature,  m_uiIs10Man ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
+                DoCast(me,  m_uiIs10Man ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
                 m_uiArcaneStormTimer = 20000;
             }else m_uiArcaneStormTimer -= uiDiff;
  
@@ -934,7 +934,7 @@ struct boss_malygosAI : public ScriptedAI
                 {
                     m_uiPhase = PHASE_DRAGONS;
                     m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM1;
-                    DoScriptText(SAY_END_PHASE2, m_creature);
+                    DoScriptText(SAY_END_PHASE2, me);
                     CastSpellToTrigger(SPELL_DESTROY_PLATFORM_PRE, false);
                     m_uiTimer = 6500;
                     return;
@@ -942,7 +942,7 @@ struct boss_malygosAI : public ScriptedAI
                 m_uiTimer = 5000;
             }else m_uiTimer -= uiDiff;  
  
-            if(m_creature->HasAura(SPELL_BERSERK))
+            if(me->HasAura(SPELL_BERSERK))
                 DoMeleeAttackIfReady(); // this is there just for case of enrage
         }
         else if(m_uiPhase == PHASE_DRAGONS)
@@ -966,13 +966,13 @@ struct boss_malygosAI : public ScriptedAI
             {
                 if(m_uiTimer<= uiDiff){
                     m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);   
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);             
-                    if (Creature* m_uiSafeZone = m_creature->SummonCreature(30494, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 360000)) //safe zone.. raid do not leave combat while mounting
-                        m_uiSafeZone->AI()->AttackStart(m_creature);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);             
+                    if (Creature* m_uiSafeZone = me->SummonCreature(30494, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 360000)) //safe zone.. raid do not leave combat while mounting
+                        m_uiSafeZone->AI()->AttackStart(me);
                     //Prepare Mounts
                     PrepareMounts();
-                    m_creature->GetMotionMaster()->MovePoint(0, OtherLoc[0].x, OtherLoc[0].y, OtherLoc[0].z+30);
-                    DoScriptText(SAY_INTRO_PHASE3, m_creature);                    
+                    me->GetMotionMaster()->MovePoint(0, OtherLoc[0].x, OtherLoc[0].y, OtherLoc[0].z+30);
+                    DoScriptText(SAY_INTRO_PHASE3, me);                    
                     m_uiTimer = 14900;
                 }else m_uiTimer -= uiDiff;
                  if(!m_uiIsMounted && m_uiFallToMountTimer <= uiDiff){
@@ -985,25 +985,25 @@ struct boss_malygosAI : public ScriptedAI
             {
                 if(m_uiTimer<= uiDiff){
                     m_uiSubPhase = 0;
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     SetCombatMovement(false);
-                    m_creature->GetMotionMaster()->Clear(false);        // No moving!
-                    m_creature->GetMotionMaster()->MoveIdle();
-                    if(Unit *pVehicle = ((Unit*)Unit::GetUnit(*m_creature, m_creature->getVictim()->GetGUID())))
+                    me->GetMotionMaster()->Clear(false);        // No moving!
+                    me->GetMotionMaster()->MoveIdle();
+                    if(Unit *pVehicle = ((Unit*)Unit::GetUnit(*me, me->getVictim()->GetGUID())))
                     {
-                        float victim_threat = m_creature->getThreatManager().getThreat(m_creature->getVictim());
+                        float victim_threat = me->getThreatManager().getThreat(me->getVictim());
                         DoResetThreat();
-                        m_creature->AI()->AttackStart(pVehicle);
-                        m_creature->AddThreat(pVehicle, victim_threat);
+                        me->AI()->AttackStart(pVehicle);
+                        me->AddThreat(pVehicle, victim_threat);
                     }
-                    DoScriptText(SAY_AGGRO3, m_creature);
+                    DoScriptText(SAY_AGGRO3, me);
                 }else m_uiTimer -= uiDiff;
                 return;
             }
             //Arcane Pulse
             if(m_uiArcanePulseTimer <= uiDiff)
             {
-                DoCast(m_creature, SPELL_ARCANE_PULSE);
+                DoCast(me, SPELL_ARCANE_PULSE);
                 m_uiArcanePulseTimer = 1000;
             }else m_uiArcanePulseTimer -= uiDiff;
  
@@ -1011,9 +1011,9 @@ struct boss_malygosAI : public ScriptedAI
             if(m_uiStaticFieldTimer <= uiDiff)
             {
                 if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    if(Creature *pField = m_creature->SummonCreature(NPC_STATIC_FIELD, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 25000))
+                    if(Creature *pField = me->SummonCreature(NPC_STATIC_FIELD, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 25000))
                         pField->CastSpell(pField, SPELL_STATIC_FIELD, true);
-                DoScriptText(SAY_CAST_SPELL1-urand(0,2), m_creature);
+                DoScriptText(SAY_CAST_SPELL1-urand(0,2), me);
                 m_uiStaticFieldTimer = 20000+rand()%15000;
             }else m_uiStaticFieldTimer -= uiDiff;
  
@@ -1032,11 +1032,11 @@ struct boss_malygosAI : public ScriptedAI
                 }
  
                 DoCast(pTarget,   m_uiIs10Man ? SPELL_SURGE_OF_POWER : SPELL_SURGE_OF_POWER_H);
-                DoScriptText(SAY_SURGE_OF_POWER, m_creature);
+                DoScriptText(SAY_SURGE_OF_POWER, me);
                 m_uiSurgeOfPowerTimer = 16000+rand()%15000;
             }else m_uiSurgeOfPowerTimer -= uiDiff;	
  
-            if(m_creature->HasAura(SPELL_BERSERK))
+            if(me->HasAura(SPELL_BERSERK))
                 DoMeleeAttackIfReady();
         }
         //Outro!
@@ -1046,21 +1046,21 @@ struct boss_malygosAI : public ScriptedAI
             {
                 m_pInstance->SetData(TYPE_OUTRO_CHECK, 1);
  
-                if (m_creature->IsNonMeleeSpellCasted(false))
-                    m_creature->InterruptNonMeleeSpells(false);
+                if (me->IsNonMeleeSpellCasted(false))
+                    me->InterruptNonMeleeSpells(false);
  
-                m_creature->RemoveAllAuras();
+                me->RemoveAllAuras();
                 SetCombatMovement(false);
  
-                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
-                   m_creature->GetMotionMaster()->MovementExpired();
+                if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+                   me->GetMotionMaster()->MovementExpired();
  
                 DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
             
-                m_creature->SetHealth(1);
-                //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                m_creature->GetMotionMaster()->Clear(false);        // No moving!
-                m_creature->GetMotionMaster()->MoveIdle();
+                me->SetHealth(1);
+                //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->GetMotionMaster()->Clear(false);        // No moving!
+                me->GetMotionMaster()->MoveIdle();
                 m_uiSpeechCount = 0;
                 m_uiSpeechTimer[0] = 2000;
                 m_uiSpeechTimer[1] = 8500;
@@ -1068,11 +1068,11 @@ struct boss_malygosAI : public ScriptedAI
                 m_uiSpeechTimer[3] = 3000;
                 m_uiSpeechTimer[4] = 22000;
  
-                if(Creature *pTemp = m_creature->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                if(Creature *pTemp = me->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
                     pTemp->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
                     pTemp->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
-                    m_creature->SetFacingToObject(pTemp);
+                    me->SetFacingToObject(pTemp);
                     pTemp->SetVisibility(VISIBILITY_OFF);
                     pAlexstrasza = pTemp;
                 }
@@ -1086,7 +1086,7 @@ struct boss_malygosAI : public ScriptedAI
             {
                 Creature *pSpeaker = NULL;
                 if(m_uiSpeechCount == 0)
-                    pSpeaker = m_creature;
+                    pSpeaker = me;
                 else
                     pSpeaker = pAlexstrasza;
  
@@ -1096,18 +1096,18 @@ struct boss_malygosAI : public ScriptedAI
                 switch(m_uiSpeechCount)
                 {
                     case 1:
-                        m_creature->SetVisibility(VISIBILITY_OFF);
+                        me->SetVisibility(VISIBILITY_OFF);
                         pAlexstrasza->SetVisibility(VISIBILITY_ON);
-                        pAlexstrasza->SetFacingToObject(m_creature->getVictim());
+                        pAlexstrasza->SetFacingToObject(me->getVictim());
                         break;
                     case 4:
                         m_uiSubPhase = SUBPHASE_DIE;
                         //Summon exit portal, platform and loot
-                        m_creature->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
-                        m_creature->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
-                        if(GameObject *pGift = m_creature->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0, 0, 0, 0, 0))
+                        me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
+                        me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
+                        if(GameObject *pGift = me->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0, 0, 0, 0, 0))
                             pAlexstrasza->SetFacingToObject(pGift);
-                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         break;
                 }
                 m_uiSpeechCount++;
@@ -1135,11 +1135,11 @@ struct mob_power_sparkAI : public ScriptedAI
     void Reset()
     {
         isDead = false;
-        pMalygos = GetClosestCreatureWithEntry(m_creature, NPC_MALYGOS, 150.0f);
+        pMalygos = GetClosestCreatureWithEntry(me, NPC_MALYGOS, 150.0f);
         m_uiCheckTimer = 2500;
         WorldPacket heart;
-        m_creature->BuildHeartBeatMsg(&heart);
-        m_creature->SendMessageToSet(&heart, false);
+        me->BuildHeartBeatMsg(&heart);
+        me->SendMessageToSet(&heart, false);
     }
     void AttackStart(Unit *pWho)
     {
@@ -1153,24 +1153,24 @@ struct mob_power_sparkAI : public ScriptedAI
             return;
         }
  
-        if (uiDamage > m_creature->GetHealth() && m_creature->GetVisibility() == VISIBILITY_ON)
+        if (uiDamage > me->GetHealth() && me->GetVisibility() == VISIBILITY_ON)
         {
             isDead = true;
  
-            if (m_creature->IsNonMeleeSpellCasted(false))
-                m_creature->InterruptNonMeleeSpells(false);
+            if (me->IsNonMeleeSpellCasted(false))
+                me->InterruptNonMeleeSpells(false);
  
-            m_creature->RemoveAllAuras();
-            m_creature->AttackStop();
+            me->RemoveAllAuras();
+            me->AttackStop();
             SetCombatMovement(false);
  
-            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
-                m_creature->GetMotionMaster()->MovementExpired();
+            if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+                me->GetMotionMaster()->MovementExpired();
  
             uiDamage = 0;
-            m_creature->SetHealth(1);
-            m_creature->CastSpell(m_creature, SPELL_POWER_SPARK_PLAYERS, false);
-            m_creature->ForcedDespawn(60000);
+            me->SetHealth(1);
+            me->CastSpell(me, SPELL_POWER_SPARK_PLAYERS, false);
+            me->ForcedDespawn(60000);
             if(pMalygos && pMalygos->isAlive())
             {
                 bool delete_itr = false;
@@ -1179,7 +1179,7 @@ struct mob_power_sparkAI : public ScriptedAI
                     std::list<uint64>::iterator itr; 
                     for(itr = ((boss_malygosAI*)pMalygos->AI())->m_lSparkGUIDList.begin(); itr != ((boss_malygosAI*)pMalygos->AI())->m_lSparkGUIDList.end(); ++itr)
                     {
-                        if((*itr) == m_creature->GetGUID())
+                        if((*itr) == me->GetGUID())
                         {
                             delete_itr = true;
                             break;
@@ -1195,13 +1195,13 @@ struct mob_power_sparkAI : public ScriptedAI
     {
         if(m_uiCheckTimer <= uiDiff)
         {
-            if(pMalygos && pMalygos->isAlive() && m_creature->GetVisibility() == VISIBILITY_ON)
+            if(pMalygos && pMalygos->isAlive() && me->GetVisibility() == VISIBILITY_ON)
             {
-                if(m_creature->IsWithinDist(pMalygos, 3.0f, false))
+                if(me->IsWithinDist(pMalygos, 3.0f, false))
                 {
                     ((boss_malygosAI*)pMalygos->AI())->m_lSparkGUIDList.clear();
-                    m_creature->CastSpell(pMalygos, SPELL_POWER_SPARK, true);
-                    m_creature->SetVisibility(VISIBILITY_OFF);
+                    me->CastSpell(pMalygos, SPELL_POWER_SPARK, true);
+                    me->SetVisibility(VISIBILITY_OFF);
                 }
             }
             m_uiCheckTimer = 2500;
@@ -1227,9 +1227,9 @@ struct mob_scion_of_eternityAI : public ScriptedAI
  
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK, 0.7f, true);
-        m_creature->SetSpeed(MOVE_RUN, 0.7f, true);
-        m_creature->SetSpeed(MOVE_FLIGHT, 0.7f, true);
+        me->SetSpeed(MOVE_WALK, 0.7f, true);
+        me->SetSpeed(MOVE_RUN, 0.7f, true);
+        me->SetSpeed(MOVE_FLIGHT, 0.7f, true);
         DoNextMovement();
         m_uiMovePoint = 0;
         m_uiMoveTimer = 10000;
@@ -1240,24 +1240,24 @@ struct mob_scion_of_eternityAI : public ScriptedAI
         if(pWho->GetTypeId() != TYPEID_PLAYER)
             return;
  
-        if (m_creature->Attack(pWho, true))
+        if (me->Attack(pWho, true))
         {
-            m_creature->AddThreat(pWho, 1.0f);
-            m_creature->SetInCombatWith(pWho);
-            pWho->SetInCombatWith(m_creature);
-            //m_creature->GetMotionMaster()->MoveChase(pWho, 15.0f);
+            me->AddThreat(pWho, 1.0f);
+            me->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(me);
+            //me->GetMotionMaster()->MoveChase(pWho, 15.0f);
         }
     }
     
     void DoNextMovement()
     {
         WorldPacket heart;
-        m_creature->BuildHeartBeatMsg(&heart);
-        m_creature->SendMessageToSet(&heart, false);
+        me->BuildHeartBeatMsg(&heart);
+        me->SendMessageToSet(&heart, false);
         m_uiMovePoint++;
         uint32 x = urand(SHELL_MIN_X, SHELL_MAX_X);
         uint32 y = urand(SHELL_MIN_Y, SHELL_MAX_Y);
-        m_creature->GetMotionMaster()->MovePoint(m_uiMovePoint, x, y, FLOOR_Z+10);
+        me->GetMotionMaster()->MovePoint(m_uiMovePoint, x, y, FLOOR_Z+10);
     }
     
     void UpdateAI(const uint32 uiDiff)
@@ -1270,7 +1270,7 @@ struct mob_scion_of_eternityAI : public ScriptedAI
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
                 int32 bpoints0 = RAID_MODE(int32(BP_BARRAGE0), int32(BP_BARRAGE0_H));
-                m_creature->CastCustomSpell(pTarget, SPELL_ARCANE_BARRAGE, &bpoints0, 0, 0, false);  
+                me->CastCustomSpell(pTarget, SPELL_ARCANE_BARRAGE, &bpoints0, 0, 0, false);  
                 //DoCast(pTarget, SPELL_ARCANE_BARRAGE);  // this spell is not right :/
             }
             m_uiArcaneBarrageTimer = 3000 + rand()%19000;
@@ -1311,7 +1311,7 @@ struct npc_arcane_overloadAI : public ScriptedAI
     
     void ProtectAllPlayersInRange(float range)
     {
-      Map* pMap = m_creature->GetMap();
+      Map* pMap = me->GetMap();
       if(!pMap)
         return;
       
@@ -1320,9 +1320,9 @@ struct npc_arcane_overloadAI : public ScriptedAI
       {
         if(!itr->getSource()->isAlive())
           continue;
-        if(itr->getSource()->IsWithinDist(m_creature, range, false))
+        if(itr->getSource()->IsWithinDist(me, range, false))
         {
-          m_creature->AddAura(SPELL_ARCANE_OVERLOAD_PROTECT, itr->getSource());
+          me->AddAura(SPELL_ARCANE_OVERLOAD_PROTECT, itr->getSource());
         }
       }
     }    
@@ -1333,7 +1333,7 @@ struct npc_arcane_overloadAI : public ScriptedAI
         range -= 0.1f;
         ProtectAllPlayersInRange(range);
         if(!m_uiAOCasted){
-          DoCast(m_creature,SPELL_ARCANE_OVERLOAD);
+          DoCast(me,SPELL_ARCANE_OVERLOAD);
           m_uiAOCasted = true;
         }
         m_uiProtectTimer = 500;
@@ -1363,9 +1363,9 @@ struct mob_nexus_lordAI : public ScriptedAI
  
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK, 0.7f, true);
-        m_creature->SetSpeed(MOVE_RUN, 0.7f, true);
-        m_creature->SetSpeed(MOVE_FLIGHT, 0.7f, true);
+        me->SetSpeed(MOVE_WALK, 0.7f, true);
+        me->SetSpeed(MOVE_RUN, 0.7f, true);
+        me->SetSpeed(MOVE_FLIGHT, 0.7f, true);
         m_uiHasteTimer = 20000;
         m_uiArcaneShockTimer = 5000 + rand()%15000;
     }
@@ -1384,7 +1384,7 @@ struct mob_nexus_lordAI : public ScriptedAI
         
         if(m_uiHasteTimer <= uiDiff)
         {
-          DoCast(m_creature, SPELL_HASTE);
+          DoCast(me, SPELL_HASTE);
           m_uiHasteTimer = 10000 + rand()%10000;
         }else m_uiHasteTimer -= uiDiff;
         DoMeleeAttackIfReady();

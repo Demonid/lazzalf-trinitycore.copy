@@ -69,11 +69,11 @@ struct  boss_lord_jaraksusAI : public BossAI
 
 	void Aggro(Unit* pWho)
     {
-        //m_creature->SetInCombatWithZone();
+        //me->SetInCombatWithZone();
 
         if (pInstance)
             pInstance->SetData(DATA_BOSS_LORD_JARAXXUS, IN_PROGRESS);
-	DoScriptText(SAY_START,m_creature);
+	DoScriptText(SAY_START,me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -106,7 +106,7 @@ struct  boss_lord_jaraksusAI : public BossAI
 	Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 	if(target && target->isAlive())
 	{
-	DoScriptText(SAY_PLOD,m_creature);
+	DoScriptText(SAY_PLOD,me);
 	DoCast(target, SPELL_INCINERATE_FLESH);
 	}
 	INCINERATE_FLESH_Timer = urand(15000,28000);
@@ -117,7 +117,7 @@ struct  boss_lord_jaraksusAI : public BossAI
 	Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 	if(target && target->isAlive())
 	{
-	DoScriptText(SAY_PLAMYA,m_creature);
+	DoScriptText(SAY_PLAMYA,me);
 	DoCast(target, SPELL_LEGION_FLAME);
 	}
 	LEGION_FLAME_Timer = 28000;
@@ -125,21 +125,21 @@ struct  boss_lord_jaraksusAI : public BossAI
  /*
 	if (INFERNAL_Timer < diff)
 	{
-	DoScriptText(SAY_INFERNAL,m_creature);
-	DoCast(m_creature,SPELL_INFERNAL);
+	DoScriptText(SAY_INFERNAL,me);
+	DoCast(me,SPELL_INFERNAL);
 	INFERNAL_Timer = 60000;
 	} else INFERNAL_Timer -= diff;*/
 
 	if (NETHER_Timer < diff)
 	{
-	DoScriptText(SAY_SESTRA,m_creature);
-	DoCast(m_creature,SPELL_NETHER);
+	DoScriptText(SAY_SESTRA,me);
+	DoCast(me,SPELL_NETHER);
 	NETHER_Timer = 100000;
 	} else NETHER_Timer -= diff;
 
 	if (BUFF_Timer < diff)
 	{
-	DoCast(m_creature,SPELL_BUFF);
+	DoCast(me,SPELL_BUFF);
 	BUFF_Timer = 60000;
 	} else BUFF_Timer -= diff;
 
@@ -150,7 +150,7 @@ struct  boss_lord_jaraksusAI : public BossAI
         {
         if (pInstance)
             pInstance->SetData(DATA_BOSS_LORD_JARAXXUS, DONE);
-	    DoScriptText(SAY_DEAD,m_creature);
+	    DoScriptText(SAY_DEAD,me);
         }
 
 void KilledUnit(Unit *victim){}

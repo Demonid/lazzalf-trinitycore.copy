@@ -117,11 +117,11 @@ struct boss_thaddiusAI : public BossAI
         // Moreover, the adds may not yet be spawn. So just track down the status if mob is spawn
         // and each mob will send its status at reset (meaning that it is alive)
         checkFeugenAlive = false;
-        if (Creature *pFeugen = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_FEUGEN)))
+        if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
             checkFeugenAlive = pFeugen->isAlive();
 
         checkStalaggAlive = false;
-        if (Creature *pStalagg = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_STALAGG)))
+        if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
             checkStalaggAlive = pStalagg->isAlive();
 
         if (!checkFeugenAlive && !checkStalaggAlive)
@@ -158,13 +158,13 @@ struct boss_thaddiusAI : public BossAI
         if (!checkStalaggAlive)
         {
             if (instance)
-                if (Creature *pStalagg = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_STALAGG)))
+                if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
                     pStalagg->Respawn();
         }
         else
         {
             if (instance)
-                if (Creature *pFeugen = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_FEUGEN)))
+                if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
                     pFeugen->Respawn();
         }
         _Reset();
@@ -228,13 +228,13 @@ struct boss_thaddiusAI : public BossAI
                 if (!checkStalaggAlive)
                 {
                     if (instance)
-                        if (Creature *pStalagg = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_STALAGG)))
+                        if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
                             pStalagg->Respawn();
                 }
                 else
                 {
                     if (instance)
-                        if (Creature *pFeugen = m_creature->GetCreature(*m_creature, instance->GetData64(DATA_FEUGEN)))
+                        if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
                             pFeugen->Respawn();
                 }
             }
@@ -297,7 +297,7 @@ struct mob_stalaggAI : public ScriptedAI
     void Reset()
     {
         if (pInstance)
-            if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
+            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
                     pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
         powerSurgeTimer = urand(20000,25000);
@@ -313,7 +313,7 @@ struct mob_stalaggAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         if (pInstance)
-            if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
+            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
                     {
                         pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
@@ -332,35 +332,35 @@ struct mob_stalaggAI : public ScriptedAI
             return;
 
         // Tesla distance check
-        if(m_creature->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 25)
+        if(me->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 25)
         {
-            m_creature->MonsterTextEmote(EMOTE_TESLA, 0, true);
+            me->MonsterTextEmote(EMOTE_TESLA, 0, true);
             DoCastAOE(SPELL_TESLA);
         }
 
         if (magneticPullTimer <= uiDiff)
         {
-            if (Creature *pFeugen = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_FEUGEN)))
+            if (Creature *pFeugen = me->GetCreature(*me, pInstance->GetData64(DATA_FEUGEN)))
             {
-                Unit* pStalaggVictim = m_creature->getVictim();
+                Unit* pStalaggVictim = me->getVictim();
                 Unit* pFeugenVictim = pFeugen->getVictim();
 
                 if (pFeugenVictim && pStalaggVictim)
                 {
                     // store tank threat before any other change is made
-                    int32 threatStalaggVictim = m_creature->getThreatManager().getThreat(pStalaggVictim);
+                    int32 threatStalaggVictim = me->getThreatManager().getThreat(pStalaggVictim);
                     int32 threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
 						
                     // magnetic pull is not working. So just jump.
                     // reset aggro to be sure that feugen will not follow the jump
                     pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
-                    m_creature->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
+                    me->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
                     
                     // threat switching between tanks, using the previously stored values
                     pFeugen->getThreatManager().addThreat(pStalaggVictim, threatStalaggVictim);
-                    m_creature->getThreatManager().addThreat(pFeugenVictim, threatFeugenVictim);
+                    me->getThreatManager().addThreat(pFeugenVictim, threatFeugenVictim);
 
-                    pFeugenVictim->JumpTo(m_creature, 0.3f); 
+                    pFeugenVictim->JumpTo(me, 0.3f); 
                     pStalaggVictim->JumpTo(pFeugen, 0.3f);
                 }
             }
@@ -370,7 +370,7 @@ struct mob_stalaggAI : public ScriptedAI
 
         if (powerSurgeTimer <= uiDiff)
         {
-            DoCast(m_creature, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
+            DoCast(me, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
             powerSurgeTimer = urand(15000,20000);
         } else powerSurgeTimer -= uiDiff;
 
@@ -397,7 +397,7 @@ struct mob_feugenAI : public ScriptedAI
     void Reset()
     {
         if (pInstance)
-            if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
+            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
                     pThaddius->AI()->DoAction(ACTION_FEUGEN_RESET);
         staticFieldTimer = 5000;
@@ -412,7 +412,7 @@ struct mob_feugenAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         if (pInstance)
-            if (Creature *pThaddius = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_THADDIUS)))
+            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
                 if (pThaddius->AI())
                     {
                         DoScriptText(SAY_FEUG_DEATH, me);
@@ -431,15 +431,15 @@ struct mob_feugenAI : public ScriptedAI
             return;
 
         // Tesla distance check
-        if(m_creature->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 25)
+        if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 25)
         {
-            m_creature->MonsterTextEmote(EMOTE_TESLA, 0, true);
+            me->MonsterTextEmote(EMOTE_TESLA, 0, true);
             DoCastAOE(SPELL_TESLA);
         }
 
         if (staticFieldTimer <= uiDiff)
         {
-            DoCast(m_creature, RAID_MODE(SPELL_STATICFIELD, H_SPELL_STATICFIELD));
+            DoCast(me, RAID_MODE(SPELL_STATICFIELD, H_SPELL_STATICFIELD));
             staticFieldTimer = 5000;
         } else staticFieldTimer -= uiDiff;
 

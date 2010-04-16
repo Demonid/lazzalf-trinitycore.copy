@@ -113,18 +113,18 @@ struct boss_eadricAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if (damage >= m_creature->GetHealth())
+        if (damage >= me->GetHealth())
         {		
             damage = 0;
             EnterEvadeMode();
-			m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-			m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
-			DoScriptText(SAY_START_8, m_creature);
-            m_creature->setFaction(35);
+			me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+			DoScriptText(SAY_START_8, me);
+            me->setFaction(35);
             bDone = true;
-            if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);	
-            if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);		
 					if (pInstance)
             pInstance->SetData(BOSS_ARGENT_CHALLENGE_E, DONE);
@@ -139,16 +139,16 @@ struct boss_eadricAI : public ScriptedAI
 
 			void EnterCombat(Unit* pWho)
     {
-	 DoScriptText(SAY_START_9, m_creature);
+	 DoScriptText(SAY_START_9, me);
 	}
 	
     void UpdateAI(const uint32 uiDiff)
     {
         if (bDone && uiResetTimer <= uiDiff)
         {
-            m_creature->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
+            me->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
             bDone = false;
-			if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+			if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
         } else uiResetTimer -= uiDiff;
 
@@ -157,7 +157,7 @@ struct boss_eadricAI : public ScriptedAI
 
         if (uiHammerJusticeTimer <= uiDiff)
         {
-            m_creature->InterruptNonMeleeSpells(true);
+            me->InterruptNonMeleeSpells(true);
 
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
             {
@@ -172,7 +172,7 @@ struct boss_eadricAI : public ScriptedAI
 
         if (uiVenganceTimer <= uiDiff)
         {
-            DoCast(m_creature,SPELL_VENGEANCE);
+            DoCast(me,SPELL_VENGEANCE);
 
             uiVenganceTimer = 10000;
         } else uiVenganceTimer -= uiDiff;
@@ -221,7 +221,7 @@ struct boss_paletressAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->RemoveAllAuras();
+        me->RemoveAllAuras();
 
         uiHolyFireTimer     = urand(9000,12000);
         uiHolySmiteTimer    = urand(5000,7000);
@@ -232,7 +232,7 @@ struct boss_paletressAI : public ScriptedAI
         bHealth = false;
         bDone = false;
 
-        if (Creature *pMemory = Unit::GetCreature(*m_creature, MemoryGUID))
+        if (Creature *pMemory = Unit::GetCreature(*me, MemoryGUID))
             if (pMemory->isAlive())
                 pMemory->RemoveFromWorld();
     }
@@ -240,23 +240,23 @@ struct boss_paletressAI : public ScriptedAI
     void SetData(uint32 uiId, uint32 uiValue)
     {
         if (uiId == 1)
-            m_creature->RemoveAura(SPELL_SHIELD);
+            me->RemoveAura(SPELL_SHIELD);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if (damage >= m_creature->GetHealth())
+        if (damage >= me->GetHealth())
         {
             damage = 0;
             EnterEvadeMode();
-			m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-			m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
-			DoScriptText(SAY_START_7, m_creature);
-            m_creature->setFaction(35);
+			me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+			DoScriptText(SAY_START_7, me);
+            me->setFaction(35);
             bDone = true;
-            if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);	
-            if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);		
             pInstance->SetData(BOSS_ARGENT_CHALLENGE_P, DONE);
             if (IsHeroic())
@@ -273,16 +273,16 @@ struct boss_paletressAI : public ScriptedAI
 
 			void EnterCombat(Unit* pWho)
     {
-		 DoScriptText(SAY_START_10, m_creature);
+		 DoScriptText(SAY_START_10, me);
 	}
 	
     void UpdateAI(const uint32 uiDiff)
     {
         if (bDone && uiResetTimer <= uiDiff)
         {
-            m_creature->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
+            me->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
             bDone = false;
-			if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+			if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);	
         } else uiResetTimer -= uiDiff;
 
@@ -296,7 +296,7 @@ struct boss_paletressAI : public ScriptedAI
                 if (pTarget && pTarget->isAlive())
                     DoCast(pTarget,DUNGEON_MODE(SPELL_HOLY_FIRE,SPELL_HOLY_FIRE_H));
             }
-             if (m_creature->HasAura(SPELL_SHIELD))
+             if (me->HasAura(SPELL_SHIELD))
                 uiHolyFireTimer = 13000;
             else
                 uiHolyFireTimer = urand(9000,12000);
@@ -309,24 +309,24 @@ struct boss_paletressAI : public ScriptedAI
                 if (pTarget && pTarget->isAlive())
                     DoCast(pTarget,DUNGEON_MODE(SPELL_SMITE,SPELL_SMITE_H));
             }
-            if (m_creature->HasAura(SPELL_SHIELD))
+            if (me->HasAura(SPELL_SHIELD))
                 uiHolySmiteTimer = 9000;
             else
                 uiHolySmiteTimer = urand(5000,7000);
         } else uiHolySmiteTimer -= uiDiff;
 
-        if (m_creature->HasAura(SPELL_SHIELD))
+        if (me->HasAura(SPELL_SHIELD))
             if (uiRenewTimer <= uiDiff)
             {
-                m_creature->InterruptNonMeleeSpells(true);
+                me->InterruptNonMeleeSpells(true);
                 uint8 uiTarget = urand(0,1);
                 switch(uiTarget)
                 {
                     case 0:
-                        DoCast(m_creature,DUNGEON_MODE(SPELL_RENEW,SPELL_RENEW_H));
+                        DoCast(me,DUNGEON_MODE(SPELL_RENEW,SPELL_RENEW_H));
                         break;
                     case 1:
-                        if (Creature *pMemory = Unit::GetCreature(*m_creature, MemoryGUID))
+                        if (Creature *pMemory = Unit::GetCreature(*me, MemoryGUID))
                             if (pMemory->isAlive())
                                 DoCast(pMemory, DUNGEON_MODE(SPELL_RENEW,SPELL_RENEW_H));
                         break;
@@ -335,66 +335,66 @@ struct boss_paletressAI : public ScriptedAI
             } else uiRenewTimer -= uiDiff;
 
 
-        if (!bHealth && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 35)
+        if (!bHealth && me->GetHealth()*100 / me->GetMaxHealth() <= 35)
         {
-		DoScriptText(SAY_START_6, m_creature);
-            m_creature->InterruptNonMeleeSpells(true);
+		DoScriptText(SAY_START_6, me);
+            me->InterruptNonMeleeSpells(true);
             DoCastAOE(SPELL_HOLY_NOVA,false);
-            DoCast(m_creature, SPELL_SHIELD);
+            DoCast(me, SPELL_SHIELD);
             DoCastAOE(SPELL_CONFESS,false);
 
             bHealth = true;
 			switch(urand(0, 24))
             {
-	case 0: m_creature->SummonCreature(MEMORY_ALGALON, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 0: me->SummonCreature(MEMORY_ALGALON, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
 		break;
-	case 1: m_creature->SummonCreature(MEMORY_CHROMAGGUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 1: me->SummonCreature(MEMORY_CHROMAGGUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 2: m_creature->SummonCreature(MEMORY_CYANIGOSA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 2: me->SummonCreature(MEMORY_CYANIGOSA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 3: m_creature->SummonCreature(MEMORY_DELRISSA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 3: me->SummonCreature(MEMORY_DELRISSA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 4: m_creature->SummonCreature(MEMORY_ECK, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 4: me->SummonCreature(MEMORY_ECK, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 5: m_creature->SummonCreature(MEMORY_ENTROPIUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 5: me->SummonCreature(MEMORY_ENTROPIUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 6: m_creature->SummonCreature(MEMORY_GRUUL, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 6: me->SummonCreature(MEMORY_GRUUL, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 7: m_creature->SummonCreature(MEMORY_HAKKAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 7: me->SummonCreature(MEMORY_HAKKAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 8: m_creature->SummonCreature(MEMORY_HEIGAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 8: me->SummonCreature(MEMORY_HEIGAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 9: m_creature->SummonCreature(MEMORY_HEROD, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 9: me->SummonCreature(MEMORY_HEROD, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 10: m_creature->SummonCreature(MEMORY_HOGGER, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 10: me->SummonCreature(MEMORY_HOGGER, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 11: m_creature->SummonCreature(MEMORY_IGNIS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 11: me->SummonCreature(MEMORY_IGNIS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 12: m_creature->SummonCreature(MEMORY_ILLIDAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 12: me->SummonCreature(MEMORY_ILLIDAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 13: m_creature->SummonCreature(MEMORY_INGVAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 13: me->SummonCreature(MEMORY_INGVAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 14: m_creature->SummonCreature(MEMORY_KALITHRESH, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 14: me->SummonCreature(MEMORY_KALITHRESH, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 15: m_creature->SummonCreature(MEMORY_LUCIFRON, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 15: me->SummonCreature(MEMORY_LUCIFRON, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 16: m_creature->SummonCreature(MEMORY_MALCHEZAAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 16: me->SummonCreature(MEMORY_MALCHEZAAR, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 17: m_creature->SummonCreature(MEMORY_MUTANUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 17: me->SummonCreature(MEMORY_MUTANUS, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 18: m_creature->SummonCreature(MEMORY_ONYXIA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 18: me->SummonCreature(MEMORY_ONYXIA, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 19: m_creature->SummonCreature(MEMORY_THUNDERAAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 19: me->SummonCreature(MEMORY_THUNDERAAN, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 20: m_creature->SummonCreature(MEMORY_VANCLEEF, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 20: me->SummonCreature(MEMORY_VANCLEEF, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 21: m_creature->SummonCreature(MEMORY_VASHJ, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 21: me->SummonCreature(MEMORY_VASHJ, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 22: m_creature->SummonCreature(MEMORY_VEKNILASH, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 22: me->SummonCreature(MEMORY_VEKNILASH, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 23: m_creature->SummonCreature(MEMORY_VEZAX, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 23: me->SummonCreature(MEMORY_VEZAX, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
-	case 24: m_creature->SummonCreature(MEMORY_ARCHIMONDE, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+	case 24: me->SummonCreature(MEMORY_ARCHIMONDE, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
  
 	        }
@@ -446,7 +446,7 @@ struct npc_memoryAI : public ScriptedAI
 
         if (uiWakingNightmare <= uiDiff)
         {
-            DoCast(m_creature, DUNGEON_MODE(SPELL_WAKING_NIGHTMARE,SPELL_WAKING_NIGHTMARE_H));
+            DoCast(me, DUNGEON_MODE(SPELL_WAKING_NIGHTMARE,SPELL_WAKING_NIGHTMARE_H));
             uiWakingNightmare = 15000;
         }else uiWakingNightmare -= uiDiff;
 
@@ -465,9 +465,9 @@ struct npc_memoryAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (m_creature->isSummon())
+        if (me->isSummon())
         {
-            if (Unit* pSummoner = CAST_SUM(m_creature)->GetSummoner())
+            if (Unit* pSummoner = CAST_SUM(me)->GetSummoner())
             {
                 if (pSummoner && pSummoner->isAlive())
                     CAST_CRE(pSummoner)->AI()->SetData(1,0);
@@ -487,10 +487,10 @@ struct npc_argent_soldierAI : public npc_escortAI
     npc_argent_soldierAI(Creature* pCreature) : npc_escortAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
-        m_creature->SetReactState(REACT_PASSIVE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
-		if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
 					
         SetDespawnAtEnd(false);
@@ -535,9 +535,9 @@ struct npc_argent_soldierAI : public npc_escortAI
             switch(uiWaypoint)
             {
                 case 1:
-                    m_creature->SetOrientation(4.60);
-			        m_creature->SetReactState(REACT_AGGRESSIVE);					
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetOrientation(4.60);
+			        me->SetReactState(REACT_AGGRESSIVE);					
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     break;				
                     break;
             }
@@ -547,27 +547,27 @@ struct npc_argent_soldierAI : public npc_escortAI
             switch(uiWaypoint)
             {
                 case 0:
-                    m_creature->SetOrientation(5.81);
-			        m_creature->SetReactState(REACT_AGGRESSIVE);
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetOrientation(5.81);
+			        me->SetReactState(REACT_AGGRESSIVE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     break;
                 case 2:
-                    m_creature->SetOrientation(3.39);
-			        m_creature->SetReactState(REACT_AGGRESSIVE);					
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE)))
+                    me->SetOrientation(3.39);
+			        me->SetReactState(REACT_AGGRESSIVE);					
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);					
                     break;
 			
             }
-            m_creature->SendMovementFlagUpdate();
+            me->SendMovementFlagUpdate();
         
         }  
     }
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        switch(m_creature->GetEntry())
+        switch(me->GetEntry())
         {
             case NPC_ARGENT_LIGHWIELDER:
                 switch(uiType)
@@ -674,25 +674,25 @@ struct npc_argent_soldierAI : public npc_escortAI
 		
                 if (uiLightTimer <= uiDiff)
                 {
-                    DoCast(m_creature,DUNGEON_MODE(SPELL_LIGHT,SPELL_LIGHT_H));
+                    DoCast(me,DUNGEON_MODE(SPELL_LIGHT,SPELL_LIGHT_H));
                     uiLightTimer = urand (15000, 17000);
                 } else uiLightTimer -= uiDiff;
 				
                 if (uiFlurryTimer <= uiDiff)
                 {
-                    DoCast(m_creature,SPELL_FLURRY);
+                    DoCast(me,SPELL_FLURRY);
                     uiFlurryTimer = 22000;
                 } else uiFlurryTimer -= uiDiff;
 				
                 if (uiFinalTimer <= uiDiff)
                 {
-                    DoCast(m_creature,SPELL_FINAL);
+                    DoCast(me,SPELL_FINAL);
                     uiFinalTimer = 70000;
                 } else uiFinalTimer -= uiDiff;
 				
                 if (uiDivineTimer <= uiDiff)
                 {
-                    DoCast(m_creature,SPELL_DIVINE);
+                    DoCast(me,SPELL_DIVINE);
                     uiDivineTimer = 85000;
                 } else uiDivineTimer -= uiDiff;
 			

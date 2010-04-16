@@ -292,39 +292,39 @@ struct mob_iron_constructAI : public ScriptedAI
 
     void DamageTaken(Unit *attacker, uint32 &damage)
     {
-        if (m_creature->HasAura(SPELL_BRITTLE) && damage >= 5000)
+        if (me->HasAura(SPELL_BRITTLE) && damage >= 5000)
         {
             DoCast(SPELL_SHATTER);
-            if (Creature *pIgnis = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_IGNIS)))
+            if (Creature *pIgnis = me->GetCreature(*me, pInstance->GetData64(DATA_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
-            m_creature->ForcedDespawn();
+            me->ForcedDespawn();
         }
     }
 
 	void UpdateAI(const uint32 uiDiff)
     {
-        Map *cMap = m_creature->GetMap();
+        Map *cMap = me->GetMap();
 
-        if (m_creature->HasAura(SPELL_MOLTEN) && m_creature->HasAura(SPELL_HEAT))
-            m_creature->RemoveAura(SPELL_HEAT);
+        if (me->HasAura(SPELL_MOLTEN) && me->HasAura(SPELL_HEAT))
+            me->RemoveAura(SPELL_HEAT);
 
-        if (Aura * aur = m_creature->GetAura((SPELL_HEAT), GetGUID()))
+        if (Aura * aur = me->GetAura((SPELL_HEAT), GetGUID()))
         {
             if (aur->GetStackAmount() >= 10)
             {
-                m_creature->RemoveAura(SPELL_HEAT);
+                me->RemoveAura(SPELL_HEAT);
                 DoCast(SPELL_MOLTEN);
                 Brittled = false;
             }
         }
 
         // Water pools
-        if(cMap->GetId() == 603 && !Brittled && m_creature->HasAura(SPELL_MOLTEN))
-            if (m_creature->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || m_creature->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
+        if(cMap->GetId() == 603 && !Brittled && me->HasAura(SPELL_MOLTEN))
+            if (me->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || me->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
             {
                 DoCast(SPELL_BRITTLE);
-                m_creature->RemoveAura(SPELL_MOLTEN);
+                me->RemoveAura(SPELL_MOLTEN);
                 Brittled = true;
             }
 
@@ -341,12 +341,12 @@ struct mob_scorch_groundAI : public ScriptedAI
 {
     mob_scorch_groundAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
 
     void Reset()
     {
-        DoCast(m_creature, RAID_MODE(SPELL_GROUND_10, SPELL_GROUND_25));
+        DoCast(me, RAID_MODE(SPELL_GROUND_10, SPELL_GROUND_25));
     }
 };
 

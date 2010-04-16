@@ -3662,24 +3662,9 @@ void ObjectMgr::LoadQuests()
 
         if (qinfo->QuestFlags & QUEST_FLAGS_DAILY && qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
         {
-            sLog.outErrorDb("Weekly Quest %u is marked as daily quest in `QuestFlags`, removed daily flag.",qinfo->GetQuestId());
-            qinfo->QuestFlags &= ~QUEST_FLAGS_DAILY;
-        }
-
-        if (qinfo->QuestFlags & QUEST_FLAGS_DAILY)
-        {
             if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
             {
                 sLog.outErrorDb("Daily Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
-                qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
-            }
-        }
-
-        if (qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
-        {
-            if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
-            {
-                sLog.outErrorDb("Weekly Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
                 qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
             }
         }
@@ -7361,7 +7346,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
         Quest const* pQuest = GetQuestTemplate(quest);
         QuestPoolMap qpm;
 
-        if (pQuest && (pQuest->IsDaily() || pQuest->IsWeekly()))
+        if (pQuest && pQuest->IsDailyOrWeekly())
         {
             uint32 qId = pQuest->GetQuestId();
 

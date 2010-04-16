@@ -13847,7 +13847,7 @@ bool Player::CanSeeStartQuest(Quest const *pQuest)
     if (SatisfyQuestRace(pQuest, false) && SatisfyQuestSkillOrClass(pQuest, false) &&
         SatisfyQuestExclusiveGroup(pQuest, false) && SatisfyQuestReputation(pQuest, false) &&
         SatisfyQuestPreviousQuest(pQuest, false) && SatisfyQuestNextChain(pQuest, false) &&
-        SatisfyQuestPrevChain(pQuest, false) && SatisfyQuestDay(pQuest, false) && SatisfyQuestWeek(pQuest, false))
+        SatisfyQuestPrevChain(pQuest, false) && SatisfyQuestDay(pQuest, false))
     {
         return getLevel() + sWorld.getConfig(CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF) >= pQuest->GetMinLevel();
     }
@@ -13862,7 +13862,7 @@ bool Player::CanTakeQuest(Quest const *pQuest, bool msg)
         && SatisfyQuestSkillOrClass(pQuest, msg) && SatisfyQuestReputation(pQuest, msg)
         && SatisfyQuestPreviousQuest(pQuest, msg) && SatisfyQuestTimed(pQuest, msg)
         && SatisfyQuestNextChain(pQuest, msg) && SatisfyQuestPrevChain(pQuest, msg)
-        && SatisfyQuestDay(pQuest, msg) && SatisfyQuestWeek(pQuest, msg);
+        && SatisfyQuestDay(pQuest, msg);
 }
 
 bool Player::CanAddQuest(Quest const *pQuest, bool msg)
@@ -13982,7 +13982,7 @@ bool Player::CanRewardQuest(Quest const *pQuest, bool msg)
         return false;
 
     // daily quest can't be rewarded (25 daily quest already completed)
-    if (!SatisfyQuestDay(pQuest,true) || !SatisfyQuestWeek(pQuest,true))
+    if (!SatisfyQuestDay(pQuest,true))
         return false;
 
     // rewarded and not repeatable quest (only cheating case, then ignore without message)
@@ -14271,14 +14271,11 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
         MailDraft(mail_template_id).SendMailTo(this, questGiver, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());
 
-    if (pQuest->IsDaily() || pQuest->IsWeekly())
+    if (pQuest->IsDailyOrWeekly())
     {
         SetTimedQuestStatus(quest_id);
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
     }
-
-    if (pQuest->IsWeekly())
-        SetWeeklyQuestStatus(quest_id);	
 
     if (!pQuest->IsRepeatable())
         SetQuestStatus(quest_id, QUEST_STATUS_COMPLETE);
@@ -14626,7 +14623,7 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
 
         // not allow have daily quest if daily quest from exclusive group already recently completed
         Quest const* Nquest = objmgr.GetQuestTemplate(exclude_Id);
-        if (!SatisfyQuestDay(Nquest, false) || !SatisfyQuestWeek(Nquest, false))
+        if (!SatisfyQuestDay(Nquest, false))
         {
             if (msg)
                 SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
@@ -14705,7 +14702,7 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
 {
-    if (!qInfo->IsDaily() && !qInfo->IsWeekly())
+    if (!qInfo->IsDailyOrWeekly())
         return true;
 
     bool daily = qInfo->IsDaily();
@@ -14755,15 +14752,6 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
     }
     
     return true;
-}
-
-bool Player::SatisfyQuestWeek( Quest const* qInfo, bool msg )
-{
-    if (!qInfo->IsWeekly() || m_weeklyquests.empty())
-        return true;
-
-    // if not found in cooldown list
-    return m_weeklyquests.find(qInfo->GetQuestId()) == m_weeklyquests.end();
 }
 
 bool Player::GiveQuestSourceItem(Quest const *pQuest)
@@ -16205,7 +16193,6 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
     _LoadTimedQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS));
-    _LoadWeeklyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS));
 
     // after spell and quest load
     InitTalentForLevel();
@@ -17686,7 +17673,6 @@ void Player::SaveToDB()
     _SaveBGData();
     _SaveInventory();
     _SaveQuestStatus();
-    _SaveWeeklyQuestStatus();
     _SaveTalents();
     _SaveSpells();
     _SaveSpellCooldowns();
@@ -17964,24 +17950,6 @@ void Player::_SaveQuestStatus()
         };
         i->second.uState = QUEST_UNCHANGED;
     }
-}
-
-void Player::_SaveWeeklyQuestStatus()
-{
-    if (!m_WeeklyQuestChanged || m_weeklyquests.empty())
-        return;
-
-    // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_weekly WHERE guid = '%u'",GetGUIDLow());
-
-    for (QuestSet::const_iterator iter = m_weeklyquests.begin(); iter != m_weeklyquests.end(); ++iter)
-    {
-        uint32 quest_id  = *iter;
-
-        CharacterDatabase.PExecute("INSERT INTO character_queststatus_weekly (guid,quest) VALUES ('%u', '%u')", GetGUIDLow(), quest_id);
-    }
-
-    m_WeeklyQuestChanged = false;
 }
 
 void Player::_SaveSkills()

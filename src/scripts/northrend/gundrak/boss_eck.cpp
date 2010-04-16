@@ -67,7 +67,7 @@ struct boss_eckAI : public ScriptedAI
 
     void DeleteFromThreatList(uint64 TargetGUID)
     {
-        for (std::list<HostileReference*>::const_iterator itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
+        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
         {
             if ((*itr)->getUnitGuid() == TargetGUID)
             {
@@ -101,7 +101,7 @@ struct boss_eckAI : public ScriptedAI
             if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
             {
                 DoCast(pTarget, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
-                CAST_AI(boss_eckAI, m_creature->AI())->DeleteFromThreatList(m_creature->GetGUID());
+                CAST_AI(boss_eckAI, me->AI())->DeleteFromThreatList(me->GetGUID());
                 uiSpringTimer = urand(5*IN_MILISECONDS,10*IN_MILISECONDS);
             }
         } else uiSpringTimer -= diff;

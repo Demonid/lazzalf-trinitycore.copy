@@ -80,7 +80,7 @@ void TwinReset()
 Creature *GetOtherBoss()
     {
         if (pInstance)
-            return Unit::GetCreature(*m_creature, pInstance->GetData64(IAmVeklor() ? DATA_EYDIS : DATA_FJOLA));
+            return Unit::GetCreature(*me, pInstance->GetData64(IAmVeklor() ? DATA_EYDIS : DATA_FJOLA));
         else
             return NULL;
     }
@@ -91,7 +91,7 @@ void DamageTaken(Unit *done_by, uint32 &damage)
         Unit *pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
-            float dPercent = ((float)damage) / ((float)m_creature->GetMaxHealth());
+            float dPercent = ((float)damage) / ((float)me->GetMaxHealth());
             int odmg = (int)(dPercent * ((float)pOtherBoss->GetMaxHealth()));
             int ohealth = pOtherBoss->GetHealth()-odmg;
             pOtherBoss->SetHealth(ohealth > 0 ? ohealth : 0);
@@ -118,7 +118,7 @@ void JustDied(Unit* Killer)
             CAST_AI(boss_twin_fjolaAI, pOtherBoss->AI())->DontYellWhenDead = true;
         }
         if (!DontYellWhenDead)                              // I hope AI is not threaded
-            DoPlaySoundToSet(m_creature, IAmVeklor() ? SAY_DEAD : SAY_DEAD1);
+            DoPlaySoundToSet(me, IAmVeklor() ? SAY_DEAD : SAY_DEAD1);
         if (pInstance)
             pInstance->SetData(TYPE_FJOLA, DONE);
     }
@@ -127,12 +127,12 @@ void JustDied(Unit* Killer)
 
         if (pInstance)
             pInstance->SetData(TYPE_FJOLA, IN_PROGRESS);
-	    DoPlaySoundToSet(m_creature, IAmVeklor() ? SAY_AGGRO : SAY_AGGRO1);
+	    DoPlaySoundToSet(me, IAmVeklor() ? SAY_AGGRO : SAY_AGGRO1);
     }
   
 void SpellHit(Unit *caster, const SpellEntry *entry)
     {
-        if (caster == m_creature)
+        if (caster == me)
             return;
 
         Creature *pOtherBoss = GetOtherBoss();
@@ -140,19 +140,19 @@ void SpellHit(Unit *caster, const SpellEntry *entry)
             return;
 
         // add health so we keep same percentage for both brothers
-        uint32 mytotal = m_creature->GetMaxHealth(), histotal = pOtherBoss->GetMaxHealth();
+        uint32 mytotal = me->GetMaxHealth(), histotal = pOtherBoss->GetMaxHealth();
         float mult = ((float)mytotal) / ((float)histotal);
         if (mult < 1)
             mult = 1.0f/mult;
         #define HEAL_BROTHER_AMOUNT 30000.0f
         uint32 largerAmount = (uint32)((HEAL_BROTHER_AMOUNT * mult) - HEAL_BROTHER_AMOUNT);
 
-        uint32 myh = m_creature->GetHealth();
+        uint32 myh = me->GetHealth();
         uint32 hish = pOtherBoss->GetHealth();
         if (mytotal > histotal)
         {
-            uint32 h = m_creature->GetHealth()+largerAmount;
-            m_creature->SetHealth(std::min(mytotal, h));
+            uint32 h = me->GetHealth()+largerAmount;
+            me->SetHealth(std::min(mytotal, h));
         }
         else
         {
@@ -195,7 +195,7 @@ struct boss_eydisAI : public boss_twin_fjolaAI
   {
     if (Portallight && SummonLightPortalTimer <= diff)
 	{
-	 if (Creature* pTrash = m_creature->SummonCreature(NPC_LIGHT, Pos[RAND(0,2)],TEMPSUMMON_CORPSE_DESPAWN,90000))
+	 if (Creature* pTrash = me->SummonCreature(NPC_LIGHT, Pos[RAND(0,2)],TEMPSUMMON_CORPSE_DESPAWN,90000))
 	  {
 	    pTrash->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 	    pTrash->SetReactState(REACT_PASSIVE);
@@ -209,7 +209,7 @@ struct boss_eydisAI : public boss_twin_fjolaAI
 	  
      if (SummonLightTimer <= diff)
      {
-	Map *pMap = m_creature->GetMap();
+	Map *pMap = me->GetMap();
  
 	 if(!pMap)
 	 return;
@@ -226,7 +226,7 @@ struct boss_eydisAI : public boss_twin_fjolaAI
 		        float x = pPlayer->GetPositionX() + irand(-30,40);
 			float y = pPlayer->GetPositionY() + irand(-30,40);
                         float z = pPlayer->GetPositionZ();
-		  if (Creature* pLight = m_creature->SummonCreature(NPC_CONCENTRATED_LIGHT,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,30000))
+		  if (Creature* pLight = me->SummonCreature(NPC_CONCENTRATED_LIGHT,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,30000))
 		  {
 		      pLight->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 		      pLight->SetReactState(REACT_PASSIVE);
@@ -260,15 +260,15 @@ struct boss_eydisAI : public boss_twin_fjolaAI
 
 	if (ShieldofLightTimer < diff)
 	{
-	  DoScriptText(SAY_BLIZN,m_creature);
-	  DoCast(m_creature, SPELL_SHIELD_OF_LIGHT);
-	  DoCast(m_creature, SPELL_TWINS_PACT_DARCK);
+	  DoScriptText(SAY_BLIZN,me);
+	  DoCast(me, SPELL_SHIELD_OF_LIGHT);
+	  DoCast(me, SPELL_TWINS_PACT_DARCK);
 	  ShieldofLightTimer = 100000;
 	} else ShieldofLightTimer -= diff;
 
 	if (LightVortexTimer < diff)
 	{
-	  DoScriptText(SAY_POGLOT_LI,m_creature);
+	  DoScriptText(SAY_POGLOT_LI,me);
 	  DoCastAOE(SPELL_LIGHT_VORTEX);
 	  LightVortexTimer = 100000;
 	} else LightVortexTimer -= diff;
@@ -309,7 +309,7 @@ struct boss_fjolaAI : public boss_twin_fjolaAI
     {
     if (Portaldark && SummonBlakTimer <= diff)
 	{
-	   if (Creature* pTrash2 = m_creature->SummonCreature(NPC_BLACK, Pos[RAND(1,3)],TEMPSUMMON_CORPSE_DESPAWN,90000))
+	   if (Creature* pTrash2 = me->SummonCreature(NPC_BLACK, Pos[RAND(1,3)],TEMPSUMMON_CORPSE_DESPAWN,90000))
 	    {
 	    pTrash2->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 	    pTrash2->SetReactState(REACT_PASSIVE);
@@ -323,7 +323,7 @@ struct boss_fjolaAI : public boss_twin_fjolaAI
 	    
     if (SummonDarkTimer <= diff)
      {
-	Map *pMap = m_creature->GetMap();
+	Map *pMap = me->GetMap();
  
 	 if(!pMap)
 	 return;
@@ -340,7 +340,7 @@ struct boss_fjolaAI : public boss_twin_fjolaAI
 		        float x = pPlayer->GetPositionX() + irand(-30,40);
 			float y = pPlayer->GetPositionY() + irand(-30,40);
                         float z = pPlayer->GetPositionZ();
-		  if (Creature* pDark = m_creature->SummonCreature(NPC_CONCENTRATED_DARCNESS,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,30000))
+		  if (Creature* pDark = me->SummonCreature(NPC_CONCENTRATED_DARCNESS,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,30000))
 		  {
 		      pDark->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 		      pDark->SetReactState(REACT_PASSIVE);
@@ -367,9 +367,9 @@ struct boss_fjolaAI : public boss_twin_fjolaAI
 
 	if (ShieldofDarkTimer < diff)
 	{
-	  DoScriptText(SAY_BLIZN,m_creature);
-	  DoCast(m_creature, SPELL_SHIELDN_OF_DARKNESS);
-	  DoCast(m_creature, SPELL_TWINS_PACT_DARCK);
+	  DoScriptText(SAY_BLIZN,me);
+	  DoCast(me, SPELL_SHIELDN_OF_DARKNESS);
+	  DoCast(me, SPELL_TWINS_PACT_DARCK);
 	  ShieldofDarkTimer = 130000;
 	} else ShieldofDarkTimer -= diff;
 
@@ -382,7 +382,7 @@ struct boss_fjolaAI : public boss_twin_fjolaAI
 	
 	if (DarkVortexTimer <= diff)
 	{
-	DoScriptText(SAY_POGLOT_NI,m_creature);
+	DoScriptText(SAY_POGLOT_NI,me);
 	DoCastAOE(SPELL_DARCK_VORTEX);
 	DarkVortexTimer = 60000;
 	} else DarkVortexTimer -= diff;
@@ -415,11 +415,11 @@ void Rest()
   
   void AttackStart(Unit *pWho)
   {
-    if (m_creature->Attack(pWho, true))
+    if (me->Attack(pWho, true))
       {
-        m_creature->AddThreat(pWho, 1000.0f);
-	m_creature->SetInCombatWith(pWho);
-	pWho->SetInCombatWith(m_creature);
+        me->AddThreat(pWho, 1000.0f);
+	me->SetInCombatWith(pWho);
+	pWho->SetInCombatWith(me);
       }
   }
   
@@ -438,7 +438,7 @@ void Rest()
         uint32 x = urand(MIN_X, MAX_X);
         uint32 y = urand(MIN_Y, MAX_Y);
         uint32 z = POSIT_Z;
-        m_creature->GetMotionMaster()->MoveConfused();
+        me->GetMotionMaster()->MoveConfused();
     }
     
  void UpdateAI(const uint32 diff)
@@ -452,7 +452,7 @@ void Rest()
 
 	if (PowerTimer <= diff)
 	{
-	Map *pMap = m_creature->GetMap();
+	Map *pMap = me->GetMap();
  
 	 if(!pMap)
 	 return;
@@ -466,24 +466,24 @@ void Rest()
 		  {
 		    if (Player* pPlayer = itr->getSource())
 		    {
-		    if (m_creature->IsWithinDistInMap(pPlayer, 1.0f))
+		    if (me->IsWithinDistInMap(pPlayer, 1.0f))
 		    {
-		        pPlayer->CastSpell(m_creature,SPELL_POWER_OF_THE_TWINS,true);
-			m_creature->DisappearAndDie();
+		        pPlayer->CastSpell(me,SPELL_POWER_OF_THE_TWINS,true);
+			me->DisappearAndDie();
 			}
 		    }
 		  }
 		
-		if (Creature* pFjola = GetClosestCreatureWithEntry(m_creature, BOSS_FJOLA, 1.0f))
+		if (Creature* pFjola = GetClosestCreatureWithEntry(me, BOSS_FJOLA, 1.0f))
 			{
-			 pFjola->CastSpell(m_creature,SPELL_POWER_OF_THE_TWINS,true);
-			m_creature->DisappearAndDie();
+			 pFjola->CastSpell(me,SPELL_POWER_OF_THE_TWINS,true);
+			me->DisappearAndDie();
 			}
 			
-		if (Creature* pEydis = GetClosestCreatureWithEntry(m_creature, BOSS_EYDIS, 1.0f))
+		if (Creature* pEydis = GetClosestCreatureWithEntry(me, BOSS_EYDIS, 1.0f))
 			{
-			pEydis->CastSpell(m_creature,SPELL_POWER_OF_THE_TWINS,true);
-			m_creature->DisappearAndDie();
+			pEydis->CastSpell(me,SPELL_POWER_OF_THE_TWINS,true);
+			me->DisappearAndDie();
 			}
 		  
 	PowerTimer = 100;
