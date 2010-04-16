@@ -312,8 +312,8 @@ void PlayerDumpWriter::DumpTable(std::string& dump, uint32 guid, char const*tabl
             {
                 case DTT_INVENTORY:
                     StoreGUID(result,3,items); break;       // item guid collection
-                case DTT_ITEM:
-                    StoreGUID(result,0,ITEM_FIELD_ITEM_TEXT_ID,texts); break;
+                //case DTT_ITEM:
+                    //StoreGUID(result,0,ITEM_FIELD_ITEM_TEXT_ID,texts); break;
                     // item text id collection
                 case DTT_PET:
                     StoreGUID(result,0,pets);  break;       // pet guid collection
@@ -581,8 +581,8 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                     ROLLBACK(DUMP_FILE_BROKEN);
                 if (!changetoknth(vals, ITEM_FIELD_OWNER+1, newguid))
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!changetokGuid(vals, ITEM_FIELD_ITEM_TEXT_ID+1, itemTexts, objmgr.m_ItemTextId,true))
-                    ROLLBACK(DUMP_FILE_BROKEN);
+//                if (!changetokGuid(vals, ITEM_FIELD_ITEM_TEXT_ID+1, itemTexts, objmgr.m_ItemTextId,true))
+                 //   ROLLBACK(DUMP_FILE_BROKEN);
                 if (!changenth(line, 3, vals.c_str()))
                     ROLLBACK(DUMP_FILE_BROKEN);
                 break;
@@ -658,18 +658,6 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                     ROLLBACK(DUMP_FILE_BROKEN);
                 if (!changenth(line, 4, newguid))
                     ROLLBACK(DUMP_FILE_BROKEN);
-                break;
-            }
-            case DTT_ITEM_TEXT:                             // item_text
-            {
-                // id
-                if (!changeGuid(line, 1, itemTexts, objmgr.m_ItemTextId))
-                    ROLLBACK(DUMP_FILE_BROKEN);
-
-                // add it to cache
-                uint32 id= atoi(getnth(line,1).c_str());
-                std::string text = getnth(line,2);
-                objmgr.AddItemText(id,text);
                 break;
             }
             default:

@@ -1308,7 +1308,7 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
         if (pCreature->isAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
-            pCreature->Respawn();
+            pCreature->Respawn(true);
         }
         pCreature->SaveToDB();
     }
@@ -3823,7 +3823,7 @@ void ChatHandler::HandleLearnSkillRecipesHelper(Player* player,uint32 skill_id)
         if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo,player,false))
             continue;
 
-        player->learnSpell(skillLine->spellId,false);
+        player->learnSpell(skillLine->spellId, false);
     }
 }
 
@@ -3921,7 +3921,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
     HandleLearnSkillRecipesHelper(target,targetSkillInfo->id);
 
     uint16 maxLevel = target->GetPureMaxSkillValue(targetSkillInfo->id);
-    target->SetSkill(targetSkillInfo->id, maxLevel, maxLevel);
+    target->SetSkill(targetSkillInfo->id, target->GetSkillStep(targetSkillInfo->id), maxLevel, maxLevel);
     PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, name.c_str());
     return true;
 }

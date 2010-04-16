@@ -438,7 +438,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     }
 
     for (int i=0; i <3; ++i)
-        m_currentBasePoints[i] = m_spellValue->EffectBasePoints[i];
+        m_currentBasePoints[i] = m_spellInfo->CalculateSimpleValue(i);
 
     m_spellState = SPELL_STATE_NULL;
 
@@ -2007,7 +2007,6 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             Position pos;
             m_caster->GetNearPosition(pos, dist, angle);
             m_targets.setDst(&pos); // also flag
-            AddUnitTarget(m_caster, i);
             break;
         }
 
@@ -2836,13 +2835,11 @@ void Spell::cancel()
     {
         case SPELL_STATE_PREPARING:
         case SPELL_STATE_DELAYED:
-        {
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
-        } break;
+            break;
 
         case SPELL_STATE_CASTING:
-        {
             for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                 if ((*ihit).missCondition == SPELL_MISS_NONE)
                     if (Unit* unit = m_caster->GetGUID() == ihit->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
@@ -2854,18 +2851,17 @@ void Spell::cancel()
 
             // spell is canceled-take mods and clear list
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                m_caster->ToPlayer()->RemoveGlobalCooldown(m_spellInfo);
                 m_caster->ToPlayer()->RemoveSpellMods(this);
-            }
 
             m_appliedMods.clear();
-        } break;
+            break;
 
         default:
-        {
-        } break;
+            break;
     }
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->RemoveGlobalCooldown(m_spellInfo);
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id,true);
@@ -3012,8 +3008,8 @@ void Spell::cast(bool skipCheck)
         uint32 auraSpellIdx = (*i)->GetEffIndex();
         if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
         {
-            // Calculate chance at that moment (can be depend for example from combo points)
-            int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBaseAmount(), NULL);
+            int32 auraBaseAmount = (*i)->GetBaseAmount();
+            int32 chance = m_caster->CalculateSpellDamage(NULL, auraSpellInfo, auraSpellIdx, &auraBaseAmount);
             m_ChanceTriggerSpells.push_back(std::make_pair(spellInfo, chance * (*i)->GetBase()->GetStackAmount()));
         }
     }
@@ -6822,7 +6818,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                 {
                     // skill bonus provided by casting spell (mostly item spells)
                     // add the damage modifier from the spell casted (cheat lock / skeleton key etc.) (use m_currentBasePoints, CalculateDamage returns wrong value)
-                    uint32 spellSkillBonus = uint32(m_currentBasePoints[effIndex]+1);
+                    uint32 spellSkillBonus = uint32(m_currentBasePoints[effIndex]);
                     reqSkillValue = lockInfo->Skill[j];
 
                     // castitem check: rogue using skeleton keys. the skill values should not be added in this case.
@@ -6851,15 +6847,15 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
     switch(mod)
     {
         case SPELLVALUE_BASE_POINT0:
-            m_spellValue->EffectBasePoints[0] = value - int32(m_spellInfo->EffectBaseDice[0]);
+            m_spellValue->EffectBasePoints[0] = value - int32(1);
             m_currentBasePoints[0] = m_spellValue->EffectBasePoints[0]; //this should be removed in the future
             break;
         case SPELLVALUE_BASE_POINT1:
-            m_spellValue->EffectBasePoints[1] = value - int32(m_spellInfo->EffectBaseDice[1]);
+            m_spellValue->EffectBasePoints[1] = value - int32(1);
             m_currentBasePoints[1] = m_spellValue->EffectBasePoints[1];
             break;
         case SPELLVALUE_BASE_POINT2:
-            m_spellValue->EffectBasePoints[2] = value - int32(m_spellInfo->EffectBaseDice[2]);
+            m_spellValue->EffectBasePoints[2] = value - int32(1);
             m_currentBasePoints[2] = m_spellValue->EffectBasePoints[2];
             break;
         case SPELLVALUE_RADIUS_MOD:

@@ -1,4 +1,5 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>.sourceforge.net/>
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>>
+* Copyright (C) 2006 - 20010 TrinityCore <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -880,6 +881,29 @@ bool GOSelect_go_amberpine_outhouse(Player *pPlayer, GameObject *pGO, uint32 uiS
             return false;
 }
 
+/*######
+## Quest 9544: The Prophecy of Akida
+######*/
+
+enum eProphecy
+{
+    QUEST_PROPHECY_OF_AKIDA                       = 9544,
+    NPC_STILLPINE_CAPTIVE                         = 17375
+};
+
+bool GOHello_go_stillpine_cage(Player *pPlayer, GameObject *pGO)
+{
+    Creature *pPrisoner;
+    if (pPlayer->GetQuestStatus(QUEST_PROPHECY_OF_AKIDA) == QUEST_STATUS_INCOMPLETE &&
+        (pPrisoner = pGO->FindNearestCreature(NPC_STILLPINE_CAPTIVE,1.0f)))
+    {
+        pGO->UseDoorOrButton();
+        pPrisoner->DisappearAndDie();
+        pPlayer->KilledMonsterCredit(pPrisoner->GetEntry(),0);
+    }
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -1045,6 +1069,16 @@ void AddSC_go_scripts()
     newscript->pGOHello =           &GOHello_go_dragonflayer_cage;
     newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "go_black_cage";
+    newscript->pGOHello =           &GOHello_go_black_cage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_stillpine_cage";
+    newscript->pGOHello =           &GOHello_go_stillpine_cage;
+    newscript->RegisterSelf();
+    
     newscript = new Script;
     newscript->Name = "go_amberpine_outhouse";
     newscript->pGOHello =           &GOHello_go_amberpine_outhouse;

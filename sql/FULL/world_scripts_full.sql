@@ -161,6 +161,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_highlord_darion_mograine' WHERE
 UPDATE `creature_template` SET `ScriptName`='npc_the_lich_king_tirion_dawn' WHERE `entry` IN (29183,29175);
 UPDATE `creature_template` SET `ScriptName`='npc_shadowfiend' WHERE `entry` = 19668;
 UPDATE `creature_template` SET `ScriptName`='npc_wormhole' WHERE `entry`='35646';
+UPDATE `creature_template` SET `ScriptName`='npc_pet_trainer' WHERE `entry` IN (10090,3698,17484,4320,3545,16712,3622,16675,3620,10086,2879,3306,543,2878,3688,10089,16271,10088,3624);
 
 /*  */
 /* ZONE */
@@ -259,6 +260,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_nestlewood_owlkin' WHERE `entry
 UPDATE `creature_template` SET `ScriptName`='npc_draenei_survivor' WHERE `entry`=16483;
 UPDATE `creature_template` SET `ScriptName`='npc_death_ravager' WHERE `entry`=17556;
 UPDATE `gameobject_template` SET `ScriptName`='go_ravager_cage' WHERE `entry`=181849;
+UPDATE `gameobject_template` SET `ScriptName`='go_stillpine_cage' WHERE `entry`=181714;
 
 /* BADLANDS */
 

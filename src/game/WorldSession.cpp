@@ -173,7 +173,7 @@ bool WorldSession::Update(uint32 /*diff*/)
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
     WorldPacket* packet;
-    while (_recvQueue.next(packet) && m_Socket && !m_Socket->IsClosed ())
+    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet))
     {
         /*#if 1
         sLog.outError("MOEP: %s (0x%.4X)",
@@ -391,12 +391,7 @@ void WorldSession::LogoutPlayer(bool Save)
             guild->SetMemberStats(_player->GetGUID());
             guild->UpdateLogoutTime(_player->GetGUID());
 
-            WorldPacket data(SMSG_GUILD_EVENT, (1+1+12+8)); // name limited to 12 in character table.
-            data<<(uint8)GE_SIGNED_OFF;
-            data<<(uint8)1;
-            data<<_player->GetName();
-            data<<_player->GetGUID();
-            guild->BroadcastPacket(&data);
+            guild->BroadcastEvent(GE_SIGNED_OFF, _player->GetGUID(), 1, _player->GetName(), "", "");
         }
 
         ///- Remove pet

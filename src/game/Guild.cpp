@@ -476,21 +476,10 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
         // when leader non-exist (at guild load with deleted leader only) not send broadcasts
         if (oldLeader)
         {
-            WorldPacket data(SMSG_GUILD_EVENT, (1+1+(oldLeader->Name).size()+1+(best->Name).size()+1));
-            data << (uint8)GE_LEADER_CHANGED;
-            data << (uint8)2;
-            data << oldLeader->Name;
-            data << best->Name;
-            BroadcastPacket(&data);
+            BroadcastEvent(GE_LEADER_CHANGED, 0, 2, oldLeader->Name, best->Name, "");
 
-            data.Initialize(SMSG_GUILD_EVENT, (1+1+(oldLeader->Name).size()+1));
-            data << (uint8)GE_LEFT;
-            data << (uint8)1;
-            data << oldLeader->Name;
-            BroadcastPacket(&data);
+            BroadcastEvent(GE_LEFT, guid, 1, oldLeader->Name, "", "");
         }
-
-        sLog.outDebug("WORLD: Sent (SMSG_GUILD_EVENT)");
     }
 
     members.erase(GUID_LOPART(guid));
@@ -690,9 +679,7 @@ int32 Guild::GetRank(uint32 LowGuid)
 
 void Guild::Disband()
 {
-    WorldPacket data(SMSG_GUILD_EVENT, 1);
-    data << (uint8)GE_DISBANDED;
-    BroadcastPacket(&data);
+    BroadcastEvent(GE_DISBANDED, 0, 0, "", "", "");
 
     while (!members.empty())
     {
@@ -777,7 +764,7 @@ void Guild::Query(WorldSession *session)
 {
     WorldPacket data(SMSG_GUILD_QUERY_RESPONSE, (8*32+200));// we can only guess size
 
-    data << m_Id;
+    data << uint32(m_Id);
     data << m_Name;
 
     for (size_t i = 0 ; i < GUILD_RANKS_MAX_COUNT; ++i)     // show always 10 ranks
@@ -1133,17 +1120,17 @@ void Guild::LoadGuildBankFromDB()
 
     // data needs to be at first place for Item::LoadFromDB
     //                                        0     1      2       3          4
-    result = CharacterDatabase.PQuery("SELECT data, TabId, SlotId, item_guid, item_entry FROM guild_bank_item JOIN item_instance ON item_guid = guid WHERE guildid='%u' ORDER BY TabId", m_Id);
+    result = CharacterDatabase.PQuery("SELECT data, text, TabId, SlotId, item_guid, item_entry FROM guild_bank_item JOIN item_instance ON item_guid = guid WHERE guildid='%u' ORDER BY TabId", m_Id);
     if (!result)
         return;
 
     do
     {
         Field *fields = result->Fetch();
-        uint8 TabId = fields[1].GetUInt8();
-        uint8 SlotId = fields[2].GetUInt8();
-        uint32 ItemGuid = fields[3].GetUInt32();
-        uint32 ItemEntry = fields[4].GetUInt32();
+        uint8 TabId = fields[2].GetUInt8();
+        uint8 SlotId = fields[3].GetUInt8();
+        uint32 ItemGuid = fields[4].GetUInt32();
+        uint32 ItemEntry = fields[5].GetUInt32();
 
         if (TabId >= m_PurchasedTabs || TabId >= GUILD_BANK_MAX_TABS)
         {
@@ -2297,6 +2284,38 @@ void Guild::MoveFromCharToBank(Player * pl, uint8 PlayerBag, uint8 PlayerSlot, u
             DisplayGuildBankContentUpdate(BankTab, gDest);
         }
     }
+}
+
+void Guild::BroadcastEvent(GuildEvents event, uint64 guid, uint8 strCount, std::string str1, std::string str2, std::string str3)
+{
+    WorldPacket data(SMSG_GUILD_EVENT, 1+1+(guid ? 8 : 0));
+    data << uint8(event);
+    data << uint8(strCount);
+
+    switch(strCount)
+    {
+        case 0:
+            break;
+        case 1:
+            data << str1;
+            break;
+        case 2:
+            data << str1 << str2;
+            break;
+        case 3:
+            data << str1 << str2 << str3;
+            break;
+        default:
+            sLog.outError("Guild::BroadcastEvent: incorrect strings count %u!", strCount);
+            break;
+    }
+
+    if(guid)
+        data << uint64(guid);
+
+    BroadcastPacket(&data);
+
+    sLog.outDebug("WORLD: Sent SMSG_GUILD_EVENT");
 }
 
 bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const

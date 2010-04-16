@@ -79,8 +79,8 @@ struct boss_cyanigosaAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
-        DoCast(m_creature, SPELL_TRANSFORM);
+        DoScriptText(SAY_AGGRO, me);
+        DoCast(me, SPELL_TRANSFORM);
 
         if (pInstance)
             pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
@@ -92,7 +92,7 @@ struct boss_cyanigosaAI : public ScriptedAI
     {
         if (pInstance && pInstance->GetData(DATA_REMOVE_NPC) == 1)
         {
-            m_creature->ForcedDespawn();
+            me->ForcedDespawn();
             pInstance->SetData(DATA_REMOVE_NPC, 0);
         }
 
@@ -149,7 +149,7 @@ struct boss_cyanigosaAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
             pInstance->SetData(DATA_CYANIGOSA_EVENT, DONE);
@@ -157,9 +157,9 @@ struct boss_cyanigosaAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        if (victim == m_creature)
+        if (victim == me)
             return;
-        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), m_creature);
+        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), me);
     }
 };
 
