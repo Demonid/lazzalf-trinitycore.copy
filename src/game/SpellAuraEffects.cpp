@@ -376,7 +376,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
 AuraEffect::AuraEffect(Aura * base, uint8 effIndex, int32 *baseAmount, Unit * caster) :
     m_base(base), m_spellProto(base->GetSpellProto()), m_spellmod(NULL), m_periodicTimer(0),
     m_tickNumber(0), m_effIndex(effIndex), m_isPeriodic(false), m_canBeRecalculated(true),
-    m_baseAmount (baseAmount ? *baseAmount : m_spellProto->EffectBasePoints[m_effIndex])
+    m_baseAmount (baseAmount ? *baseAmount : m_spellProto->EffectBasePoints[m_effIndex] + 1)
 {
     CalculatePeriodic(caster, true);
 
@@ -407,9 +407,9 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
     int32 amount;
     // default amount calculation
     if (caster)
-        amount = caster->CalculateSpellDamage(m_spellProto, m_effIndex, m_baseAmount, NULL);
+        amount = caster->CalculateSpellDamage(NULL, m_spellProto, m_effIndex, &m_baseAmount);
     else
-        amount = m_baseAmount + m_spellProto->EffectBaseDice[m_effIndex];
+        amount = m_baseAmount + 1;
 
     // check item enchant aura cast
     if (!amount && caster)
@@ -502,11 +502,21 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     {
                         //+80.68% from sp bonus
                         float bonus = 0.8068f;
-                        // Borrowed Time
-                        if (AuraEffect const * aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1))
-                            bonus += aurEff->GetAmount() / 100.0;
+                        AuraEffect const* pAurEff;
 
-                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(GetSpellProto())) * bonus;
+                        // Borrowed Time
+                        if (pAurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1))
+                            bonus += (float)pAurEff->GetAmount() / 100.0f;
+
+                        // Twin Disciplines
+                        if (pAurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_PRIEST, 0x400000, 0, 0, caster->GetGUID()))
+                            bonus += (float)pAurEff->GetAmount() / 100.0f;
+
+                        // Focused Power
+                        if (pAurEff = caster->GetAuraEffect(SPELL_AURA_MOD_HEALING_DONE_PERCENT, SPELLFAMILY_PRIEST, 2210, 2))
+                            bonus += (float)pAurEff->GetAmount() / 100.0f;
+
+                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(GetSpellProto())) * bonus; 
                     }
                     break;
                 case SPELLFAMILY_PALADIN:
@@ -852,7 +862,7 @@ void AuraEffect::CalculateSpellMod()
                         m_spellmod->spellId = GetId();
                         m_spellmod->mask[1] = 0x0004000;
                     }
-                    m_spellmod->value = GetBase()->GetUnitOwner()->CalculateSpellDamage(GetSpellProto(), 1, GetSpellProto()->EffectBasePoints[1], GetBase()->GetUnitOwner());
+                    m_spellmod->value = GetBase()->GetUnitOwner()->CalculateSpellDamage(GetBase()->GetUnitOwner(), GetSpellProto(), 1);
                     break;
             }
             break;
@@ -1044,7 +1054,7 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                         break;
 
                     if (target->ToPlayer()->isMoving())
-                        m_amount = target->CalculateSpellDamage(m_spellProto,m_effIndex,m_baseAmount,target);
+                        m_amount = target->CalculateSpellDamage(target, m_spellProto,m_effIndex, &m_baseAmount);
                     else
                         --m_amount;
                     break;
@@ -1221,7 +1231,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                     {
                         uint32 percent =
                             GetEffIndex() < 2 && GetSpellProto()->Effect[GetEffIndex()] == SPELL_EFFECT_DUMMY ?
-                            caster->CalculateSpellDamage(GetSpellProto(),GetEffIndex()+1,GetSpellProto()->EffectBasePoints[GetEffIndex()+1],target) :
+                            caster->CalculateSpellDamage(target, GetSpellProto(),GetEffIndex()+1) :
                             100;
                         if (target->GetHealth()*100 >= target->GetMaxHealth()*percent)
                         {
@@ -1799,13 +1809,14 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 // should we use custom damage?
                 target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
                 break;
-			case 51685: // Prey on the Weak
+            case 51685: // Prey on the Weak
             case 51686:
             case 51687:
             case 51688:
             case 51689:
                 if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
-                    if(!target->HasAura(58670)) {
+                    if (!target->HasAura(58670)) 
+                    {
                         int32 basepoints = GetSpellProto()->EffectBasePoints[0];
                         target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
                     }
@@ -1874,7 +1885,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     if (rage == 0)
                         break;
                     int32 mod = (rage < 100) ? rage : 100;
-                    int32 points = target->CalculateSpellDamage(GetSpellProto(), 1, GetSpellProto()->EffectBasePoints[1], target);
+                    int32 points = target->CalculateSpellDamage(target, GetSpellProto(), 1);
                     int32 regen = target->GetMaxHealth() * (mod * points / 10) / 1000;
                     target->CastCustomSpell(target, 22845, &regen, 0, 0, true, 0, this);
                     target->SetPower(POWER_RAGE, rage-mod);
@@ -2513,7 +2524,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
                     // Survival of the Fittest
                     if (AuraEffect const * aurEff = target->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE,SPELLFAMILY_DRUID, 961, 0))
                     {
-                        int32 bp = target->CalculateSpellDamage(aurEff->GetSpellProto(),2,aurEff->GetSpellProto()->EffectBasePoints[2],target);
+                        int32 bp = target->CalculateSpellDamage(target, GetSpellProto(),2);
                         target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);
                     }
                 break;
@@ -2927,7 +2938,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
                         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled) continue;
                         SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
                         if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
-                            Rage_val += target->CalculateSpellDamage(spellInfo,0,spellInfo->EffectBasePoints[0],target) * 10;
+                            Rage_val += target->CalculateSpellDamage(target,spellInfo,0) * 10;
                     }
                 }
                 if (target->GetPower(POWER_RAGE) > Rage_val)
@@ -5554,8 +5565,9 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         target->ToPlayer()->RemoveAmmo();      // not use ammo and not allow use
                     break;
                 case 49028:
-                    GetBase()->SetDuration(GetBase()->GetDuration() + (caster->GetPower(POWER_RUNIC_POWER) * 10));
-                    caster->SetPower(POWER_RUNIC_POWER, 0);
+                    if (caster)
+                        if (AuraEffect *aurEff = caster->GetAuraEffect(63330, 0)) // glyph of Dancing Rune Weapon
+                            GetBase()->SetDuration(GetBase()->GetDuration() + aurEff->GetAmount());
                     break;
                 case 62061:                                     // Festive Holiday Mount
                     if (target->HasAuraType(SPELL_AURA_MOUNTED))

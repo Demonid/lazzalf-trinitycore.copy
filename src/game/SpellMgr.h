@@ -281,7 +281,8 @@ inline bool IsElementalShield(SpellEntry const *spellInfo)
 
 inline bool IsExplicitDiscoverySpell(SpellEntry const *spellInfo)
 {
-    return ((spellInfo->Effect[0] == SPELL_EFFECT_CREATE_RANDOM_ITEM
+    return (((spellInfo->Effect[0] == SPELL_EFFECT_CREATE_RANDOM_ITEM
+        || spellInfo->Effect[0] == SPELL_EFFECT_CREATE_ITEM_2)
         && spellInfo->Effect[1] == SPELL_EFFECT_SCRIPT_EFFECT)
         || spellInfo->Id == 64323);                          // Book of Glyph Mastery (Effect0 == SPELL_EFFECT_SCRIPT_EFFECT without any other data)
 }
@@ -289,8 +290,9 @@ inline bool IsExplicitDiscoverySpell(SpellEntry const *spellInfo)
 inline bool IsLootCraftingSpell(SpellEntry const *spellInfo)
 {
     return (spellInfo->Effect[0] == SPELL_EFFECT_CREATE_RANDOM_ITEM ||
-        // different random cards from Inscription (121 == Virtuoso Inking Set category)
-        (spellInfo->Effect[0] == SPELL_EFFECT_CREATE_ITEM_2 && spellInfo->TotemCategory[0] == 121));
+        // different random cards from Inscription (121==Virtuoso Inking Set category) r without explicit item
+        (spellInfo->Effect[0] == SPELL_EFFECT_CREATE_ITEM_2 &&
+        (spellInfo->TotemCategory[0] != 0 || spellInfo->EffectItemType[0]==0)));
 }
 
 bool IsHigherHankOfSpell(uint32 spellId_1,uint32 spellId_2);
@@ -790,9 +792,10 @@ typedef std::pair<SpellsRequiringSpellMap::const_iterator,SpellsRequiringSpellMa
 // Spell learning properties (accessed using SpellMgr functions)
 struct SpellLearnSkillNode
 {
-    uint32 skill;
-    uint32 value;                                           // 0  - max skill value for player level
-    uint32 maxvalue;                                        // 0  - max skill value for player level
+    uint16 skill;
+    uint16 step;
+    uint16 value;                                           // 0  - max skill value for player level
+    uint16 maxvalue;                                        // 0  - max skill value for player level
 };
 
 typedef std::map<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
@@ -1053,7 +1056,7 @@ class SpellMgr
             if (!newSpell)
             {
                 sLog.outDebug("GetSpellForDifficultyFromSpell: spell %u not found in spell, this should never happen.", newSpell->Id);//alerady checked at startup
-                return spell;                
+                return spell;
             }
             sLog.outDebug("GetSpellForDifficultyFromSpell: spellid for spell %u in mode %u is %u ", spell->Id, mode, newSpell->Id);
             return newSpell;

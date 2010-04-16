@@ -228,6 +228,8 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //160 SPELL_EFFECT_160                      unused
     &Spell::EffectSpecCount,                                //161 SPELL_EFFECT_TALENT_SPEC_COUNT        second talent spec (learn/revert)
     &Spell::EffectActivateSpec,                             //162 SPELL_EFFECT_TALENT_SPEC_SELECT       activate primary/secondary spec
+    &Spell::EffectNULL,                                     //163
+    &Spell::EffectNULL,                                     //164 cancel's some aura...
 };
 
 void Spell::EffectNULL(uint32 /*i*/)
@@ -456,7 +458,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Shockwave
                 else if (m_spellInfo->Id == 46968)
                 {
-                    int32 pct = m_caster->CalculateSpellDamage(m_spellInfo, 2, m_spellInfo->EffectBasePoints[2], unitTarget);
+                    int32 pct = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, 2);
                     if (pct > 0)
                         damage+= int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * pct / 100);
                     break;
@@ -716,7 +718,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     // Add main hand dps * effect[2] amount
                     float average = (m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) / 2;
-                    int32 count = m_caster->CalculateSpellDamage(m_spellInfo, 2, m_spellInfo->EffectBasePoints[2], unitTarget);
+                    int32 count = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, 2);
                     damage += count * int32(average * IN_MILISECONDS) / m_caster->GetAttackTime(BASE_ATTACK);
                 }
                 // Shield of Righteousness
@@ -2064,7 +2066,7 @@ void Spell::EffectDummy(uint32 i)
                 int32 bp = count * m_caster->GetMaxHealth() * m_spellInfo->DmgMultiplier[0] / 100;
                 // Improved Death Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2751, 0))
-                    bp = bp * (m_caster->CalculateSpellDamage(aurEff->GetSpellProto(), 2, aurEff->GetSpellProto()->EffectBasePoints[2], m_caster) + 100.0f) / 100.0f;
+                    bp = bp * (m_caster->CalculateSpellDamage(m_caster, aurEff->GetSpellProto(), 2) + 100.0f) / 100.0f;
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
                 return;
             }
@@ -2092,14 +2094,12 @@ void Spell::EffectDummy(uint32 i)
             // Death Grip
             if (m_spellInfo->Id == 49560)
             {
-                if (unitTarget == m_caster)
-  	                return;
-                if (unitTarget->GetEntry() == 28366) // Hackfix per non grippare le torrette a winter
-                    return;
+                Position pos;
+                GetSummonPosition(i, pos);
                 if (Unit *unit = unitTarget->GetVehicleBase()) // what is this for?
-                    return;
+                    unit->CastSpell(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),damage,true);
                 else
-                    unitTarget->CastSpell(m_caster, damage, true);
+                    unitTarget->CastSpell(pos.GetPositionX(),pos.GetPositionY(),pos.GetPositionZ(),damage,true);
                 return;
             }
             else if (m_spellInfo->Id == 46584) // Raise dead
@@ -3036,30 +3036,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
             break;
     }
 
-    uint32 num_to_add;
-
-    // TODO: maybe all this can be replaced by using correct calculated `damage` value
-    if (pProto->Class != ITEM_CLASS_CONSUMABLE || m_spellInfo->SpellFamilyName != SPELLFAMILY_MAGE)
-    {
-        num_to_add = damage;
-        /*int32 basePoints = m_currentBasePoints[i];
-        int32 randomPoints = m_spellInfo->EffectDieSides[i];
-        if (randomPoints)
-            num_to_add = basePoints + irand(1, randomPoints);
-        else
-            num_to_add = basePoints + 1;*/
-    }
-    else if (pProto->MaxCount == 1)
-        num_to_add = 1;
-    else if (player->getLevel() >= m_spellInfo->spellLevel)
-    {
-        num_to_add = damage;
-        /*int32 basePoints = m_currentBasePoints[i];
-        float pointPerLevel = m_spellInfo->EffectRealPointsPerLevel[i];
-        num_to_add = basePoints + 1 + uint32((player->getLevel() - m_spellInfo->spellLevel)*pointPerLevel);*/
-    }
-    else
-        num_to_add = 2;
+    uint32 num_to_add = damage;
 
     if (num_to_add < 1)
         num_to_add = 1;
@@ -3148,20 +3125,24 @@ void Spell::EffectCreateItem2(uint32 i)
 
     uint32 item_id = m_spellInfo->EffectItemType[i];
 
-    DoCreateItem(i, item_id);
+    if (item_id)
+        DoCreateItem(i, item_id);
 
     // special case: fake item replaced by generate using spell_loot_template
     if (IsLootCraftingSpell(m_spellInfo))
     {
-        if (!player->HasItemCount(item_id, 1))
-            return;
+        if (item_id)
+        {
+            if (!player->HasItemCount(item_id, 1))
+                return;
 
-        // remove reagent
-        uint32 count = 1;
-        player->DestroyItemCount(item_id, count, true);
+            // remove reagent
+            uint32 count = 1;
+            player->DestroyItemCount(item_id, count, true);
 
-        // create some random items
-        player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
+            // create some random items
+            player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
+         }
     }
 }
 
@@ -3380,13 +3361,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 return;
 
             case GAMEOBJECT_TYPE_GOOBER:
-                // goober_scripts can be triggered if the player don't have the quest
-                if (gameObjTarget->GetGOInfo()->goober.eventId)
-                {
-                    sLog.outDebug("Goober ScriptStart id %u for GO %u",gameObjTarget->GetGOInfo()->goober.eventId,gameObjTarget->GetDBTableGUIDLow());
-                    player->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
-                    gameObjTarget->EventInform(gameObjTarget->GetGOInfo()->goober.eventId);
-                }
                 gameObjTarget->Use(m_caster);
                 return;
 
@@ -3807,7 +3781,7 @@ void Spell::EffectLearnSpell(uint32 i)
     Player *player = (Player*)unitTarget;
 
     uint32 spellToLearn = (m_spellInfo->Id == 483 || m_spellInfo->Id == 55884) ? damage : m_spellInfo->EffectTriggerSpell[i];
-    player->learnSpell(spellToLearn,false);
+    player->learnSpell(spellToLearn, false);
 
     sLog.outDebug("Spell: Player %u has learned spell %u from NpcGUID=%u", player->GetGUIDLow(), spellToLearn, m_caster->GetGUIDLow());
 }
@@ -4022,7 +3996,7 @@ void Spell::EffectLearnSkill(uint32 i)
 
     uint32 skillid =  m_spellInfo->EffectMiscValue[i];
     uint16 skillval = unitTarget->ToPlayer()->GetPureSkillValue(skillid);
-    unitTarget->ToPlayer()->SetSkill(skillid, skillval?skillval:1, damage*75);
+    unitTarget->ToPlayer()->SetSkill(skillid, m_spellInfo->CalculateSimpleValue(i), skillval?skillval:1, damage*75);
 }
 
 void Spell::EffectAddHonor(uint32 /*i*/)
@@ -5884,7 +5858,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     case CREATURE_FAMILY_VOIDWALKER:
                     {
                         SpellEntry const* spellInfo = sSpellStore.LookupEntry(54443);
-                        int32 hp = unitTarget->GetMaxHealth() * m_caster->CalculateSpellDamage(spellInfo, 0, spellInfo->EffectBasePoints[0], unitTarget) /100;
+                        int32 hp = unitTarget->GetMaxHealth() * m_caster->CalculateSpellDamage(unitTarget, spellInfo, 0) /100;
                         unitTarget->CastCustomSpell(unitTarget, 54443,&hp, NULL, NULL,true);
                         //unitTarget->CastSpell(unitTarget, 54441, true);
                         break;

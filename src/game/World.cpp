@@ -703,6 +703,14 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GRID_UNLOAD] = sConfig.GetBoolDefault("GridUnload", true);
     m_configs[CONFIG_INTERVAL_SAVE] = sConfig.GetIntDefault("PlayerSaveInterval", 15 * MINUTE * IN_MILISECONDS);
     m_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfig.GetIntDefault("DisconnectToleranceInterval", 0);
+    m_configs[CONFIG_STATS_SAVE_ONLY_ON_LOGOUT] = sConfig.GetBoolDefault("PlayerSave.Stats.SaveOnlyOnLogout", true);
+
+    m_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = sConfig.GetIntDefault("PlayerSave.Stats.MinLevel", 0);
+    if (m_configs[CONFIG_MIN_LEVEL_STAT_SAVE] > MAX_LEVEL)
+    {
+        sLog.outError("PlayerSave.Stats.MinLevel (%i) must be in range 0..80. Using default, do not save character stats (0).",m_configs[CONFIG_MIN_LEVEL_STAT_SAVE]);
+        m_configs[CONFIG_MIN_LEVEL_STAT_SAVE] = 0;
+    }
 
     m_configs[CONFIG_INTERVAL_GRIDCLEAN] = sConfig.GetIntDefault("GridCleanUpDelay", 5 * MINUTE * IN_MILISECONDS);
     if (m_configs[CONFIG_INTERVAL_GRIDCLEAN] < MIN_GRID_DELAY)
@@ -1460,9 +1468,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Items...");                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     objmgr.LoadItemPrototypes();
 
-    sLog.outString("Loading Item Texts...");
-    objmgr.LoadItemTexts();
-
     sLog.outString("Loading Creature Model Based Info Data...");
     objmgr.LoadCreatureModelInfo();
 
@@ -1793,6 +1798,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Calculating next daily/weekly quest reset times...");
     InitTimedQuestResetTime();
+
+    sLog.outString("Calculate next weekly quest reset time..." );
+    InitWeeklyQuestResetTime();
 
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();

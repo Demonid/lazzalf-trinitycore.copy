@@ -1826,11 +1826,12 @@ void SpellMgr::LoadSpellLearnSkills()
             {
                 SpellLearnSkillNode dbc_node;
                 dbc_node.skill = entry->EffectMiscValue[i];
+                dbc_node.step  = entry->CalculateSimpleValue(i);
                 if (dbc_node.skill != SKILL_RIDING)
                     dbc_node.value = 1;
                 else
-                    dbc_node.value = entry->CalculateSimpleValue(i)*75;
-                dbc_node.maxvalue = entry->CalculateSimpleValue(i)*75;
+                    dbc_node.value = dbc_node.step * 75;
+                dbc_node.maxvalue = dbc_node.step * 75;
 
                 SpellLearnSkillNode const* db_node = GetSpellLearnSkill(spell);
 
@@ -2936,6 +2937,13 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_POLYMORPH;
             break;
         }
+        case SPELLFAMILY_HUNTER:
+        {
+            // Hunter's mark
+            if ((spellproto->SpellFamilyFlags[0] & 0x400) && spellproto->SpellIconID == 538)
+                return DIMINISHING_LIMITONLY;
+            break;
+        }
         default:
             break;
     }
@@ -2982,6 +2990,9 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
             // Wyvern Sting
             if (spellproto->SpellFamilyFlags[1] & 0x1000)
                 return 6 * IN_MILISECONDS;
+            // Hunter's Mark
+            if (spellproto->SpellFamilyFlags[0] & 0x400)
+                return 120 * IN_MILISECONDS;
             break;
         }
         case SPELLFAMILY_PALADIN:
@@ -3835,6 +3846,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 42611:     // Shoot
             spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        case 66588:     // Flaming Spear
+            spellInfo->MaxAffectedTargets = 3;
             count++;
             break;
         default:

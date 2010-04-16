@@ -5118,12 +5118,6 @@ CREATE TABLE `spell_dbc` (
   `EffectDieSides1` int(11) NOT NULL DEFAULT '0',
   `EffectDieSides2` int(11) NOT NULL DEFAULT '0',
   `EffectDieSides3` int(11) NOT NULL DEFAULT '0',
-  `EffectBaseDice1` int(11) NOT NULL DEFAULT '0',
-  `EffectBaseDice2` int(11) NOT NULL DEFAULT '0',
-  `EffectBaseDice3` int(11) NOT NULL DEFAULT '0',
-  `EffectDicePerLevel1` float NOT NULL DEFAULT '0',
-  `EffectDicePerLevel2` float NOT NULL DEFAULT '0',
-  `EffectDicePerLevel3` float NOT NULL DEFAULT '0',
   `EffectRealPointsPerLevel1` float NOT NULL DEFAULT '0',
   `EffectRealPointsPerLevel2` float NOT NULL DEFAULT '0',
   `EffectRealPointsPerLevel3` float NOT NULL DEFAULT '0',
@@ -5193,28 +5187,36 @@ CREATE TABLE `spell_dbc` (
 
 LOCK TABLES `spell_dbc` WRITE;
 /*!40000 ALTER TABLE `spell_dbc` DISABLE KEYS */;
-INSERT INTO `spell_dbc` (`Id`,`Dispel`,`Mechanic`,`Attributes`,`AttributesEx`,`AttributesEx2`,`AttributesEx3`,`AttributesEx4`,`AttributesEx5`,`Targets`,`CastingTimeIndex`,`AuraInterruptFlags`,`ProcFlags`,`ProcChance`,`ProcCharges`,`MaxLevel`,`BaseLevel`,`SpellLevel`,`DurationIndex`,`RangeIndex`,`StackAmount`,`EquippedItemClass`,`EquippedItemSubClassMask`,`EquippedItemInventoryTypeMask`,`Effect1`,`Effect2`,`Effect3`,`EffectDieSides1`,`EffectDieSides2`,`EffectDieSides3`,`EffectBaseDice1`,`EffectBaseDice2`,`EffectBaseDice3`,`EffectDicePerLevel1`,`EffectDicePerLevel2`,`EffectDicePerLevel3`,`EffectRealPointsPerLevel1`,`EffectRealPointsPerLevel2`,`EffectRealPointsPerLevel3`,`EffectBasePoints1`,`EffectBasePoints2`,`EffectBasePoints3`,`EffectMechanic1`,`EffectMechanic2`,`EffectMechanic3`,`EffectImplicitTargetA1`,`EffectImplicitTargetA2`,`EffectImplicitTargetA3`,`EffectImplicitTargetB1`,`EffectImplicitTargetB2`,`EffectImplicitTargetB3`,`EffectRadiusIndex1`,`EffectRadiusIndex2`,`EffectRadiusIndex3`,`EffectApplyAuraName1`,`EffectApplyAuraName2`,`EffectApplyAuraName3`,`EffectAmplitude1`,`EffectAmplitude2`,`EffectAmplitude3`,`EffectMultipleValue1`,`EffectMultipleValue2`,`EffectMultipleValue3`,`EffectMiscValue1`,`EffectMiscValue2`,`EffectMiscValue3`,`EffectMiscValueB1`,`EffectMiscValueB2`,`EffectMiscValueB3`,`EffectTriggerSpell1`,`EffectTriggerSpell2`,`EffectTriggerSpell3`,`EffectSpellClassMaskA1`,`EffectSpellClassMaskA2`,`EffectSpellClassMaskA3`,`EffectSpellClassMaskB1`,`EffectSpellClassMaskB2`,`EffectSpellClassMaskB3`,`EffectSpellClassMaskC1`,`EffectSpellClassMaskC2`,`EffectSpellClassMaskC3`,`MaxTargetLevel`,`SpellFamilyName`,`SpellFamilyFlags1`,`SpellFamilyFlags2`,`SpellFamilyFlags3`,`MaxAffectedTargets`,`DmgClass`,`PreventionType`,`DmgMultiplier1`,`DmgMultiplier2`,`DmgMultiplier3`,`AreaGroupId`,`SchoolMask`,`Comment`) VALUES
-(62388,  0,  0, 0, 0, 0, 0x00000000, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0, 21,  1, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Demonic Circle: Teleport(48020) - casterAuraSpell'),
-(65142,  3, 22, 0, 0, 0, 0x00000080, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0, 21, 13, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 'Crypt Fever - SPELL_AURA_LINKED'),
-(58888,  0,  0, 0, 0, 0, 0x04000000, 0, 0, 0, 1, 0, 0, 101, 0, 0, 68, 68,  0,  1, 0, -1, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 58889, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Ritual of Souls Rank 2 - Trigger Create Soulwell (58889)'),
-(34145,  0,  0, 0, 0, 0, 0x04000000, 0, 0, 0, 1, 0, 0, 101, 0, 0, 80, 80,  0,  1, 0, -1, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 29886, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Ritual of Souls Rank 1 - Trigger Create Soulwell (29886)'),
-(200000, 0,  0, 0, 0, 0,          0, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0,  8,  1, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  5, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Drain Soul increased damage - serverside spell'),
-(61988,  0,  0, 0x28000180, 0x10000400, 0x4, 0x10100000, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 25, 13, 0, '-1', 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Divine Shield Exclude Aura - 61988'),
-(42876,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 9275 reward serverside spell'),
-(44987,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11521 reward serverside spell'),
-(48803,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 12214 reward serverside spell'),
-(68496,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
-(72958,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
-(32780,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 10040 reward serverside spell'),
-(45453,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11587 reward serverside spell'),
-(25347,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
-(45315,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11566 reward serverside spell'),
-(43236,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11288 reward serverside spell'),
-(43459,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11332 reward serverside spell'),
-(43499,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11250 reward serverside spell'),
-(44275,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11432 reward serverside spell'),
-(64689,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 13854 and 13862 reward serverside spell'),
-(50574,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 12597 reward serverside spell');
+INSERT INTO `spell_dbc` (`Id`,`Dispel`,`Mechanic`,`Attributes`,`AttributesEx`,`AttributesEx2`,`AttributesEx3`,`AttributesEx4`,`AttributesEx5`,`Targets`,`CastingTimeIndex`,`AuraInterruptFlags`,`ProcFlags`,`ProcChance`,`ProcCharges`,`MaxLevel`,`BaseLevel`,`SpellLevel`,`DurationIndex`,`RangeIndex`,`StackAmount`,`EquippedItemClass`,`EquippedItemSubClassMask`,`EquippedItemInventoryTypeMask`,`Effect1`,`Effect2`,`Effect3`,`EffectDieSides1`,`EffectDieSides2`,`EffectDieSides3`,`EffectRealPointsPerLevel1`,`EffectRealPointsPerLevel2`,`EffectRealPointsPerLevel3`,`EffectBasePoints1`,`EffectBasePoints2`,`EffectBasePoints3`,`EffectMechanic1`,`EffectMechanic2`,`EffectMechanic3`,`EffectImplicitTargetA1`,`EffectImplicitTargetA2`,`EffectImplicitTargetA3`,`EffectImplicitTargetB1`,`EffectImplicitTargetB2`,`EffectImplicitTargetB3`,`EffectRadiusIndex1`,`EffectRadiusIndex2`,`EffectRadiusIndex3`,`EffectApplyAuraName1`,`EffectApplyAuraName2`,`EffectApplyAuraName3`,`EffectAmplitude1`,`EffectAmplitude2`,`EffectAmplitude3`,`EffectMultipleValue1`,`EffectMultipleValue2`,`EffectMultipleValue3`,`EffectMiscValue1`,`EffectMiscValue2`,`EffectMiscValue3`,`EffectMiscValueB1`,`EffectMiscValueB2`,`EffectMiscValueB3`,`EffectTriggerSpell1`,`EffectTriggerSpell2`,`EffectTriggerSpell3`,`EffectSpellClassMaskA1`,`EffectSpellClassMaskA2`,`EffectSpellClassMaskA3`,`EffectSpellClassMaskB1`,`EffectSpellClassMaskB2`,`EffectSpellClassMaskB3`,`EffectSpellClassMaskC1`,`EffectSpellClassMaskC2`,`EffectSpellClassMaskC3`,`MaxTargetLevel`,`SpellFamilyName`,`SpellFamilyFlags1`,`SpellFamilyFlags2`,`SpellFamilyFlags3`,`MaxAffectedTargets`,`DmgClass`,`PreventionType`,`DmgMultiplier1`,`DmgMultiplier2`,`DmgMultiplier3`,`AreaGroupId`,`SchoolMask`,`Comment`) VALUES
+(62388,  0,  0, 0, 0, 0, 0x00000000, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0, 21,  1, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Demonic Circle: Teleport(48020) - casterAuraSpell'),
+(65142,  3, 22, 0, 0, 0, 0x00000080, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0, 21, 13, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 'Crypt Fever - SPELL_AURA_LINKED'),
+(58888,  0,  0, 0, 0, 0, 0x04000000, 0, 0, 0, 1, 0, 0, 101, 0, 0, 68, 68,  0,  1, 0, -1, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 58889, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Ritual of Souls Rank 2 - Trigger Create Soulwell (58889)'),
+(34145,  0,  0, 0, 0, 0, 0x04000000, 0, 0, 0, 1, 0, 0, 101, 0, 0, 80, 80,  0,  1, 0, -1, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 29886, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Ritual of Souls Rank 1 - Trigger Create Soulwell (29886)'),
+(200000, 0,  0, 0, 0, 0,          0, 0, 0, 0, 1, 0, 0,   0, 0, 0,  0,  0,  8,  1, 0, -1, 0, 0,  6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  5, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 'Drain Soul increased damage - serverside spell'),
+(61988,  0,  0, 0x28000180, 0x10000400, 0x4, 0x10100000, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 25, 13, 0, -1, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Divine Shield Exclude Aura - 61988'),
+(42876,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 9275 reward serverside spell'),
+(44987,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11521 reward serverside spell'),
+(48803,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 12214 reward serverside spell'),
+(68496,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
+(72958,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
+(32780,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 10040 reward serverside spell'),
+(45453,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11587 reward serverside spell'),
+(25347,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Item_template serverside spell'),
+(45315,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11566 reward serverside spell'),
+(43236,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11288 reward serverside spell'),
+(43459,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11332 reward serverside spell'),
+(43499,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11250 reward serverside spell'),
+(44275,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 11432 reward serverside spell'),
+(64689,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 13854 and 13862 reward serverside spell'),
+(50574,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 12597 reward serverside spell'),
+(71356,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2108 spellid0 serverside spell'),
+(71803,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2108 spellid1 serverside spell'),
+(72111,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2136 spellid0 serverside spell'),
+(72125,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2136 spellid1 serverside spell'),
+(70816,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2146 spellid0 serverside spell'),
+(72233,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2146 spellid1 serverside spell'),
+(72234,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2146 spellid2 serverside spell'),
+(72235,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Spelldifficulty_dbc id:2146 spellid3 serverside spell');
 /*!40000 ALTER TABLE `spell_dbc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -5971,17 +5973,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 20594, 65116, 0, 'Stoneform'),
 ( 49039, 50397, 2, 'Lichborne - shapeshift'),
 ( 64382, 64380, 0, 'Shattering Throw'),
-( 19574, 24395, 2, 'Bestial Wrath'),
-( 19574, 24396, 2, 'Bestial Wrath'),
-( 19574, 24397, 2, 'Bestial Wrath'),
-( 19574, 26592, 2, 'Bestial Wrath'),
-( 34471, 24395, 2, 'The Beast Within'),
-( 34471, 24396, 2, 'The Beast Within'),
-( 34471, 24397, 2, 'The Beast Within'),
-( 34471, 26592, 2, 'The Beast Within'),
 (-59907,     7, 0, 'Lightwell Charges - Suicide'),
-( 26022, 61417, 2, 'Pursuit of Justice'),
-( 26023, 61418, 2, 'Pursuit of Justice'),
 ( 19263, 67801, 2, 'Deterrence'),
 -- Quest
 ( 40214, 40216, 2, 'Dragonmaw Illusion'),
@@ -6420,7 +6412,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 29635, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   3,   0,   0), -- Flaming Shell
 ( 29636, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   3,   0,   0), -- Venom Shot
 ( 29637, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   3,   0,   0), -- Keeper's Sting
-( 29801, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Rampage (Rank 1)
 ( 29834, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Second Wind (Rank 1)
 ( 29838, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Second Wind (Rank 2)
 ( 29977, 0x00,   3, 0x00C00017, 0x00000040, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Combustion
@@ -6437,12 +6428,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 30679, 0x00,  11, 0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Lightning Overload (Rank 3)
 ( 30701, 0x1C,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Elemental Absorption (Rank 1)
 ( 30705, 0x1C,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Elemental Absorption (Rank 5)
-( 30802, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 1)
-( 30803, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 1)
-( 30804, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 2)
-( 30805, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 3)
-( 30808, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 2)
-( 30809, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Unleashed Rage (Rank 3)
 ( 30823, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 10.,   0,   0), -- Shamanistic Rage
 ( 30881, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   5), -- Nature's Guardian (Rank 1)
 ( 30883, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   5), -- Nature's Guardian (Rank 2)
@@ -6499,8 +6484,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 33150, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Surge of Light (Rank 1)
 ( 33151, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Surge of Light (Rank 1)
 ( 33154, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Surge of Light (Rank 2)
-( 33174, 0x00,   6, 0x00000020, 0x00000000, 0x00000000, 0x00004000, 0x00000000,   0,   0,   0), -- Improved Divine Spirit (Rank 1)
-( 33182, 0x00,   6, 0x00000020, 0x00000000, 0x00000000, 0x00004000, 0x00000000,   0,   0,   0), -- Improved Divine Spirit (Rank 2)
 ( 33191, 0x00,   6, 0x00808000, 0x00000400, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Misery (Rank 1)
 ( 33192, 0x00,   6, 0x00808000, 0x00000400, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Misery (Rank 2)
 ( 33193, 0x00,   6, 0x00808000, 0x00000400, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Misery (Rank 3)
@@ -6525,7 +6508,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 34262, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Mercy
 ( 34320, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,  45), -- Call of the Nexus
 ( 34355, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   3), -- Poison Shield
-( 34457, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Ferocious Inspiration (Rank 1)
 ( 34497, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Thrill of the Hunt (Rank 1)
 ( 34498, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Thrill of the Hunt (Rank 2)
 ( 34499, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Thrill of the Hunt (Rank 3)
@@ -6652,9 +6634,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 43748, 0x00,  11, 0x90100000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Elemental Strength
 ( 43750, 0x00,  11, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Energized
 ( 43819, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Lucidity
-( 44394, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000400,   0,   0,   0), -- Incanter's Absorption (Rank 1)
-( 44395, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000400,   0,   0,   0), -- Incanter's Absorption (Rank 2)
-( 44396, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000400,   0,   0,   0), -- Incanter's Absorption (Rank 3)
 ( 44404, 0x00,   3, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 1)
 ( 44442, 0x00,   3, 0x00800000, 0x00000040, 0x00000000, 0x00000000, 0x00010000,   0,   0,   1), -- Firestarter (Rank 1)
 ( 44443, 0x00,   3, 0x00800000, 0x00000040, 0x00000000, 0x00000000, 0x00010000,   0,   0,   1), -- Firestarter (Rank 2)
@@ -6790,8 +6769,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 51352, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  10), -- Venture Company Beatdown!
 ( 51359, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  10), -- Venture Company Beatdown
 ( 51414, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Venomous Breath Aura
-( 51466, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Elemental Oath (Rank 1)
-( 51470, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Elemental Oath (Rank 2)
 ( 51474, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Astral Shift (Rank 1)
 ( 51478, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Astral Shift (Rank 2)
 ( 51479, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Astral Shift (Rank 3)
@@ -6858,8 +6835,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 52799, 0x00,   6, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Borrowed Time (Rank 4)
 ( 52800, 0x00,   6, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Borrowed Time (Rank 5)
 ( 52898, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Spell Damping
-( 53137, 0x00,  15, 0x01400000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Abomination's Might (Rank 1)
-( 53138, 0x00,  15, 0x01400000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Abomination's Might (Rank 2)
 ( 53215, 0x00,   9, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Wild Quiver (Rank 1)
 ( 53216, 0x00,   9, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Wild Quiver (Rank 2)
 ( 53217, 0x00,   9, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Wild Quiver (Rank 3)
@@ -7100,8 +7075,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 49217, 0x00,  15, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000,   0,   0,   1), -- Wandering Plague
 ( 49654, 0x00,  15, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000,   0,   0,   1), -- Wandering Plague
 ( 49655, 0x00,  15, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000,   0,   0,   1), -- Wandering Plague
-( 49137, 0x00,  15, 0x00000004, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Endless Winter
-( 49657, 0x00,  15, 0x00000004, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Endless Winter
 ( 58620, 0x00,  15, 0x00000004, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Chains of Ice
 ( 56342, 0x00,   9, 0x00000018, 0x08000000, 0x00024000, 0x00000000, 0x00000000,   0,   0,   0), -- Lock and Load
 ( 56343, 0x00,   9, 0x00000018, 0x08000000, 0x00024000, 0x00000000, 0x00000000,   0,   0,   0), -- Lock and Load
@@ -7119,8 +7092,6 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54639, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Blood of the north
 ( 54638, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Blood of the north
 ( 54637, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Blood of the north
-( 61433, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Blood of the north
-( 61434, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Blood of the north
 ( 49467, 0x00,  15, 0x00000010, 0x00020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Death Rune Mastery
 ( 50033, 0x00,  15, 0x00000010, 0x00020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Death Rune Mastery
 ( 50034, 0x00,  15, 0x00000010, 0x00020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Death Rune Mastery
@@ -7133,7 +7104,9 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54832, 0x00,   7, 0x00000000, 0x00001000, 0x00000000, 0x00004000, 0x00000000,   0,   0,   0), -- Glyph of Innervate
 ( 67353, 0x00,   7, 0x00008000, 0x00100500, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- uncommented
 ( 57989, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000,   0,   0,   0), -- uncommented
-( 65661, 0x00,  15, 0x00400010, 0x20020004, 0x00000000, 0x00000010, 0x00000000,   0, 100,   0), -- uncommented
+( 65661, 0x00,  15, 0x00400010, 0x20020004, 0x00000000, 0x00000010, 0x00000000,   0, 100,   0), -- Threat of Thassarian (Rank 1)
+( 66191, 0x00,  15, 0x00400010, 0x20020004, 0x00000000, 0x00000010, 0x00000000,   0, 100,   0), -- Threat of Thassarian (Rank 2)
+( 66192, 0x00,  15, 0x00400010, 0x20020004, 0x00000000, 0x00000010, 0x00000000,   0, 100,   0), -- Threat of Thassarian (Rank 3)
 ( 53601, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x000A02A8, 0x00000000,   0,   0,   6), -- Sacred Shield (Rank 1)
 ( 58375, 0x00,   4, 0x00000000, 0x00000200, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Blocking
 ( 58387, 0x00,   4, 0x00004000, 0x00000040, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Sunder Armor
@@ -10053,9 +10026,6 @@ INSERT INTO spell_ranks (`first_spell_id`, `spell_id`, `rank`) VALUES
  -- Improved Disciplines
 (12312, 12312, 1),
 (12312, 12803, 2),
- -- Improved Divine Spirit
-(33174, 33174, 1),
-(33174, 33182, 2),
  -- Improved Drain Soul
 (18213, 18213, 1),
 (18213, 18372, 2),
@@ -11430,9 +11400,6 @@ INSERT INTO spell_ranks (`first_spell_id`, `spell_id`, `rank`) VALUES
  -- Purifying Power
 (31825, 31825, 1),
 (31825, 31826, 2),
- -- Pursuit of Justice
-(61417, 61417, 1),
-(61417, 61418, 2),
  -- Pursuit of Justice
 (26022, 26022, 1),
 (26022, 26023, 2),
@@ -13627,10 +13594,6 @@ INSERT INTO spell_ranks (`first_spell_id`, `spell_id`, `rank`) VALUES
 (30802, 30802, 1),
 (30802, 30808, 2),
 (30802, 30809, 3),
- -- Unleashed Rage
-(30803, 30803, 1),
-(30803, 30804, 2),
-(30803, 30805, 3),
  -- Vindication
 (9452, 9452, 1),
 (9452, 26016, 2),
@@ -13666,8 +13629,6 @@ INSERT INTO spell_ranks (`first_spell_id`, `spell_id`, `rank`) VALUES
 (19386, 27068, 4),
 (19386, 49011, 5),
 (19386, 49012, 6),
- -- Arantir's Deception
-(9736, 9736, 1),
  -- First Aid
 (746, 746, 1),
 (746, 1159, 2),
@@ -13743,8 +13704,6 @@ INSERT INTO spell_ranks (`first_spell_id`, `spell_id`, `rank`) VALUES
 (8072, 25507, 8),
 (8072, 58752, 9),
 (8072, 58754, 10),
- -- Ashcrombe's Teleport
-(15742, 15742, 1),
  -- Attack
 (3606, 3606, 1),
 (3606, 6350, 2),
@@ -14239,12 +14198,205 @@ CREATE TABLE `spelldifficulty_dbc` (
 -- Dumping data for table `spell_difficulty_dbc`
 --
 
-LOCK TABLES `spell_difficulty_dbc` WRITE;
-/*!40000 ALTER TABLE `spell_difficulty_dbc` DISABLE KEYS */;
-INSERT INTO `spell_difficulty_dbc` VALUES 
-(3000,47772,56935,0,0), -- Magus Telestra - Ice Nova
-(3001,47773,56934,0,0); -- Magus Telestra - Fire Bomb
-/*!40000 ALTER TABLE `spell_difficulty_dbc` ENABLE KEYS */;
+LOCK TABLES `spelldifficulty_dbc` WRITE;
+/*!40000 ALTER TABLE `spelldifficulty_dbc` DISABLE KEYS */;
+INSERT INTO `spelldifficulty_dbc` VALUES 
+(3000, 47772, 56935, 0, 0), -- Magus Telestra - Ice Nova
+(3001, 47773, 56934, 0, 0), -- Magus Telestra - Fire Bomb
+(3002, 44189, 46164, 0, 0), -- SPELL_FIREBALL_NORMAL / SPELL_FIREBALL_HEROIC
+(3003, 44190, 46163, 0, 0), -- SPELL_FLAMESTRIKE1_NORMAL / SPELL_FLAMESTRIKE1_HEROIC
+(3004, 44174, 46192, 0, 0), -- SPELL_RENEW_NORMAL / SPELL_RENEW_HEROIC
+(3005, 14032, 15654, 0, 0), -- SPELL_SW_PAIN_NORMAL / SPELL_SW_PAIN_HEROIC
+(3006, 44318, 46380, 0, 0), -- SPELL_CHAIN_LIGHTNING / SPELL_H_CHAIN_LIGHTNING
+(3007, 44319, 46381, 0, 0), -- SPELL_ARCANE_SHOCK / SPELL_H_ARCANE_SHOCK
+(3008, 52771, 58830, 0, 0), -- SPELL_WOUNDING_STRIKE / H_SPELL_WOUNDING_STRIKE
+(3009, 52720, 58852, 0, 0), -- SPELL_CARRION_SWARM / H_SPELL_CARRION_SWARM
+(3010, 52722, 58850, 0, 0), -- SPELL_MIND_BLAST / H_SPELL_MIND_BLAST
+(3011, 52721, 58849, 0, 0), -- SPELL_SLEEP / H_SPELL_SLEEP
+(3012, 52666, 58824, 0, 0), -- SPELL_DISEASE_EXPULSION / H_SPELL_DISEASE_EXPULSION
+(3013, 52696, 58823, 0, 0), -- SPELL_CONSTRICTING_CHAINS / H_SPELL_CONSTRICTING_CHAINS
+(3014, 57725, 58827, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3015, 52445, 58822, 0, 0), -- SPELL_EXORCISM_N / SPELL_EXORCISM_H
+(3016, 31473, 39049, 0, 0), -- SPELL_SAND_BREATH / H_SPELL_SAND_BREATH
+(3017, 31457, 38538, 0, 0), -- SPELL_ARCANE_BLAST / H_SPELL_ARCANE_BLAST
+(3018, 31472, 38539, 0, 0), -- SPELL_ARCANE_DISCHARGE / H_SPELL_ARCANE_DISCHARGE
+(3019, 31475, 38593, 0, 0), -- SPELL_WING_BUFFET / H_SPELL_WING_BUFFET
+(3020, 56130, 59467, 0, 0), -- SPELL_BROOD_PLAGUE / H_SPELL_BROOD_PLAGUE
+(3021, 57941, 59974, 0, 0), -- SPELL_MIND_FLAY / H_SPELL_MIND_FLAY
+(3022, 57942, 59975, 0, 0), -- SPELL_SHADOW_BOLT_VOLLEY / H_SPELL_SHADOW_BOLT_VOLLEY
+(3023, 57949, 59978, 0, 0), -- SPELL_SHIVER / H_SPELL_SHIVER
+(3024, 56855, 60030, 0, 0), -- SPELL_CYCLONE_STRIKE / SPELL_CYCLONE_STRIKE_H
+(3025, 55959, 59513, 0, 0), -- SPELL_EMBRACE_OF_THE_VAMPYR / H_SPELL_EMBRACE_OF_THE_VAMPYR
+(3026, 55926, 59508, 0, 0), -- SPELL_FLAME_SPHERE_PERIODIC / H_SPELL_FLAME_SPHERE_PERIODIC
+(3027, 53472, 59433, 0, 0), -- SPELL_POUND / H_SPELL_POUND
+(3028, 53400, 59419, 0, 0), -- SPELL_ACID_CLOUD / H_SPELL_ACID_CLOUD
+(3029, 53030, 59417, 0, 0), -- SPELL_LEECH_POISON / H_SPELL_LEECH_POISON
+(3030, 57731, 59421, 0, 0), -- SPELL_WEB_GRAB / H_SPELL_WEB_GRAB
+(3031, 52586, 59367, 0, 0), -- SPELL_MIND_FLAY / H_SPELL_MIND_FLAY
+(3032, 52592, 59368, 0, 0), -- SPELL_CURSE_OF_FATIGUE / H_SPELL_CURSE_OF_FATIGUE
+(3033, 52592, 59368, 0, 0), -- SPELL_CURSE_OF_FATIGUE / H_SPELL_CURSE_OF_FATIGUE
+(3034, 59363, 52446, 0, 0), -- SPELL_ACID_SPLASH / H_SPELL_ACID_SPLASH
+(3035, 52534, 59357, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3036, 52535, 59358, 0, 0), -- SPELL_SHADOW_NOVA / H_SPELL_SHADOW_NOVA
+(3037, 52469, 59364, 0, 0), -- SPELL_INFECTED_BITE / H_SPELL_INFECTED_BITE
+(3038, 52469, 59364, 0, 0), -- SPELL_INFECTED_BITE / H_SPELL_INFECTED_BITE
+(3039, 52524, 59365, 0, 0), -- SPELL_BLINDING_WEBS / H_SPELL_BLINDING_WEBS
+(3040, 52469, 59364, 0, 0), -- SPELL_INFECTED_BITE / H_SPELL_INFECTED_BITE
+(3041, 52493, 59366, 0, 0), -- SPELL_POSION_SPRAY / H_SPELL_POSION_SPRAY
+(3042, 66538, 67676, 0, 0), -- SPELL_HOLY_FIRE / SPELL_HOLY_FIRE_H
+(3043, 66536, 67674, 0, 0), -- SPELL_SMITE / SPELL_SMITE_H
+(3044, 66537, 67675, 0, 0), -- SPELL_RENEW / SPELL_RENEW_H
+(3045, 66537, 67675, 0, 0), -- SPELL_RENEW / SPELL_RENEW_H
+(3046, 66620, 67679, 0, 0), -- SPELL_OLD_WOUNDS / SPELL_OLD_WOUNDS_H
+(3047, 66552, 67677, 0, 0), -- SPELL_WAKING_NIGHTMARE / SPELL_WAKING_NIGHTMARE_H
+(3048, 66619, 67678, 0, 0), -- SPELL_SHADOWS_PAST / SPELL_SHADOWS_PAST_H
+(3049, 67881, 67718, 0, 0), -- SPELL_ICY_TOUCH / SPELL_ICY_TOUCH_H
+(3050, 67881, 67718, 0, 0), -- SPELL_ICY_TOUCH / SPELL_ICY_TOUCH_H
+(3051, 67883, 67725, 0, 0), -- SPELL_OBLITERATE / SPELL_OBLITERATE_H
+(3052, 67875, 67808, 0, 0), -- SPELL_DEATH_BITE / SPELL_DEATH_BITE_H
+(3053, 67749, 67880, 0, 0), -- SPELL_LEAP / SPELL_LEAP_H
+(3054, 68783, 68784, 0, 0), -- SPELL_MORTAL_STRIKE / SPELL_MORTAL_STRIKE_H
+(3055, 66042, 68310, 0, 0), -- SPELL_FIREBALL / SPELL_FIREBALL_H
+(3056, 66042, 68310, 0, 0), -- SPELL_FIREBALL / SPELL_FIREBALL_H
+(3057, 66043, 68311, 0, 0), -- SPELL_POLYMORPH / SPELL_POLYMORPH_H
+(3058, 66044, 68312, 0, 0), -- SPELL_BLAST_WAVE / SPELL_BLAST_WAVE_H
+(3059, 67529, 68319, 0, 0), -- SPELL_CHAIN_LIGHTNING / SPELL_CHAIN_LIGHTNING_H
+(3060, 67528, 68318, 0, 0), -- SPELL_HEALING_WAVE / SPELL_HEALING_WAVE_H
+(3061, 67528, 68318, 0, 0), -- SPELL_HEALING_WAVE / SPELL_HEALING_WAVE_H
+(3062, 65868, 67988, 0, 0), -- SPELL_SHOOT / SPELL_SHOOT_H
+(3063, 67709, 68317, 0, 0), -- SPELL_EVISCERATE / SPELL_EVISCERATE_H
+(3064, 48849, 59422, 0, 0), -- SPELL_FEARSOME_ROAR / H_SPELL_FEARSOME_ROAR
+(3065, 49527, 59972, 0, 0), -- SPELL_CURSE_OF_LIFE / H_SPELL_CURSE_OF_LIFE
+(3066, 49528, 59973, 0, 0), -- SPELL_SHADOW_VOLLEY / H_SPELL_SHADOW_VOLLEY
+(3067, 49518, 59971, 0, 0), -- SPELL_RAIN_OF_FIRE / H_SPELL_RAIN_OF_FIRE
+(3068, 49537, 59963, 0, 0), -- SPELL_LIGHTNING_BREATH / H_SPELL_LIGHTNING_BREATH
+(3069, 49544, 59965, 0, 0), -- SPELL_EYE_BEAM / H_SPELL_EYE_BEAM
+(3070, 49548, 59969, 0, 0), -- SPELL_POISON_CLOUD / H_SPELL_POISON_CLOUD
+(3071, 59803, 49381, 0, 0), -- SPELL_CONSUME / H_SPELL_CONSUME
+(3072, 49555, 59807, 0, 0), -- SPELL_CORPSE_EXPLODE / H_SPELL_CORPSE_EXPLODE
+(3073, 68793, 69050, 0, 0), -- SPELL_MAGIC_S_BANE / H_SPELL_MAGIC_S_BANE
+(3074, 68858, 69047, 0, 0), -- SPELL_CONSUME_SOUL / H_SPELL_CONSUME_SOUL
+(3075, 68982, 70322, 0, 0), -- SPELL_PHANTOM_BLAST / H_SPELL_PHANTOM_BLAST
+(3076, 68895, 70212, 0, 0), -- SPELL_SPITE / H_SPELL_SPITE
+(3077, 69148, 70210, 0, 0), -- SPELL_WAIL_OF_SOULS / H_SPELL_WAIL_OF_SOULS
+(3078, 69060, 70209, 0, 0), -- SPELL_FROST_NOVA / H_SPELL_FROST_NOVA
+(3079, 69080, 70206, 0, 0), -- SPELL_BONE_VOLLEY / H_SPELL_BONE_VOLLEY
+(3080, 69069, 70207, 0, 0), -- SPELL_SHIELD_OF_BONES / H_SPELL_SHIELD_OF_BONES
+(3081, 69068, 70208, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3082, 69068, 70208, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3083, 69066, 70213, 0, 0), -- SPELL_DRAIN_LIFE / H_SPELL_DRAIN_LIFE
+(3084, 69564, 70205, 0, 0), -- SPELL_SHADOW_MEND / H_SPELL_SHADOW_MEND
+(3085, 69088, 70211, 0, 0), -- SPELL_SOUL_STRIKE / H_SPELL_SOUL_STRIKE
+(3086, 68774, 70334, 0, 0), -- SPELL_FORGE_BLADE / H_SPELL_FORGE_BLADE
+(3087, 68785, 70335, 0, 0), -- SPELL_FORGE_MACE / H_SPELL_FORGE_MACE
+(3088, 70381, 72930, 0, 0), -- SPELL_DEEP_FREEZE / H_SPELL_DEEP_FREEZE
+(3089, 68778, 70333, 0, 0), -- SPELL_CHILLING_WAVE / H_SPELL_CHILLING_WAVE
+(3090, 68989, 70434, 0, 0), -- SPELL_POISON_NOVA / H_SPELL_POISON_NOVA
+(3091, 69024, 70436, 0, 0), -- SPELL_TOXIC_WASTE / H_SPELL_TOXIC_WASTE
+(3092, 69155, 69627, 0, 0), -- SPELL_FORCEFUL_SMASH / H_SPELL_FORCEFUL_SMASH
+(3093, 69167, 69629, 0, 0), -- SPELL_DARK_MIGHT / H_SPELL_DARK_MIGHT
+(3094, 69233, 69646, 0, 0), -- SPELL_ICY_BLAST / H_SPELL_ICY_BLAST
+(3095, 69238, 69628, 0, 0), -- SPELL_ICY_BLAST_2 / H_SPELL_ICY_BLAST_2
+(3096, 55626, 58993, 0, 0), -- SPELL_MOJO_WAVE / H_SPELL_MOJO_WAVE
+(3097, 55627, 58994, 0, 0), -- SPELL_MOJO_PUDDLE / H_SPELL_MOJO_PUDDLE
+(3098, 55250, 59824, 0, 0), -- SPELL_WHIRLING_SLASH / H_SPELL_WHIRLING_SLASH
+(3099, 55276, 59826, 0, 0), -- SPELL_PUNCTURE / H_SPELL_PUNCTURE
+(3100, 55285, 59828, 0, 0), -- SPELL_ENRAGE / H_SPELL_ENRAGE
+(3101, 55292, 59829, 0, 0), -- SPELL_STOMP / H_SPELL_STOMP
+(3102, 54956, 59827, 0, 0), -- SPELL_IMPALING_CHARGE / H_SPELL_IMPALING_CHARGE
+(3103, 55102, 59444, 0, 0), -- SPELL_DETERMINED_GORE / H_SPELL_DETERMINED_GORE
+(3104, 55081, 59842, 0, 0), -- SPELL_POISON_NOVA / H_SPELL_POISON_NOVA
+(3105, 48287, 59840, 0, 0), -- SPELL_POWERFULL_BITE / H_SPELL_POWERFULL_BITE
+(3106, 54970, 59839, 0, 0), -- SPELL_VENOM_BOLT / H_SPELL_VENOM_BOLT
+(3107, 54987, 58996, 0, 0), -- SPELL_VENOMOUS_BITE / H_SPELL_VENOMOUS_BITE
+(3108, 47751, 57062, 0, 0), -- SPELL_SPARK / H_SPELL_SPARK
+(3109, 48096, 57091, 0, 0), -- SPELL_CRYSTALFIRE_BREATH / H_SPELL_CRYSTALFIRE_BREATH
+(3110, 48016, 57066, 0, 0), -- SPELL_TRAMPLE / H_SPELL_TRAMPLE
+(3111, 47944, 57067, 0, 0), -- SPELL_CRYSTALL_SPIKE_DAMAGE / H_SPELL_CRYSTALL_SPIKE_DAMAGE
+(3112, 50774, 59370, 0, 0), -- SPELL_THUNDERING_STOMP / SPELL_THUNDERING_STOMP_H
+(3113, 52774, 59160, 0, 0), -- SPELL_RENEW_STEEL_N / SPELL_RENEW_STEEL_H
+(3114, 52658, 59795, 0, 0), -- SPELL_STATIC_OVERLOAD / H_SPELL_STATIC_OVERLOAD
+(3115, 52780, 59800, 0, 0), -- SPELL_BALL_LIGHTNING / H_SPELL_BALL_LIGHTNING
+(3116, 52961, 59836, 0, 0), -- SPELL_PULSING_SHOCKWAVE_N / SPELL_PULSING_SHOCKWAVE_H
+(3117, 52960, 59835, 0, 0), -- SPELL_LIGHTNING_NOVA_N / SPELL_LIGHTNING_NOVA_H
+(3118, 52237, 59529, 0, 0), -- SPELL_SHATTERING_STOMP_N / SPELL_SHATTERING_STOMP_H
+(3119, 52433, 59530, 0, 0), -- SPELL_IMMOLATION_STRIKE_N / SPELL_IMMOLATION_STRIKE_H
+(3120, 50843, 59742, 0, 0), -- SPELL_BOULDER_TOSS / H_SPELL_BOULDER_TOSS
+(3121, 48131, 59744, 0, 0), -- SPELL_STOMP / H_SPELL_STOMP
+(3122, 50810, 61546, 0, 0), -- SPELL_SHATTER / H_SPELL_SHATTER
+(3123, 50752, 59772, 0, 0), -- SPELL_STORM_OF_GRIEF_N / SPELL_STORM_OF_GRIEF_H
+(3124, 50760, 59726, 0, 0), -- SPELL_SHOCK_OF_SORROW_N / SPELL_SHOCK_OF_SORROW_H
+(3125, 50761, 59727, 0, 0), -- SPELL_PILLAR_OF_WOE_N / SPELL_PILLAR_OF_WOE_H
+(3126, 50761, 59727, 0, 0), -- SPELL_PILLAR_OF_WOE_N / SPELL_PILLAR_OF_WOE_H
+(3127, 50830, 59844, 0, 0), -- SPELL_CHAIN_LIGHTING / H_SPELL_CHAIN_LIGHTING
+(3128, 50831, 59845, 0, 0), -- SPELL_LIGHTING_SHIELD / H_SPELL_LIGHTING_SHIELD
+(3129, 50834, 59846, 0, 0), -- SPELL_STATIC_CHARGE / H_SPELL_STATIC_CHARGE
+(3130, 51849, 59861, 0, 0), -- SPELL_LIGHTING_RING / H_SPELL_LIGHTING_RING
+(3131, 42730, 59735, 0, 0), -- SPELL_WOE_STRIKE / H_SPELL_WOE_STRIKE
+(3132, 42669, 59706, 0, 0), -- SPELL_SMASH / H_SPELL_SMASH
+(3133, 42705, 59707, 0, 0), -- SPELL_ENRAGE / H_SPELL_ENRAGE
+(3134, 42729, 59734, 0, 0), -- SPELL_DREADFUL_ROAR / H_SPELL_DREADFUL_ROAR
+(3135, 42708, 59708, 0, 0), -- SPELL_STAGGERING_ROAR / H_SPELL_STAGGERING_ROAR
+(3136, 42750, 59719, 0, 0), -- SPELL_SHADOW_AXE_DAMAGE / H_SPELL_SHADOW_AXE_DAMAGE
+(3137, 43649, 59575, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3138, 48261, 59268, 0, 0), -- SPELL_IMPALE / H_SPELL_IMPALE
+(3139, 48256, 59267, 0, 0), -- SPELL_WITHERING_ROAR / H_SPELL_WITHERING_ROAR
+(3140, 48140, 59273, 0, 0), -- SPELL_CHAIN_LIGHTING / H_SPELL_CHAIN_LIGHTING
+(3141, 48137, 59265, 0, 0), -- SPELL_MORTAL_WOUND / H_SPELL_MORTAL_WOUND
+(3142, 48130, 59264, 0, 0), -- SPELL_GORE / H_SPELL_GORE
+(3143, 48105, 59263, 0, 0), -- SPELL_GRIEVOUS_WOUND / H_SPELL_GRIEVOUS_WOUND
+(3144, 48133, 59271, 0, 0), -- SPELL_POISON_BREATH / H_SPELL_POISON_BREATH
+(3145, 48133, 59271, 0, 0), -- SPELL_POISON_BREATH / H_SPELL_POISON_BREATH
+(3146, 50234, 59330, 0, 0), -- SPELL_CRUSH / H_SPELL_CRUSH
+(3147, 50225, 59331, 0, 0), -- SPELL_POISONED_SPEAR / H_SPELL_POISONED_SPEAR
+(3148, 15667, 59409, 0, 0), -- SPELL_SINSTER_STRIKE / H_SPELL_SINSTER_STRIKE
+(3149, 48294, 59301, 0, 0), -- SPELL_BANE / H_SPELL_BANE
+(3150, 48291, 59300, 0, 0), -- SPELL_FETID_ROT / H_SPELL_FETID_ROT
+(3151, 48423, 59304, 0, 0), -- SPELL_SPIRIT_STRIKE / H_SPELL_SPIRIT_STRIKE
+(3152, 48529, 59305, 0, 0), -- SPELL_SPIRIT_BURST / H_SPELL_SPIRIT_BURST
+(3153, 58693, 59369, 0, 0), -- SPELL_BLIZZARD / H_SPELL_BLIZZARD
+(3154, 58690, 59283, 0, 0), -- SPELL_TAIL_SWEEP / H_SPELL_TAIL_SWEEP
+(3155, 58688, 59281, 0, 0), -- SPELL_UNCONTROLLABLE_ENERGY / H_SPELL_UNCONTROLLABLE_ENERGY
+(3156, 54479, 59471, 0, 0), -- SPELL_EARTH_SHIELD / H_SPELL_EARTH_SHIELD
+(3157, 54479, 59471, 0, 0), -- SPELL_EARTH_SHIELD / H_SPELL_EARTH_SHIELD
+(3158, 54481, 59473, 0, 0), -- SPELL_CHAIN_HEAL / H_SPELL_CHAIN_HEAL
+(3159, 54312, 59522, 0, 0), -- SPELL_FRENZY / SPELL_FRENZY_H
+(3160, 54237, 59520, 0, 0), -- SPELL_WATER_BLAST / SPELL_WATER_BLAST_H
+(3161, 54241, 59521, 0, 0), -- SPELL_WATER_BOLT_VOLLEY / SPELL_WATER_BOLT_VOLLEY_H
+(3162, 54235, 59468, 0, 0), -- SPELL_FIREBOLT / H_SPELL_FIREBOLT
+(3163, 54282, 59469, 0, 0), -- SPELL_FLAME_BREATH / H_SPELL_FLAME_BREATH
+(3164, 54249, 59594, 0, 0), -- SPELL_LAVA_BURN / H_SPELL_LAVA_BURN
+(3165, 54202, 59483, 0, 0), -- SPELL_ARCANE_BARRAGE_VOLLEY / SPELL_ARCANE_BARRAGE_VOLLEY_H
+(3166, 54226, 59485, 0, 0), -- SPELL_ARCANE_BUFFET / SPELL_ARCANE_BUFFET_H
+(3167, 54160, 59474, 0, 0), -- SPELL_ARCANE_POWER / H_SPELL_ARCANE_POWER
+(3168, 54361, 59743, 0, 0), -- SPELL_VOID_SHIFT / H_SPELL_VOID_SHIFT
+(3169, 54524, 59745, 0, 0), -- SPELL_SHROUD_OF_DARKNESS / H_SPELL_SHROUD_OF_DARKNESS
+(3170, 54342, 59747, 0, 0), -- SPELL_ZURAMAT_ADD_2 / H_SPELL_ZURAMAT_ADD_2
+(3171, 32325, 38760, 0, 0), -- SPELL_VOID_BLAST / H_SPELL_VOID_BLAST
+(3172, 32358, 38759, 0, 0), -- SPELL_DARK_SHELL / H_SPELL_DARK_SHELL
+(3173, 38197, 40425, 0, 0), -- SPELL_ARCANE_EXPLOSION / H_SPELL_ARCANE_EXPLOSION
+(3174, 35059, 40424, 0, 0), -- SPELL_ARCANE_VOLLEY / H_SPELL_ARCANE_VOLLEY
+(3175, 38245, 43309, 0, 0), -- SPELL_POLYMORPH / H_SPELL_POLYMORPH
+(3176, 33617, 39363, 0, 0), -- SPELL_RAIN_OF_FIRE / H_SPELL_RAIN_OF_FIRE
+(3177, 34449, 37924, 0, 0), -- SPELL_WATER_BOLT_VOLLEY / H_SPELL_WATER_BOLT_VOLLEY
+(3178, 31532, 37936, 0, 0), -- SPELL_REPAIR / H_SPELL_REPAIR
+(3179, 33132, 37371, 0, 0), -- SPELL_FIRE_NOVA / H_SPELL_FIRE_NOVA
+(3180, 28599, 40070, 0, 0), -- SPELL_SHADOW_BOLT_VOLLEY / H_SPELL_SHADOW_BOLT_VOLLEY
+(3181, 49381, 59805, 0, 0), -- SPELL_CONSUME_AURA / H_SPELL_CONSUME_AURA
+(3182, 30695, 37566, 0, 0), -- SPELL_TREACHEROUS_AURA / H_SPELL_BANE_OF_TREACHERY
+(3183, 30686, 39297, 0, 0), -- SPELL_SHADOW_BOLT / H_SPELL_SHADOW_BOLT
+(3184, 30641, 36814, 0, 0), -- SPELL_MORTAL_WOUND / H_SPELL_MORTAL_WOUND
+(3185, 30495, 35953, 0, 0), -- SPELL_SHADOW_CLEAVE / H_SPELL_SHADOW_SLAM
+(3186, 30598, 36056, 0, 0), -- SPELL_BURNING_MAUL / H_SPELL_BURNING_MAUL
+(3187, 36924, 39017, 0, 0), -- SPELL_MIND_REND / H_SPELL_MIND_REND
+(3188, 36924, 39017, 0, 0), -- SPELL_MIND_REND / H_SPELL_MIND_REND
+(3189, 37162, 39019, 0, 0), -- SPELL_DOMINATION / H_SPELL_DOMINATION
+(3190, 37162, 39019, 0, 0), -- SPELL_DOMINATION / H_SPELL_DOMINATION
+(3191, 35322, 39193, 0, 0), -- SPELL_SHADOW_POWER / H_SPELL_SHADOW_POWER
+(3192, 35327, 39194, 0, 0), -- SPELL_JACKHAMMER / H_SPELL_JACKHAMMER
+(3193, 35275, 39084, 0, 0), -- SPELL_SUMMON_RAGIN_FLAMES / H_SPELL_SUMMON_RAGIN_FLAMES
+(3194, 35268, 39346, 0, 0); -- SPELL_INFERNO / H_SPELL_INFERNO
+/*!40000 ALTER TABLE `spelldifficulty_dbc` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

@@ -149,6 +149,9 @@ typedef UNORDERED_MAP<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
 #define MIN_CREATURE_AI_TEXT_STRING_ID (-1)                 // 'creature_ai_texts'
 #define MAX_CREATURE_AI_TEXT_STRING_ID (-1000000)
 
+// Trinity Trainer Reference start range
+#define TRINITY_TRAINER_START_REF      200000
+
 struct TrinityStringLocale
 {
     std::vector<std::string> Content;                       // 0 -> default, i -> i-1 locale index
@@ -693,7 +696,6 @@ class ObjectMgr
         void LoadTavernAreaTriggers();
         void LoadGameObjectForQuests();
 
-        void LoadItemTexts();
         void LoadPageTexts();
 
         void LoadPlayerInfo();
@@ -767,20 +769,8 @@ class ObjectMgr
         uint32 GenerateAuctionID();
         uint64 GenerateEquipmentSetGuid();
         uint32 GenerateGuildId();
-        uint32 GenerateItemTextID();
         uint32 GenerateMailID();
         uint32 GeneratePetNumber();
-
-        uint32 CreateItemText(std::string text);
-        void AddItemText(uint32 itemTextId, std::string text) { mItemTexts[itemTextId] = text; }
-        std::string GetItemText(uint32 id)
-        {
-            ItemTextMap::const_iterator itr = mItemTexts.find(id);
-            if (itr != mItemTexts.end())
-                return itr->second;
-            else
-                return "There is no info for this item";
-        }
 
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         ExclusiveQuestGroups mExclusiveQuestGroups;
@@ -1070,15 +1060,12 @@ class ObjectMgr
 
         typedef UNORDERED_MAP<uint32, GossipText> GossipTextMap;
         typedef UNORDERED_MAP<uint32, uint32> QuestAreaTriggerMap;
-        typedef UNORDERED_MAP<uint32, std::string> ItemTextMap;
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
 
         GroupSet            mGroupSet;
         GuildMap            mGuildMap;
         ArenaTeamMap        mArenaTeamMap;
-
-        ItemTextMap         mItemTexts;
 
         QuestAreaTriggerMap mQuestAreaTriggerMap;
         TavernAreaTriggerSet mTavernAreaTriggerSet;

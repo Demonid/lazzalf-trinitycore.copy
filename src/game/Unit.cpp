@@ -1745,6 +1745,10 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
     // Need remove expired auras after
     bool existExpired = false;
     TriggeredSpellInfoVct triggeredSpells;
+
+    // Incanter's Absorption, for converting to spell power
+    int32 incanterAbsorption = 0;
+
     // absorb without mana cost
     AuraEffectList const& vSchoolAbsorb = pVictim->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB);
     for (AuraEffectList::const_iterator i = vSchoolAbsorb.begin(); i != vSchoolAbsorb.end() && RemainingDamage > 0; ++i)
@@ -1994,6 +1998,11 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
 
         RemainingDamage -= currentAbsorb;
 
+        // Fire Ward or Frost Ward or Ice Barrier (or Mana Shield)
+        // for Incanter's Absorption converting to spell power
+        if (spellProto->SpellFamilyName == SPELLFAMILY_MAGE && spellProto->SpellFamilyFlags[2] & 0x000008)
+            incanterAbsorption += currentAbsorb;
+
         // Reduce shield amount
         (*i)->SetAmount((*i)->GetAmount() -currentAbsorb);
         // Need remove it later
@@ -2058,6 +2067,11 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
             int32 manaReduction = int32(currentAbsorb * manaMultiplier);
             pVictim->ApplyPowerMod(POWER_MANA, manaReduction, false);
         }
+
+        // Mana Shield (or Fire Ward or Frost Ward or Ice Barrier)
+        // for Incanter's Absorption converting to spell power
+        if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_MAGE && (*i)->GetSpellProto()->SpellFamilyFlags[2] & 0x000008)
+            incanterAbsorption += currentAbsorb;
 
         (*i)->SetAmount((*i)->GetAmount()-currentAbsorb);
         if ((*i)->GetAmount() <= 0)
@@ -2181,7 +2195,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
 
     *absorb = RemainingDamage > 0 ? (damage - RemainingDamage - *resist) : (damage - *resist);
 
-    if (*absorb)
+    // Incanter's Absorption, if have affective absorbing
+    if (incanterAbsorption)
     {
         // Incanter's Absorption
         // TODO: move this code to procflag
@@ -2195,10 +2210,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                     current_dmg += bonusEff->GetAmount();
 
             int32 new_dmg = (int32)*absorb * aurEff->GetAmount() / 100;
-            int32 max_dmg = (int32)pVictim->GetMaxHealth() * 5 / 100;
-            // Do not apply more auras if more than 5% hp
-            if (current_dmg + new_dmg > max_dmg)
-                new_dmg = max_dmg - current_dmg;
             if (new_dmg > 0)
                 pVictim->CastCustomSpell(pVictim, 44413, &new_dmg, NULL, NULL, true);
         }
@@ -5743,11 +5754,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             {
                 // Glyph of Polymorph
                 case 56375:
-                {
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409)); // SW:D shall not be removed.
                     target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
                     return true;
-                }
                 // Glyph of Icy Veins
                 case 56374:
                 {
@@ -6927,7 +6936,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         return false;
                     }
 
-                    int32 extra_attack_power = CalculateSpellDamage(windfurySpellEntry, 1, windfurySpellEntry->EffectBasePoints[1], pVictim);
+                    int32 extra_attack_power = CalculateSpellDamage(pVictim, windfurySpellEntry, 1);
 
                     // Value gained from additional AP
                     basepoints0 = int32(extra_attack_power/14.0f * GetAttackTime(BASE_ATTACK)/1000);
@@ -7255,20 +7264,22 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             if (dummySpell->Id == 49028)
             {
                 // 1 dummy aura for dismiss rune blade
-                if (effIndex != 2)
+                if (effIndex != 1)
                     return false;
-                uint64 PetGUID = NULL;
+
+                Unit* pPet = NULL;
                 for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr) //Find Rune Weapon
                     if ((*itr)->GetEntry() == 27893)
                     {
-                        PetGUID = (*itr)->GetGUID();
+                        pPet = (*itr);
                         break;
                     }
 
-                if (PetGUID && pVictim && damage && procSpell)
+                if (pPet && pPet->getVictim() && damage && procSpell)
                 {
-                    int32 procDmg = damage / 2;
-                    CastCustomSpell(pVictim, procSpell->Id, &procDmg, NULL, NULL, true, NULL, NULL, PetGUID);
+                    uint32 procDmg = damage / 2;
+                    pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(),procSpell->Id,procDmg,GetSpellSchoolMask(procSpell),0,0,false,0,false);
+                    pPet->DealDamage(pPet->getVictim(),procDmg,NULL,SPELL_DIRECT_DAMAGE,GetSpellSchoolMask(procSpell),procSpell,true);
                     break;
                 }
                 else
@@ -7449,7 +7460,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         else
                             continue;
 
-                        basepoints0 = CalculateSpellDamage(procSpell,i,procSpell->EffectBasePoints[i],this) * 0.4f;
+                        basepoints0 = CalculateSpellDamage(this, procSpell,i) * 0.4f;
                         CastCustomSpell(this,triggered_spell_id,&basepoints0,NULL,NULL,true,NULL,triggeredByAura);
                     }
                     return true;
@@ -7858,7 +7869,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                     {
                         if ((*i)->GetMiscValue() == SPELLMOD_CHANCE_OF_SUCCESS && (*i)->GetSpellProto()->SpellIconID == 113)
                         {
-                            int32 value2 = CalculateSpellDamage((*i)->GetSpellProto(),2,(*i)->GetSpellProto()->EffectBasePoints[2],this);
+                            int32 value2 = CalculateSpellDamage(this, (*i)->GetSpellProto(),2);
                             basepoints0 = value2 * GetMaxPower(POWER_MANA) / 100;
                             // Drain Soul
                             CastCustomSpell(this, 18371, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
@@ -9804,7 +9815,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 // effect 1 m_amount
                 int32 maxPercent = (*i)->GetAmount();
                 // effect 0 m_amount
-                int32 stepPercent = CalculateSpellDamage((*i)->GetSpellProto(), 0, (*i)->GetSpellProto()->EffectBasePoints[0], this);
+                int32 stepPercent = CalculateSpellDamage(this, (*i)->GetSpellProto(), 0);
                 // count affliction effects and calc additional damage in percentage
                 int32 modPercent = 0;
                 AuraApplicationMap const &victimAuras = pVictim->GetAppliedAuras();
@@ -12326,7 +12337,7 @@ int32 Unit::ApplyEffectModifiers(SpellEntry const* spellProto, uint8 effect_inde
     return value;
 }
 
-int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_index, int32 effBasePoints, Unit const* /*target*/)
+int32 Unit::CalculateSpellDamage(Unit const* target, SpellEntry const* spellProto, uint8 effect_index, int32 const* effBasePoints)
 {
     int32 level = int32(getLevel());
     if (level > int32(spellProto->maxLevel) && spellProto->maxLevel > 0)
@@ -12336,17 +12347,27 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     level -= int32(spellProto->spellLevel);
 
     float basePointsPerLevel = spellProto->EffectRealPointsPerLevel[effect_index];
-    float randomPointsPerLevel = spellProto->EffectDicePerLevel[effect_index];
-    int32 basePoints = int32(effBasePoints + level * basePointsPerLevel);
-    int32 randomPoints = int32(spellProto->EffectDieSides[effect_index] + level * randomPointsPerLevel);
+    int32 basePoints = effBasePoints ? *effBasePoints - 1 : spellProto->EffectBasePoints[effect_index];
+    basePoints += int32(level * basePointsPerLevel);
+    int32 randomPoints = int32(spellProto->EffectDieSides[effect_index]);
 
-    // range can have possitive and negative values, so order its for irand
-    int32 randvalue = int32(spellProto->EffectBaseDice[effect_index]) >= randomPoints
-        ? irand(randomPoints, int32(spellProto->EffectBaseDice[effect_index]))
-        : irand(int32(spellProto->EffectBaseDice[effect_index]), randomPoints);
+    switch(randomPoints)
+    {
+        case 0:                                             // not used
+        case 1: basePoints += 1; break;                     // range 1..1
+        default:
+            // range can have positive (1..rand) and negative (rand..1) values, so order its for irand
+            int32 randvalue = (randomPoints >= 1)
+                ? irand(1, randomPoints)
+                : irand(randomPoints, 1);
 
-    int32 value = basePoints + randvalue;
-    //random damage
+            basePoints += randvalue;
+            break;
+    }
+
+    int32 value = basePoints;
+
+    // random damage
     //if (comboDamage != 0 && unitPlayer /*&& target && (target->GetGUID() == unitPlayer->GetComboTarget())*/)
     if  (m_movedPlayer)
         if (uint8 comboPoints = m_movedPlayer->GetComboPoints())

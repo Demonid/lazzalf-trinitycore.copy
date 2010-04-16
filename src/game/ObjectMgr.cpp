@@ -3656,11 +3656,17 @@ void ObjectMgr::LoadQuests()
         if (qinfo->QuestFlags & ~QUEST_TRINITY_FLAGS_DB_ALLOWED)
         {
             sLog.outErrorDb("Quest %u has `SpecialFlags` = %u > max allowed value. Correct `SpecialFlags` to value <= %u",
-                qinfo->GetQuestId(),qinfo->QuestFlags,QUEST_TRINITY_FLAGS_DB_ALLOWED >> 16);
+                qinfo->GetQuestId(),qinfo->QuestFlags  >> 20, QUEST_TRINITY_FLAGS_DB_ALLOWED >> 20);
             qinfo->QuestFlags &= QUEST_TRINITY_FLAGS_DB_ALLOWED;
         }
 
-        if (qinfo->QuestFlags & (QUEST_FLAGS_DAILY | QUEST_FLAGS_WEEKLY))
+        if (qinfo->QuestFlags & QUEST_FLAGS_DAILY && qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
+        {
+            sLog.outErrorDb("Weekly Quest %u is marked as daily quest in `QuestFlags`, removed daily flag.",qinfo->GetQuestId());
+            qinfo->QuestFlags &= ~QUEST_FLAGS_DAILY;
+        }
+
+        if (qinfo->QuestFlags & QUEST_FLAGS_DAILY)
         {
             if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
             {
@@ -3669,10 +3675,19 @@ void ObjectMgr::LoadQuests()
             }
         }
 
+        if (qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
+        {
+            if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
+            {
+                sLog.outErrorDb("Weekly Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
+                qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
+            }
+        }
+
         if (qinfo->QuestFlags & QUEST_FLAGS_AUTO_REWARDED)
         {
             // at auto-reward can be rewarded only RewChoiceItemId[0]
-            for (uint8 j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j)
+            for(int j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j )
             {
                 if (uint32 id = qinfo->RewChoiceItemId[j])
                 {
@@ -4637,7 +4652,6 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
                     continue;
                 }
 
-                // if (!objmgr.GetMangosStringLocale(tmp.dataint)) will checked after db_script_string loading
                 break;
             }
 
@@ -4982,41 +4996,6 @@ void ObjectMgr::LoadGossipScripts()
     // checks are done in LoadGossipMenuItems
 }
 
-void ObjectMgr::LoadItemTexts()
-{
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT id, text FROM item_text");
-
-    uint32 count = 0;
-
-    if (!result)
-    {
-        barGoLink bar(1);
-        bar.step();
-
-        sLog.outString();
-        sLog.outString(">> Loaded %u item pages", count);
-        return;
-    }
-
-    barGoLink bar(result->GetRowCount());
-
-    Field* fields;
-    do
-    {
-        bar.step();
-
-        fields = result->Fetch();
-
-        mItemTexts[ fields[0].GetUInt32() ] = fields[1].GetCppString();
-
-        ++count;
-
-    } while (result->NextRow());
-
-    sLog.outString();
-    sLog.outString(">> Loaded %u item texts", count);
-}
-
 void ObjectMgr::LoadPageTexts()
 {
     sPageTextStore.Free();                                  // for reload case
@@ -5274,9 +5253,9 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
     sLog.outDebug("Returning mails current time: hour: %d, minute: %d, second: %d ", localtime(&basetime)->tm_hour, localtime(&basetime)->tm_min, localtime(&basetime)->tm_sec);
     //delete all old mails without item and without body immediately, if starting server
     if (!serverUp)
-        CharacterDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" UI64FMTD "' AND has_items = '0' AND itemTextId = 0", (uint64)basetime);
+        CharacterDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" UI64FMTD "' AND has_items = '0' AND body = ''", (uint64)basetime);
     //                                                     0  1           2      3        4          5         6           7   8       9
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,itemTextId,has_items,expire_time,cod,checked,mailTemplateId FROM mail WHERE expire_time < '" UI64FMTD "'", (uint64)basetime);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,has_items,expire_time,cod,checked,mailTemplateId FROM mail WHERE expire_time < '" UI64FMTD "'", (uint64)basetime);
     if (!result)
     {
         barGoLink bar(1);
@@ -5305,13 +5284,12 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->messageType = fields[1].GetUInt8();
         m->sender = fields[2].GetUInt32();
         m->receiver = fields[3].GetUInt32();
-        m->itemTextId = fields[4].GetUInt32();
-        bool has_items = fields[5].GetBool();
-        m->expire_time = (time_t)fields[6].GetUInt64();
+        bool has_items = fields[4].GetBool();
+        m->expire_time = (time_t)fields[5].GetUInt64();
         m->deliver_time = 0;
-        m->COD = fields[7].GetUInt32();
-        m->checked = fields[8].GetUInt32();
-        m->mailTemplateId = fields[9].GetInt16();
+        m->COD = fields[6].GetUInt32();
+        m->checked = fields[7].GetUInt32();
+        m->mailTemplateId = fields[8].GetInt16();
 
         Player *pl = 0;
         if (serverUp)
@@ -5340,7 +5318,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 while (resultItems->NextRow());
             }
             //if it is mail from AH, it shouldn't be returned, but deleted
-            if (m->messageType != MAIL_NORMAL || (m->checked & (MAIL_CHECK_MASK_AUCTION | MAIL_CHECK_MASK_COD_PAYMENT | MAIL_CHECK_MASK_RETURNED)))
+            if (m->messageType != MAIL_NORMAL || m->messageType == MAIL_AUCTION || (m->checked & (MAIL_CHECK_MASK_COD_PAYMENT | MAIL_CHECK_MASK_RETURNED)))
             {
                 // mail open and then not returned
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
@@ -5354,9 +5332,6 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 continue;
             }
         }
-
-        if (m->itemTextId)
-            CharacterDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
 
         //deletemail = true;
         //delmails << m->messageID << ", ";
@@ -6193,10 +6168,6 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         m_mailid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM item_text");
-    if (result)
-        m_ItemTextId = (*result)[0].GetUInt32()+1;
-
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM corpse");
     if (result)
         m_hiCorpseGuid = (*result)[0].GetUInt32()+1;
@@ -6262,30 +6233,6 @@ uint32 ObjectMgr::GenerateMailID()
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_mailid++;
-}
-
-uint32 ObjectMgr::GenerateItemTextID()
-{
-    if (m_ItemTextId >= 0xFFFFFFFE)
-    {
-        sLog.outError("Item text ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return m_ItemTextId++;
-}
-
-uint32 ObjectMgr::CreateItemText(std::string text)
-{
-    uint32 newItemTextId = GenerateItemTextID();
-    //insert new itempage to container
-    mItemTexts[ newItemTextId ] = text;
-    //save new itempage
-    CharacterDatabase.escape_string(text);
-    //any Delete query needed, itemTextId is maximum of all ids
-    std::ostringstream query;
-    query << "INSERT INTO item_text (id,text) VALUES ('" << newItemTextId << "', '" << text << "')";
-    CharacterDatabase.Execute(query.str().c_str());         //needs to be run this way, because mail body may be more than 1024 characters
-    return newItemTextId;
 }
 
 uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
@@ -8516,9 +8463,11 @@ void ObjectMgr::LoadMailLevelRewards()
 
 bool ObjectMgr::AddSpellToTrainer(int32 entry, int32 spell, Field *fields, std::set<uint32> *skip_trainers, std::set<uint32> *talentIds)
 {
-    CreatureInfo const* cInfo = GetCreatureTemplate(entry);
+    if (entry >= TRINITY_TRAINER_START_REF)
+        return false;
 
-    if (!cInfo && entry > 0)
+    CreatureInfo const* cInfo = GetCreatureTemplate(entry);
+    if (!cInfo)
     {
         sLog.outErrorDb("Table `npc_trainer` have entry for not existed creature template (Entry: %u), ignore", entry);
         return false;
@@ -8598,27 +8547,17 @@ bool ObjectMgr::AddSpellToTrainer(int32 entry, int32 spell, Field *fields, std::
             break;
         }
     }
-
     return true;
 }
-
 int ObjectMgr::LoadReferenceTrainer(int32 trainer, int32 spell, std::set<uint32> *skip_trainers, std::set<uint32> *talentIds)
 {
     QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT entry, spell,spellcost,reqskill,reqskillvalue,reqlevel FROM npc_trainer WHERE entry='%d'", spell);
     if (!result)
-    {
-        barGoLink bar(1);
-
-        bar.step();
         return 0;
-    }
-
-    barGoLink bar(result->GetRowCount());
 
     uint32 count = 0;
     do
     {
-        bar.step();
 
         Field* fields = result->Fetch();
 

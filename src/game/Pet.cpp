@@ -378,6 +378,9 @@ void Pet::SavePetToDB(PetSaveMode mode)
     uint32 curhealth = GetHealth();
     uint32 curmana = GetPower(POWER_MANA);
 
+    // save auras before possibly removing them
+    _SaveAuras();
+
     // stable and not in slot saves
     if (mode > PET_SAVE_AS_CURRENT)
     {
@@ -386,7 +389,6 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
     _SaveSpells();
     _SaveSpellCooldowns();
-    _SaveAuras();
 
     // current/stable/not_in_slot
     if (mode >= PET_SAVE_AS_CURRENT)
@@ -974,6 +976,19 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
                     break;
                 }
+                case 19668: // Shadowfiend
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10*petlevel);
+                        SetCreateHealth(28 + 30*petlevel);
+                    }
+                    int32 bonus_dmg = (int32(m_owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW)* 0.3f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + bonus_dmg));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + bonus_dmg));
+
+                    break;
+                }
                 case 19833: //Snake Trap - Venomous Snake
                 {
                     SetCreateHealth(uint32(107 * (petlevel - 40) * 0.025f));
@@ -1266,7 +1281,8 @@ void Pet::_SaveAuras()
 
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end() ; ++itr)
     {
-        if (!itr->second->CanBeSaved())
+        // check if the aura has to be saved
+        if (!itr->second->CanBeSaved() || IsPetAura(itr->second))
             continue;
 
         Aura * aura = itr->second;
@@ -1944,6 +1960,24 @@ void Pet::CastPetAura(PetAura const* aura)
     }
     else
         CastSpell(this, auraId, true);
+}
+
+bool Pet::IsPetAura(Aura const* aura)
+{
+    Unit* owner = GetOwner();
+
+    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        PetAura const* pa = spellmgr.GetPetAura(aura->GetId(),i);
+
+        // if the owner has that pet aura, return true
+        if (owner->m_petAuras.find(pa) != owner->m_petAuras.end())
+            return true;
+    }
+    return false;
 }
 
 void Pet::learnSpellHighRank(uint32 spellid)
