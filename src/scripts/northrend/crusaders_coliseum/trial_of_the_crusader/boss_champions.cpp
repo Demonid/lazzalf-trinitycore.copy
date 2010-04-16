@@ -149,7 +149,7 @@ struct  npc_warriorAI : public ScriptedAI
 
     void Reset()
     {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
 		Mortal_Strike_Timer = 6000;
 		Bladestorm_Timer = 20000;
 		Rolling_Throw_Timer = 30000;
@@ -166,7 +166,7 @@ struct  npc_warriorAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -176,16 +176,16 @@ struct  npc_warriorAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-		if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
 		            
 	}
@@ -197,27 +197,27 @@ struct  npc_warriorAI : public ScriptedAI
 
 		if (Mortal_Strike_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE_H);
+			DoCast(me->getVictim(), SPELL_MORTAL_STRIKE_H);
             Mortal_Strike_Timer = 6000;
         }else Mortal_Strike_Timer -= diff;  
 
 		if (Rolling_Throw_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_ROLLING_THROW);
+			DoCast(me->getVictim(), SPELL_ROLLING_THROW);
             Rolling_Throw_Timer = 30000;
         }else Rolling_Throw_Timer -= diff;
 
 		if (Bladestorm_Timer < diff)
         {
-			DoCast(m_creature, SPELL_BLADESTORM);
+			DoCast(me, SPELL_BLADESTORM);
             Bladestorm_Timer = 90000;
         }else Bladestorm_Timer -= diff;
 
 		if (intercept_check < diff)
 		{
-			if (!m_creature->IsWithinDistInMap(m_creature->getVictim(), 8) && m_creature->IsWithinDistInMap(m_creature->getVictim(), 25) && Intercept_Cooldown < diff)
+			if (!me->IsWithinDistInMap(me->getVictim(), 8) && me->IsWithinDistInMap(me->getVictim(), 25) && Intercept_Cooldown < diff)
 			{
-				DoCast(m_creature->getVictim(), SPELL_INTERCEPT);
+				DoCast(me->getVictim(), SPELL_INTERCEPT);
 				Intercept_Cooldown = 15000;
 			}
 			intercept_check = 1000;
@@ -255,7 +255,7 @@ struct  npc_mageAI : public ScriptedAI
 
     void Reset()
     {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
 		Fireball_Timer = 0;
 		Blast_Wave_Timer = 20000;
 		Haste_Timer = 9000;
@@ -271,7 +271,7 @@ struct  npc_mageAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -281,16 +281,16 @@ struct  npc_mageAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-		if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
  
 	}
@@ -302,19 +302,19 @@ struct  npc_mageAI : public ScriptedAI
 
 		if (Fireball_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FIREBALL_H);
+            DoCast(me->getVictim(), SPELL_FIREBALL_H);
             Fireball_Timer = 3000;
         }else Fireball_Timer -= diff;  
 
 		if (Blast_Wave_Timer < diff)
         {
-			DoCast(m_creature, SPELL_BLAST_WAVE_H);
+			DoCast(me, SPELL_BLAST_WAVE_H);
             Blast_Wave_Timer = 20000;
         }else Blast_Wave_Timer -= diff;
 
 		if (Haste_Timer < diff)
         {
-			DoCast(m_creature, SPELL_HASTE);
+			DoCast(me, SPELL_HASTE);
             Haste_Timer = 10000;
         }else Haste_Timer -= diff;
 
@@ -356,7 +356,7 @@ struct  npc_shaman_enchAI : public ScriptedAI
 
     void Reset()
     {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
 		Chain_Lightning_Timer = 1000;
 		Earth_Shield_Timer = 5000;
 		Healing_Wave_Timer = 13000;
@@ -372,7 +372,7 @@ struct  npc_shaman_enchAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-	            m_creature->ForcedDespawn();
+	            me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -382,16 +382,16 @@ struct  npc_shaman_enchAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-		if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
 
 	}
@@ -403,20 +403,20 @@ struct  npc_shaman_enchAI : public ScriptedAI
 
 		if (Chain_Lightning_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING_H);
+			DoCast(me->getVictim(), SPELL_CHAIN_LIGHTNING_H);
             Chain_Lightning_Timer = 10000;
         }else Chain_Lightning_Timer -= diff;  
 
 		if (Hex_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_HEX_OF_MENDING);
+			DoCast(me->getVictim(), SPELL_HEX_OF_MENDING);
             Hex_Timer = 20000;
         }else Hex_Timer -= diff;
 
 	if (Healing_Wave_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_HEALING_WAVE);
                     Healing_Wave_Timer = 8000;
@@ -425,8 +425,8 @@ struct  npc_shaman_enchAI : public ScriptedAI
 
 	if (Earth_Shield_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(!target->HasAura(SPELL_EARTH_SHIELD,m_creature->GetGUID()) && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(!target->HasAura(SPELL_EARTH_SHIELD,me->GetGUID()) && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_EARTH_SHIELD);
                     Earth_Shield_Timer = 25000;
@@ -462,7 +462,7 @@ struct  npc_hunterAI : public ScriptedAI
 
     void Reset()
     {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
 		Shoot_Timer = 0;
 		Lightning_Arrows_Timer = 13000;
 		Multi_Shot_Timer = 10000;
@@ -480,7 +480,7 @@ struct  npc_hunterAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -490,16 +490,16 @@ struct  npc_hunterAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
 	}
 
@@ -510,13 +510,13 @@ struct  npc_hunterAI : public ScriptedAI
 
 		if (enemy_check < diff)
 		{
-			if (!m_creature->IsWithinDistInMap(m_creature->getVictim(), 8) && m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
+			if (!me->IsWithinDistInMap(me->getVictim(), 8) && me->IsWithinDistInMap(me->getVictim(), 30))
 			{
-				m_creature->SetSpeed(MOVE_RUN, 0.0001);
+				me->SetSpeed(MOVE_RUN, 0.0001);
 			}
 			else
 			{
-				m_creature->SetSpeed(MOVE_RUN, 1);
+				me->SetSpeed(MOVE_RUN, 1);
 			}
 			enemy_check = 100;
 		}else enemy_check -= diff;
@@ -526,29 +526,29 @@ struct  npc_hunterAI : public ScriptedAI
 
 		if (Shoot_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_SHOOT);
+			DoCast(me->getVictim(), SPELL_SHOOT);
             Shoot_Timer = 3000;
         }else Shoot_Timer -= diff;  
 
 		if (Multi_Shot_Timer < diff)
         {
-			m_creature->CastStop(SPELL_SHOOT);
-			DoCast(m_creature->getVictim(), SPELL_MULTI_SHOT);
+			me->CastStop(SPELL_SHOOT);
+			DoCast(me->getVictim(), SPELL_MULTI_SHOT);
             Multi_Shot_Timer = 10000;
         }else Multi_Shot_Timer -= diff;
 
 		if (Lightning_Arrows_Timer < diff)
         {
-			m_creature->CastStop(SPELL_SHOOT);
-			DoCast(m_creature, SPELL_LIGHTNING_ARROWS);
+			me->CastStop(SPELL_SHOOT);
+			DoCast(me, SPELL_LIGHTNING_ARROWS);
             Lightning_Arrows_Timer = 25000;
         }else Lightning_Arrows_Timer -= diff;
 
 		if (disengage_check < diff)
 		{
-			if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5) && Disengage_Cooldown == 0)
+			if (me->IsWithinDistInMap(me->getVictim(), 5) && Disengage_Cooldown == 0)
 			{
-				DoCast(m_creature, SPELL_DISENGAGE);
+				DoCast(me, SPELL_DISENGAGE);
 				Disengage_Cooldown = 15000;
 			}
 			disengage_check = 1000;
@@ -580,7 +580,7 @@ struct  npc_rogueAI : public ScriptedAI
 
     void Reset()
     {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
 		Eviscerate_Timer = 15000;
 		FoK_Timer = 10000;
 		Poison_Timer = 7000;
@@ -595,7 +595,7 @@ struct  npc_rogueAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -605,16 +605,16 @@ struct  npc_rogueAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -625,20 +625,20 @@ struct  npc_rogueAI : public ScriptedAI
 
 		if (Eviscerate_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_EVISCERATE_H);
+			DoCast(me->getVictim(), SPELL_EVISCERATE_H);
             Eviscerate_Timer = 10000;
         }else Eviscerate_Timer -= diff;  
 
 		if (FoK_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_FAN_OF_KNIVES);
+			DoCast(me->getVictim(), SPELL_FAN_OF_KNIVES);
 			FoK_Timer = 7000;
         }else FoK_Timer -= diff;
 
 		if (Poison_Timer < diff)
         {
 			if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-				DoCast(m_creature, SPELL_POISON_BOTTLE);
+				DoCast(me, SPELL_POISON_BOTTLE);
             Poison_Timer = 6000;
         }else Poison_Timer -= diff;
 		
@@ -684,7 +684,7 @@ struct  npc_paladin_retroAI : public ScriptedAI
 
 	 void Reset()
      {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
          Aventure_Wrath_Timer = 180000;
 	     Crusuader_Strike_Timer = 6000;
 	     Divine_Shield_Timer = 300000;
@@ -705,7 +705,7 @@ struct  npc_paladin_retroAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -715,16 +715,16 @@ struct  npc_paladin_retroAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
 	}
 
@@ -735,38 +735,38 @@ struct  npc_paladin_retroAI : public ScriptedAI
 
 		if (Crusuader_Strike_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CRUSUADER_STRIKE);
+			DoCast(me->getVictim(), SPELL_CRUSUADER_STRIKE);
             Crusuader_Strike_Timer = 6000;
         }else Crusuader_Strike_Timer -= diff;  
 
 		if (Devine_Storm_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_DIVINE_STORM);
+			DoCast(me->getVictim(), SPELL_DIVINE_STORM);
 			Devine_Storm_Timer = 10000;
         }else Devine_Storm_Timer -= diff;
 
 		if (Hummer_of_Justice_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_HUMMER_OF_JUSTICE);
+			DoCast(me->getVictim(), SPELL_HUMMER_OF_JUSTICE);
             Hummer_of_Justice_Timer = 40000;
         }else Hummer_of_Justice_Timer -= diff;
 
         if (Jundgement_of_Command_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_JUNDGEMENT_OF_COMMAND);
+			DoCast(me->getVictim(), SPELL_JUNDGEMENT_OF_COMMAND);
             Jundgement_of_Command_Timer = 8000;
         }else Jundgement_of_Command_Timer -= diff;
 
 		if(Repentance_Timer < diff)
 		  {
-		     DoCast(m_creature->getVictim(), SPELL_REPENTANCE);
+		     DoCast(me->getVictim(), SPELL_REPENTANCE);
              Repentance_Timer = 60000;
           }else Repentance_Timer -= diff; 
 
 		if(Divine_Shield_Timer < diff)
 		  {
-			  if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(m_creature))
+			  if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(me))
                 {
 					DoCast(target, SPELL_DIVINE_SHIELD);
                     Divine_Shield_Timer = 300000;
@@ -775,8 +775,8 @@ struct  npc_paladin_retroAI : public ScriptedAI
 
 		if(Hand_of_Protection_Timer < diff)
 		  {
-			  if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(m_creature))
+			  if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(me))
                 {
 					DoCast(target, SPELL_HAND_OF_PROTECTION);
                     Hand_of_Protection_Timer = 300000;
@@ -820,7 +820,7 @@ struct  npc_death_knightAI : public ScriptedAI
 
 	 void Reset()
      {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
         Chain_of_Ice_Timer = 8000;
 		Frost_Strike_Timer = 6000;
 		Death_Coil_Timer = 5000;
@@ -838,7 +838,7 @@ struct  npc_death_knightAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -848,16 +848,16 @@ struct  npc_death_knightAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -868,25 +868,25 @@ struct  npc_death_knightAI : public ScriptedAI
 
 		if (Chain_of_Ice_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CHAINS_OF_ICE);
+			DoCast(me->getVictim(), SPELL_CHAINS_OF_ICE);
             Chain_of_Ice_Timer = 8000;
         }else Chain_of_Ice_Timer -= diff;  
 
 		if (Frost_Strike_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_FROST_STRIKE);
+			DoCast(me->getVictim(), SPELL_FROST_STRIKE);
 			Frost_Strike_Timer = 6000;
         }else Frost_Strike_Timer -= diff;
 
 		if (Death_Coil_Timer < diff)
         {
-			DoCast(m_creature, SPELL_DEATH_COIL);
+			DoCast(me, SPELL_DEATH_COIL);
             Death_Coil_Timer = 5000;
         }else Death_Coil_Timer -= diff;
 
         if (Death_Grip_Timer < diff)
         {
-			DoCast(m_creature, SPELL_DEATH_GRIP);
+			DoCast(me, SPELL_DEATH_GRIP);
             Death_Grip_Timer = 20000;
         }else Death_Grip_Timer -= diff;
 
@@ -902,7 +902,7 @@ struct  npc_death_knightAI : public ScriptedAI
 		/*if(Icebond_Fortitude_Timer < diff)
 		  {
 		     //need cheak of target cast for self 
-		     DoCast(m_creature, SPELL_ICEBOUND_FORTITUDE);
+		     DoCast(me, SPELL_ICEBOUND_FORTITUDE);
              Icebond_Fortitude_Timer = 60000;
           }else Icebond_Fortitude_Timer -= diff; */
 
@@ -943,7 +943,7 @@ struct  npc_paladin_holyAI : public ScriptedAI
 
 	 void Reset()
      {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
          Cleance_Timer = 0;
 	     Flash_of_Light_Timer = 0;
 	     Divine_Shield_Timer = 300000;
@@ -963,7 +963,7 @@ struct  npc_paladin_holyAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -973,16 +973,16 @@ struct  npc_paladin_holyAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -993,40 +993,40 @@ struct  npc_paladin_holyAI : public ScriptedAI
 
 		if (Flash_of_Light_Timer < diff)
         {
-			if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+			if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
-					DoCast(m_creature->getVictim(), SPELL_FLASH_OF_LIGHT);
+					DoCast(me->getVictim(), SPELL_FLASH_OF_LIGHT);
                     Flash_of_Light_Timer = 0;
 				}
         }else Flash_of_Light_Timer -= diff;  
 
 		if (Holy_Light_Timer < diff)
         {
-			if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+			if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
-					DoCast(m_creature->getVictim(), SPELL_HOLY_LIGHT);
+					DoCast(me->getVictim(), SPELL_HOLY_LIGHT);
 			        Holy_Light_Timer = 0;
 				}
         }else Holy_Light_Timer -= diff;
 
 		if (Hummer_of_Justice_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_HUMMER_OF_JUSTICE);
+			DoCast(me->getVictim(), SPELL_HUMMER_OF_JUSTICE);
             Hummer_of_Justice_Timer = 40000;
         }else Hummer_of_Justice_Timer -= diff;
 
         if (Holy_Shock_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_HOLY_SHOCK);
+			DoCast(me->getVictim(), SPELL_HOLY_SHOCK);
             Holy_Shock_Timer = 6000;
         }else Holy_Shock_Timer -= diff;
 
 		if(Divine_Shield_Timer < diff)
 		  {
-			  if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(m_creature))
+			  if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(me))
                 {
 					DoCast(target, SPELL_DIVINE_SHIELD);
                     Divine_Shield_Timer = 300000;
@@ -1035,8 +1035,8 @@ struct  npc_paladin_holyAI : public ScriptedAI
 
 		if(Hand_of_Protection_Timer < diff)
 		  {
-			  if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(m_creature))
+			  if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(me))
                 {
 					DoCast(target, SPELL_HAND_OF_PROTECTION);
                     Hand_of_Protection_Timer = 300000;
@@ -1085,7 +1085,7 @@ struct  npc_druid_balansAI : public ScriptedAI
 
 	 void Reset()
      {
-		m_creature->SetRespawnDelay(999999999);
+		me->SetRespawnDelay(999999999);
           Barkskin_Timer = 60000;
 	      Cyclone_Timer = 6000;
 	      Entangling_Roots_Timer = 10000;
@@ -1106,7 +1106,7 @@ struct  npc_druid_balansAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1116,16 +1116,16 @@ struct  npc_druid_balansAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -1136,49 +1136,49 @@ struct  npc_druid_balansAI : public ScriptedAI
 
 		if (Cyclone_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CYCLONE);
+			DoCast(me->getVictim(), SPELL_CYCLONE);
             Cyclone_Timer = 6000;
         }else Cyclone_Timer -= diff;  
 
 		if (Entangling_Roots_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_ENTANGLING_ROOTS);
+			DoCast(me->getVictim(), SPELL_ENTANGLING_ROOTS);
 			Entangling_Roots_Timer = 10000;
         }else Entangling_Roots_Timer -= diff;
 
 		if (Faerie_Fire_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_FAERIE_FIRE);
+			DoCast(me->getVictim(), SPELL_FAERIE_FIRE);
             Faerie_Fire_Timer = 40000;
         }else Faerie_Fire_Timer -= diff;
 
         if (Force_of_Nature_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_FORCE_OF_NATURE);
+			DoCast(me->getVictim(), SPELL_FORCE_OF_NATURE);
             Force_of_Nature_Timer = 180000;
         }else Force_of_Nature_Timer -= diff;
 
 		if(Insect_Swarm_Timer < diff)
 		  {
-			  DoCast(m_creature, SPELL_INSECT_SWARM);
+			  DoCast(me, SPELL_INSECT_SWARM);
               Insect_Swarm_Timer = 12000;
           }else Insect_Swarm_Timer -= diff;
 
 		if(Starfire_Timer < diff)
 		  {
-			  DoCast(m_creature, SPELL_STARFIRE);
+			  DoCast(me, SPELL_STARFIRE);
               Starfire_Timer = 2000;
           }else Starfire_Timer -= diff;
 
 		if(Wrath_Timer < diff)
 		  {
-			  DoCast(m_creature, SPELL_WRATH);
+			  DoCast(me, SPELL_WRATH);
               Wrath_Timer = 1500;
           }else Wrath_Timer -= diff;
 
         if(Moonfire_Timer < diff)
 		  {
-			  if(Unit* target = m_creature->SelectNearestTarget(40))
+			  if(Unit* target = me->SelectNearestTarget(40))
                 if(target->GetHealth() <= 2000)
                 {
 					DoCast(target, SPELL_MOONFIRE);
@@ -1225,7 +1225,7 @@ struct  npc_druid_restorAI : public ScriptedAI
 
 	 void Reset()
      {
-		  m_creature->SetRespawnDelay(999999999);
+		  me->SetRespawnDelay(999999999);
           Barkskin_Timer = 60000;
 	      Lifebloom_Timer = 0;
 	      Nature_Grasp_Timer = 60000;
@@ -1245,7 +1245,7 @@ struct  npc_druid_restorAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1255,16 +1255,16 @@ struct  npc_druid_restorAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
 	}
 
@@ -1275,8 +1275,8 @@ struct  npc_druid_restorAI : public ScriptedAI
 
 		if (Nourish_Timer < diff)
         {
-           if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature) )
+           if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me) )
                 {
 					DoCast(target, SPELL_NOURISH);
                     Nourish_Timer = 1500;
@@ -1285,8 +1285,8 @@ struct  npc_druid_restorAI : public ScriptedAI
 
         if (Regrowth_Timer < diff)
         {
-           if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature) )
+           if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me) )
                 {
 					DoCast(target, SPELL_REGROWTH);
                     Regrowth_Timer = 2000;
@@ -1295,8 +1295,8 @@ struct  npc_druid_restorAI : public ScriptedAI
 
         if (Tranquility_Timer < diff)
         {
-           if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == 2500 && target->IsFriendlyTo(m_creature) )
+           if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == 2500 && target->IsFriendlyTo(me) )
                 {
 					DoCast(target, SPELL_TRANQUILITY);
                     Tranquility_Timer = 2000;
@@ -1343,7 +1343,7 @@ struct  npc_shaman_restorAI : public ScriptedAI
 
 	 void Reset()
      {
-		  m_creature->SetRespawnDelay(999999999);
+		  me->SetRespawnDelay(999999999);
           Cleans_Spirit_Timer = 0;
 	      Earth_Shield_Timer = 0;
 	      Earth_Shock_Timer = 6000;
@@ -1362,7 +1362,7 @@ struct  npc_shaman_restorAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1372,16 +1372,16 @@ struct  npc_shaman_restorAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -1392,21 +1392,21 @@ struct  npc_shaman_restorAI : public ScriptedAI
 
 		if (Earth_Shock_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_EARTH_SHOCK);
+			DoCast(me->getVictim(), SPELL_EARTH_SHOCK);
             Earth_Shock_Timer = 6000;
 
         }else Earth_Shock_Timer -= diff;  
 
         if (Hex_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_HEX_OF_MENDING);
+			DoCast(me->getVictim(), SPELL_HEX_OF_MENDING);
             Hex_Timer = 20000;
         }else Hex_Timer -= diff;
 
 	    if (Leser_Healing_Wave_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_LESSER_HEALING_WAVE);
                     Leser_Healing_Wave_Timer = 3000;
@@ -1415,8 +1415,8 @@ struct  npc_shaman_restorAI : public ScriptedAI
 
 	    if (Earth_Shield_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(!target->HasAura(SPELL_EARTH_SHIELD,m_creature->GetGUID()) && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(!target->HasAura(SPELL_EARTH_SHIELD,me->GetGUID()) && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_EARTH_SHIELD);
                     Earth_Shield_Timer = 25000;
@@ -1425,8 +1425,8 @@ struct  npc_shaman_restorAI : public ScriptedAI
       
         if (Riptide_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_RIPTIDE);
                     Riptide_Timer = 6000;
@@ -1473,7 +1473,7 @@ struct  npc_priest_discAI : public ScriptedAI
 
 	 void Reset()
      {
-		  m_creature->SetRespawnDelay(999999999);
+		  me->SetRespawnDelay(999999999);
           Dispell_Magic_Timer = 0;
 	      Flash_Hill_Timer = 2000;
 	      Mana_Burn_Timer = 10000;
@@ -1493,7 +1493,7 @@ struct  npc_priest_discAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1503,16 +1503,16 @@ struct  npc_priest_discAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
 	}
 
@@ -1523,8 +1523,8 @@ struct  npc_priest_discAI : public ScriptedAI
 
 	    if (Flash_Hill_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_FLASH_HEAL);
                     Flash_Hill_Timer = 2000;
@@ -1533,8 +1533,8 @@ struct  npc_priest_discAI : public ScriptedAI
       
         if (Penance_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_PENANCE);
                     Penance_Timer = 2000;
@@ -1543,17 +1543,17 @@ struct  npc_priest_discAI : public ScriptedAI
 
         if (Psychic_Scream_Timer < diff)
         {
-                if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 2))
+                if (me->IsWithinDistInMap(me->getVictim(), 2))
 				{
-                    DoCast(m_creature->getVictim(), SPELL_RSYCHIC_SCREAM);
+                    DoCast(me->getVictim(), SPELL_RSYCHIC_SCREAM);
                     Psychic_Scream_Timer = 30000;
                 }
         }else Psychic_Scream_Timer -= diff;
 
 	    if (Renew_Timer < diff)
         {
-            if(Unit* target = m_creature->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(m_creature))
+            if(Unit* target = me->SelectNearestTarget(40))
+                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
                 {
                     DoCast(target, SPELL_PENANCE);
                     Renew_Timer = 4000;
@@ -1601,7 +1601,7 @@ struct  npc_priest_shadowAI : public ScriptedAI
 
 	 void Reset()
      {
-		  m_creature->SetRespawnDelay(999999999);
+		  me->SetRespawnDelay(999999999);
           Dispersion_Timer = 180000;
 	      Mind_Blast_Timer = 8000;
 	      Mind_Flay_Timer = 3000;
@@ -1622,7 +1622,7 @@ struct  npc_priest_shadowAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1632,16 +1632,16 @@ struct  npc_priest_shadowAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
 	}
 
@@ -1652,44 +1652,44 @@ struct  npc_priest_shadowAI : public ScriptedAI
 
 	    if (Mind_Blast_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_MIND_BLAST);
+			DoCast(me->getVictim(), SPELL_MIND_BLAST);
             Mind_Blast_Timer = 8000;
         }else Mind_Blast_Timer -= diff;
 
 		if (Mind_Flay_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_MIND_FLAY);
+			DoCast(me->getVictim(), SPELL_MIND_FLAY);
             Mind_Flay_Timer = 3000;
         }else Mind_Flay_Timer -= diff;
 
 
         if (Psychic_Scream_Timer < diff)
         {
-               if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 2))
+               if (me->IsWithinDistInMap(me->getVictim(), 2))
 			   {
-                    DoCast(m_creature->getVictim(), SPELL_RSYCHIC_SCREAM);
+                    DoCast(me->getVictim(), SPELL_RSYCHIC_SCREAM);
                     Psychic_Scream_Timer = 30000;
                }
         }else Psychic_Scream_Timer -= diff;
 
 	    if (Psychic_Horror_Timer < diff)
         {
-               if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 2))
+               if (me->IsWithinDistInMap(me->getVictim(), 2))
 			   {
-                    DoCast(m_creature->getVictim(), SPELL_PSYCHIC_HORROR);
+                    DoCast(me->getVictim(), SPELL_PSYCHIC_HORROR);
                     Psychic_Horror_Timer = 120000;
                }
         }else Psychic_Horror_Timer -= diff;
 
 		if (Shadow_World_Pain_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_SHADOW_WORLD_PAIN);
+			DoCast(me->getVictim(), SPELL_SHADOW_WORLD_PAIN);
             Shadow_World_Pain_Timer = 21000;
         }else Shadow_World_Pain_Timer -= diff;
 
 		if (Vampiric_Touch_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_VAMPIRIC_TOUCH);
+			DoCast(me->getVictim(), SPELL_VAMPIRIC_TOUCH);
             Vampiric_Touch_Timer = 16000;
         }else Vampiric_Touch_Timer -= diff;
 
@@ -1736,7 +1736,7 @@ struct  npc_warlockAI : public ScriptedAI
 
 	 void Reset()
      {
-		  m_creature->SetRespawnDelay(999999999);
+		  me->SetRespawnDelay(999999999);
           Corruption_Timer = 18000;
 	      Curse_of_Agony_Timer = 24000;
 	      Death_Coil_Timer = 120000;
@@ -1756,7 +1756,7 @@ struct  npc_warlockAI : public ScriptedAI
 		if (!m_pInstance)
 			return;
 		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    m_creature->ForcedDespawn();
+		    me->ForcedDespawn();
 		else
 		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
     }
@@ -1766,16 +1766,16 @@ struct  npc_warlockAI : public ScriptedAI
 	    if (!m_pInstance)
 		return;
 
-        if(!m_creature->FindNearestCreature(34458, 200, true) && !m_creature->FindNearestCreature(34451, 200, true) && !m_creature->FindNearestCreature(34459, 200, true)
-			&& !m_creature->FindNearestCreature(34448, 200, true) && !m_creature->FindNearestCreature(34449, 200, true) && !m_creature->FindNearestCreature(34445, 200, true)
-            && !m_creature->FindNearestCreature(34456, 200, true) && !m_creature->FindNearestCreature(34447, 200, true) && !m_creature->FindNearestCreature(34441, 200, true)
-            && !m_creature->FindNearestCreature(34454, 200, true) && !m_creature->FindNearestCreature(34455, 200, true) && !m_creature->FindNearestCreature(34444, 200, true)
-			&& !m_creature->FindNearestCreature(34450, 200, true) && !m_creature->FindNearestCreature(34461, 200, true) && !m_creature->FindNearestCreature(34460, 200, true)
-			&& !m_creature->FindNearestCreature(34469, 200, true) && !m_creature->FindNearestCreature(34467, 200, true) && !m_creature->FindNearestCreature(34468, 200, true)
-			&& !m_creature->FindNearestCreature(34465, 200, true) && !m_creature->FindNearestCreature(34471, 200, true) && !m_creature->FindNearestCreature(34466, 200, true)
-			&& !m_creature->FindNearestCreature(34473, 200, true) && !m_creature->FindNearestCreature(34472, 200, true) && !m_creature->FindNearestCreature(34463, 200, true)
-			&& !m_creature->FindNearestCreature(34470, 200, true) && !m_creature->FindNearestCreature(34474, 200, true) && !m_creature->FindNearestCreature(34475, 200, true)
-			&& !m_creature->FindNearestCreature(34453, 200, true))
+        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
+			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
+            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
+            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
+			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
+			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
+			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
+			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
+			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
+			&& !me->FindNearestCreature(34453, 200, true))
                 m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
 	}
 
@@ -1786,50 +1786,50 @@ struct  npc_warlockAI : public ScriptedAI
 
 	    if (Corruption_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CORRUPTION);
+			DoCast(me->getVictim(), SPELL_CORRUPTION);
             Corruption_Timer = 18000;
         }else Corruption_Timer -= diff;
 
 		if (Curse_of_Agony_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_CURSE_OF_AGONY);
+			DoCast(me->getVictim(), SPELL_CURSE_OF_AGONY);
             Curse_of_Agony_Timer = 24000;
         }else Curse_of_Agony_Timer -= diff;
 
 
         if (Death_Coil_Timer < diff)
         {
-               if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 2))
+               if (me->IsWithinDistInMap(me->getVictim(), 2))
 			   {
-                    DoCast(m_creature->getVictim(), SPELL_DEATH_COIL_W);
+                    DoCast(me->getVictim(), SPELL_DEATH_COIL_W);
                     Death_Coil_Timer = 120000;
                }
         }else Death_Coil_Timer -= diff;
 
 	    if (Fear_Timer < diff)
         {
-               if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 2))
+               if (me->IsWithinDistInMap(me->getVictim(), 2))
 			   {
-                    DoCast(m_creature->getVictim(), SPELL_FEAR);
+                    DoCast(me->getVictim(), SPELL_FEAR);
                     Fear_Timer = 8000;
                }
         }else Fear_Timer -= diff;
 
 		if (Searing_Pain_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_SEARING_PAIN);
+			DoCast(me->getVictim(), SPELL_SEARING_PAIN);
             Searing_Pain_Timer = 2000;
         }else Searing_Pain_Timer -= diff;
 
 		if (Shadow_Bolt_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_SHADOW_BOLT);
+			DoCast(me->getVictim(), SPELL_SHADOW_BOLT);
             Shadow_Bolt_Timer = 3000;
         }else Shadow_Bolt_Timer -= diff;
 
 		if (Unstable_Affliction_Timer < diff)
         {
-			DoCast(m_creature->getVictim(), SPELL_UNSTABLE_AFFLICTION);
+			DoCast(me->getVictim(), SPELL_UNSTABLE_AFFLICTION);
             Unstable_Affliction_Timer = 30000;
         }else Unstable_Affliction_Timer -= diff;
 

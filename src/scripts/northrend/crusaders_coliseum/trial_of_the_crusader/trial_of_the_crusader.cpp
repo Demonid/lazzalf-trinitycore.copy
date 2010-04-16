@@ -68,10 +68,10 @@ struct  npc_toc6_announcerAI : public ScriptedAI
 	uichmp10 = 0;
 
 	
-	m_creature->SetReactState(REACT_PASSIVE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-	m_creature->GetMotionMaster()->MovePoint(0, 563.589294, 139.645645, 393.836578);
+	me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+	me->GetMotionMaster()->MovePoint(0, 563.589294, 139.645645, 393.836578);
 	SetDruid();
 	SetPaladin();
 	SetPriestes();
@@ -151,7 +151,7 @@ struct  npc_toc6_announcerAI : public ScriptedAI
         {
 	// Phase 1
 	case DATA_START:
-	     DoScriptText(SAY_START,m_creature);
+	     DoScriptText(SAY_START,me);
 	     NextStep(2000,false,1);
 	     break;
 	case DATA_START1:
@@ -410,7 +410,7 @@ struct  npc_toc6_announcerAI : public ScriptedAI
 void SummonChampions()
 {
 
-   if (Creature* pTemp = m_creature->SummonCreature(chmp1, 581.62,172.62,394.63,4.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+   if (Creature* pTemp = me->SummonCreature(chmp1, 581.62,172.62,394.63,4.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
      {
 	me->AddThreat(pTemp, 0.0f);
 	uichmp1 = pTemp->GetGUID();
@@ -420,7 +420,7 @@ void SummonChampions()
      {
 	  if (chmp2 != chmp1)
 	  {
-	  if (Creature* pTrash = m_creature->SummonCreature(chmp2, 598.54,154.54,394.64,4.3, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	  if (Creature* pTrash = me->SummonCreature(chmp2, 598.54,154.54,394.64,4.3, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp2 = pTrash->GetGUID();
@@ -431,7 +431,7 @@ void SummonChampions()
 	
 	if (chmp3 != chmp1 && chmp3 != chmp2)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp3, 594.31,165.51,394.62,4.5, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp3, 594.31,165.51,394.62,4.5, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp3 = pTrash->GetGUID();
@@ -442,7 +442,7 @@ void SummonChampions()
 
 	if (chmp4 != chmp1 && chmp4 != chmp2 && chmp4 != chmp3)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp4, 601.53, 139.53, 394.61, 4.2, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp4, 601.53, 139.53, 394.61, 4.2, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp4 = pTrash->GetGUID();
@@ -453,7 +453,7 @@ void SummonChampions()
 	
 	if (chmp5 != chmp1 && chmp5 != chmp2 && chmp5 != chmp3 && chmp5 != chmp4)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp5, 606.52, 129.54, 394.62, 4.1, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp5, 606.52, 129.54, 394.62, 4.1, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp5 = pTrash->GetGUID();
@@ -464,7 +464,7 @@ void SummonChampions()
 	
 	if (chmp6 != chmp1 && chmp6 != chmp2 && chmp6 != chmp3 && chmp6 != chmp4 && chmp6 != chmp5)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp6, 564.55, 176.55, 394.63, 3.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp6, 564.55, 176.55, 394.63, 3.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp6 = pTrash->GetGUID();
@@ -475,7 +475,7 @@ void SummonChampions()
 	
 	if (chmp7 != chmp1 && chmp7 != chmp2 && chmp7 != chmp3 && chmp7 != chmp4 && chmp7 != chmp5 && chmp7 != chmp6)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp7, 551.56, 175.58, 394.68, 3.4, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp7, 551.56, 175.58, 394.68, 3.4, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp7 = pTrash->GetGUID();
@@ -486,7 +486,7 @@ void SummonChampions()
 	
 	if (chmp8 != chmp1 && chmp8 != chmp2 && chmp8 != chmp3 && chmp8 != chmp4 && chmp8 != chmp5 && chmp8 != chmp6 && chmp8 != chmp7)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp8, 534.57, 172.50, 394.67, 3.5, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp8, 534.57, 172.50, 394.67, 3.5, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp8 = pTrash->GetGUID();
@@ -497,7 +497,7 @@ void SummonChampions()
 	
 	if (chmp9 != chmp1 && chmp9 != chmp2 && chmp9 != chmp3 && chmp9 != chmp4 && chmp9 != chmp5 && chmp9 != chmp6 && chmp9 != chmp7 && chmp9 != chmp8)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp9, 524.58, 156.58, 394.65, 3.6, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp9, 524.58, 156.58, 394.65, 3.6, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp9 = pTrash->GetGUID();
@@ -508,7 +508,7 @@ void SummonChampions()
 	
 	if (chmp10 != chmp1 && chmp10 != chmp2 && chmp10 != chmp3 && chmp10 != chmp4 && chmp10 != chmp5 && chmp10 != chmp6 && chmp10 != chmp7 && chmp10 != chmp8 && chmp10 != chmp9)
 	{
-	if (Creature* pTrash = m_creature->SummonCreature(chmp10, 521.18, 140.57, 394.64, 3.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+	if (Creature* pTrash = me->SummonCreature(chmp10, 521.18, 140.57, 394.64, 3.7, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
 	   {
 	   me->AddThreat(pTrash, 0.0f);
 	   uichmp10 = pTrash->GetGUID();
@@ -523,7 +523,7 @@ void SummonChampions()
 
  void AggroAllPlayers(Creature* pTemp)
     {
-        Map::PlayerList const &PlList = m_creature->GetMap()->GetPlayers();
+        Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
 
         if(PlList.isEmpty())
             return;
@@ -537,7 +537,7 @@ void SummonChampions()
 
                 if(pPlayer->isAlive())
                 {
-                    pTemp->SetHomePosition(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
+                    pTemp->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     pTemp->SetReactState(REACT_AGGRESSIVE);
                     pTemp->SetInCombatWith(pPlayer);
@@ -554,8 +554,8 @@ void SummonChampions()
             return;
         if (uiPointId == 1)
         {
-            m_creature->SetOrientation(ORIENTATION);
-            m_creature->SendMovementFlagUpdate();
+            me->SetOrientation(ORIENTATION);
+            me->SendMovementFlagUpdate();
         }
     }
 
@@ -564,31 +564,31 @@ void SummonChampions()
         if (!pInstance)
             return;
 	if (pInstance->GetData(BOSS_GORMOK) == NOT_STARTED)
-	m_creature->AI()->SetData(DATA_START,0);
+	me->AI()->SetData(DATA_START,0);
     }
   void StartEncounter2()
     {
         if (!pInstance)
             return;
-	m_creature->AI()->SetData(DATA_PHASE2,0);
+	me->AI()->SetData(DATA_PHASE2,0);
     }
   void StartEncounter3()
     {
     if (!pInstance)
     return;
-    m_creature->AI()->SetData(DATA_PHASE3,0);
+    me->AI()->SetData(DATA_PHASE3,0);
     }
   void StartEncounter4()
     {
     if (!pInstance)
     return;
-    m_creature->AI()->SetData(DATA_PHASE4,0);
+    me->AI()->SetData(DATA_PHASE4,0);
     }
   void StartEncounter5()
     {
     if (!pInstance)
     return;
-    m_creature->AI()->SetData(DATA_PHASE5,0);
+    me->AI()->SetData(DATA_PHASE5,0);
     }
 
   void UpdateAI(const uint32 uiDiff)
@@ -604,8 +604,8 @@ void SummonChampions()
 	  case 1:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);
-		m_creature->SetVisibility(VISIBILITY_OFF);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN,40000))
+		me->SetVisibility(VISIBILITY_OFF);
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN,40000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -632,7 +632,7 @@ void SummonChampions()
 		NextStep(2000,true);
 		break;
 	  case 4:
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_GORMOK,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_GORMOK,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss = pBoss->GetGUID();
@@ -655,7 +655,7 @@ void SummonChampions()
 	  case 6:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,10000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,10000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -667,7 +667,7 @@ void SummonChampions()
 		NextStep(4000,true);
 		break;
 	  case 7:
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_DREADSCALE,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_DREADSCALE,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss = pBoss->GetGUID();
@@ -690,14 +690,14 @@ void SummonChampions()
 	  case 9:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);	
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_VARIAN,579.16,180.61,395.13,4.7,TEMPSUMMON_TIMED_DESPAWN,17000))
+		if (Creature* pTemp=me->SummonCreature(NPC_VARIAN,579.16,180.61,395.13,4.7,TEMPSUMMON_TIMED_DESPAWN,17000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiVarian = pTemp->GetGUID();
 		pTemp->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 		pTemp->SetReactState(REACT_PASSIVE);
 		}
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,17000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,17000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -725,7 +725,7 @@ void SummonChampions()
 		NextStep(4000,true);
 		break;
 	  case 12:
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_ICEHOWL,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_ICEHOWL,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss = pBoss->GetGUID();
@@ -748,7 +748,7 @@ void SummonChampions()
 	  case 14:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,4000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,4000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -760,7 +760,7 @@ void SummonChampions()
 		NextStep(2000,true);
 		break;
 	  case 15:
-		m_creature->SetVisibility(VISIBILITY_ON);
+		me->SetVisibility(VISIBILITY_ON);
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,1);	
 		NextStep(0,false);
@@ -775,11 +775,11 @@ void SummonChampions()
 	   switch (uiPhase2)
 	   {
 	   case 1:
-		m_creature->SetVisibility(VISIBILITY_OFF);
+		me->SetVisibility(VISIBILITY_OFF);
 		NextStep2(1000,true);
 		break;
 	   case 2:
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,54500))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,54500))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -795,7 +795,7 @@ void SummonChampions()
 		pInstance->SetData64(DATA_MAIN_DOOR,2);
 		if (Creature* pTemp = Unit::GetCreature(*me, uiLord))
 		 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_NEPOPALIS,563.58,139.64,393.83,4.7,TEMPSUMMON_TIMED_DESPAWN,45500))
+		if (Creature* pTemp=me->SummonCreature(NPC_NEPOPALIS,563.58,139.64,393.83,4.7,TEMPSUMMON_TIMED_DESPAWN,45500))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiNepopalis = pTemp->GetGUID();
@@ -826,7 +826,7 @@ void SummonChampions()
 	   case 6:
 		if (Creature* pTemp = Unit::GetCreature(*me, uiNepopalis))
 		 pTemp->CastSpell(pTemp,33271,false);
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_LORD_JARAXXUS,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_LORD_JARAXXUS,SpawnPosition1,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss1 = pBoss->GetGUID();
@@ -889,18 +889,18 @@ void SummonChampions()
 	   case 12:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);	
-		m_creature->SetVisibility(VISIBILITY_ON);
+		me->SetVisibility(VISIBILITY_ON);
 		NextStep2(0,false);
 		break;
 	   //Phase 3
 	   case 13:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);	
-		m_creature->SetVisibility(VISIBILITY_OFF);
+		me->SetVisibility(VISIBILITY_OFF);
 		NextStep2(2000,true);
 		break;
 	   case 14:
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,86000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,86000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -914,7 +914,7 @@ void SummonChampions()
 	   case 15:
 		if (Creature* pTemp = Unit::GetCreature(*me, uiLord))
 		 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_KRIK,563.58,139.64,393.83,4.7,TEMPSUMMON_TIMED_DESPAWN,70000))
+		if (Creature* pTemp=me->SummonCreature(NPC_KRIK,563.58,139.64,393.83,4.7,TEMPSUMMON_TIMED_DESPAWN,70000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiKrik = pTemp->GetGUID();
@@ -928,7 +928,7 @@ void SummonChampions()
 	   case 16:
 		if (Creature* pTemp = Unit::GetCreature(*me, uiKrik))
 		 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_VARIAN,534.93, 156.12, 394.91,4.66,TEMPSUMMON_TIMED_DESPAWN,57000))
+		if (Creature* pTemp=me->SummonCreature(NPC_VARIAN,534.93, 156.12, 394.91,4.66,TEMPSUMMON_TIMED_DESPAWN,57000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiVarian = pTemp->GetGUID();
@@ -998,15 +998,15 @@ void SummonChampions()
 	   case 23:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);	
-		m_creature->SetVisibility(VISIBILITY_ON);
+		me->SetVisibility(VISIBILITY_ON);
 		NextStep2(0,false);
 		break;
 		// Phase 4
 	   case 24:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,1);
-		m_creature->SetVisibility(VISIBILITY_OFF);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,38000))
+		me->SetVisibility(VISIBILITY_OFF);
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,38000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -1025,14 +1025,14 @@ void SummonChampions()
 		DoScriptText(SAY_LORD_VAL,pTemp);
 		pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
 		}
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_EYDIS,581.62,172.62,394.63,4.7,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_EYDIS,581.62,172.62,394.63,4.7,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss = pBoss->GetGUID();
 		pBoss->SetReactState(REACT_PASSIVE);
 		pBoss->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 		}
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_FJOLA,594.31,165.51,394.62,4.5,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
+		if (Creature* pBoss=me->SummonCreature(BOSS_FJOLA,594.31,165.51,394.62,4.5,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 600000))
 		{
 		me->AddThreat(pBoss, 0.0f);
 		uiBoss1 = pBoss->GetGUID();
@@ -1062,17 +1062,17 @@ void SummonChampions()
 	   case 27:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,2);
-		m_creature->SetVisibility(VISIBILITY_ON);
+		me->SetVisibility(VISIBILITY_ON);
 		NextStep2(0,false);
 		break;
 		//Phase 5
 	   case 28:
 		if (pInstance)
 		pInstance->SetData64(DATA_MAIN_DOOR,1);
-		m_creature->SetVisibility(VISIBILITY_OFF);
+		me->SetVisibility(VISIBILITY_OFF);
 		NextStep2(2000,true);
 	   case 29:
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,60000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,555.93, 146.12, 393.91,4.66,TEMPSUMMON_TIMED_DESPAWN,60000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();
@@ -1086,7 +1086,7 @@ void SummonChampions()
 	   case 30:
 		if (Creature* pTemp = Unit::GetCreature(*me, uiLord))
 		 pTemp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_KING,563.58, 139.64, 393.83, 4.7,TEMPSUMMON_TIMED_DESPAWN,40000))
+		if (Creature* pTemp=me->SummonCreature(NPC_KING,563.58, 139.64, 393.83, 4.7,TEMPSUMMON_TIMED_DESPAWN,40000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiBoss1 = pTemp->GetGUID();
@@ -1131,7 +1131,7 @@ void SummonChampions()
 		NextStep2(6000,true);
 		break;
 	   case 35:
-		if (Creature* pBoss=m_creature->SummonCreature(BOSS_ANUBARAK,790.43,131.75,142.62,3.7))
+		if (Creature* pBoss=me->SummonCreature(BOSS_ANUBARAK,790.43,131.75,142.62,3.7))
 		{
 		pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
 		AggroAllPlayers(pBoss);
@@ -1141,7 +1141,7 @@ void SummonChampions()
 		NextStep2(0,false);
 		break;
 	   case 36:
-		if (Creature* pTemp=m_creature->SummonCreature(NPC_LORD,647.93,148.54,140.73,4.66,TEMPSUMMON_TIMED_DESPAWN,38000))
+		if (Creature* pTemp=me->SummonCreature(NPC_LORD,647.93,148.54,140.73,4.66,TEMPSUMMON_TIMED_DESPAWN,38000))
 		{
 		me->AddThreat(pTemp, 0.0f);
 		uiLord = pTemp->GetGUID();

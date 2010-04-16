@@ -508,7 +508,7 @@ struct devouring_flame : public ScriptedAI
 	
     void EnterCombat(Unit* who)
     {
-        m_creature->CastSpell(m_creature,SPELL_DEVOURINGFLAME,true);
+        me->CastSpell(me,SPELL_DEVOURINGFLAME,true);
     }
 	
     void Reset()
@@ -520,7 +520,7 @@ struct devouring_flame : public ScriptedAI
     {
         if (DevouringFlameTimer <= diff)
         {
-            m_creature->setDeathState(JUST_DIED);
+            me->setDeathState(JUST_DIED);
         }else DevouringFlameTimer -= diff;
     }
 };

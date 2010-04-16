@@ -128,8 +128,8 @@ struct boss_black_knightAI : public ScriptedAI
     void Reset()
     {
         RemoveSummons();
-        m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
-        m_creature->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+        me->SetDisplayId(me->GetNativeDisplayId());
+        me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
 
         bEventInProgress = false;
         bEvent = false;
@@ -161,7 +161,7 @@ struct boss_black_knightAI : public ScriptedAI
 
         for(std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
         {
-            if (Creature* pTemp = Unit::GetCreature(*m_creature, *itr))
+            if (Creature* pTemp = Unit::GetCreature(*me, *itr))
                 if (pTemp)
                     pTemp->DisappearAndDie();
         }
@@ -171,7 +171,7 @@ struct boss_black_knightAI : public ScriptedAI
     void JustSummoned(Creature* pSummon)
     {
         SummonList.push_back(pSummon->GetGUID());
-        pSummon->AI()->AttackStart(m_creature->getVictim());
+        pSummon->AI()->AttackStart(me->getVictim());
 
     }
 
@@ -183,16 +183,16 @@ struct boss_black_knightAI : public ScriptedAI
         if (bEventInProgress)
             if (uiResurrectTimer <= uiDiff)
             {
-                m_creature->SetHealth(m_creature->GetMaxHealth());
-                m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-		        m_creature->AttackStop();				
-				DoScriptText(RAND(SAY_DEATH_1,SAY_DEATH), m_creature);
-                DoCast(m_creature,SPELL_BLACK_KNIGHT_RES,true);	
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                me->SetHealth(me->GetMaxHealth());
+                me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+		        me->AttackStop();				
+				DoScriptText(RAND(SAY_DEATH_1,SAY_DEATH), me);
+                DoCast(me,SPELL_BLACK_KNIGHT_RES,true);	
+                me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                 uiPhase++;
                 uiResurrectTimer = 3000;
                 bEventInProgress = false;
-                m_creature->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+                me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
             } else uiResurrectTimer -= uiDiff;
 
         switch(uiPhase)
@@ -221,15 +221,15 @@ struct boss_black_knightAI : public ScriptedAI
                         if (!bSummonArmy)
                         {
                             bSummonArmy = true;
-                            m_creature->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-    						m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-                            DoCast(m_creature, SPELL_ARMY_DEAD);
+                            me->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+    						me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                            DoCast(me, SPELL_ARMY_DEAD);
                         }
                         if (!bDeathArmyDone)
                         if (uiDeathArmyCheckTimer <= uiDiff)
                         {
-                            m_creature->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-							m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                            me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+							me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                             uiDeathArmyCheckTimer = 0;
                             bDeathArmyDone = true;
                         } else uiDeathArmyCheckTimer -= uiDiff;
@@ -244,7 +244,7 @@ struct boss_black_knightAI : public ScriptedAI
                         } else uiDesecration1 -= uiDiff;
                         if (uiGhoulExplodeTimer <= uiDiff)
                         {
-                            DoCast(m_creature, SPELL_GHOUL_EXPLODE);
+                            DoCast(me, SPELL_GHOUL_EXPLODE);
                             uiGhoulExplodeTimer = 8000;
                         } else uiGhoulExplodeTimer -= uiDiff;
 		                if (uiPlagueStrike1Timer <= uiDiff)
@@ -280,7 +280,7 @@ struct boss_black_knightAI : public ScriptedAI
             {	
                 if (uiDeathBiteTimer <= uiDiff)
                 {
-                    DoCast(m_creature,DUNGEON_MODE(SPELL_DEATH_BITE,SPELL_DEATH_BITE_H));
+                    DoCast(me,DUNGEON_MODE(SPELL_DEATH_BITE,SPELL_DEATH_BITE_H));
                     uiDeathBiteTimer = urand (2000, 4000);
                 } else uiDeathBiteTimer -= uiDiff;
                 if (uiMarkedDeathTimer <= uiDiff)
@@ -296,15 +296,15 @@ struct boss_black_knightAI : public ScriptedAI
             }
     }
 
-        if (!m_creature->hasUnitState(UNIT_STAT_ROOT) && !m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 0)
+        if (!me->hasUnitState(UNIT_STAT_ROOT) && !me->GetHealth()*100 / me->GetMaxHealth() <= 0)
             DoMeleeAttackIfReady();
     }
 
 	    void EnterCombat(Unit* pWho)
     {
-        DoScriptText(SAY_AGGRO_2, m_creature);
-		m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-		if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+        DoScriptText(SAY_AGGRO_2, me);
+		me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
 
 
@@ -314,7 +314,7 @@ struct boss_black_knightAI : public ScriptedAI
 
 	void KilledUnit(Unit* pVictim)
     {
-        DoScriptText(SAY_SLAY, m_creature);
+        DoScriptText(SAY_SLAY, me);
 		
         if (pInstance)
             pInstance->SetData(BOSS_BLACK_KNIGHT,IN_PROGRESS);
@@ -322,19 +322,19 @@ struct boss_black_knightAI : public ScriptedAI
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
-        if (uiDamage > m_creature->GetHealth() && uiPhase <= PHASE_SKELETON)
+        if (uiDamage > me->GetHealth() && uiPhase <= PHASE_SKELETON)
         {
             uiDamage = 0;
-            m_creature->SetHealth(0);
-            m_creature->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+            me->SetHealth(0);
+            me->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
             RemoveSummons();
             switch(uiPhase)
             {
                 case PHASE_UNDEAD:
-                    m_creature->SetDisplayId(MODEL_SKELETON);
+                    me->SetDisplayId(MODEL_SKELETON);
                     break;
                 case PHASE_SKELETON:
-                    m_creature->SetDisplayId(MODEL_GHOST);
+                    me->SetDisplayId(MODEL_GHOST);
                     break;
             }
             bEventInProgress = true;
@@ -343,8 +343,8 @@ struct boss_black_knightAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-		DoScriptText(SAY_DEATH_3, m_creature);
-		if (GameObject* pGO = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_MAIN_GATE1)))
+		DoScriptText(SAY_DEATH_3, me);
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
 
         if (pInstance)
@@ -408,47 +408,47 @@ struct npc_black_knight_skeletal_gryphonAI : public npc_escortAI
         switch(uiPointId)
         {
                 case 1:               	    
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);				
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);				
 				break;
                 case 2:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
-				DoScriptText(SAY_START7, m_creature);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
+				DoScriptText(SAY_START7, me);
 				break;
                 case 3:	
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 4:	
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 5:	
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
                 break;				
                 case 6:	
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
-				DoScriptText(SAY_AGGRO, m_creature);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
+				DoScriptText(SAY_AGGRO, me);
                 break;				
                 case 7:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;	
                 case 8:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 9:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 10:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 11:
-				m_creature->SetSpeed(MOVE_FLIGHT , 2.0f);
+				me->SetSpeed(MOVE_FLIGHT , 2.0f);
 				break;
                 case 12:
-    			m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);	
-				m_creature->SetSpeed(MOVE_RUN, 2.0f);				
+    			me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);	
+				me->SetSpeed(MOVE_RUN, 2.0f);				
 				break;
 				case 13:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
-				m_creature->SummonCreature(VEHICLE_GR,744.841,634.505,411.575, 2.79);				
+				me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+				me->SummonCreature(VEHICLE_GR,744.841,634.505,411.575, 2.79);				
 				break;
         }
     }
@@ -481,30 +481,30 @@ struct npc_grAI : public npc_escortAI
         switch(uiPointId)
         {
                 case 1:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
 				break;
                 case 2:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
 				break;
                 case 3:	
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
 				break;
                 case 4:	
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
 				break;
                 case 5:
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);			
+                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);			
 				break;
                 case 6:
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);			
+                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);			
 				break;				
                 case 7:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
 				break;				
                 case 8:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
                 case 9:
-				m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+				me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
 				break;
         }
     }

@@ -241,21 +241,21 @@ struct boss_gothikAI : public BossAI
         {
             case MOB_LIVE_TRAINEE:
             {
-                if (Creature *LiveTrigger0 = Unit::GetCreature(*m_creature, LiveTriggerGUID[4]))
+                if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
                     DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                if (Creature *LiveTrigger1 = Unit::GetCreature(*m_creature, LiveTriggerGUID[4]))
+                if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
                     DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
                 break;
             }
             case MOB_LIVE_KNIGHT:
             {
-                if (Creature *LiveTrigger5 = Unit::GetCreature(*m_creature, LiveTriggerGUID[4]))
+                if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
                     DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
                 break;
             }
             case MOB_LIVE_RIDER:
             {
-                if (Creature *LiveTrigger4 = Unit::GetCreature(*m_creature, LiveTriggerGUID[4]))
+                if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
                     DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
                 break;
             }
@@ -313,7 +313,7 @@ struct boss_gothikAI : public BossAI
         if (spellId && me->isInCombat())
         {
             me->HandleEmoteCommand(EMOTE_ONESHOT_SPELLCAST);
-            if (Creature *pRandomDeadTrigger = Unit::GetCreature(*m_creature, DeadTriggerGUID[rand() % POS_DEAD]))
+            if (Creature *pRandomDeadTrigger = Unit::GetCreature(*me, DeadTriggerGUID[rand() % POS_DEAD]))
                 me->CastSpell(pRandomDeadTrigger, spellId, true);
         }
     }
@@ -418,8 +418,8 @@ struct boss_gothikAI : public BossAI
                 case EVENT_TELEPORT:
                     if (!thirtyPercentReached)
                     {
-                        m_creature->AttackStop();
-                        if (IN_LIVE_SIDE(m_creature))
+                        me->AttackStop();
+                        if (IN_LIVE_SIDE(me))
                         {
                             DoTeleportTo(PosGroundDeadSide);
                         }
@@ -428,10 +428,10 @@ struct boss_gothikAI : public BossAI
                             DoTeleportTo(PosGroundLiveSide);
                         }
 
-                        m_creature->getThreatManager().resetAggro(NotOnSameSide(m_creature));
+                        me->getThreatManager().resetAggro(NotOnSameSide(me));
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
                         {
-                            m_creature->getThreatManager().addThreat(pTarget, 100.0f);
+                            me->getThreatManager().addThreat(pTarget, 100.0f);
                             AttackStart(pTarget);
                         }
 

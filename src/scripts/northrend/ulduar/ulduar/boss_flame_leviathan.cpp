@@ -158,7 +158,7 @@ struct boss_flame_leviathanAI : public BossAI
         _Reset();
         
         // vehicles respawn
-        if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
+        if (Creature* pTrigger = Unit::GetCreature(*me, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
             if (wipe)
             {
                 me->Kill(pTrigger);
@@ -184,7 +184,7 @@ struct boss_flame_leviathanAI : public BossAI
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, me);
-        if (Creature* pTrigger = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
+        if (Creature* pTrigger = Unit::GetCreature(*me, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
             me->Kill(pTrigger);
         _JustDied();
     }
@@ -458,7 +458,7 @@ struct spell_pool_of_tarAI : public TriggerAI
 
 struct flame_leviathan_triggerAI : public ScriptedAI
 {
-    flame_leviathan_triggerAI(Creature *c) : ScriptedAI(c), summons(m_creature)
+    flame_leviathan_triggerAI(Creature *c) : ScriptedAI(c), summons(me)
     {
         pInstance = c->GetInstanceData();
     }
@@ -492,7 +492,7 @@ struct mob_colossusAI : public ScriptedAI
 {
     mob_colossusAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_pInstance = m_creature->GetInstanceData();
+        m_pInstance = me->GetInstanceData();
     }
 
     ScriptedInstance* m_pInstance;
@@ -505,7 +505,7 @@ struct mob_colossusAI : public ScriptedAI
     
     void JustDied(Unit *victim)
     {
-        if (Creature* pLeviathan = Unit::GetCreature(*m_creature, m_pInstance->GetData64(DATA_LEVIATHAN)))
+        if (Creature* pLeviathan = Unit::GetCreature(*me, m_pInstance->GetData64(DATA_LEVIATHAN)))
             if (pLeviathan->AI())
                 pLeviathan->AI()->DoAction(INCREASE_COLOSSUS_COUNT);
     }
@@ -517,7 +517,7 @@ struct mob_colossusAI : public ScriptedAI
 
         if (uiGroundSlamTimer <= diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_GROUND_SLAM);
+            DoCast(me->getVictim(), SPELL_GROUND_SLAM);
             uiGroundSlamTimer = 12000;
         } else uiGroundSlamTimer -= diff;
 

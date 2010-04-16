@@ -1799,9 +1799,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculating next daily/weekly quest reset times...");
     InitTimedQuestResetTime();
 
-    sLog.outString("Calculate next weekly quest reset time..." );
-    InitWeeklyQuestResetTime();
-
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();
 

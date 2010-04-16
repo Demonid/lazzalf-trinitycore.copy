@@ -63,28 +63,28 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
     Submerged = false;
     Burrower = false;
     Phase = 0;
-    m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
-    m_creature->SetReactState(REACT_AGGRESSIVE);
-    m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+    me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
+    me->SetReactState(REACT_AGGRESSIVE);
+    me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
  
     void Aggro(Unit* pWho)
     {
-        DoScriptText(SAY_AGGRO,m_creature);
+        DoScriptText(SAY_AGGRO,me);
         if(pInstance)
             pInstance->SetData(DATA_BOSS_ANUBARAK, IN_PROGRESS);
     }
  
     void JustDied(Unit* pKiller)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
         if (pInstance)
             pInstance->SetData(DATA_BOSS_ANUBARAK, DONE);
     }
  
     void JustSummoned(Creature* mob)
     {
-	    mob->AddThreat(m_creature->getVictim(), 0);
+	    mob->AddThreat(me->getVictim(), 0);
     }
  
     void UpdateAI(const uint32 diff)
@@ -92,14 +92,14 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
 	if (!UpdateVictim())
 		return;
  
-    if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) > 90)
+    if ((me->GetHealth()*100 / me->GetMaxHealth()) > 90)
     {
 	Phase = 1;
 	}
     else
 	{
-	   if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 90) &&
-	   ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) > 30))
+	   if (((me->GetHealth()*100 / me->GetMaxHealth()) < 90) &&
+	   ((me->GetHealth()*100 / me->GetMaxHealth()) > 30))
 	{
 	Phase = 2;
 	}
@@ -110,13 +110,13 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
     {
 	  if (Freeze_Slash_Timer < diff)
 	  {
-	  DoCast(m_creature, SPELL_FREEZE_SLASH);
+	  DoCast(me, SPELL_FREEZE_SLASH);
 	  Freeze_Slash_Timer = 12000;
 	  } else Freeze_Slash_Timer -= diff;
  
 	if (Penetrating_Cold_Timer < diff)
 	{
-	  DoCast(m_creature, HeroicMode ? SPELL_PENETRATING_COLD_H : SPELL_PENETRATING_COLD);
+	  DoCast(me, HeroicMode ? SPELL_PENETRATING_COLD_H : SPELL_PENETRATING_COLD);
 	  Penetrating_Cold_Timer = 30000;
 	} else Penetrating_Cold_Timer -= diff;
     }
@@ -125,10 +125,10 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
     {
 	if ((AlternateUnderGround_Timer < diff) && (!Submerged))
 	{
-	  DoScriptText(SAY_S,m_creature);
-	  m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-	  m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	  DoCast(m_creature, SPELL_SUBMERGE, false);
+	  DoScriptText(SAY_S,me);
+	  me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+	  me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	  DoCast(me, SPELL_SUBMERGE, false);
 	  AlternateUnderGround_Timer = 45000;
 	  Submerged = true;
 	  Burrower = true;
@@ -136,9 +136,9 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
  
 	if ((AlternateOnGround_Timer < diff) && (Submerged))
 	{
-	  m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-	  m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	  m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+	  me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+	  me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	  me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
 	  AlternateOnGround_Timer = 45000;
 	  Submerged = false;
 	  Burrower = false;
@@ -148,13 +148,13 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
 	{	
 	  for(uint8 i = 0; i<1; i++)
 	  {
-	    if (Creature *pBoss=m_creature->SummonCreature(NPC_NERUBIAN_BURROWER,756.5, 69.7033,SPAWNPOINT_Z,0,TEMPSUMMON_CORPSE_DESPAWN,120000))
+	    if (Creature *pBoss=me->SummonCreature(NPC_NERUBIAN_BURROWER,756.5, 69.7033,SPAWNPOINT_Z,0,TEMPSUMMON_CORPSE_DESPAWN,120000))
 	      {
 	       if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
 	           pBoss->AI()->AttackStart(pTarget);
 	       }
 	    
-	    if (Creature *pTemp=m_creature->SummonCreature(NPC_NERUBIAN_BURROWER,727.7, 69.5019,SPAWNPOINT_Z,0,TEMPSUMMON_CORPSE_DESPAWN,120000))
+	    if (Creature *pTemp=me->SummonCreature(NPC_NERUBIAN_BURROWER,727.7, 69.5019,SPAWNPOINT_Z,0,TEMPSUMMON_CORPSE_DESPAWN,120000))
 	      {
 		if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
 		    pTemp->AI()->AttackStart(pTarget);
@@ -167,7 +167,7 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
  
 	if (Pursuit_Timer < diff && Submerged)
 	{
-	  DoCast(m_creature, SPELL_PURSUIT);
+	  DoCast(me, SPELL_PURSUIT);
 	  Pursuit_Timer = 9500;
 	}else Pursuit_Timer -= diff;
     }
@@ -176,19 +176,19 @@ struct  boss_anub_arak_crusaderAI : public ScriptedAI
     {
 	if (Freeze_Slash_Timer < diff)
 	{
-	  DoCast(m_creature, SPELL_FREEZE_SLASH);
+	  DoCast(me, SPELL_FREEZE_SLASH);
 	  Freeze_Slash_Timer = 12000;
 	} else Freeze_Slash_Timer -= diff;
  
 	if (Penetrating_Cold_Timer < diff)
 	{
-	  DoCast(m_creature, HeroicMode ? SPELL_PENETRATING_COLD_H : SPELL_PENETRATING_COLD);
+	  DoCast(me, HeroicMode ? SPELL_PENETRATING_COLD_H : SPELL_PENETRATING_COLD);
 	  Penetrating_Cold_Timer = 40000;
 	} else Penetrating_Cold_Timer -= diff;
  
 	if (Leeching_Swarm_Timer < diff)
 	{
-	  DoCast(m_creature, HeroicMode ? SPELL_LEECHING_SWARM_H : SPELL_LEECHING_SWARM);
+	  DoCast(me, HeroicMode ? SPELL_LEECHING_SWARM_H : SPELL_LEECHING_SWARM);
 	  Leeching_Swarm_Timer = 10000;
 	} else Leeching_Swarm_Timer -= diff;
     }
@@ -221,7 +221,7 @@ struct  npc_borrowerAI : public ScriptedAI
     Submerge_Timer = 35000;
     Emerge_Timer = 10000;
     mobSubmerged = false;
-    m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+    me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
  
     void UpdateAI(const uint32 diff)
@@ -229,7 +229,7 @@ struct  npc_borrowerAI : public ScriptedAI
 	if (!UpdateVictim())
 		return;
  
-    Unit* pTarget = m_creature->getVictim();
+    Unit* pTarget = me->getVictim();
  
     if (ShadowStrike_Timer < diff && !mobSubmerged)
 	{
@@ -241,9 +241,9 @@ struct  npc_borrowerAI : public ScriptedAI
  
     if (Submerge_Timer < diff && !mobSubmerged)
 	{
-	m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-	m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	DoCast(m_creature, SPELL_SUBMERGE, false);
+	me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+	me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	DoCast(me, SPELL_SUBMERGE, false);
 	Submerge_Timer = 35000;
 	mobSubmerged = true;
 	} 
@@ -252,9 +252,9 @@ struct  npc_borrowerAI : public ScriptedAI
  
     if (Emerge_Timer < diff && mobSubmerged)
 	{
-	m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-	m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+	me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+	me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
 	Emerge_Timer = 10000;
 	mobSubmerged = false;
 	} 

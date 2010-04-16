@@ -87,7 +87,7 @@ struct boss_moraggAI : public ScriptedAI
         if (uiOpticLinkTimer <= diff)
         {
             // Hack per Optical Link (Hack from Loken script)
-            Map* pMap = m_creature->GetMap();
+            Map* pMap = me->GetMap();
             if (pMap->IsDungeon())
             {
                 Map::PlayerList const &PlayerList = pMap->GetPlayers();
@@ -99,14 +99,14 @@ struct boss_moraggAI : public ScriptedAI
                     if (i->getSource() && i->getSource()->isAlive() && i->getSource()->isTargetableForAttack())
                     {
                         int32 dmg;
-                        float m_fDist = m_creature->GetExactDist(i->getSource()->GetPositionX(), i->getSource()->GetPositionY(), i->getSource()->GetPositionZ());
+                        float m_fDist = me->GetExactDist(i->getSource()->GetPositionX(), i->getSource()->GetPositionY(), i->getSource()->GetPositionZ());
 
                         dmg = 150; // need to correct damage
                         if (m_fDist > 1.0f) // Further from 1 yard
                             dmg *= m_fDist;
                         
                         Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
-                        m_creature->CastCustomSpell(pTarget, SPELL_OPTIC_LINK, &dmg, 0, 0, false);
+                        me->CastCustomSpell(pTarget, SPELL_OPTIC_LINK, &dmg, 0, 0, false);
                     }
             }
             uiOpticLinkTimer = 25000;
@@ -120,7 +120,7 @@ struct boss_moraggAI : public ScriptedAI
 
         if (uiRayOfPainTimer <= diff)
         { 
-            DoCast(m_creature->getVictim(), SPELL_RAY_OF_PAIN);
+            DoCast(me->getVictim(), SPELL_RAY_OF_PAIN);
             uiRayOfPainTimer = 12000;
         } else uiRayOfPainTimer -= diff;
 

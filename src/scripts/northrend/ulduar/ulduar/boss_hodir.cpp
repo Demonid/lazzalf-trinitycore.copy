@@ -44,8 +44,8 @@ struct boss_hodirAI : public BossAI
     void Aggro(Unit* pWho)
     {
         _EnterCombat();
-//        DoScriptText(SAY_AGGRO, m_creature);
-        m_creature->SetInCombatWithZone();
+//        DoScriptText(SAY_AGGRO, me);
+        me->SetInCombatWithZone();
     }
 
     void UpdateAI(const uint32 diff)

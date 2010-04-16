@@ -51,14 +51,14 @@ struct  boss_icehowlAI : public ScriptedAI
     
     void Aggro(Unit* pWho)
     {
-        DoScriptText(SAY_AGGRO,m_creature);
+        DoScriptText(SAY_AGGRO,me);
         if(pInstance)
             pInstance->SetData(DATA_BOSS_ICEHOWL, IN_PROGRESS);
     }
     
     void JustDied(Unit* pKiller)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 	if (pInstance)
             pInstance->SetData(DATA_BOSS_ICEHOWL, DONE);
     }
@@ -71,7 +71,7 @@ struct  boss_icehowlAI : public ScriptedAI
 
 	if (Tramble_Timer < diff)
 	{
-	DoCast(m_creature, SPELL_TRAMBLE);
+	DoCast(me, SPELL_TRAMBLE);
 	Tramble_Timer = 12000;
 	}
 	else
@@ -79,7 +79,7 @@ struct  boss_icehowlAI : public ScriptedAI
 	
 	if (Feroicious_butt_Timer < diff)
 	{
-	DoCast(m_creature, HeroicMode ? SPELL_FEROICIOUS_BUTT_H : SPELL_FEROICIOUS_BUTT);
+	DoCast(me, HeroicMode ? SPELL_FEROICIOUS_BUTT_H : SPELL_FEROICIOUS_BUTT);
 	Feroicious_butt_Timer = 40000;
 	}
 	else
@@ -87,8 +87,8 @@ struct  boss_icehowlAI : public ScriptedAI
 	
 	if (Massive_crash_Timer < diff)
 	{
-	DoScriptText(SAY_MASSIVE, m_creature);
-	DoCast(m_creature, HeroicMode ? SPELL_MASSIVE_CRASH_H : SPELL_MASSIVE_CRASH);
+	DoScriptText(SAY_MASSIVE, me);
+	DoCast(me, HeroicMode ? SPELL_MASSIVE_CRASH_H : SPELL_MASSIVE_CRASH);
 	Massive_crash_Timer = 30000;
 	}
 	else
@@ -96,7 +96,7 @@ struct  boss_icehowlAI : public ScriptedAI
 	
 	if (Whirl_Timer < diff)
 	{
-	DoCast(m_creature, HeroicMode ? SPELL_WHIRL_H : SPELL_WHIRL);
+	DoCast(me, HeroicMode ? SPELL_WHIRL_H : SPELL_WHIRL);
 	Whirl_Timer = 30000;
 	}
 	else
@@ -104,14 +104,14 @@ struct  boss_icehowlAI : public ScriptedAI
 	
 	if (Berserk_Timer < diff)
 	{
-	DoCast(m_creature, SPELL_BERSERK);
+	DoCast(me, SPELL_BERSERK);
 	Berserk_Timer = 300000;
 	}
 	else
 	Berserk_Timer -=diff;
-	if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10)
+	if ((me->GetHealth()*100 / me->GetMaxHealth()) < 10)
 	{
-	m_creature->SummonCreature(0, 604.996, 150.775, 138.629, 3.36);
+	me->SummonCreature(0, 604.996, 150.775, 138.629, 3.36);
 	}
 	
     DoMeleeAttackIfReady();

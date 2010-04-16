@@ -1575,7 +1575,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattleGroundQueue(BattleGround const* 
 
                 if(winsAllTeam >= winsAllTeamLimit || winsAllPlayer >= winsAllPlayerLimit)
                 {
-                    return BG_JOIN_ERR_GROUP_DESERTER;
+                    return ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS;
                 }
             }
         }
