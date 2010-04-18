@@ -38,6 +38,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiLeviathan;
     uint64 uiLeviathan_Trigger;
     uint64 uiIgnis;
+    uint64 uiExpCommander;
     uint64 uiXT002;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
@@ -52,6 +53,7 @@ struct instance_ulduar : public InstanceData
             case 33113: uiLeviathan = pCreature->GetGUID(); return;
             case 33115: uiLeviathan_Trigger = pCreature->GetGUID(); return;
             case 33118: uiIgnis = pCreature->GetGUID(); return;
+            case 33210: uiExpCommander = pCreature->GetGUID(); return;
             case 33293: uiXT002 = pCreature->GetGUID(); return;
         }
 
@@ -68,6 +70,8 @@ struct instance_ulduar : public InstanceData
             return uiLeviathan_Trigger;
         case DATA_IGNIS:
             return uiIgnis;
+        case DATA_EXP_COMMANDER:
+            return uiExpCommander;
         case DATA_XT002:
             return uiXT002;
         }
