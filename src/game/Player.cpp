@@ -353,6 +353,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     SetGroupInvite(NULL);
     m_groupUpdateMask = 0;
     m_auraRaidUpdateMask = 0;
+    m_bPassOnGroupLoot = false;
 
     duel = NULL;
 
@@ -13903,7 +13904,7 @@ bool Player::CanCompleteQuest(uint32 quest_id)
             return false;
 
         // auto complete quest
-        if (qInfo->IsAutoComplete() && CanTakeQuest(qInfo, false))
+        if ((qInfo->IsAutoComplete() || qInfo->GetFlags() & QUEST_FLAGS_AUTOCOMPLETE) && CanTakeQuest(qInfo, false))
             return true;
 
         if (q_status.m_status == QUEST_STATUS_INCOMPLETE)
@@ -13978,7 +13979,7 @@ bool Player::CanCompleteRepeatableQuest(Quest const *pQuest)
 bool Player::CanRewardQuest(Quest const *pQuest, bool msg)
 {
     // not auto complete quest and not completed quest (only cheating case, then ignore without message)
-    if (!pQuest->IsAutoComplete() && GetQuestStatus(pQuest->GetQuestId()) != QUEST_STATUS_COMPLETE)
+    if (!pQuest->IsAutoComplete() && !(pQuest->GetFlags() & QUEST_FLAGS_AUTOCOMPLETE) && GetQuestStatus(pQuest->GetQuestId()) != QUEST_STATUS_COMPLETE)
         return false;
 
     // daily quest can't be rewarded (25 daily quest already completed)
