@@ -713,7 +713,6 @@ return true;
 void AddSC_guildhouse_npcs()
 {
     Script *newscript;
-
     newscript = new Script;
     newscript->Name = "guildmaster";
     newscript->pGossipHello = &GossipHello_guildmaster;
@@ -726,6 +725,7 @@ void AddSC_guildhouse_npcs()
     newscript->GetAI = &GetAI_guild_guardAI;
     newscript->RegisterSelf();
 
+    newscript = new Script;
     newscript->Name="buffnpc";
     newscript->pGossipHello = &GossipHello_buffnpc;
     newscript->pGossipSelect = &GossipSelect_buffnpc;
