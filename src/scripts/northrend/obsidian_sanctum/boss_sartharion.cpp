@@ -245,7 +245,7 @@ struct boss_sartharionAI : public BossAI
         achievProgress = 0;        
     }
 
-    void EnterCombat(Unit* /*pWho*/)
+    void EnterCombat(Unit* pWho)
     {
         _EnterCombat();
         if (instance)
@@ -261,7 +261,7 @@ struct boss_sartharionAI : public BossAI
         events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILISECONDS);
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
         _JustDied();
         DoScriptText(SAY_SARTHARION_DEATH,me);
@@ -287,7 +287,7 @@ struct boss_sartharionAI : public BossAI
         }
     }
 
-    void KilledUnit(Unit* /*pVictim*/)
+    void KilledUnit(Unit* pVictim)
     {
         DoScriptText(RAND(SAY_SARTHARION_SLAY_1,SAY_SARTHARION_SLAY_2,SAY_SARTHARION_SLAY_3), me);
     }
@@ -770,7 +770,7 @@ struct dummy_dragonAI : public ScriptedAI
         //Refresh respawnTime so time again are set to 30secs?
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
         int32 iTextId = 0;
         uint32 uiSpellId = 0;
@@ -849,14 +849,14 @@ struct mob_tenebronAI : public dummy_dragonAI
         m_bHasPortalOpen = false;
     }
 
-    void Aggro(Unit* /*pWho*/)
+    void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_TENEBRON_AGGRO, me);
         DoZoneInCombat();
         DoCast(me, SPELL_POWER_OF_TENEBRON);
     }
 
-    void KilledUnit(Unit* /*pVictim*/)
+    void KilledUnit(Unit* pVictim)
     {
         DoScriptText(RAND(SAY_TENEBRON_SLAY_1,SAY_TENEBRON_SLAY_2), me);
         /*if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
@@ -943,14 +943,14 @@ struct mob_shadronAI : public dummy_dragonAI
             me->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
     }
 
-    void Aggro(Unit* /*pWho*/)
+    void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_SHADRON_AGGRO,me);
         DoZoneInCombat();
         DoCast(me, SPELL_POWER_OF_SHADRON);
     }
 
-    void KilledUnit(Unit* /*pVictim*/)
+    void KilledUnit(Unit* pVictim)
     {
         DoScriptText(RAND(SAY_SHADRON_SLAY_1,SAY_SHADRON_SLAY_2), me);
         /*if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
@@ -1034,14 +1034,14 @@ struct mob_vesperonAI : public dummy_dragonAI
         m_bHasPortalOpen = false;
     }
 
-    void Aggro(Unit* /*pWho*/)
+    void Aggro(Unit* pWho)
     {
         DoScriptText(SAY_VESPERON_AGGRO,me);
         DoZoneInCombat();
         DoCast(me, SPELL_POWER_OF_VESPERON);
     }
 
-    void KilledUnit(Unit* /*pVictim*/)
+    void KilledUnit(Unit* pVictim)
     {
         DoScriptText(RAND(SAY_VESPERON_SLAY_1,SAY_VESPERON_SLAY_2), me);
         /*if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
@@ -1122,7 +1122,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         if (pInstance)
         {
             Unit *pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 999, true);
-
+            Creature* pShadron = NULL;
             Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION));
             if (Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON)))
             //if not solo figth, buff main boss, else place debuff on mini-boss. both spells TARGET_SCRIPT
@@ -1138,7 +1138,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
     }
 
-    void JustDied(Unit* /*killer*/)
+    void JustDied(Unit* killer)
     {
         if (pInstance)
         {
@@ -1146,6 +1146,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
             if(Shadron)
                 ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
 
+            Creature* pDebuffTarget = NULL;
             Map *map = me->GetMap();
             if (map->IsDungeon())
             {
@@ -1183,7 +1184,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 /*uiDiff*/)
+    void UpdateAI(const uint32 uiDiff)
     {
         if (!UpdateVictim())
             return;
@@ -1219,7 +1220,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         DoCast(me, SPELL_TWILIGHT_TORMENT_VESP_ACO);
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
         // remove twilight torment on Vesperon
         if (pInstance)
@@ -1256,7 +1257,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 /*uiDiff*/)
+    void UpdateAI(const uint32 uiDiff)
     {
         if (!UpdateVictim())
             return;
@@ -1314,8 +1315,8 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
         else
             m_uiHatchEggTimer -= uiDiff;
     }
-    void AttackStart(Unit* /*pWho*/) {}
-    void MoveInLineOfSight(Unit* /*pWho*/) {}
+    void AttackStart(Unit* pWho) {}
+    void MoveInLineOfSight(Unit* pWho) {}
 };
 
 CreatureAI* GetAI_mob_twilight_eggs(Creature* pCreature)
