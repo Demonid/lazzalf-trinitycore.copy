@@ -72,15 +72,15 @@ struct boss_toravonAI : public ScriptedAI
             pInstance->SetData(DATA_TORAVON_EVENT, NOT_STARTED);
     }
 
-    void KilledUnit(Unit* Victim) {}
+    void KilledUnit(Unit* /*Victim*/) {}
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if (pInstance)
             pInstance->SetData(DATA_TORAVON_EVENT, DONE);
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         DoZoneInCombat();
 
@@ -141,7 +141,7 @@ struct mob_frost_warderAI : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         DoZoneInCombat();
 
@@ -188,7 +188,7 @@ struct mob_frozen_orbAI : public ScriptedAI
         killtimer = 60000; // if after this time there is no victim -> destroy!
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         DoZoneInCombat();
     }
@@ -231,23 +231,26 @@ struct mob_frozen_orb_stalkerAI : public Scripted_NoMovementAI
     ScriptedInstance *pInstance;
     bool spawned;
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
-        if (!spawned)
+        if (spawned)
+            return;
+
+        spawned = true;
+        if (!pInstance)
+            return;
+
+        Unit* pToravon = me->GetCreature(*me, pInstance->GetData64(DATA_TORAVON));
+        if (!pToravon)
+            return;
+
+        uint8 num_orbs = RAID_MODE(1, 3);
+        for (uint8 i=0; i<num_orbs; ++i)
         {
-            Unit* pToravon;
-            if (pInstance && (pToravon = me->GetCreature(*me, pInstance->GetData64(DATA_TORAVON))))
-            {
-                uint8 num_orbs = RAID_MODE(1, 3);
-                for (uint8 i=0; i<num_orbs; ++i)
-                {
-                    Position pos;
-                    me->GetNearPoint(pToravon, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.0f, 10.0f, 0.0f);
-                    me->SetPosition(pos, true);
-                    DoCast(me, SPELL_FROZEN_ORB_SUMMON);
-                }
-            }
-            spawned = true;
+            Position pos;
+            me->GetNearPoint(pToravon, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.0f, 10.0f, 0.0f);
+            me->SetPosition(pos, true);
+            DoCast(me, SPELL_FROZEN_ORB_SUMMON);
         }
     }
 };

@@ -32,16 +32,16 @@ struct boss_hodirAI : public BossAI
     {
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit * /*victim*/)
     {
     }
 
-    void JustDied(Unit *victim)
+    void JustDied(Unit * /*victim*/)
     {
         _JustDied();
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         _EnterCombat();
 //        DoScriptText(SAY_AGGRO, me);

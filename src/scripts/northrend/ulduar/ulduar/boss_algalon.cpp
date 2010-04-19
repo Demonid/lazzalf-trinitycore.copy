@@ -111,7 +111,7 @@ struct boss_algalonAI : public BossAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit * /*victim*/)
     {
         DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), me);
     }
@@ -198,7 +198,7 @@ struct boss_algalonAI : public BossAI
 
         if ((me->GetHealth()*100 / me->GetMaxHealth()) < 2)
         {
-            me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667, -295.101166,417.321381,0,0,0,0,0,-10);
+            me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667, -295.101166,417.321381,0,0,0,0,0,0);
 
             DoScriptText(SAY_DEATH_1, me);
             DoScriptText(SAY_DEATH_2, me);

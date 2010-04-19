@@ -100,7 +100,7 @@ void ScriptedAI::AttackStartNoMove(Unit* pWho)
         DoStartNoMovement(pWho);
 }
 
-void ScriptedAI::UpdateAI(const uint32 uiDiff)
+void ScriptedAI::UpdateAI(const uint32 /*uiDiff*/)
 {
     //Check if we have a current target
     if (!UpdateVictim())
@@ -195,11 +195,9 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget pTarget, uint32 uiPosition)
     default:
         return UnitAI::SelectTarget(pTarget, uiPosition);
     }
-
-    return NULL;
 }
 
-SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, int32 uiSchool, int32 uiMechanic, SelectTargetType selectTargets, uint32 uiPowerCostMin, uint32 uiPowerCostMax, float fRangeMin, float fRangeMax, SelectEffect selectEffects)
+SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, uint32 uiSchool, uint32 uiMechanic, SelectTargetType selectTargets, uint32 uiPowerCostMin, uint32 uiPowerCostMax, float fRangeMin, float fRangeMax, SelectEffect selectEffects)
 {
     //No target so we can't cast
     if (!pTarget)
@@ -237,11 +235,11 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, int32 uiSchool, int32 u
             continue;
 
         //Check for school if specified
-        if (uiSchool >= 0 && pTempSpell->SchoolMask & uiSchool)
+        if (uiSchool && (pTempSpell->SchoolMask & uiSchool) == 0)
             continue;
 
         //Check for spell mechanic if specified
-        if (uiMechanic >= 0 && pTempSpell->Mechanic != uiMechanic)
+        if (uiMechanic && pTempSpell->Mechanic != uiMechanic)
             continue;
 
         //Make sure that the spell uses the requested amount of power
@@ -711,12 +709,14 @@ void LoadOverridenSQLData()
     GameObjectInfo *goInfo;
 
     // Sunwell Plateau : Kalecgos : Spectral Rift
-    if (goInfo = GOBJECT(187055))
+    goInfo = GOBJECT(187055);
+    if (goInfo)
         if (goInfo->type == GAMEOBJECT_TYPE_GOOBER)
             goInfo->goober.lockId = 57; // need LOCKTYPE_QUICK_OPEN
 
     // Naxxramas : Sapphiron Birth
-    if (goInfo = GOBJECT(181356))
+    goInfo = GOBJECT(181356);
+    if (goInfo)
         if (goInfo->type == GAMEOBJECT_TYPE_TRAP)
             goInfo->trap.radius = 50;
 }

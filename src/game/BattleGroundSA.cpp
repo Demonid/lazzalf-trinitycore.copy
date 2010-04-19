@@ -420,7 +420,7 @@ void BattleGroundSA::TeleportPlayers()
     }
 }
 
-void BattleGroundSA::EventPlayerDamagedGO(Player* plr, GameObject* go, uint32 event)
+void BattleGroundSA::EventPlayerDamagedGO(Player* plr, GameObject* /*go*/, uint32 event)
 {
     switch(event)
     {
@@ -488,7 +488,7 @@ void BattleGroundSA::DestroyGate(uint32 i, Player* pl)
         if (g->GetGOValue()->building.health == 0)
         {
             GateStatus[i] = BG_SA_GATE_DESTROYED;
-            uint32 uws;
+            uint32 uws = 0;
             switch(i)
             {
                 case 0:
@@ -565,7 +565,7 @@ void BattleGroundSA::SendTime()
     UpdateWorldState(BG_SA_TIMER_SEC_DECS, ((end_of_round%60000)%10000)/1000);
 }
 
-void BattleGroundSA::EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj)
+void BattleGroundSA::EventPlayerClickedOnFlag(Player * /*Source*/, GameObject* target_obj)
 {
     switch(target_obj->GetEntry())
     {

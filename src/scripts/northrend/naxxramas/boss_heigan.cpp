@@ -62,14 +62,14 @@ struct boss_heiganAI : public BossAI
         _Reset();
     }
 
-    void KilledUnit(Unit* Victim)
+    void KilledUnit(Unit* /*Victim*/)
     {
         bIsSomeoneDied = true;
         if (!(rand()%5))
             DoScriptText(SAY_SLAY, me);
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
@@ -78,7 +78,7 @@ struct boss_heiganAI : public BossAI
             instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         _EnterCombat();
         DoScriptText(SAY_AGGRO, me);

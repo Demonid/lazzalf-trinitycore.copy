@@ -171,7 +171,7 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
         uiBuffTimer = urand(30000,60000);
     }
 
-    void SetData(uint32 uiType, uint32 uiData)
+    void SetData(uint32 uiType, uint32 /*uiData*/)
     {
         switch(uiType)
         {
@@ -225,7 +225,7 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
         }
     }
 
-    void EnterCombat(Unit* pWho)
+    void EnterCombat(Unit* /*pWho*/)
     {
         DoCastSpellShield();
     }
@@ -407,7 +407,7 @@ struct boss_warrior_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 	 		DoScriptText(SAY_START, me);	
         if (pInstance)
@@ -534,7 +534,7 @@ struct boss_mage_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 	 		DoScriptText(SAY_START, me);	
         if (pInstance)
@@ -676,7 +676,7 @@ struct boss_shaman_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 	 		DoScriptText(SAY_START, me);	
         if (pInstance)
@@ -843,7 +843,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 	 		DoScriptText(SAY_START, me);	
         if (pInstance)
@@ -961,7 +961,7 @@ struct boss_rouge_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 		DoScriptText(SAY_START, me);	
         if (pInstance)

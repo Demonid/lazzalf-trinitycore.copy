@@ -42,23 +42,23 @@ struct boss_auriaya_AI : public BossAI
         SONIC_SCREECH_Timer = 30000;
     }
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         _EnterCombat();
         DoScriptText(SAY_AGGRO,me);
     }
-    void KilledUnit(Unit* victim)
+    void KilledUnit(Unit* /*victim*/)
     {
         DoScriptText(SAY_SLAY_1, me);
     }
 
-    void JustDied(Unit *victim)
+    void JustDied(Unit * /*victim*/)
     {
         _JustDied();
         DoScriptText(SAY_SLAY_1, me);
     }
 
-    void MoveInLineOfSight(Unit* who) {}
+    void MoveInLineOfSight(Unit* /*who*/) {}
 
     void UpdateAI(const uint32 diff)
     {

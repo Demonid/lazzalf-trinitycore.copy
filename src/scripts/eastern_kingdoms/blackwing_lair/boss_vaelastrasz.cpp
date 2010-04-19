@@ -89,7 +89,7 @@ struct boss_vaelAI : public ScriptedAI
         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit * victim)
     {
         if (rand()%5)
             return;
@@ -97,7 +97,7 @@ struct boss_vaelAI : public ScriptedAI
         DoScriptText(SAY_KILLTARGET, me, victim);
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         DoCast(me, SPELL_ESSENCEOFTHERED);
         DoZoneInCombat();
@@ -173,8 +173,8 @@ struct boss_vaelAI : public ScriptedAI
             while (i < 3)                                   // max 3 tries to get a random target with power_mana
             {
                 ++i;
-                if (pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true)) //not aggro leader
-                    if (pTarget->getPowerType() == POWER_MANA)
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true); //not aggro leader
+                if (pTarget && pTarget->getPowerType() == POWER_MANA)
                         i = 3;
             }
             if (pTarget)                                     // cast on self (see below)

@@ -114,7 +114,7 @@ struct boss_krik_thirAI : public ScriptedAI
             pInstance->SetData(DATA_KRIKTHIR_THE_GATEWATCHER_EVENT, NOT_STARTED);
     }
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         DoScriptText(SAY_AGGRO, me);
         Summon();
@@ -178,23 +178,31 @@ struct boss_krik_thirAI : public ScriptedAI
 
         DoMeleeAttackIfReady();
     }
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         DoScriptText(SAY_DEATH, me);
 
-        if (pInstance)
-        {
-            pInstance->SetData(DATA_KRIKTHIR_THE_GATEWATCHER_EVENT, DONE);
-            //Achievement: Watch him die
-            Creature *pAdd1, *pAdd2, *pAdd3;
-            if ((pAdd1 = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_GASHRA))) && pAdd1->isAlive() &&
-                (pAdd2 = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_SILTHIK))) && pAdd2->isAlive() &&
-                (pAdd3 = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_NARJIL))) && pAdd3->isAlive() &&
-                IsHeroic())
-                pInstance->DoCompleteAchievement(ACHIEV_WATH_HIM_DIE);
-        }
+        if (!pInstance)
+            return;
+
+        pInstance->SetData(DATA_KRIKTHIR_THE_GATEWATCHER_EVENT, DONE);
+        //Achievement: Watch him die
+        Creature *pAdd = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_GASHRA));
+        if (!pAdd || !pAdd->isAlive())
+            return;
+
+        pAdd = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_SILTHIK));
+        if (!pAdd || !pAdd->isAlive())
+            return;
+
+        pAdd = Unit::GetCreature(*me, pInstance->GetData64(DATA_WATCHER_NARJIL));
+        if (!pAdd || !pAdd->isAlive())
+            return;
+
+        pInstance->DoCompleteAchievement(ACHIEV_WATH_HIM_DIE);
     }
-    void KilledUnit(Unit *victim)
+
+    void KilledUnit(Unit * victim)
     {
         if (victim == me)
             return;
@@ -212,7 +220,7 @@ struct npc_skittering_infectorAI : public ScriptedAI
 {
     npc_skittering_infectorAI(Creature *c) : ScriptedAI(c) {}
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         //The spell is not working propperly
         DoCast(me->getVictim(),SPELL_ACID_SPLASH, true);
@@ -344,7 +352,7 @@ struct npc_watcher_gashraAI : public ScriptedAI
         uiInfectedBiteTimer = 4*IN_MILISECONDS;
     }
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         DoCast(me, SPELL_ENRAGE, true);
     }

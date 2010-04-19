@@ -57,12 +57,12 @@ struct boss_kologarnAI : public BossAI
         me->Attack(who, true);
     }
 
-    void JustDied(Unit *victim)
+    void JustDied(Unit * /*victim*/)
     {
         _JustDied();
     }
 
-    void PassengerBoarded(Unit *who, int8 seatId, bool apply)
+    void PassengerBoarded(Unit *who, int8 /*seatId*/, bool apply)
     {
         if(who->GetTypeId() == TYPEID_UNIT)
         {
@@ -75,7 +75,7 @@ struct boss_kologarnAI : public BossAI
         }
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         _EnterCombat();
         events.ScheduleEvent(EVENT_SMASH, 5000);

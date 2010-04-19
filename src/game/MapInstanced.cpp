@@ -150,8 +150,12 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
             InstanceGroupBind *groupBind = NULL;
             Group *group = player->GetGroup();
             // use the player's difficulty setting (it may not be the same as the group's)
-            if (group && (groupBind = group->GetBoundInstance(this)))
-                pSave = groupBind->save;
+            if (group)
+            {
+                groupBind = group->GetBoundInstance(this);
+                if (groupBind)
+                    pSave = groupBind->save;
+            }
         }
         if (pSave)
         {
@@ -257,7 +261,7 @@ bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     return true;
 }
 
-bool MapInstanced::CanEnter(Player *player)
+bool MapInstanced::CanEnter(Player * /*player*/)
 {
     //assert(false);
     return true;

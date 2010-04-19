@@ -38,11 +38,11 @@ struct boss_thorimAI : public BossAI
     {
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit * /*victim*/)
     {
     }
 
-    void JustDied(Unit *victim)
+    void JustDied(Unit * /*victim*/)
     {
         _JustDied();
     }

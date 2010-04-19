@@ -320,7 +320,6 @@ struct boss_black_knightAI : public ScriptedAI
             pInstance->SetData(BOSS_BLACK_KNIGHT,IN_PROGRESS);
     }
 
-    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
         if (uiDamage > me->GetHealth() && uiPhase <= PHASE_SKELETON)
         {
@@ -341,7 +340,7 @@ struct boss_black_knightAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* pKiller)
+    void JustDied(Unit* /*pKiller*/)
     {
 		DoScriptText(SAY_DEATH_3, me);
 		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
