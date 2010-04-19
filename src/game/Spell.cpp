@@ -622,6 +622,7 @@ void Spell::SelectSpellTargets()
                     }
                     break;
                 }
+                case SPELL_EFFECT_BIND:
                 case SPELL_EFFECT_RESURRECT:
                 case SPELL_EFFECT_CREATE_ITEM:
                 case SPELL_EFFECT_TRIGGER_SPELL:
@@ -772,7 +773,7 @@ void Spell::SelectSpellTargets()
     }
 }
 
-void Spell::prepareDataForTriggerSystem(AuraEffect const * triggeredByAura)
+void Spell::prepareDataForTriggerSystem(AuraEffect const * /*triggeredByAura*/)
 {
     //==========================================================================================
     // Now fill data for trigger system, need know:
@@ -1334,7 +1335,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     }
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if (m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo,m_triggeredByAuraSpell))
+    m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo,m_triggeredByAuraSpell);
+    if (m_diminishGroup)
     {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
@@ -1371,8 +1373,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
 
         if (m_originalCaster)
         {
-            if (m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_currentBasePoints[0] : &basePoints[0], m_CastItem))
+            m_spellAura = Aura::TryCreate(aurSpellInfo, effectMask, unit,
+                m_originalCaster,(aurSpellInfo == m_spellInfo)? &m_currentBasePoints[0] : &basePoints[0], m_CastItem);
+            if (m_spellAura)
             {
                 // Now Reduce spell duration using data received at spell hit
                 int32 duration = m_spellAura->GetMaxDuration();
@@ -1526,7 +1529,7 @@ bool Spell::UpdateChanneledTargetList()
 
     needAuraMask &= needAliveTargetMask;
 
-    float range;
+    float range = 0;
     if (needAuraMask)
     {
         range = GetSpellMaxRange(m_spellInfo, IsPositiveSpell(m_spellInfo->Id));
@@ -3568,7 +3571,7 @@ void Spell::SendCastResult(Player* caster, SpellEntry const* spellInfo, uint8 ca
             break;
         case SPELL_FAILED_TOO_MANY_OF_ITEM:
         {
-             uint32 item;
+             uint32 item = 0;
              for (int8 x=0;x < 3;x++)
                  if (spellInfo->EffectItemType[x])
                      item = spellInfo->EffectItemType[x];
@@ -4636,7 +4639,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_targets.getTargetMask() == TARGET_FLAG_SELF &&
                     m_spellInfo->EffectImplicitTargetA[1] == TARGET_UNIT_TARGET_ENEMY)
                 {
-                    if (target = m_caster->GetUnit(*m_caster, m_caster->ToPlayer()->GetSelection()))
+                    target = m_caster->GetUnit(*m_caster, m_caster->ToPlayer()->GetSelection());
+                    if (target)
                         m_targets.setUnitTarget(target);
                     else
                         return SPELL_FAILED_BAD_TARGETS;

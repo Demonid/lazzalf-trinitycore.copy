@@ -313,7 +313,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
             uiPhase = uiPhaseStep;
     }
 		
-    void SetData(uint32 uiType, uint32 uiData)
+    void SetData(uint32 uiType, uint32 /*uiData*/)
     {
         switch (uiType)
         {
@@ -721,7 +721,7 @@ bool GossipHello_npc_announcer_toc5(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_announcer_toc5(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_announcer_toc5(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {

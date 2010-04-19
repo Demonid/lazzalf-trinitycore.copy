@@ -41,7 +41,7 @@ enum eOnlyForFlight
     SPELL_ARCANE_CHARGES    = 45072
 };
 
-bool ItemUse_item_only_for_flight(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+bool ItemUse_item_only_for_flight(Player* pPlayer, Item* pItem, SpellCastTargets const& /*targets*/)
 {
     uint32 itemId = pItem->GetEntry();
     bool disabled = false;
@@ -78,7 +78,7 @@ bool ItemUse_item_only_for_flight(Player* pPlayer, Item* pItem, SpellCastTargets
 
 //This is just a hack and should be removed from here.
 //Creature/Item are in fact created before spell are sucessfully casted, without any checks at all to ensure proper/expected behavior.
-bool ItemUse_item_draenei_fishing_net(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+bool ItemUse_item_draenei_fishing_net(Player* pPlayer, Item* /*pItem*/, SpellCastTargets const& /*targets*/)
 {
     //if (targets.getGOTarget() && targets.getGOTarget()->GetTypeId() == TYPEID_GAMEOBJECT &&
     //targets.getGOTarget()->GetGOInfo()->type == GAMEOBJECT_TYPE_SPELL_FOCUS && targets.getGOTarget()->GetEntry() == 181616)
@@ -111,7 +111,7 @@ bool ItemUse_item_draenei_fishing_net(Player* pPlayer, Item* pItem, SpellCastTar
 # item_nether_wraith_beacon
 #####*/
 
-bool ItemUse_item_nether_wraith_beacon(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+bool ItemUse_item_nether_wraith_beacon(Player* pPlayer, Item* /*pItem*/, SpellCastTargets const& /*targets*/)
 {
     if (pPlayer->GetQuestStatus(10832) == QUEST_STATUS_INCOMPLETE)
     {
@@ -128,7 +128,7 @@ bool ItemUse_item_nether_wraith_beacon(Player* pPlayer, Item* pItem, SpellCastTa
 # item_flying_machine
 #####*/
 
-bool ItemUse_item_flying_machine(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+bool ItemUse_item_flying_machine(Player* pPlayer, Item* pItem, SpellCastTargets const& /*targets*/)
 {
     uint32 itemId = pItem->GetEntry();
     if (itemId == 34060)
@@ -162,7 +162,7 @@ bool ItemUse_item_gor_dreks_ointment(Player *pPlayer, Item *pItem, SpellCastTarg
 # item_incendiary_explosives
 #####*/
 
-bool ItemUse_item_incendiary_explosives(Player *pPlayer, Item *pItem, SpellCastTargets const &targets)
+bool ItemUse_item_incendiary_explosives(Player *pPlayer, Item *pItem, SpellCastTargets const & /*targets*/)
 {
     if (pPlayer->FindNearestCreature(26248,15) || pPlayer->FindNearestCreature(26249,15))
         return false;
@@ -177,7 +177,7 @@ bool ItemUse_item_incendiary_explosives(Player *pPlayer, Item *pItem, SpellCastT
 # item_mysterious_egg
 #####*/
 
-bool ItemExpire_item_mysterious_egg(Player *pPlayer, ItemPrototype const *pItemProto)
+bool ItemExpire_item_mysterious_egg(Player *pPlayer, ItemPrototype const * /*pItemProto*/)
 {
     ItemPosCountVec dest;
     uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 39883, 1); // Cracked Egg
@@ -191,7 +191,7 @@ bool ItemExpire_item_mysterious_egg(Player *pPlayer, ItemPrototype const *pItemP
 # item_disgusting_jar
 #####*/
 
-bool ItemExpire_item_disgusting_jar(Player *pPlayer, ItemPrototype const *pItemProto)
+bool ItemExpire_item_disgusting_jar(Player *pPlayer, ItemPrototype const * /*pItemProto*/)
 {
     ItemPosCountVec dest;
     uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 44718, 1); // Ripe Disgusting Jar
@@ -205,7 +205,7 @@ bool ItemExpire_item_disgusting_jar(Player *pPlayer, ItemPrototype const *pItemP
 # item_harvesters_gift
 #####*/
 #define GHOULS 28845
-bool ItemUse_item_harvesters_gift(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+bool ItemUse_item_harvesters_gift(Player* pPlayer, Item* /*pItem*/, SpellCastTargets const& /*targets*/)
 {
     std::list<Creature*> MinionList;
     pPlayer->GetAllMinionsByEntry(MinionList,GHOULS);
@@ -253,36 +253,40 @@ enum ePileFakeFur
     GO_HIGH_QUALITY_FUR                                    = 187983,
     NPC_NESINGWARY_TRAPPER                                 = 25835
 };
-bool ItemUse_item_pile_fake_furs(Player *pPlayer, Item *pItem, SpellCastTargets const &targets)
+
+#define CaribouTrapsNum 15
+const uint32 CaribouTraps[CaribouTrapsNum] =
 {
-    GameObject *pGo;
-    if ((pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_1, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_2, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_3, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_4, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_5, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_6, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_7, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_8, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_9, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_10, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_11, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_12, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_13, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_14, 5.0f)) ||
-        (pGo = pPlayer->FindNearestGameObject(GO_CARIBOU_TRAP_15, 5.0f)))
+    GO_CARIBOU_TRAP_1, GO_CARIBOU_TRAP_2, GO_CARIBOU_TRAP_3, GO_CARIBOU_TRAP_4, GO_CARIBOU_TRAP_5,
+    GO_CARIBOU_TRAP_6, GO_CARIBOU_TRAP_7, GO_CARIBOU_TRAP_8, GO_CARIBOU_TRAP_9, GO_CARIBOU_TRAP_10,
+    GO_CARIBOU_TRAP_11, GO_CARIBOU_TRAP_12, GO_CARIBOU_TRAP_13, GO_CARIBOU_TRAP_14, GO_CARIBOU_TRAP_15,
+};
+
+
+bool ItemUse_item_pile_fake_furs(Player *pPlayer, Item * /*pItem*/, SpellCastTargets const & /*targets*/)
+{
+    GameObject *pGo = NULL;
+    for (uint8 i = 0; i < CaribouTrapsNum; ++i)
     {
-        if (pGo->FindNearestCreature(NPC_NESINGWARY_TRAPPER, 10.0f, true) || pGo->FindNearestCreature(NPC_NESINGWARY_TRAPPER, 10.0f, false) || pGo->FindNearestGameObject(GO_HIGH_QUALITY_FUR, 2.0f))
-            return true;
-        float x, y, z;
-        pGo->GetClosePoint(x, y, z, pGo->GetObjectSize() / 3, 7.0f);
-        pGo->SummonGameObject(GO_HIGH_QUALITY_FUR, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0, 0, 0, 0, 0, 1000);
-        if (TempSummon* summon = pPlayer->SummonCreature(NPC_NESINGWARY_TRAPPER, x, y, z, pGo->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 1000))
-        {
-            summon->SetVisibility(VISIBILITY_OFF);
-            summon->SetReactState(REACT_PASSIVE);
-            summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-        }
+        pGo = pPlayer->FindNearestGameObject(CaribouTraps[i], 5.0f);
+        if (pGo)
+            break;
+    }
+
+    if (!pGo)
+        return false;
+
+    if (pGo->FindNearestCreature(NPC_NESINGWARY_TRAPPER, 10.0f, true) || pGo->FindNearestCreature(NPC_NESINGWARY_TRAPPER, 10.0f, false) || pGo->FindNearestGameObject(GO_HIGH_QUALITY_FUR, 2.0f))
+        return true;
+
+    float x, y, z;
+    pGo->GetClosePoint(x, y, z, pGo->GetObjectSize() / 3, 7.0f);
+    pGo->SummonGameObject(GO_HIGH_QUALITY_FUR, pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), 0, 0, 0, 0, 0, 1000);
+    if (TempSummon* summon = pPlayer->SummonCreature(NPC_NESINGWARY_TRAPPER, x, y, z, pGo->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 1000))
+    {
+        summon->SetVisibility(VISIBILITY_OFF);
+        summon->SetReactState(REACT_PASSIVE);
+        summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
     }
     return false;
 }
@@ -298,7 +302,7 @@ enum ePetrovClusterBombs
     ZONE_ID_HOWLING             = 495
 };
 
-bool ItemUse_item_petrov_cluster_bombs(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
+bool ItemUse_item_petrov_cluster_bombs(Player* pPlayer, Item* pItem, const SpellCastTargets & /*pTargets*/)
 {
     if (pPlayer->GetZoneId() != ZONE_ID_HOWLING)
         return false;
@@ -348,41 +352,38 @@ enum eHelpThemselves
     GO_MAMMOTH_TRAP_22                            = 188044,
 };
 
-bool ItemUse_item_dehta_trap_smasher(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
+#define MammothTrapsNum 22
+const uint32 MammothTraps[MammothTrapsNum] =
 {
+    GO_MAMMOTH_TRAP_1, GO_MAMMOTH_TRAP_2, GO_MAMMOTH_TRAP_3, GO_MAMMOTH_TRAP_4, GO_MAMMOTH_TRAP_5,
+    GO_MAMMOTH_TRAP_6, GO_MAMMOTH_TRAP_7, GO_MAMMOTH_TRAP_8, GO_MAMMOTH_TRAP_9, GO_MAMMOTH_TRAP_10,
+    GO_MAMMOTH_TRAP_11, GO_MAMMOTH_TRAP_12, GO_MAMMOTH_TRAP_13, GO_MAMMOTH_TRAP_14, GO_MAMMOTH_TRAP_15,
+    GO_MAMMOTH_TRAP_16, GO_MAMMOTH_TRAP_17, GO_MAMMOTH_TRAP_18, GO_MAMMOTH_TRAP_19, GO_MAMMOTH_TRAP_20,
+    GO_MAMMOTH_TRAP_21, GO_MAMMOTH_TRAP_22
+};
+
+bool ItemUse_item_dehta_trap_smasher(Player* pPlayer, Item* /*pItem*/, const SpellCastTargets & /*pTargets*/)
+{
+    if (pPlayer->GetQuestStatus(QUEST_CANNOT_HELP_THEMSELVES) != QUEST_STATUS_INCOMPLETE)
+        return false;
+
     Creature* pMammoth;
+    pMammoth = pPlayer->FindNearestCreature(NPC_TRAPPED_MAMMOTH_CALF,5.0f);
+    if (!pMammoth)
+        return false;
+
     GameObject* pTrap;
-
-    if (pPlayer->GetQuestStatus(QUEST_CANNOT_HELP_THEMSELVES) == QUEST_STATUS_INCOMPLETE &&
-        (pMammoth = pPlayer->FindNearestCreature(NPC_TRAPPED_MAMMOTH_CALF,5.0f)) &&
-        ((pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_1,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_2,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_3,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_4,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_5,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_6,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_7,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_8,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_9,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_10,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_11,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_12,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_13,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_14,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_15,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_16,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_17,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_18,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_19,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_20,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_21,5.0f)) ||
-        (pTrap = pPlayer->FindNearestGameObject(GO_MAMMOTH_TRAP_22,5.0f))))
+    for (uint8 i = 0; i < MammothTrapsNum; ++i)
     {
-        pMammoth->AI()->DoAction(1);
-        pTrap->SetGoState(GO_STATE_READY);
-        pPlayer->KilledMonsterCredit(NPC_TRAPPED_MAMMOTH_CALF,0);
+        pTrap = pPlayer->FindNearestGameObject(MammothTraps[i],11.0f);
+        if (pTrap)
+        {
+            pMammoth->AI()->DoAction(1);
+            pTrap->SetGoState(GO_STATE_READY);
+            pPlayer->KilledMonsterCredit(NPC_TRAPPED_MAMMOTH_CALF,0);
+            return true;
+        }
     }
-
     return false;
 }
 

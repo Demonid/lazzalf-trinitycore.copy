@@ -117,7 +117,7 @@ void AuraApplication::_Remove()
     }
 }
 
-bool AuraApplication::_CheckPositive(Unit * caster) const
+bool AuraApplication::_CheckPositive(Unit * /*caster*/) const
 {
     // Aura is positive when it is casted by friend and at least one aura is positive
     // or when it is casted by enemy and at least one aura is negative
@@ -527,7 +527,7 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
 // targets have to be registered and not have effect applied yet to use this function
 void Aura::_ApplyEffectForTargets(uint8 effIndex)
 {
-    Unit * caster = GetCaster();
+    //Unit * caster = GetCaster();
     // prepare list of aura targets
     UnitList targetList;
     for (ApplicationMap::iterator appIter = m_applications.begin(); appIter != m_applications.end(); ++appIter)
@@ -557,9 +557,12 @@ void Aura::UpdateOwner(uint32 diff, WorldObject * owner)
     Spell * modSpell = NULL;
     Player * modOwner = NULL;
     if (caster)
-        if ((modOwner = caster->GetSpellModOwner())
-        && (modSpell = modOwner->FindCurrentSpellBySpellId(GetId())))
-        modOwner->SetSpellModTakingSpell(modSpell, true);
+    {
+        modOwner = caster->GetSpellModOwner();
+        modSpell = modOwner->FindCurrentSpellBySpellId(GetId());
+        if (modOwner && modSpell)
+            modOwner->SetSpellModTakingSpell(modSpell, true);
+    }
 
     Update(diff, caster);
 
@@ -711,7 +714,7 @@ bool Aura::DropCharge()
     return false;
 }
 
-void Aura::SetStackAmount(uint8 stackAmount, bool applied)
+void Aura::SetStackAmount(uint8 stackAmount, bool /*applied*/)
 {
     if (stackAmount != m_stackAmount)
     {
@@ -1615,7 +1618,7 @@ void DynObjAura::Remove(AuraRemoveMode removeMode)
     _Remove(removeMode);
 }
 
-void DynObjAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * caster)
+void DynObjAura::FillTargetMap(std::map<Unit *, uint8> & targets, Unit * /*caster*/)
 {
     Unit * dynObjOwnerCaster = GetDynobjOwner()->GetCaster();
     float radius = GetDynobjOwner()->GetRadius();

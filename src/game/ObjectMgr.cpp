@@ -997,7 +997,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelid)
     return sCreatureModelStorage.LookupEntry<CreatureModelInfo>(modelid);
 }
 
-uint32 ObjectMgr::ChooseDisplayId(uint32 team, const CreatureInfo *cinfo, const CreatureData *data /*= NULL*/)
+uint32 ObjectMgr::ChooseDisplayId(uint32 /*team*/, const CreatureInfo *cinfo, const CreatureData *data /*= NULL*/)
 {
     // Load creature model (display id)
     uint32 display_id = 0;
@@ -1484,7 +1484,7 @@ bool ObjectMgr::MoveCreData(uint32 guid, uint32 mapId, Position pos)
     return true;
 }
 
-uint32 ObjectMgr::AddCreData(uint32 entry, uint32 team, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay)
+uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay)
 {
     CreatureInfo const *cInfo = GetCreatureTemplate(entry);
     if (!cInfo)
@@ -2657,7 +2657,7 @@ void ObjectMgr::LoadPlayerInfo()
             uint32 current_race = fields[0].GetUInt32();
             uint32 current_class = fields[1].GetUInt32();
             uint32 mapId     = fields[2].GetUInt32();
-            uint32 zoneId    = fields[3].GetUInt32();
+            uint32 areaId    = fields[3].GetUInt32();
             float  positionX = fields[4].GetFloat();
             float  positionY = fields[5].GetFloat();
             float  positionZ = fields[6].GetFloat();
@@ -2703,7 +2703,7 @@ void ObjectMgr::LoadPlayerInfo()
             PlayerInfo* pInfo = &playerInfo[current_race][current_class];
 
             pInfo->mapId     = mapId;
-            pInfo->zoneId    = zoneId;
+            pInfo->areaId    = areaId;
             pInfo->positionX = positionX;
             pInfo->positionY = positionY;
             pInfo->positionZ = positionZ;
@@ -3392,7 +3392,7 @@ void ObjectMgr::LoadArenaTeams()
 
     do
     {
-        Field *fields = result->Fetch();
+        //Field *fields = result->Fetch();
 
         bar.step();
         ++count;
@@ -5481,7 +5481,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
 uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team, uint32 searched_node)
 {
     bool found = false;
-    float dist;
+    float dist = 10000;
     uint32 id = 0;
 
     for (uint32 i = 1; i < sTaxiNodesStore.GetNumRows(); ++i)
@@ -5582,7 +5582,8 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         CreatureInfo const *mount_info = GetCreatureTemplate(mount_entry);
         if (mount_info)
         {
-            if (! (mount_id = mount_info->GetRandomValidModelId()))
+            mount_id = mount_info->GetRandomValidModelId();
+            if (!mount_id)
             {
                 sLog.outErrorDb("No displayid found for the taxi mount with the entry %u! Can't load it!", mount_entry);
                 return false;
@@ -5727,12 +5728,12 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
 
     // at corpse map
     bool foundNear = false;
-    float distNear;
+    float distNear = 10000;
     WorldSafeLocsEntry const* entryNear = NULL;
 
     // at entrance map for corpse map
     bool foundEntr = false;
-    float distEntr;
+    float distEntr = 10000;
     WorldSafeLocsEntry const* entryEntr = NULL;
 
     // some where other
@@ -8605,7 +8606,7 @@ void ObjectMgr::LoadTrainerSpell()
 int ObjectMgr::LoadReferenceVendor(int32 vendor, int32 item, std::set<uint32> *skip_vendors)
 {
     // find all items from the reference vendor
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor WHERE entry='%d'", item);
+    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT item, maxcount, incrtime, ExtendedCost FROM npc_vendor WHERE entry='%d'", item);
     if (!result)
     {
         barGoLink bar(1);
@@ -8622,17 +8623,16 @@ int ObjectMgr::LoadReferenceVendor(int32 vendor, int32 item, std::set<uint32> *s
         bar.step();
         Field* fields = result->Fetch();
 
-        uint32 entry        = fields[0].GetUInt32();
-        int32 item_id      = fields[1].GetInt32();
+        int32 item_id = fields[0].GetInt32();
 
         // if item is a negative, its a reference
         if (item_id < 0)
             count += LoadReferenceVendor(vendor, -item_id, skip_vendors);
         else
         {
-            int32  maxcount     = fields[2].GetInt32();
-            uint32 incrtime     = fields[3].GetUInt32();
-            uint32 ExtendedCost = fields[4].GetUInt32();
+            int32  maxcount     = fields[1].GetInt32();
+            uint32 incrtime     = fields[2].GetUInt32();
+            uint32 ExtendedCost = fields[3].GetUInt32();
 
             if (!IsVendorItemValid(vendor,item_id,maxcount,incrtime,ExtendedCost,NULL,skip_vendors))
                 continue;

@@ -166,7 +166,7 @@ struct boss_flame_leviathanAI : public BossAI
             }
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         _EnterCombat();
         DoScriptText(SAY_AGGRO, me);
@@ -181,7 +181,7 @@ struct boss_flame_leviathanAI : public BossAI
             turret->AI()->DoZoneInCombat();
     }
 
-    void JustDied(Unit *victim)
+    void JustDied(Unit * /*victim*/)
     {
         DoScriptText(SAY_DEATH, me);
         if (Creature* pTrigger = Unit::GetCreature(*me, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
@@ -189,7 +189,7 @@ struct boss_flame_leviathanAI : public BossAI
         _JustDied();
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
     {
         if(spell->Id == 62472)
             vehicle->InstallAllAccessories();
@@ -420,7 +420,7 @@ struct boss_flame_leviathan_safety_containerAI : public PassiveAI
 {
     boss_flame_leviathan_safety_containerAI(Creature *c) : PassiveAI(c) {}
 
-    void MovementInform(uint32 type, uint32 id)
+    void MovementInform(uint32 /*type*/, uint32 id)
     {
         if(id == me->GetEntry())
         {
@@ -430,7 +430,7 @@ struct boss_flame_leviathan_safety_containerAI : public PassiveAI
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
         if(!me->GetVehicle() && me->isSummon() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
             me->GetMotionMaster()->MoveFall(409.8f, me->GetEntry());
@@ -444,12 +444,12 @@ struct spell_pool_of_tarAI : public TriggerAI
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void DamageTaken(Unit *who, uint32 &damage)
+    void DamageTaken(Unit * /*who*/, uint32 &damage)
     {
         damage = 0;
     }
 
-    void SpellHit(Unit* caster, const SpellEntry *spell)
+    void SpellHit(Unit* /*caster*/, const SpellEntry *spell)
     {
         if(spell->SchoolMask & SPELL_SCHOOL_MASK_FIRE && !me->HasAura(SPELL_BLAZE))
             me->CastSpell(me, SPELL_BLAZE, true);

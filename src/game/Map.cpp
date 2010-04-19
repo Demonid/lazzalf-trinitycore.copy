@@ -1255,7 +1255,7 @@ void GridMap::unloadData()
     m_gridGetHeight = &GridMap::getHeightFromFlat;
 }
 
-bool GridMap::loadAreaData(FILE *in, uint32 offset, uint32 size)
+bool GridMap::loadAreaData(FILE *in, uint32 offset, uint32 /*size*/)
 {
     map_areaHeader header;
     fseek(in, offset, SEEK_SET);
@@ -1272,7 +1272,7 @@ bool GridMap::loadAreaData(FILE *in, uint32 offset, uint32 size)
     return true;
 }
 
-bool  GridMap::loadHeihgtData(FILE *in, uint32 offset, uint32 size)
+bool  GridMap::loadHeihgtData(FILE *in, uint32 offset, uint32 /*size*/)
 {
     map_heightHeader header;
     fseek(in, offset, SEEK_SET);
@@ -1315,7 +1315,7 @@ bool  GridMap::loadHeihgtData(FILE *in, uint32 offset, uint32 size)
     return true;
 }
 
-bool  GridMap::loadLiquidData(FILE *in, uint32 offset, uint32 size)
+bool  GridMap::loadLiquidData(FILE *in, uint32 offset, uint32 /*size*/)
 {
     map_liquidHeader header;
     fseek(in, offset, SEEK_SET);
@@ -2636,7 +2636,7 @@ void InstanceMap::CreateInstanceData(bool load)
         {
             Field* fields = result->Fetch();
             const char* data = fields[0].GetString();
-            if (data && data != "")
+            if (data && (strncmp(data, "", 1) == 0))
             {
                 sLog.outDebug("Loading instance data for `%s` with id %u", objmgr.GetScriptName(i_script_id), i_InstanceId);
                 i_data->Load(data);

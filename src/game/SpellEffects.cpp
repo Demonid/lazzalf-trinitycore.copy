@@ -76,7 +76,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectPowerDrain,                               //  8 SPELL_EFFECT_POWER_DRAIN
     &Spell::EffectHealthLeech,                              //  9 SPELL_EFFECT_HEALTH_LEECH
     &Spell::EffectHeal,                                     // 10 SPELL_EFFECT_HEAL
-    &Spell::EffectUnused,                                   // 11 SPELL_EFFECT_BIND
+    &Spell::EffectBind,                                     // 11 SPELL_EFFECT_BIND
     &Spell::EffectNULL,                                     // 12 SPELL_EFFECT_PORTAL
     &Spell::EffectUnused,                                   // 13 SPELL_EFFECT_RITUAL_BASE              unused
     &Spell::EffectUnused,                                   // 14 SPELL_EFFECT_RITUAL_SPECIALIZE        unused
@@ -312,7 +312,7 @@ void Spell::EffectEnvirinmentalDMG(uint32 i)
         m_caster->ToPlayer()->EnvironmentalDamage(DAMAGE_FIRE, damage);
 }
 
-void Spell::EffectSchoolDMG(uint32 effect_idx)
+void Spell::EffectSchoolDMG(uint32 /*effect_idx*/)
 {
 }
 
@@ -356,7 +356,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                             ++count;
                             if (count)
                             {
-                                uint32 spellId;
+                                uint32 spellId = 0;
                                 switch (m_spellInfo->Id)
                                 {
                                     case 28062: spellId = 29659; break;
@@ -1003,7 +1003,7 @@ void Spell::EffectDummy(uint32 i)
 
                     Creature* creatureTarget = unitTarget->ToCreature();
 
-                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(), creatureTarget->GetOrientation(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
+                    m_caster->SummonGameObject(179644, creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(), creatureTarget->GetOrientation(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
                     sLog.outDebug("SummonGameObject at SpellEfects.cpp EffectDummy for Spell 23019");
 
                     creatureTarget->ForcedDespawn();
@@ -2535,7 +2535,7 @@ void Spell::EffectJump(uint32 i)
     m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
 }
 
-void Spell::EffectTeleportUnits(uint32 i)
+void Spell::EffectTeleportUnits(uint32 /*i*/)
 {
     if (!unitTarget || unitTarget->isInFlight())
         return;
@@ -2774,7 +2774,7 @@ void Spell::EffectPowerBurn(uint32 i)
     if (damage < 0)
         return;
 
-    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
+    //Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
 
     // burn x% of target's mana, up to maximum of 2x% of caster's mana (Mana Burn)
     if (m_spellInfo->ManaCostPercentage)
@@ -3001,7 +3001,7 @@ void Spell::EffectHealthLeech(uint32 i)
 //    m_damage+=new_damage;
 }
 
-void Spell::DoCreateItem(uint32 i, uint32 itemtype)
+void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
 {
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
@@ -3090,7 +3090,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
         }
 
         // set the "Crafted by ..." property of the item
-        if (pItem->GetProto()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetProto()->Class != ITEM_CLASS_QUEST && newitemid != 6265)
+        if (pItem->GetProto()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetProto()->Class != ITEM_CLASS_QUEST && newitemid != 6265 && newitemid != 6948)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
 
         // send info to the client
@@ -3146,7 +3146,7 @@ void Spell::EffectCreateItem2(uint32 i)
     }
 }
 
-void Spell::EffectCreateRandomItem(uint32 i)
+void Spell::EffectCreateRandomItem(uint32 /*i*/)
 {
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
@@ -4473,7 +4473,7 @@ void Spell::EffectTaunt(uint32 /*i*/)
         unitTarget->ToCreature()->AI()->AttackStart(m_caster);
 }
 
-void Spell::EffectWeaponDmg(uint32 i)
+void Spell::EffectWeaponDmg(uint32 /*i*/)
 {
 }
 
@@ -4804,7 +4804,7 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
     }
 }
 
-void Spell::EffectInterruptCast(uint32 i)
+void Spell::EffectInterruptCast(uint32 /*i*/)
 {
     if (!unitTarget)
         return;
@@ -6751,7 +6751,7 @@ void Spell::EffectQuestComplete(uint32 i)
     pPlayer->AreaExploredOrEventHappens(quest_id);
 }
 
-void Spell::EffectForceDeselect(uint32 i)
+void Spell::EffectForceDeselect(uint32 /*i*/)
 {
     WorldPacket data(SMSG_CLEAR_TARGET, 8);
     data << uint64(m_caster->GetGUID());
@@ -7550,7 +7550,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
 
-    TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
+    //TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Map *map = caster->GetMap();
 
     for (uint32 count = 0; count < amount; ++count)
@@ -7725,7 +7725,7 @@ void Spell::EffectCastButtons(uint32 i)
     }
 }
 
-void Spell::EffectRechargeManaGem(uint32 i)
+void Spell::EffectRechargeManaGem(uint32 /*i*/)
 {
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
@@ -7750,4 +7750,59 @@ void Spell::EffectRechargeManaGem(uint32 i)
             pItem->SetSpellCharges(x,pProto->Spells[x].SpellCharges);
         pItem->SetState(ITEM_CHANGED,player);
     }
+}
+
+void Spell::EffectBind(uint32 i)
+{
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* player = (Player*)unitTarget;
+
+    uint32 area_id;
+    WorldLocation loc;
+    if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_DST_DB || m_spellInfo->EffectImplicitTargetB[i] == TARGET_DST_DB)
+    {
+        SpellTargetPosition const* st = spellmgr.GetSpellTargetPosition(m_spellInfo->Id);
+        if (!st)
+        {
+            sLog.outError( "Spell::EffectBind - unknown teleport coordinates for spell ID %u", m_spellInfo->Id );
+            return;
+        }
+
+        loc.m_mapId         = st->target_mapId;
+        loc.m_positionX   = st->target_X;
+        loc.m_positionY   = st->target_Y;
+        loc.m_positionZ   = st->target_Y;
+        loc.m_orientation = st->target_Orientation;
+        area_id = player->GetAreaId();
+    }
+    else
+    {
+        player->GetPosition(&loc);
+        area_id = player->GetAreaId();
+    }
+
+    player->SetHomebind(loc, area_id);
+
+    // binding
+    WorldPacket data( SMSG_BINDPOINTUPDATE, (4+4+4+4+4) );
+    data << float(loc.m_positionX);
+    data << float(loc.m_positionY);
+    data << float(loc.m_positionZ);
+    data << uint32(loc.m_mapId);
+    data << uint32(area_id);
+    player->SendDirectMessage( &data );
+
+    DEBUG_LOG("New homebind X      : %f", loc.m_positionX);
+    DEBUG_LOG("New homebind Y      : %f", loc.m_positionY);
+    DEBUG_LOG("New homebind Z      : %f", loc.m_positionZ);
+    DEBUG_LOG("New homebind MapId  : %u", loc.m_mapId);
+    DEBUG_LOG("New homebind AreaId : %u", area_id);
+
+    // zone update
+    data.Initialize(SMSG_PLAYERBOUND, 8+4);
+    data << uint64(player->GetGUID());
+    data << uint32(area_id);
+    player->SendDirectMessage( &data );
 }

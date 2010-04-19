@@ -68,7 +68,7 @@ bool GossipHello_npc_arete(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_arete(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_arete(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch(uiAction)
     {
@@ -123,7 +123,7 @@ bool GossipHello_npc_dame_evniki_kapsalis(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_dame_evniki_kapsalis(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_dame_evniki_kapsalis(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_TRADE)
         pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
@@ -160,7 +160,7 @@ bool GossipHello_npc_squire_david(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_squire_david(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_squire_david(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
@@ -201,7 +201,7 @@ struct npc_argent_valiantAI : public ScriptedAI
         uiShieldBreakerTimer = 10000;
     }
 
-    void MovementInform(uint32 uiType, uint32 uiId)
+    void MovementInform(uint32 uiType, uint32 /*uiId*/)
     {
         if (uiType != POINT_MOTION_TYPE)
             return;
@@ -263,7 +263,7 @@ struct npc_argent_tournament_postAI : public ScriptedAI
 {
     npc_argent_tournament_postAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(const uint32 /*uiDiff*/)
     {
         if (me->IsNonMeleeSpellCasted(false))
             return;
@@ -301,29 +301,32 @@ struct npc_alorah_and_grimminAI : public ScriptedAI
 {
     npc_alorah_and_grimminAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
-    uint8  uiCast;
+    bool uiCast;
 
     void Reset()
     {
-        uiCast = 1;
+        uiCast = false;
     }
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(const uint32 /*uiDiff*/)
     {
-        if (uiCast = 1)
+        if (uiCast)
+            return;
+        uiCast = true;
+        Creature* pTarget = NULL;
+
+        switch(me->GetEntry())
         {
-            Creature* pTarget1 = me->FindNearestCreature(NPC_EYDIS_DARKBANE, 10.0f);
-            Creature* pTarget2 = me->FindNearestCreature(NPC_FJOLA_LIGHTBANE, 10.0f);
-            switch(me->GetEntry())
-            {
-                case NPC_PRIESTESS_ALORAH:
-                    DoCast(pTarget1, SPELL_CHAIN);
-                    uiCast = 0;
-                case NPC_PRIEST_GRIMMIN:
-                    DoCast(pTarget2, SPELL_CHAIN);
-                    uiCast = 0;
-            }
+            case NPC_PRIESTESS_ALORAH:
+                pTarget = me->FindNearestCreature(NPC_EYDIS_DARKBANE, 10.0f);
+                break;
+            case NPC_PRIEST_GRIMMIN:
+                pTarget = me->FindNearestCreature(NPC_FJOLA_LIGHTBANE, 10.0f);
+                break;
         }
+        if (pTarget)
+            DoCast(pTarget, SPELL_CHAIN);
+
         if (!UpdateVictim())
             return;
     }

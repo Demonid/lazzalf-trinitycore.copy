@@ -507,7 +507,7 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
                 break;
             case 3:
             {
-                Unit* pTirion = Unit::GetCreature(*me, uiTirionGUID);
+                //Unit* pTirion = Unit::GetCreature(*me, uiTirionGUID);
 
                 DoScriptText(EMOTE_LIGHT_OF_DAWN05, me);
                 if (me->HasAura(SPELL_THE_LIGHT_OF_DAWN, 0))
@@ -963,7 +963,9 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
 
                     case 42: // Maxwell yells for attack
                         {
-                            float fLichPositionX, fLichPositionY, fLichPositionZ;
+                            float fLichPositionX = 0,
+                                  fLichPositionY = 0,
+                                  fLichPositionZ = 0;
                             if (Creature* pTemp = Unit::GetCreature(*me, uiLichKingGUID))
                             {
                                 fLichPositionX = pTemp->GetPositionX();
@@ -1509,7 +1511,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         // Death
         for (uint8 i = 0; i < ENCOUNTER_GHOUL_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiGhoulGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiGhoulGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_ACHERUS_GHOUL, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2084);
@@ -1518,7 +1521,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         }
         for (uint8 i = 0; i < ENCOUNTER_ABOMINATION_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiAbominationGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiAbominationGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_WARRIOR_OF_THE_FROZEN_WASTES, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2084);
@@ -1527,7 +1531,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         }
         for (uint8 i = 0; i < ENCOUNTER_WARRIOR_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiWarriorGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiWarriorGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_RAMPAGING_ABOMINATION, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2084);
@@ -1536,7 +1541,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         }
         for (uint8 i = 0; i < ENCOUNTER_BEHEMOTH_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiBehemothGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiBehemothGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_FLESH_BEHEMOTH, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2084);
@@ -1547,7 +1553,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         // Dawn
         for (uint8 i = 0; i < ENCOUNTER_DEFENDER_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiDefenderGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiDefenderGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2089);
@@ -1557,7 +1564,8 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
         }
         for (uint8 i = 0; i < ENCOUNTER_EARTHSHATTER_NUMBER; ++i)
         {
-            if (!(pTemp = Unit::GetCreature(*me, uiEarthshatterGUID[i])))
+            pTemp = Unit::GetCreature(*me, uiEarthshatterGUID[i]);
+            if (!pTemp)
             {
                 pTemp = me->SummonCreature(NPC_RIMBLAT_EARTHSHATTER, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
                 pTemp->setFaction(2089);
@@ -1565,28 +1573,32 @@ struct npc_highlord_darion_mograineAI : public npc_escortAI
                 uiEarthshatterGUID[i] = pTemp->GetGUID();
             }
         }
-        if (!(pTemp = Unit::GetCreature(*me, uiKorfaxGUID)))
+        pTemp = Unit::GetCreature(*me, uiKorfaxGUID);
+        if (!pTemp)
         {
             pTemp = me->SummonCreature(NPC_KORFAX_CHAMPION_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
             pTemp->setFaction(2089);
             me->AddThreat(pTemp, 0.0f);
             uiKorfaxGUID = pTemp->GetGUID();
         }
-        if (!(pTemp = Unit::GetCreature(*me, uiMaxwellGUID)))
+        pTemp = Unit::GetCreature(*me, uiMaxwellGUID);
+        if (!pTemp)
         {
             pTemp = me->SummonCreature(NPC_LORD_MAXWELL_TYROSUS, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
             pTemp->setFaction(2089);
             me->AddThreat(pTemp, 0.0f);
             uiMaxwellGUID = pTemp->GetGUID();
         }
-        if (!(pTemp = Unit::GetCreature(*me, uiEligorGUID)))
+        pTemp = Unit::GetCreature(*me, uiEligorGUID);
+        if (!pTemp)
         {
             pTemp = me->SummonCreature(NPC_COMMANDER_ELIGOR_DAWNBRINGER, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
             pTemp->setFaction(2089);
             me->AddThreat(pTemp, 0.0f);
             uiEligorGUID = pTemp->GetGUID();
         }
-        if (!(pTemp = Unit::GetCreature(*me, uiRayneGUID)))
+        pTemp = Unit::GetCreature(*me, uiRayneGUID);
+        if (!pTemp)
         {
             pTemp = me->SummonCreature(NPC_RAYNE, LightofDawnLoc[0].x+rand()%30, LightofDawnLoc[0].y+rand()%30, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 300000);
             pTemp->setFaction(2089);
@@ -1619,7 +1631,7 @@ bool GossipHello_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreatu
     return true;
 }
 
-bool GossipSelect_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_highlord_darion_mograine(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch (uiAction)
     {
@@ -1639,9 +1651,9 @@ struct npc_the_lich_king_tirion_dawnAI : public ScriptedAI
 {
     npc_the_lich_king_tirion_dawnAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
     void Reset() {}
-    void AttackStart(Unit *who) { return; } // very sample, just don't make them aggreesive
-    void UpdateAI(const uint32 diff) { return; }
-    void JustDied(Unit* killer) {}
+    void AttackStart(Unit * /*who*/) {} // very sample, just don't make them aggreesive
+    void UpdateAI(const uint32 /*diff*/) {}
+    void JustDied(Unit* /*killer*/) {}
 };
 
 CreatureAI* GetAI_npc_highlord_darion_mograine(Creature* pCreature)

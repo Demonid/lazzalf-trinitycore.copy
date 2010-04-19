@@ -42,7 +42,7 @@ struct boss_azshir_the_sleeplessAI : public ScriptedAI
         Terrify_Timer = 20000;
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
     }
 
@@ -60,7 +60,7 @@ struct boss_azshir_the_sleeplessAI : public ScriptedAI
                 DoCast(me->getVictim(), SPELL_SOULSIPHON);
                 return;
 
-                SoulSiphon_Timer = 20000;
+                //SoulSiphon_Timer = 20000;
             } else SoulSiphon_Timer -= diff;
         }
 

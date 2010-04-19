@@ -54,7 +54,7 @@ bool GossipHello_npc_highlord_demitrian(Player* pPlayer, Creature* pCreature)
         return true;
 }
 
-bool GossipSelect_npc_highlord_demitrian(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_highlord_demitrian(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch (uiAction)
     {
@@ -138,7 +138,7 @@ bool GossipHello_npcs_rutgar_and_frankal(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npcs_rutgar_and_frankal(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npcs_rutgar_and_frankal(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch (uiAction)
     {
@@ -688,15 +688,19 @@ struct npc_anachronos_the_ancientAI : public ScriptedAI
                     Fandral->CastSpell(-8127,1525,17.5,33806,true);
                     break;
                 case 51:
-                    while (mob = plr->FindNearestCreature(15423,50,me))
-                        mob->RemoveFromWorld();
-                    while (mob = plr->FindNearestCreature(15424,50,me))
-                        mob->RemoveFromWorld();
-                    while (mob = plr->FindNearestCreature(15414,50,me))
-                        mob->RemoveFromWorld();
-                    while (mob = plr->FindNearestCreature(15422,50,me))
-                        mob->RemoveFromWorld();
+                {
+                    uint32 entries[4] = { 15423, 15424, 15414, 15422 };
+                    for (uint8 i = 0; i < 4; ++i)
+                    {
+                        mob = plr->FindNearestCreature(entries[i],50,me);
+                        while (mob)
+                        {
+                            mob->RemoveFromWorld();
+                            mob = plr->FindNearestCreature(15423,50,me);
+                        }
+                    }
                     break;
+                }
                 case 52:
                     Fandral->GetMotionMaster()->MoveCharge(-8028.75, 1538.795, 2.61,4);
                     DoScriptText(ANACHRONOS_SAY_9, me,Fandral);
@@ -793,13 +797,13 @@ struct mob_qiraj_war_spawnAI : public ScriptedAI
         hasTarget = false;
     }
 
-    void EnterCombat(Unit* who) {}
+    void EnterCombat(Unit* /*who*/) {}
     void JustDied(Unit* slayer);
 
     void UpdateAI(const uint32 diff)
     {
-        Unit *pTarget;
-        Player* plr = me->GetPlayer(PlayerGUID);
+        Unit *pTarget = NULL;
+        //Player* plr = me->GetPlayer(PlayerGUID);
 
         if (!Timers)
         {
@@ -912,12 +916,12 @@ struct npc_anachronos_quest_triggerAI : public ScriptedAI
 
     void SummonNextWave()
     {
-        uint8 count = WavesInfo[WaveCount].SpawnCount;
+        //uint8 count = WavesInfo[WaveCount].SpawnCount;
         uint8 locIndex = WavesInfo[WaveCount].UsedSpawnPoint;
         srand(time(NULL));//initializing random seed
-        uint8 KaldoreiSoldierCount = 0;
-        uint8 AnubisathConquerorCount = 0;
-        uint8 QirajiWaspCount = 0;
+        //uint8 KaldoreiSoldierCount = 0;
+        //uint8 AnubisathConquerorCount = 0;
+        //uint8 QirajiWaspCount = 0;
         for (uint8 i = 0; i < 67; ++i)
         {
             Creature* Spawn = NULL;
@@ -1017,7 +1021,7 @@ struct npc_anachronos_quest_triggerAI : public ScriptedAI
             EnterEvadeMode();
     };
 };
-void mob_qiraj_war_spawnAI::JustDied(Unit* slayer)
+void mob_qiraj_war_spawnAI::JustDied(Unit* /*slayer*/)
 {
     me->RemoveCorpse();
     if (Creature* Mob = (Unit::GetCreature(*me, MobGUID)))

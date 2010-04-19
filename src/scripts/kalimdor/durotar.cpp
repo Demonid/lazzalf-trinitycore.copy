@@ -43,7 +43,7 @@ struct npc_lazy_peonAI : public ScriptedAI
     uint64 uiPlayerGUID;
 
     uint32 m_uiRebuffTimer;
-    uint32 work;
+    bool work;
 
     void Reset ()
     {
@@ -51,7 +51,7 @@ struct npc_lazy_peonAI : public ScriptedAI
         work = false;
     }
 
-    void MovementInform(uint32 type, uint32 id)
+    void MovementInform(uint32 /*type*/, uint32 id)
     {
         if (id == 1)
             work = true;
@@ -72,7 +72,7 @@ struct npc_lazy_peonAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (work = true)
+        if (work == true)
             me->HandleEmoteCommand(466);
         if (m_uiRebuffTimer <= uiDiff)
         {

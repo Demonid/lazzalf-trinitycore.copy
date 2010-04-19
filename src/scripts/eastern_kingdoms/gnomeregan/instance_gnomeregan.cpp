@@ -67,7 +67,7 @@ struct instance_gnomeregan : public ScriptedInstance
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 
-    void OnCreatureCreate(Creature* pCreature, bool bAdd)
+    void OnCreatureCreate(Creature* pCreature, bool /*bAdd*/)
     {
         switch(pCreature->GetEntry())
         {
@@ -75,7 +75,7 @@ struct instance_gnomeregan : public ScriptedInstance
         }
     }
 
-    void OnGameObjectCreate(GameObject* pGo, bool bAdd)
+    void OnGameObjectCreate(GameObject* pGo, bool /*bAdd*/)
     {
         switch(pGo->GetEntry())
         {
@@ -97,14 +97,14 @@ struct instance_gnomeregan : public ScriptedInstance
         switch(uiType)
         {
             case TYPE_EVENT:
-                m_auiEncounter[0] = uiData; break;
+                m_auiEncounter[0] = uiData;
                 if (uiData == DONE)
                     SaveToDB();
                 break;
         }
     }
 
-    uint32 GetData(uint32 uiType, uint32 uiData)
+    uint32 GetData(uint32 uiType, uint32 /*uiData*/)
     {
         switch(uiType)
         {

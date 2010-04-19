@@ -276,7 +276,7 @@ bool GossipHello_npc_lunaclaw_spirit(Player *pPlayer, Creature *pCreature)
     return true;
 }
 
-bool GossipSelect_npc_lunaclaw_spirit(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_lunaclaw_spirit(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
@@ -310,7 +310,7 @@ struct npc_chicken_cluckAI : public ScriptedAI
         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
     }
 
-    void EnterCombat(Unit *who) {}
+    void EnterCombat(Unit * /*who*/) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -357,7 +357,7 @@ CreatureAI* GetAI_npc_chicken_cluck(Creature* pCreature)
     return new npc_chicken_cluckAI(pCreature);
 }
 
-bool QuestAccept_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Quest *_Quest)
+bool QuestAccept_npc_chicken_cluck(Player* /*pPlayer*/, Creature* pCreature, const Quest *_Quest)
 {
     if (_Quest->GetQuestId() == QUEST_CLUCK)
         CAST_AI(npc_chicken_cluckAI, pCreature->AI())->Reset();
@@ -365,7 +365,7 @@ bool QuestAccept_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Q
     return true;
 }
 
-bool QuestComplete_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Quest *_Quest)
+bool QuestComplete_npc_chicken_cluck(Player* /*pPlayer*/, Creature* pCreature, const Quest *_Quest)
 {
     if (_Quest->GetQuestId() == QUEST_CLUCK)
         CAST_AI(npc_chicken_cluckAI, pCreature->AI())->Reset();
@@ -416,7 +416,7 @@ struct npc_dancing_flamesAI : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* who){}
+    void EnterCombat(Unit* /*who*/){}
 
     void ReceiveEmote(Player* pPlayer, uint32 emote)
     {
@@ -556,7 +556,7 @@ struct npc_doctorAI : public ScriptedAI
     void PatientSaved(Creature* soldier, Player* pPlayer, Location* Point);
     void UpdateAI(const uint32 diff);
 
-    void EnterCombat(Unit* who){}
+    void EnterCombat(Unit* /*who*/){}
 };
 
 /*#####
@@ -603,7 +603,7 @@ struct npc_injured_patientAI : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* who){}
+    void EnterCombat(Unit* /*who*/){}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -644,7 +644,7 @@ struct npc_injured_patientAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
         //lower HP on every world tick makes it a useful counter, not officlone though
         if (me->isAlive() && me->GetHealth() > 6)
@@ -727,7 +727,7 @@ void npc_doctorAI::PatientDied(Location* Point)
         Reset();
 }
 
-void npc_doctorAI::PatientSaved(Creature* soldier, Player* pPlayer, Location* Point)
+void npc_doctorAI::PatientSaved(Creature* /*soldier*/, Player* pPlayer, Location* Point)
 {
     if (pPlayer && PlayerGUID == pPlayer->GetGUID())
     {
@@ -889,7 +889,7 @@ struct npc_garments_of_questsAI : public npc_escortAI
         me->SetHealth(int(me->GetMaxHealth()*0.7));
     }
 
-    void EnterCombat(Unit *who) {}
+    void EnterCombat(Unit * /*who*/) {}
 
     void SpellHit(Unit* pCaster, const SpellEntry *Spell)
     {
@@ -1001,7 +1001,7 @@ struct npc_garments_of_questsAI : public npc_escortAI
         }
     }
 
-    void WaypointReached(uint32 uiPoint)
+    void WaypointReached(uint32 /*uiPoint*/)
     {
     }
 
@@ -1055,11 +1055,11 @@ struct npc_guardianAI : public ScriptedAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
         if (!UpdateVictim())
             return;
@@ -1105,7 +1105,7 @@ bool GossipHello_npc_kingdom_of_dalaran_quests(Player* pPlayer, Creature* pCreat
     return true;
 }
 
-bool GossipSelect_npc_kingdom_of_dalaran_quests(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_kingdom_of_dalaran_quests(Player* pPlayer, Creature* /*pCreature*/, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
@@ -1195,7 +1195,7 @@ bool GossipHello_npc_mount_vendor(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_mount_vendor(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_mount_vendor(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_TRADE)
         pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
@@ -1235,7 +1235,7 @@ bool GossipHello_npc_rogue_trainer(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_rogue_trainer(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_rogue_trainer(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch(uiAction)
     {
@@ -1435,7 +1435,7 @@ struct npc_steam_tonkAI : public ScriptedAI
     npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() {}
-    void EnterCombat(Unit *who) {}
+    void EnterCombat(Unit * /*who*/) {}
 
     void OnPossess(bool apply)
     {
@@ -1474,9 +1474,9 @@ struct npc_tonk_mineAI : public ScriptedAI
         ExplosionTimer = 3000;
     }
 
-    void EnterCombat(Unit *who) {}
-    void AttackStart(Unit *who) {}
-    void MoveInLineOfSight(Unit *who) {}
+    void EnterCombat(Unit * /*who*/) {}
+    void AttackStart(Unit * /*who*/) {}
+    void MoveInLineOfSight(Unit * /*who*/) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -1574,7 +1574,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
     bool IsViper;
     bool Spawn;
 
-    void EnterCombat(Unit *who) {}
+    void EnterCombat(Unit * /*who*/) {}
 
     void Reset()
     {
@@ -1689,7 +1689,7 @@ struct mob_mojoAI : public ScriptedAI
         if (Unit* own = me->GetOwner())
             me->GetMotionMaster()->MoveFollow(own,0,0);
     }
-    void Aggro(Unit *who){}
+    void Aggro(Unit * /*who*/){}
     void UpdateAI(const uint32 diff)
     {
         if (me->HasAura(20372))
@@ -1813,7 +1813,7 @@ struct npc_ebon_gargoyleAI : CasterAI
             }
     }
 
-    void JustDied(Unit *killer)
+    void JustDied(Unit * /*killer*/)
     {
         // Stop Feeding Gargoyle when it dies
         if (Unit *owner = me->GetOwner())
@@ -1914,13 +1914,13 @@ struct npc_training_dummy : Scripted_NoMovementAI
         Reset();
     }
 
-    void DamageTaken(Unit *done_by, uint32 &damage)
+    void DamageTaken(Unit * /*done_by*/, uint32 &damage)
     {
         ResetTimer = 10000;
         damage = 0;
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         if (m_Entry != 2674 && m_Entry != 2673)
             return;
@@ -1952,7 +1952,7 @@ struct npc_training_dummy : Scripted_NoMovementAI
                 DespawnTimer -= diff;
         }
     }
-    void MoveInLineOfSight(Unit *who){return;}
+    void MoveInLineOfSight(Unit * /*who*/){return;}
 };
 
 CreatureAI* GetAI_npc_training_dummy(Creature* pCreature)
@@ -1970,7 +1970,7 @@ struct npc_shadowfiendAI : public ScriptedAI
 {
     npc_shadowfiendAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
-    void DamageTaken(Unit* pKiller, uint32 &damage)
+    void DamageTaken(Unit* /*pKiller*/, uint32 &damage)
     {
         if (me->isSummon())
             if (Unit* pOwner = CAST_SUM(me)->GetSummoner())
@@ -1981,7 +1981,7 @@ struct npc_shadowfiendAI : public ScriptedAI
             }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
         DoMeleeAttackIfReady();
     }
@@ -2030,7 +2030,7 @@ bool GossipHello_npc_wormhole(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_wormhole(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_wormhole(Player* pPlayer, Creature* /*pCreature*/, uint32 /*uiSender*/, uint32 uiAction)
 {
     bool roll = urand(0,1);
 
@@ -2082,7 +2082,7 @@ bool GossipHello_npc_pet_trainer(Player* pPlayer, Creature* pCreature)
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_PET1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         if (pPlayer->GetPet() && pPlayer->GetPet()->getPetType() == HUNTER_PET)
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_PET2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-        
+
         pPlayer->PlayerTalkClass->SendGossipMenu(TEXT_ISHUNTER, pCreature->GetGUID());
         return true;
     }
@@ -2090,7 +2090,7 @@ bool GossipHello_npc_pet_trainer(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_pet_trainer(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool GossipSelect_npc_pet_trainer(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
     switch(uiAction)
     {

@@ -129,7 +129,7 @@ struct boss_steelbreakerAI : public ScriptedAI
     ScriptedInstance* pInstance;
     uint32 phase;
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit * /*who*/)
     {
         DoZoneInCombat();
         DoCast(me, RAID_MODE(SPELL_HIGH_VOLTAGE, SPELL_HIGH_VOLTAGE_H));
@@ -148,7 +148,7 @@ struct boss_steelbreakerAI : public ScriptedAI
             events.RescheduleEvent(EVENT_OVERWHELMING_POWER, rand()%5000);
     }
 
-    void DamageTaken(Unit* pKiller, uint32 &damage)
+    void DamageTaken(Unit* /*pKiller*/, uint32 &damage)
     {
         if(damage >= me->GetHealth())
         {
@@ -167,19 +167,19 @@ struct boss_steelbreakerAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if(IsEncounterComplete(pInstance, me) && pInstance)
             pInstance->SetData(BOSS_ASSEMBLY, DONE);
     }
 
-    void KilledUnit(Unit *who)
+    void KilledUnit(Unit * /*who*/)
     {
         if(phase == 3)
             DoCast(me, SPELL_ELECTRICAL_CHARGE);
     }
 
-    void SpellHit(Unit *from, const SpellEntry *spell)
+    void SpellHit(Unit * /*from*/, const SpellEntry *spell)
     {
         if(spell->Id == SPELL_SUPERCHARGE)
             UpdatePhase();
@@ -241,7 +241,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
     EventMap events;
     uint32 phase;
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         DoZoneInCombat();
         events.ScheduleEvent(EVENT_ENRAGE, 900000);
@@ -260,7 +260,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
             events.RescheduleEvent(EVENT_RUNE_OF_SUMMONING, 20000+(rand()%10)*1000);
     }
 
-    void DamageTaken(Unit* pKiller, uint32 &damage)
+    void DamageTaken(Unit* /*pKiller*/, uint32 &damage)
     {
         if(damage >= me->GetHealth())
         {
@@ -279,13 +279,13 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if(IsEncounterComplete(pInstance, me) && pInstance)
             pInstance->SetData(BOSS_ASSEMBLY, DONE);
     }
 
-    void SpellHit(Unit *from, const SpellEntry *spell)
+    void SpellHit(Unit * /*from*/, const SpellEntry *spell)
     {
         if(spell->Id == SPELL_SUPERCHARGE)
             UpdatePhase();
@@ -355,7 +355,7 @@ struct mob_lightning_elementalAI : public ScriptedAI
         AttackStart(Target);
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 /*diff*/)
     {
         if(!me->isInCombat())
             return;
@@ -405,7 +405,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     ScriptedInstance* pInstance;
     uint32 phase;
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         DoZoneInCombat();
         events.ScheduleEvent(EVENT_ENRAGE, 900000);
@@ -428,7 +428,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
 
     }
 
-    void DamageTaken(Unit* pKiller, uint32 &damage)
+    void DamageTaken(Unit* /*pKiller*/, uint32 &damage)
     {
         if(damage >= me->GetHealth())
         {
@@ -448,13 +448,13 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if(IsEncounterComplete(pInstance, me) && pInstance)
             pInstance->SetData(BOSS_ASSEMBLY, DONE);
     }
 
-    void SpellHit(Unit *from, const SpellEntry *spell)
+    void SpellHit(Unit * /*from*/, const SpellEntry *spell)
     {
         if(spell->Id == SPELL_SUPERCHARGE)
         {

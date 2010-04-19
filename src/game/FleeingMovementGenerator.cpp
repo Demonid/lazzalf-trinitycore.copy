@@ -61,7 +61,7 @@ bool FleeingMovementGenerator<Creature>::GetDestination(float &x, float &y, floa
 }
 
 template<>
-bool FleeingMovementGenerator<Player>::GetDestination(float &x, float &y, float &z) const
+bool FleeingMovementGenerator<Player>::GetDestination(float & /*x*/, float & /*y*/, float & /*z*/) const
 {
     return false;
 }
@@ -77,7 +77,7 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
     y = owner.GetPositionY();
     z = owner.GetPositionZ();
 
-    float temp_x, temp_y, angle;
+    float temp_x, temp_y, angle = 0;
     const Map * _map = owner.GetBaseMap();
     //primitive path-finding
     for (uint8 i = 0; i < 18; ++i)

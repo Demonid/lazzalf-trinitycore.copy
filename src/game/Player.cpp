@@ -594,7 +594,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
             itr->second.save->RemovePlayer(this);
 }
 
-bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId)
+bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 /*outfitId*/)
 {
     //FIXME: outfitId not used in player creating
 
@@ -997,7 +997,6 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
         default:
             return 0;
     }
-    return 0;
 }
 
 void Player::UpdateMirrorTimers()
@@ -1202,7 +1201,7 @@ void Player::Update(uint32 p_time)
         //if (m_spellModTakingSpell)
             sLog.outCrash("Player has m_spellModTakingSpell %u during update!", m_spellModTakingSpell->m_spellInfo->Id);
             return;
-        m_spellModTakingSpell = NULL;
+        //m_spellModTakingSpell = NULL;
     }
 
     //used to implement delayed far teleports
@@ -1715,7 +1714,8 @@ bool Player::BuildEnumData(QueryResult_AutoPtr result, WorldPacket * p_data)
             if (!enchantId)
                 continue;
 
-            if ((enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId)))
+            enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
+            if (enchant)
                 break;
         }
 
@@ -6557,8 +6557,8 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     uint64 victim_guid = 0;
     uint32 victim_rank = 0;
-    uint32 rank_diff = 0;
-    time_t now = time(NULL);
+    //uint32 rank_diff = 0;
+    //time_t now = time(NULL);
 
     // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
     UpdateHonorFields();
@@ -7396,7 +7396,8 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
     // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
     if (ssv)
     {
-        if ((extraDPS = ssv->getDPSMod(proto->ScalingStatValue)))
+        extraDPS = ssv->getDPSMod(proto->ScalingStatValue);
+        if (extraDPS)
         {
             float average = extraDPS * proto->Delay / 1000.0f;
             minDamage = 0.7f * average;
@@ -12321,7 +12322,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
     {
         uint8 msg;
         ItemPosCountVec sDest;
-        uint16 eDest;
+        uint16 eDest = 0;
         if (IsInventoryPos(dst))
             msg = CanStoreItem(dstbag, dstslot, sDest, pSrcItem, false);
         else if (IsBankPos (dst))
@@ -12365,7 +12366,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
     }
 
     // impossible merge/fill, do real swap
-    uint8 msg;
+    uint8 msg = EQUIP_ERR_OK;
 
     // check src->dest move possibility
     ItemPosCountVec sDest;
@@ -13129,8 +13130,8 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                             break;
 //                        case ITEM_MOD_FERAL_ATTACK_POWER:
 //                            ((Player*)this)->ApplyFeralAPBonus(enchant_amount, apply);
-                            sLog.outDebug("+ %u FERAL_ATTACK_POWER", enchant_amount);
-                            break;
+//                            sLog.outDebug("+ %u FERAL_ATTACK_POWER", enchant_amount);
+//                            break;
                         case ITEM_MOD_MANA_REGENERATION:
                             ((Player*)this)->ApplyManaRegenBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u MANA_REGENERATION", enchant_amount);
@@ -15493,7 +15494,7 @@ void Player::SendPushToPartyResponse(Player *pPlayer, uint32 msg)
     }
 }
 
-void Player::SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32 count)
+void Player::SendQuestUpdateAddItem(Quest const* /*pQuest*/, uint32 /*item_idx*/, uint32 /*count*/)
 {
     WorldPacket data(SMSG_QUESTUPDATE_ADD_ITEM, 0);
     sLog.outDebug("WORLD: Sent SMSG_QUESTUPDATE_ADD_ITEM");
@@ -15651,6 +15652,19 @@ bool Player::LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float&
     in_flight = !fields[5].GetCppString().empty();
 
     return true;
+}
+
+void Player::SetHomebind(WorldLocation const& /*loc*/, uint32 /*area_id*/)
+{
+    m_homebindMapId = GetMapId();
+    m_homebindAreaId = GetAreaId();
+    m_homebindX = GetPositionX();
+    m_homebindY = GetPositionY();
+    m_homebindZ = GetPositionZ();
+
+    // update sql homebind
+    CharacterDatabase.PExecute("UPDATE character_homebind SET map = '%u', zone = '%u', position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
+        m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ, GetGUIDLow());
 }
 
 uint32 Player::GetUInt32ValueFromArray(Tokens const& data, uint16 index)
@@ -16440,7 +16454,7 @@ bool Player::isAllowedToLoot(const Creature* creature)
     return false;
 }
 
-void Player::_LoadActions(QueryResult_AutoPtr result, bool startup)
+void Player::_LoadActions(QueryResult_AutoPtr result, bool /*startup*/)
 {
     if (result)
     {
@@ -17460,7 +17474,7 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
     {
         Field *fields = result->Fetch();
         m_homebindMapId = fields[0].GetUInt32();
-        m_homebindZoneId = fields[1].GetUInt16();
+        m_homebindAreaId = fields[1].GetUInt16();
         m_homebindX = fields[2].GetFloat();
         m_homebindY = fields[3].GetFloat();
         m_homebindZ = fields[4].GetFloat();
@@ -17478,16 +17492,17 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
     if (!ok)
     {
         m_homebindMapId = info->mapId;
-        m_homebindZoneId = info->zoneId;
+        m_homebindAreaId = info->areaId;
         m_homebindX = info->positionX;
         m_homebindY = info->positionY;
         m_homebindZ = info->positionZ;
 
-        CharacterDatabase.PExecute("INSERT INTO character_homebind (guid,map,zone,position_x,position_y,position_z) VALUES ('%u', '%u', '%u', '%f', '%f', '%f')", GetGUIDLow(), m_homebindMapId, (uint32)m_homebindZoneId, m_homebindX, m_homebindY, m_homebindZ);
+        CharacterDatabase.PExecute("INSERT INTO character_homebind (guid,map,zone,position_x,position_y,position_z) VALUES ('%u', '%u', '%u', '%f', '%f', '%f')",
+            GetGUIDLow(), m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ);
     }
 
-    DEBUG_LOG("Setting player home position: mapid is: %u, zoneid is %u, X is %f, Y is %f, Z is %f",
-        m_homebindMapId, m_homebindZoneId, m_homebindX, m_homebindY, m_homebindZ);
+    DEBUG_LOG("Setting player home position - mapid: %u, areaid: %u, X: %f, Y: %f, Z: %f",
+        m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ);
 
     return true;
 }
@@ -17693,7 +17708,7 @@ void Player::SaveToDB()
     // check if stats should only be saved on logout
     // save stats can be out of transaction
     if (m_session->isLogingOut() || !sWorld.getConfig(CONFIG_STATS_SAVE_ONLY_ON_LOGOUT))
-        _SaveStats();	
+        _SaveStats();
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
@@ -18719,14 +18734,12 @@ void Player::CharmSpellInitialize()
     uint8 addlist = 0;
     if (charm->GetTypeId() != TYPEID_PLAYER)
     {
-        CreatureInfo const *cinfo = charm->ToCreature()->GetCreatureInfo();
+        //CreatureInfo const *cinfo = charm->ToCreature()->GetCreatureInfo();
         //if (cinfo && cinfo->type == CREATURE_TYPE_DEMON && getClass() == CLASS_WARLOCK)
         {
             for (uint32 i = 0; i < MAX_SPELL_CHARM; ++i)
-            {
                 if (charmInfo->GetCharmSpell(i)->GetAction())
                     ++addlist;
-            }
         }
     }
 
@@ -20433,13 +20446,13 @@ bool Player::IsVisibleGloballyFor(Player* u) const
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set<Unit*>& /*v*/)
 {
     s64.insert(target->GetGUID());
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& /*v*/)
 {
     if (!target->IsTransport())
         s64.insert(target->GetGUID());
@@ -20715,7 +20728,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     WorldPacket data(SMSG_BINDPOINTUPDATE, 5*4);
     data << m_homebindX << m_homebindY << m_homebindZ;
     data << (uint32) m_homebindMapId;
-    data << (uint32) m_homebindZoneId;
+    data << (uint32) m_homebindAreaId;
     GetSession()->SendPacket(&data);
 
     // SMSG_SET_PROFICIENCY
@@ -20896,11 +20909,8 @@ void Player::resetSpells(bool myClassOnly)
         if (!clsEntry)
             return;
         family = clsEntry->spellfamily;
-    }
 
-    for (PlayerSpellMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
-    {
-        if (myClassOnly)
+        for (PlayerSpellMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
         {
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(iter->first);
             if (!spellInfo)
@@ -20927,8 +20937,10 @@ void Player::resetSpells(bool myClassOnly)
             if (!SpellMgr::IsSpellValid(spellInfo,this,false))
                 continue;
         }
-        removeSpell(iter->first,false,false);               // only iter->first can be accessed, object by iter->second can be deleted already
     }
+    else
+        for (PlayerSpellMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
+            removeSpell(iter->first,false,false);           // only iter->first can be accessed, object by iter->second can be deleted already
 
     learnDefaultSpells();
     learnQuestRewardedSpells();

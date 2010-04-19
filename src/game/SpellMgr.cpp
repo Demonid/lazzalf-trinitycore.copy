@@ -28,6 +28,7 @@
 #include "Spell.h"
 #include "BattleGroundMgr.h"
 #include "CreatureAI.h"
+#include "MapManager.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -1108,6 +1109,19 @@ void SpellMgr::LoadSpellTargetPositions()
         st.target_Z           = fields[4].GetFloat();
         st.target_Orientation = fields[5].GetFloat();
 
+        MapEntry const* mapEntry = sMapStore.LookupEntry(st.target_mapId);
+        if (!mapEntry)
+        {
+            sLog.outErrorDb("Spell (ID:%u) target map (ID: %u) does not exist in `Map.dbc`.",Spell_ID,st.target_mapId);
+            continue;
+        }
+
+        if (st.target_X==0 && st.target_Y==0 && st.target_Z==0)
+        {
+            sLog.outErrorDb("Spell (ID:%u) target coordinates not provided.",Spell_ID);
+            continue;
+        }
+
         SpellEntry const* spellInfo = sSpellStore.LookupEntry(Spell_ID);
         if (!spellInfo)
         {
@@ -1120,6 +1134,17 @@ void SpellMgr::LoadSpellTargetPositions()
         {
             if (spellInfo->EffectImplicitTargetA[i] == TARGET_DST_DB || spellInfo->EffectImplicitTargetB[i] == TARGET_DST_DB)
             {
+                // additional requirements
+                if (spellInfo->Effect[i]==SPELL_EFFECT_BIND && spellInfo->EffectMiscValue[i])
+                {
+                    uint32 area_id = MapManager::Instance().GetAreaId(st.target_mapId, st.target_X, st.target_Y, st.target_Z);
+                    if (area_id != spellInfo->EffectMiscValue[i])
+                    {
+                        sLog.outErrorDb("Spell (Id: %u) listed in `spell_target_position` expected point to zone %u bit point to zone %u.",Spell_ID, spellInfo->EffectMiscValue[i], area_id);
+                        break;
+                    }
+                }
+
                 found = true;
                 break;
             }
@@ -1127,19 +1152,6 @@ void SpellMgr::LoadSpellTargetPositions()
         if (!found)
         {
             sLog.outErrorDb("Spell (Id: %u) listed in `spell_target_position` does not have target TARGET_DST_DB (17).",Spell_ID);
-            continue;
-        }
-
-        MapEntry const* mapEntry = sMapStore.LookupEntry(st.target_mapId);
-        if (!mapEntry)
-        {
-            sLog.outErrorDb("Spell (ID:%u) target map (ID: %u) does not exist in `Map.dbc`.",Spell_ID,st.target_mapId);
-            continue;
-        }
-
-        if (st.target_X == 0 && st.target_Y == 0 && st.target_Z == 0)
-        {
-            sLog.outErrorDb("Spell (ID:%u) target coordinates not provided.",Spell_ID);
             continue;
         }
 
@@ -1833,6 +1845,7 @@ void SpellMgr::LoadSpellLearnSkills()
                     dbc_node.value = dbc_node.step * 75;
                 dbc_node.maxvalue = dbc_node.step * 75;
 
+                // FIXME: db_node not used... remove it?
                 SpellLearnSkillNode const* db_node = GetSpellLearnSkill(spell);
 
                 mSpellLearnSkills[spell] = dbc_node;
@@ -3044,7 +3057,6 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         default:
             return false;
     }
-    return false;
 }
 
 DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group)
@@ -3056,7 +3068,6 @@ DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group)
         default:
             return DIMINISHING_LEVEL_IMMUNE;
     }
-    return DIMINISHING_LEVEL_IMMUNE;
 }
 
 DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
@@ -3585,6 +3596,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        // Bind
+        case 3286:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
+            count++;
+            break;
         // Heroism
         case 32182:
             spellInfo->excludeCasterAuraSpell = 57723; // Exhaustion
@@ -3933,7 +3950,7 @@ void SpellMgr::LoadEnchantCustomAttr()
             {
                 uint32 enchId = spellInfo->EffectMiscValue[j];
                 SpellItemEnchantmentEntry const *ench = sSpellItemEnchantmentStore.LookupEntry(enchId);
-                if (!enchId)
+                if (!ench)
                     continue;
                 mEnchantCustomAttr[enchId] = true;
                 count++;

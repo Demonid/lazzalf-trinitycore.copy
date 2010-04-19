@@ -103,17 +103,24 @@ struct boss_palehoofAI : public ScriptedAI
         {
             pInstance->SetData(DATA_GORTOK_PALEHOOF_EVENT, NOT_STARTED);
 
-            Creature* pTemp;
-            if ((pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_FRENZIED_WORGEN))) && !pTemp->isAlive())
-                pTemp->Respawn();
-            if ((pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_FEROCIOUS_RHINO))) && !pTemp->isAlive())
-                pTemp->Respawn();
-            if ((pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_MASSIVE_JORMUNGAR))) && !pTemp->isAlive())
-                pTemp->Respawn();
-            if ((pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_RAVENOUS_FURBOLG))) && !pTemp->isAlive())
+            Creature* pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_FRENZIED_WORGEN));
+            if (pTemp && !pTemp->isAlive())
                 pTemp->Respawn();
 
-            if (GameObject* pGo = pInstance->instance->GetGameObject(pInstance->GetData64(DATA_GORTOK_PALEHOOF_SPHERE)))
+            pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_FEROCIOUS_RHINO));
+            if (pTemp && !pTemp->isAlive())
+                pTemp->Respawn();
+
+            pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_MASSIVE_JORMUNGAR));
+            if (pTemp && !pTemp->isAlive())
+                pTemp->Respawn();
+
+            pTemp = Unit::GetCreature((*me), pInstance->GetData64(DATA_MOB_RAVENOUS_FURBOLG));
+            if (pTemp && !pTemp->isAlive())
+                pTemp->Respawn();
+
+            GameObject* pGo = pInstance->instance->GetGameObject(pInstance->GetData64(DATA_GORTOK_PALEHOOF_SPHERE));
+            if (pGo)
             {
                 pGo->SetGoState(GO_STATE_READY);
                 pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
@@ -121,7 +128,7 @@ struct boss_palehoofAI : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
         DoScriptText(SAY_AGGRO, me);
     }
@@ -177,7 +184,7 @@ struct boss_palehoofAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         DoScriptText(SAY_DEATH, me);
         if (pInstance)
@@ -187,7 +194,7 @@ struct boss_palehoofAI : public ScriptedAI
             pTemp->DisappearAndDie();
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit * /*victim*/)
     {
         DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
     }
@@ -326,7 +333,7 @@ struct mob_ravenous_furbolgAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         if (pInstance)
         {
@@ -373,9 +380,9 @@ struct mob_frenzied_worgenAI : public ScriptedAI
 
     void Reset()
     {
-        uint32 uiMortalWoundTimer = 5000;
-        uint32 uiEnrage1Timer = 15000;
-        uint32 uiEnrage2Timer = 10000;
+        uiMortalWoundTimer = 5000;
+        uiEnrage1Timer = 15000;
+        uiEnrage2Timer = 10000;
 
         me->GetMotionMaster()->MoveTargetedHome();
 
@@ -434,7 +441,7 @@ struct mob_frenzied_worgenAI : public ScriptedAI
             pInstance->SetData(DATA_GORTOK_PALEHOOF_EVENT, IN_PROGRESS);
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         if (pInstance)
         {
@@ -542,7 +549,7 @@ struct mob_ferocious_rhinoAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         if (pInstance)
         {
@@ -656,7 +663,7 @@ struct mob_massive_jormungarAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* /*killer*/)
     {
         if (pInstance)
         {
@@ -709,7 +716,7 @@ struct mob_palehoof_orbAI : public ScriptedAI
         {
             if (currentPhase<5&&currentPhase >= 0)
             {
-               Creature *pNext;
+               Creature *pNext = NULL;
                switch(currentPhase)
                {
                     case PHASE_FRENZIED_WORGEN: pNext = Unit::GetCreature((*me), pInstance ? pInstance->GetData64(DATA_MOB_FRENZIED_WORGEN) : 0); break;
@@ -739,7 +746,7 @@ struct mob_palehoof_orbAI : public ScriptedAI
             return;
         if (id<0 || id>4)
             return;
-        Creature *pNext;
+        Creature *pNext = NULL;
         switch(id)
         {
             case PHASE_FRENZIED_WORGEN: pNext = Unit::GetCreature((*me), pInstance ? pInstance->GetData64(DATA_MOB_FRENZIED_WORGEN) : 0); break;
@@ -762,7 +769,7 @@ CreatureAI* GetAI_mob_palehoof_orb(Creature* pCreature)
 
 
 
-bool GOHello_palehoof_sphere(Player *pPlayer, GameObject *pGO)
+bool GOHello_palehoof_sphere(Player * /*pPlayer*/, GameObject *pGO)
 {
     ScriptedInstance *pInstance = pGO->GetInstanceData();
 
