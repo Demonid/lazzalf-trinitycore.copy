@@ -176,19 +176,20 @@ struct boss_razorscaleAI : public BossAI
     void EnterCombat(Unit* who)
     {
         _EnterCombat();
-        Harpoon[0] = me->SummonCreature(NPC_FIRE_STATE, 589.922974, -133.621994, 391.517090, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
-        Harpoon[1] = me->SummonCreature(NPC_FIRE_STATE, 571.947021, -136.011993, 391.516998, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
-        Harpoon[0]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-        Harpoon[1]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        if (Harpoon[0] = me->SummonCreature(NPC_FIRE_STATE, 589.922974, -133.621994, 391.517090, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
+            Harpoon[0]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        if (Harpoon[1] = me->SummonCreature(NPC_FIRE_STATE, 571.947021, -136.011993, 391.516998, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
+            Harpoon[1]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         me->SetSpeed(MOVE_RUN, 3.0f);
         me->SetSpeed(MOVE_FLIGHT, 3.0f);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_PASSIVE);
         phase = PHASE_GROUND;
+        events.SetPhase(PHASE_GROUND);
         wipe = true;
         FlyCount = 0;
         EnrageTimer = 15*60*1000; // Enrage in 15 min
-        events.ScheduleEvent(EVENT_FLIGHT, 0);
+        events.ScheduleEvent(EVENT_FLIGHT, 0, 0, PHASE_GROUND);
         DoZoneInCombat();
     }
 
@@ -239,35 +240,39 @@ struct boss_razorscaleAI : public BossAI
                         me->GetMotionMaster()->MovePoint(0,RazorFlight);
                         events.ScheduleEvent(EVENT_FIREBALL, 7000, 0, PHASE_FLIGHT);
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_FLIGHT);
-                        events.ScheduleEvent(EVENT_SUMMON, 5000, PHASE_FLIGHT);
-                        events.ScheduleEvent(EVENT_GROUND, 75000);
+                        events.ScheduleEvent(EVENT_SUMMON, 5000, 0, PHASE_FLIGHT);
+                        events.ScheduleEvent(EVENT_GROUND, 75000, 0, PHASE_FLIGHT);
                         ++FlyCount;
                         return;
                     case EVENT_LAND:
                         me->SetFlying(false);
                         me->CastSpell(me ,SPELL_STUN, true);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        events.ScheduleEvent(EVENT_HARPOON, 0);
-                        events.ScheduleEvent(EVENT_BREATH, 30000);
-                        events.ScheduleEvent(EVENT_BUFFET, 33000);
-                        events.ScheduleEvent(EVENT_FLIGHT, 35000);
+                        events.ScheduleEvent(EVENT_HARPOON, 0, 0, PHASE_GROUND);
+                        events.ScheduleEvent(EVENT_BREATH, 30000, 0, PHASE_GROUND);
+                        events.ScheduleEvent(EVENT_BUFFET, 33000, 0, PHASE_GROUND);
+                        events.ScheduleEvent(EVENT_FLIGHT, 35000, 0, PHASE_GROUND);
                         return;
                     case EVENT_HARPOON:
-                        Harpoon[0]->CastSpell(me, SPELL_HARPOON, true);
-                        Harpoon[1]->CastSpell(me, SPELL_HARPOON, true);
-                        events.ScheduleEvent(EVENT_HARPOON, 1500);
+                        if (Harpoon[0])
+                            Harpoon[0]->CastSpell(me, SPELL_HARPOON, true);
+                        if (Harpoon[1])
+                            Harpoon[1]->CastSpell(me, SPELL_HARPOON, true);
+                        events.ScheduleEvent(EVENT_HARPOON, 1500, 0, PHASE_GROUND);
                         return;
                     case EVENT_BREATH:
                         me->MonsterTextEmote(EMOTE_BREATH, 0, true);
                         DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
-                        events.ScheduleEvent(EVENT_HARPOON, 999000);
-                        events.ScheduleEvent(EVENT_BREATH, 999000);
+                        events.CancelEvent(EVENT_HARPOON);
+                        events.CancelEvent(EVENT_BREATH);
                         return;
                     case EVENT_BUFFET:
-                        Harpoon[0]->CastSpell(Harpoon[0], SPELL_FLAMED, true);
-                        Harpoon[1]->CastSpell(Harpoon[1], SPELL_FLAMED, true);
+                        if (Harpoon[0])
+                            Harpoon[0]->CastSpell(Harpoon[0], SPELL_FLAMED, true);
+                        if (Harpoon[1])
+                            Harpoon[1]->CastSpell(Harpoon[1], SPELL_FLAMED, true);
                         DoCastAOE(SPELL_WINGBUFFET);
-                        events.ScheduleEvent(EVENT_BUFFET, 999000);
+                        events.CancelEvent(EVENT_BUFFET);
                         return;
                 }
             }
@@ -299,7 +304,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_BUFFET:
                         DoCastAOE(SPELL_WINGBUFFET);
-                        events.ScheduleEvent(EVENT_BUFFET, 999000, 0, PHASE_PERMAGROUND);
+                        events.CancelEvent(EVENT_BUFFET);
                         return;
                     case EVENT_FUSE:
                         DoCastVictim(SPELL_FUSEARMOR);
@@ -318,9 +323,11 @@ struct boss_razorscaleAI : public BossAI
                 {
                     case EVENT_GROUND:
                         phase = PHASE_GROUND;
-                        Harpoon[0]->MonsterTextEmote(EMOTE_HARPOON, 0, true);
+                        events.SetPhase(PHASE_GROUND);
+                        if (Harpoon[0])
+                            Harpoon[0]->MonsterTextEmote(EMOTE_HARPOON, 0, true);
                         me->GetMotionMaster()->MovePoint(0,RazorGround);
-                        events.ScheduleEvent(EVENT_LAND, 5500);
+                        events.ScheduleEvent(EVENT_LAND, 5500, 0, PHASE_GROUND);
                         return;
                     case EVENT_FIREBALL:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
@@ -412,7 +419,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
     void Initialize()
     {
         uiTimer =0;
-        uiPhase = 1;
+        uiPhase = 0;
         engineer[0] = 0;
         engineer[1] = 0;
         defender[0] = 0;

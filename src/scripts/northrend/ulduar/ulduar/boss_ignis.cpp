@@ -201,18 +201,18 @@ struct boss_ignis_AI : public BossAI
                     break;
                 case EVENT_POT:
                     DoScriptText(SAY_SLAG_POT, me);
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
                        {
                            DoCast(pTarget, RAID_MODE(SPELL_SLAG_POT, H_SPELL_SLAG_POT));
-                           pTarget->EnterVehicle(vehicle);
+                           //pTarget->EnterVehicle(vehicle);
                        }
-                    events.ScheduleEvent(EVENT_END_POT, 10000);
+                    //events.ScheduleEvent(EVENT_END_POT, 10000);
                     events.ScheduleEvent(EVENT_POT, 15000);
                     break;
-                case EVENT_END_POT:
+                /*case EVENT_END_POT:
                     vehicle->RemoveAllPassengers();
                     events.ScheduleEvent(EVENT_END_POT, 30000);
-                    break;
+                    break;*/
                 case EVENT_SCORCH:
                     DoScriptText(RAND(SAY_SCORCH_1, SAY_SCORCH_2), me);
                     if (Unit *pTarget = me->getVictim())
