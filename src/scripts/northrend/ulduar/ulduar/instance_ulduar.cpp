@@ -195,7 +195,7 @@ struct instance_ulduar : public ScriptedInstance
         return false;
     }
 
-    void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+    void OnCreatureCreate(Creature* pCreature, bool add)
     {
         switch(pCreature->GetEntry())
         {
@@ -512,7 +512,7 @@ struct devouring_flame : public ScriptedAI
 	
     void EnterCombat(Unit* who)
     {
-        me->CastSpell(me,SPELL_DEVOURINGFLAME,true);
+        m_creature->CastSpell(m_creature,SPELL_DEVOURINGFLAME,true);
     }
 	
     void Reset()
@@ -524,7 +524,7 @@ struct devouring_flame : public ScriptedAI
     {
         if (DevouringFlameTimer <= diff)
         {
-            me->setDeathState(JUST_DIED);
+            m_creature->setDeathState(JUST_DIED);
         }else DevouringFlameTimer -= diff;
     }
 };

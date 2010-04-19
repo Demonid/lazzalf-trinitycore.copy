@@ -300,7 +300,7 @@ struct boss_black_knightAI : public ScriptedAI
             DoMeleeAttackIfReady();
     }
 
-	    void EnterCombat(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         DoScriptText(SAY_AGGRO_2, me);
 		me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
@@ -320,6 +320,7 @@ struct boss_black_knightAI : public ScriptedAI
             pInstance->SetData(BOSS_BLACK_KNIGHT,IN_PROGRESS);
     }
 
+    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
         if (uiDamage > me->GetHealth() && uiPhase <= PHASE_SKELETON)
         {
