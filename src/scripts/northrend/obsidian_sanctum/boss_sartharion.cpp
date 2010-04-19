@@ -229,6 +229,8 @@ struct boss_sartharionAI : public BossAI
     void Reset()
     {
         _Reset();
+        if (instance)
+            instance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
         RespawnDrakes();
 
         m_bIsBerserk = false;
@@ -246,6 +248,8 @@ struct boss_sartharionAI : public BossAI
     void EnterCombat(Unit* pWho)
     {
         _EnterCombat();
+        if (instance)
+            instance->SetData(TYPE_SARTHARION_EVENT, IN_PROGRESS);
         DoScriptText(SAY_SARTHARION_AGGRO,me);
         FetchDragons();
         
@@ -314,7 +318,6 @@ struct boss_sartharionAI : public BossAI
         if (pFetchTene && pFetchTene->isAlive() && !pFetchTene->getVictim())
         {
             bCanUseWill = true;
-            pFetchTene->setActive(true);
             pFetchTene->AddAura(SPELL_POWER_OF_TENEBRON, pFetchTene);
             pFetchTene->AddAura(SPELL_WILL_OF_SARTHARION, pFetchTene);
             AddDrakeLootMode();
@@ -329,7 +332,6 @@ struct boss_sartharionAI : public BossAI
         if (pFetchShad && pFetchShad->isAlive() && !pFetchShad->getVictim())
         {
             bCanUseWill = true;
-            pFetchShad->setActive(true);
             pFetchShad->AddAura(SPELL_POWER_OF_SHADRON, pFetchShad);
             pFetchShad->AddAura(SPELL_WILL_OF_SARTHARION, pFetchShad);
             AddDrakeLootMode();
@@ -344,7 +346,6 @@ struct boss_sartharionAI : public BossAI
         if (pFetchVesp && pFetchVesp->isAlive() && !pFetchVesp->getVictim())
         {
             bCanUseWill = true;
-            pFetchVesp->setActive(true);
             pFetchVesp->AddAura(SPELL_POWER_OF_VESPERON, pFetchVesp);
             pFetchVesp->AddAura(SPELL_WILL_OF_SARTHARION, pFetchVesp);
             AddDrakeLootMode();
@@ -375,6 +376,7 @@ struct boss_sartharionAI : public BossAI
             {
                 if (pTenebron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pTenebron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pTenebron->RemoveAllAuras();
                 pTenebron->GetMotionMaster()->MoveTargetedHome();
             }
             else
@@ -393,6 +395,7 @@ struct boss_sartharionAI : public BossAI
             {
                 if (pShadron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pShadron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pShadron->RemoveAllAuras();
                 pShadron->GetMotionMaster()->MoveTargetedHome();
             }else
             {
@@ -410,6 +413,7 @@ struct boss_sartharionAI : public BossAI
             {
                 if (pVesperon->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pVesperon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pVesperon->RemoveAllAuras();
                 pVesperon->GetMotionMaster()->MoveTargetedHome();
             }else
             {
@@ -659,11 +663,11 @@ struct dummy_dragonAI : public ScriptedAI
         debug_log("dummy_dragonAI: %s reached point %u", me->GetName(), uiPointId);
 
         //if healers messed up the raid and we was already initialized
-        /*if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
+        if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
         {
             EnterEvadeMode();
             return;
-        }*/
+        }
 
         //this is end, if we reach this, don't do much
         if (uiPointId == POINT_ID_LAND)
@@ -775,19 +779,16 @@ struct dummy_dragonAI : public ScriptedAI
         {
             case NPC_TENEBRON:
                 iTextId = SAY_TENEBRON_DEATH;
-                uiSpellId = SPELL_POWER_OF_TENEBRON;
                 if(pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                     pInstance->SetData(TYPE_TENEBRON_PREKILLED, 1);
                 break;
             case NPC_SHADRON:
                 iTextId = SAY_SHADRON_DEATH;
-                uiSpellId = SPELL_POWER_OF_SHADRON;
                 if(pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                     pInstance->SetData(TYPE_SHADRON_PREKILLED, 1);
                 break;
             case NPC_VESPERON:
                 iTextId = SAY_VESPERON_DEATH;
-                uiSpellId = SPELL_POWER_OF_VESPERON;
                 if(pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                     pInstance->SetData(TYPE_VESPERON_PREKILLED, 1);
                 break;
@@ -795,11 +796,8 @@ struct dummy_dragonAI : public ScriptedAI
 
         DoScriptText(iTextId, me);
 
-        me->RemoveAurasDueToSpell(uiSpellId);
-
         if (pInstance)
         {
-            pInstance->DoRemoveAurasDueToSpellOnPlayers(uiSpellId);
             // not if solo mini-boss fight
             if (pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                 return;
@@ -807,10 +805,8 @@ struct dummy_dragonAI : public ScriptedAI
             // Twilight Revenge to main boss
             if (Unit* pSartharion = Unit::GetUnit((*me), pInstance->GetData64(DATA_SARTHARION)))
                 if (pSartharion->isAlive())
-                {
-                    pSartharion->AddAura(SPELL_TWILIGHT_REVENGE, pSartharion);
-                    pSartharion->RemoveAurasDueToSpell(uiSpellId);
-                }
+                    pSartharion->CastSpell(pSartharion, SPELL_TWILIGHT_REVENGE, true);
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
     }
 
@@ -1139,7 +1135,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
                 AttackStart(pShadron->getVictim());
             }
         }
-         me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
+        me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
     }
 
     void JustDied(Unit* killer)
