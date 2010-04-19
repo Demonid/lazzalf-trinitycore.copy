@@ -14274,8 +14274,10 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     if (pQuest->IsDailyOrWeekly())
     {
-        SetTimedQuestStatus(quest_id);
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
+        if (pQuest->IsDaily())
+            GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
+        
+        SetTimedQuestStatus(quest_id);        
     }
 
     if (!pQuest->IsRepeatable())
