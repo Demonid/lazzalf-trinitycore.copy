@@ -16,6 +16,9 @@ SET(scripts_STAT_SRCS
    ../game/ScriptedInstance.h
    ../game/ScriptedSimpleAI.cpp
    ../game/ScriptedSimpleAI.h
+   ../game/ScriptedPch.h
+   ../game/sc_boss_spell_worker.cpp
+   ../game/sc_boss_spell_worker.h
    custom/on_events.cpp
    custom/npc_teleport.cpp
    custom/GuildHouse_npc.cpp

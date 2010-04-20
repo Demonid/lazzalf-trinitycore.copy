@@ -82,7 +82,7 @@ struct boss_faction_championsAI : public ScriptedAI
             Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
             if (pUnit && me->getThreatManager().getThreat(pUnit))
             {
-                if(pUnit->GetTypeId()==TYPEID_PLAYER)
+                if (pUnit->GetTypeId()==TYPEID_PLAYER)
                 {
                     float threat = CalculateThreat(me->GetDistance2d(pUnit), (float)pUnit->GetArmor(), pUnit->GetHealth());
                     me->getThreatManager().modifyThreatPercent(pUnit, -100);
@@ -95,9 +95,9 @@ struct boss_faction_championsAI : public ScriptedAI
 
     void UpdatePower()
     {
-        if(me->getPowerType() == POWER_MANA)
+        if (me->getPowerType() == POWER_MANA)
             me->ModifyPower(POWER_MANA, me->GetMaxPower(POWER_MANA) / 3);
-        //else if(me->getPowerType() == POWER_ENERGY)
+        //else if (me->getPowerType() == POWER_ENERGY)
         //    me->ModifyPower(POWER_ENERGY, 100);
     }
 
@@ -113,25 +113,28 @@ struct boss_faction_championsAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
-        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS_COUNT, 0);
+        if (m_pInstance) 
+            m_pInstance->SetData(TYPE_CRUSADERS_COUNT, 0);
     }
 
     void Aggro(Unit *who)
     {
         DoCast(me, SPELL_ANTI_AOE, true);
-        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS, IN_PROGRESS);
+        if (m_pInstance) 
+            m_pInstance->SetData(TYPE_CRUSADERS, IN_PROGRESS);
     }
 
     void Reset()
     {
-        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS, NOT_STARTED);
+        if (m_pInstance) 
+            m_pInstance->SetData(TYPE_CRUSADERS, NOT_STARTED);
     }
 
     Creature* SelectRandomFriendlyMissingBuff(uint32 spell)
     {
         std::list<Creature *> lst = DoFindFriendlyMissingBuff(40.0f, spell);
         std::list<Creature *>::const_iterator itr = lst.begin();
-        if(lst.empty()) 
+        if (lst.empty()) 
             return NULL;
         advance(itr, rand()%lst.size());
         return (*itr);
@@ -144,8 +147,8 @@ struct boss_faction_championsAI : public ScriptedAI
         for(iter = tList.begin(); iter!=tList.end(); ++iter)
         {
             Unit *target;
-            if(target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
-                if(target->getPowerType() == POWER_MANA)
+            if (target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
+                if (target->getPowerType() == POWER_MANA)
                     return target;
         }
         return NULL;
@@ -159,8 +162,8 @@ struct boss_faction_championsAI : public ScriptedAI
         for(iter = tList.begin(); iter!=tList.end(); ++iter)
         {
             Unit *target;
-            if(target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
-                if(me->GetDistance2d(target) < distance)
+            if (target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
+                if (me->GetDistance2d(target) < distance)
                     ++count;
         }
         return count;
@@ -176,7 +179,7 @@ struct boss_faction_championsAI : public ScriptedAI
             me->SetInCombatWith(pWho);
             pWho->SetInCombatWith(me);
 
-            if(mAIType==AI_MELEE)
+            if (mAIType==AI_MELEE)
                 DoStartMovement(pWho);
             else
                 DoStartMovement(pWho, 20.0f);
@@ -186,7 +189,7 @@ struct boss_faction_championsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(ThreatTimer < diff)
+        if (ThreatTimer < diff)
         {
             UpdatePower();
             UpdateThreat();
@@ -194,14 +197,14 @@ struct boss_faction_championsAI : public ScriptedAI
         }
         else ThreatTimer -= diff;
 
-        if(CCTimer < diff)
+        if (CCTimer < diff)
         {
             RemoveCC();
             CCTimer = 8000+rand()%2000;
         }
         else CCTimer -= diff;
 
-        if(mAIType == AI_MELEE) DoMeleeAttackIfReady();
+        if (mAIType == AI_MELEE) DoMeleeAttackIfReady();
     }
 };
 
@@ -235,11 +238,11 @@ struct mob_toc_druidAI : public boss_faction_championsAI
 
           bsw->timedCast(SPELL_TRANQUILITY, diff);
 
-          if(bsw->timedQuery(SPELL_BARKSKIN, diff))
-                if(me->GetHealthPercent() < 50.0f)
+          if (bsw->timedQuery(SPELL_BARKSKIN, diff))
+                if (me->GetHealthPercent() < 50.0f)
                     bsw->doCast(SPELL_BARKSKIN);
 
-        if(bsw->timedQuery(SPELL_LIFEBLOOM, diff))
+        if (bsw->timedQuery(SPELL_LIFEBLOOM, diff))
             switch(urand(0,4))
             {
                 case 0:
@@ -255,7 +258,7 @@ struct mob_toc_druidAI : public boss_faction_championsAI
                         bsw->doCast(SPELL_REJUVENATION);
                     break;
                 case 4:
-                    if(Creature* target = SelectRandomFriendlyMissingBuff(SPELL_THORNS))
+                    if (Creature* target = SelectRandomFriendlyMissingBuff(SPELL_THORNS))
                         bsw->doCast(SPELL_THORNS, target);
                     break;
             }
@@ -284,13 +287,13 @@ struct mob_toc_shamanAI : public boss_faction_championsAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim()) return;
+        if (!UpdateVictim()) 
+            return;
 
-            bsw->timedCast(SPELL_HEROISM, diff);
+        bsw->timedCast(SPELL_HEROISM, diff);
+        bsw->timedCast(SPELL_HEX, diff);
 
-            bsw->timedCast(SPELL_HEX, diff);
-
-        if(bsw->timedQuery(SPELL_HEALING_WAVE, diff))
+        if (bsw->timedQuery(SPELL_HEALING_WAVE, diff))
         {
             switch(urand(0,5))
             {
@@ -307,7 +310,7 @@ struct mob_toc_shamanAI : public boss_faction_championsAI
                         bsw->doCast(SPELL_SPIRIT_CLEANSE);
                     break;
                 case 5:
-                    if(Unit *target = SelectRandomFriendlyMissingBuff(SPELL_EARTH_SHIELD))
+                    if (Unit *target = SelectRandomFriendlyMissingBuff(SPELL_EARTH_SHIELD))
                         bsw->doCast(target, SPELL_EARTH_SHIELD);
                     break;
             }
@@ -340,21 +343,21 @@ struct mob_toc_paladinAI : public boss_faction_championsAI
         if (!UpdateVictim()) return;
 
         //cast bubble at 20% hp
-        if(me->GetHealthPercent() < 20.0f)
+        if (me->GetHealthPercent() < 20.0f)
              bsw->timedCast(SPELL_BUBBLE, diff);
 
-            if(Unit *target = DoSelectLowestHpFriendly(40.0f))
-                if(target->GetHealthPercent() < 15.0f)
+            if (Unit *target = DoSelectLowestHpFriendly(40.0f))
+                if (target->GetHealthPercent() < 15.0f)
                     bsw->timedCast(SPELL_HAND_OF_PROTECTION, diff);
 
             bsw->timedCast(SPELL_HOLY_SHOCK, diff);
 
-            if(Unit *target = SelectRandomFriendlyMissingBuff(SPELL_HAND_OF_FREEDOM))
+            if (Unit *target = SelectRandomFriendlyMissingBuff(SPELL_HAND_OF_FREEDOM))
                 bsw->timedCast(SPELL_HAND_OF_FREEDOM, diff, target);
 
             bsw->timedCast(SPELL_HAMMER_OF_JUSTICE, diff);
 
-        if(bsw->timedQuery(SPELL_FLASH_OF_LIGHT, diff))
+        if (bsw->timedQuery(SPELL_FLASH_OF_LIGHT, diff))
         {
             switch(urand(0,4))
             {
@@ -394,10 +397,10 @@ struct mob_toc_priestAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-            if(EnemiesInRange(10.0f) > 2)
+            if (EnemiesInRange(10.0f) > 2)
                 bsw->timedCast(SPELL_PSYCHIC_SCREAM, diff);
 
-        if(bsw->timedQuery(SPELL_RENEW, diff))
+        if (bsw->timedQuery(SPELL_RENEW, diff))
         {
             switch(urand(0,5))
             {
@@ -411,7 +414,7 @@ struct mob_toc_priestAI : public boss_faction_championsAI
                         bsw->doCast(SPELL_FLASH_HEAL);
                     break;
                 case 4:
-                    if(Unit *target = urand(0,1) ? SelectUnit(SELECT_TARGET_RANDOM,0) : DoSelectLowestHpFriendly(40.0f))
+                    if (Unit *target = urand(0,1) ? SelectUnit(SELECT_TARGET_RANDOM,0) : DoSelectLowestHpFriendly(40.0f))
                         bsw->doCast(target, SPELL_DISPEL);
                     break;
                 case 5:
@@ -456,18 +459,18 @@ struct mob_toc_shadow_priestAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-            if(EnemiesInRange(10.0f) > 2)
+            if (EnemiesInRange(10.0f) > 2)
                 bsw->timedCast(SPELL_PSYCHIC_SCREAM, diff);
 
-            if(me->GetHealthPercent() < 20.0f)
+            if (me->GetHealthPercent() < 20.0f)
                 bsw->timedCast(SPELL_DISPERSION, diff);
 
-            if(Unit *target = SelectEnemyCaster(false))
+            if (Unit *target = SelectEnemyCaster(false))
                 bsw->timedCast(SPELL_SILENCE, diff, target);
 
             bsw->timedCast(SPELL_MIND_BLAST, diff);
 
-        if(bsw->timedQuery(SPELL_MIND_FLAY, diff))
+        if (bsw->timedQuery(SPELL_MIND_FLAY, diff))
         {
             switch(urand(0,4))
             {
@@ -514,12 +517,12 @@ struct mob_toc_warlockAI : public boss_faction_championsAI
 
             bsw->timedCast(SPELL_Fear, diff);
 
-            if(EnemiesInRange(10.0f) > 2)
+            if (EnemiesInRange(10.0f) > 2)
                 bsw->timedCast(SPELL_HELLFIRE, diff);
 
             bsw->timedCast(SPELL_Unstable_Affliction, diff);
 
-        if(bsw->timedQuery(SPELL_Shadow_Bolt, diff))
+        if (bsw->timedQuery(SPELL_Shadow_Bolt, diff))
         {
             switch(urand(0,5))
             {
@@ -567,22 +570,22 @@ struct mob_toc_mageAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-            if(Unit *target = SelectEnemyCaster(false))
+            if (Unit *target = SelectEnemyCaster(false))
                 bsw->timedCast(SPELL_Counterspell, diff, target);
 
-            if(me->GetHealthPercent() < 50.0f 
+            if (me->GetHealthPercent() < 50.0f 
             && EnemiesInRange(10.0f)>3 )
             {
                 bsw->timedCast(SPELL_Frost_Nova, diff);
                 bsw->timedCast(SPELL_Blink, diff);
             }
 
-            if(me->GetHealthPercent() < 20.0f)
+            if (me->GetHealthPercent() < 20.0f)
                    bsw->timedCast(SPELL_Ice_Block, diff);
 
             bsw->timedCast(SPELL_Polymorph, diff);
 
-        if(bsw->timedQuery(SPELL_Arcane_Barrage, diff))
+        if (bsw->timedQuery(SPELL_Arcane_Barrage, diff))
         {
             switch(urand(0,2))
             {
@@ -637,20 +640,20 @@ struct mob_toc_hunterAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-            if(EnemiesInRange(10.0f) > 3)
+            if (EnemiesInRange(10.0f) > 3)
                 bsw->timedCast(SPELL_Disengage, diff);
 
-            if(me->GetHealthPercent() < 20.0f)
+            if (me->GetHealthPercent() < 20.0f)
                 bsw->timedCast(SPELL_Deterrence, diff);
 
             bsw->timedCast(SPELL_Wyvern_Sting, diff);
 
             bsw->timedCast(SPELL_Frost_Trap, diff );
 
-            if(me->GetDistance2d(me->getVictim()) < 5.0f)
+            if (me->GetDistance2d(me->getVictim()) < 5.0f)
                 bsw->timedCast(SPELL_WING_CLIP, diff);
 
-        if(bsw->timedQuery(SPELL_SHOOT, diff))
+        if (bsw->timedQuery(SPELL_SHOOT, diff))
         {
             switch(urand(0,3))
             {
@@ -691,7 +694,7 @@ struct mob_toc_boomkinAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-        if(me->GetHealthPercent() < 50.0f)
+        if (me->GetHealthPercent() < 50.0f)
                 bsw->timedCast(SPELL_BARKSKIN, diff);
 
         bsw->timedCast(SPELL_Cyclone, diff);
@@ -700,7 +703,7 @@ struct mob_toc_boomkinAI : public boss_faction_championsAI
 
         bsw->timedCast(SPELL_Faerie_Fire, diff);
 
-        if(bsw->timedQuery(SPELL_Moonfire, diff))
+        if (bsw->timedQuery(SPELL_Moonfire, diff))
         {
             switch(urand(0,6))
             {
@@ -792,21 +795,21 @@ struct mob_toc_dkAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-            if(me->GetHealthPercent() < 50.0f)
+            if (me->GetHealthPercent() < 50.0f)
                 bsw->timedCast(SPELL_Icebound_Fortitude, diff);
 
             bsw->timedCast(SPELL_Chains_of_Ice, diff);
 
             bsw->timedCast(SPELL_Death_Coil, diff);
 
-            if(Unit *target = SelectEnemyCaster(false))
+            if (Unit *target = SelectEnemyCaster(false))
                 bsw->timedCast(SPELL_Strangulate, diff, target);
 
             bsw->timedCast(SPELL_Frost_Strike, diff);
 
             bsw->timedCast(SPELL_Icy_Touch, diff);
 
-            if(me->IsInRange(me->getVictim(), 10.0f, 30.0f, false))
+            if (me->IsInRange(me->getVictim(), 10.0f, 30.0f, false))
                 bsw->timedCast(SPELL_Death_Grip, diff); 
 
         boss_faction_championsAI::UpdateAI(diff);
@@ -842,21 +845,21 @@ struct mob_toc_rogueAI : public boss_faction_championsAI
     {
         if (!UpdateVictim()) return;
 
-        if(EnemiesInRange(15.0f) > 2)
+        if (EnemiesInRange(15.0f) > 2)
             bsw->timedCast(SPELL_FAN_OF_KNIVES, diff);
 
         bsw->timedCast(SPELL_HEMORRHAGE, diff);
 
         bsw->timedCast(SPELL_EVISCERATE, diff);
 
-        if(me->IsInRange(me->getVictim(), 10.0f, 40.0f))
+        if (me->IsInRange(me->getVictim(), 10.0f, 40.0f))
             bsw->timedCast(SPELL_SHADOWSTEP, diff);
 
-        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-            if(me->IsInRange(target, 0.0f, 15.0f, false))
+        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if (me->IsInRange(target, 0.0f, 15.0f, false))
                 bsw->timedCast(SPELL_BLIND, diff, target);
 
-        if(me->GetHealthPercent() < 50.0f)
+        if (me->GetHealthPercent() < 50.0f)
             bsw->timedCast(SPELL_CLOAK, diff);
 
         bsw->timedCast(SPELL_Blade_Flurry, diff);
@@ -929,7 +932,7 @@ struct mob_toc_retro_paladinAI : public boss_faction_championsAI
 
             bsw->timedCast(SPELL_Avenging_Wrath, diff);
 
-            if(me->GetHealthPercent() < 20.0f)
+            if (me->GetHealthPercent() < 20.0f)
                  bsw->timedCast(SPELL_Divine_Shield, diff);
 
             bsw->timedCast(SPELL_Divine_Storm, diff);

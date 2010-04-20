@@ -1375,15 +1375,14 @@ struct npc_twilight_fissureAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        VoidBlast_Timer = 5000;
-        me->AddAura( 46265 , me ); // Wrong, can't find proper visual
+        VoidBlast_Timer = 5000;        
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (VoidBlast_Timer <= diff)
         {
-            DoCast(me->getVictim(), RAID_MODE(SPELL_VOID_BLAST, SPELL_VOID_BLAST_H));
+            DoCast(RAID_MODE(SPELL_VOID_BLAST,SPELL_VOID_BLAST_H ));
             VoidBlast_Timer = 9000;
             me->Kill(me);
         } else VoidBlast_Timer -= diff;

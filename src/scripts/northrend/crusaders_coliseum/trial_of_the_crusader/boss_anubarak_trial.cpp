@@ -39,27 +39,27 @@ enum Summons
 
 enum BossSpells
 {
-SPELL_COLD              = 66013,
-SPELL_MARK              = 67574,
-SPELL_LEECHING_SWARM    = 66118,
-SPELL_LEECHING_HEAL     = 66125,
-SPELL_LEECHING_DAMAGE   = 66240,
-SPELL_IMPALE            = 65920,
-SPELL_SPIKE_CALL        = 66169,
-SPELL_POUND             = 66012,
-SPELL_SHOUT             = 67730,
-SPELL_SUBMERGE_0        = 53421,
-SPELL_SUBMERGE_1        = 67322,
-SPELL_SUMMON_BEATLES    = 66339,
-SPELL_DETERMINATION     = 66092,
-SPELL_ACID_MANDIBLE     = 67861,
-SPELL_SPIDER_FRENZY     = 66129,
-SPELL_EXPOSE_WEAKNESS   = 67847,
-SUMMON_SCARAB           = NPC_SCARAB,
-SUMMON_BORROWER         = NPC_BURROWER,
-SUMMON_FROSTSPHERE      = NPC_FROST_SPHERE,
-SPELL_BERSERK           = 26662,
-SPELL_PERMAFROST        = 66193,
+    SPELL_COLD              = 66013,
+    SPELL_MARK              = 67574,
+    SPELL_LEECHING_SWARM    = 66118,
+    SPELL_LEECHING_HEAL     = 66125,
+    SPELL_LEECHING_DAMAGE   = 66240,
+    SPELL_IMPALE            = 65920,
+    SPELL_SPIKE_CALL        = 66169,
+    SPELL_POUND             = 66012,
+    SPELL_SHOUT             = 67730,
+    SPELL_SUBMERGE_0        = 53421,
+    SPELL_SUBMERGE_1        = 67322,
+    SPELL_SUMMON_BEATLES    = 66339,
+    SPELL_DETERMINATION     = 66092,
+    SPELL_ACID_MANDIBLE     = 67861,
+    SPELL_SPIDER_FRENZY     = 66129,
+    SPELL_EXPOSE_WEAKNESS   = 67847,
+    SUMMON_SCARAB           = NPC_SCARAB,
+    SUMMON_BORROWER         = NPC_BURROWER,
+    SUMMON_FROSTSPHERE      = NPC_FROST_SPHERE,
+    SPELL_BERSERK           = 26662,
+    SPELL_PERMAFROST        = 66193,
 };
 
 struct boss_anubarak_trialAI : public ScriptedAI
@@ -77,8 +77,10 @@ struct boss_anubarak_trialAI : public ScriptedAI
     BossSpellWorker* bsw;
     Unit* pTarget;
 
-    void Reset() {
-        if(!m_pInstance) return;
+    void Reset() 
+    {
+        if(!m_pInstance) 
+            return;
         stage = 0;
         intro = true;
         me->SetRespawnDelay(DAY);
@@ -93,7 +95,8 @@ struct boss_anubarak_trialAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* pWho) 
     {
-        if (!intro) return;
+        if (!intro) 
+            return;
         DoScriptText(-1713554,me);
         intro = false;
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -110,14 +113,16 @@ struct boss_anubarak_trialAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance) return;
-            DoScriptText(-1713564,me);
-            m_pInstance->SetData(TYPE_ANUBARAK, DONE);
+        if (!m_pInstance) 
+            return;
+        DoScriptText(-1713564,me);
+        m_pInstance->SetData(TYPE_ANUBARAK, DONE);
     }
 
     void Aggro(Unit* pWho)
     {
-        if (!intro) DoScriptText(-1713555,me);
+        if (!intro) 
+            DoScriptText(-1713555,me);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         me->SetInCombatWithZone();
@@ -131,63 +136,67 @@ struct boss_anubarak_trialAI : public ScriptedAI
 
         switch(stage)
         {
-            case 0: {
+            case 0:
                 bsw->timedCast(SPELL_POUND, uiDiff);
                 bsw->timedCast(SPELL_COLD, uiDiff);
-                if (bsw->timedQuery(SUMMON_BORROWER, uiDiff)) {
+                if (bsw->timedQuery(SUMMON_BORROWER, uiDiff)) 
+                {
                         bsw->doCast(SUMMON_BORROWER);
                         DoScriptText(-1713556,me);
-                        };
+                }
                 if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff)) stage = 1;
-
-                    break;}
-            case 1: {
-                    bsw->doCast(SPELL_SUBMERGE_0);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    stage = 2;
-                    DoScriptText(-1713557,me);
-                    break;}
-            case 2: {
-                    if (bsw->timedQuery(SPELL_SPIKE_CALL, uiDiff)) {
-                         pTarget = bsw->SelectUnit();
-//                         bsw->doCast(SPELL_SPIKE_CALL);
-//                         This summon not supported in database. Temporary override.
-                         Unit* spike = bsw->doSummon(NPC_SPIKE,TEMPSUMMON_TIMED_DESPAWN,60000);
-                         if (spike) { spike->AddThreat(pTarget, 1000.0f);
-                                      DoScriptText(-1713558,me,pTarget);
-                                      bsw->doCast(SPELL_MARK,pTarget);
-                                      spike->GetMotionMaster()->MoveChase(pTarget);
-                                     }
-                         };
-                    if (bsw->timedQuery(SPELL_SUMMON_BEATLES, uiDiff)) {
-                            bsw->doCast(SPELL_SUMMON_BEATLES);
-                            bsw->doCast(SUMMON_SCARAB);
-                            DoScriptText(-1713560,me);
-                         };
-                    if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff)) stage = 3;
-                    break;}
-            case 3: {
-                    stage = 0;
-                    DoScriptText(-1713559,me);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    bsw->doRemove(SPELL_SUBMERGE_0,me);
-                    break;}
-            case 4: {
-                            bsw->doCast(SPELL_LEECHING_SWARM);
-                            DoScriptText(-1713561,me);
-                    stage = 5;
-                    break;}
-            case 5: {
-                        bsw->timedCast(SPELL_POUND, uiDiff);
-                        bsw->timedCast(SPELL_COLD, uiDiff);
-                        break;}
-
+                break;
+            case 1:
+                bsw->doCast(SPELL_SUBMERGE_0);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                stage = 2;
+                DoScriptText(-1713557,me);
+                break;
+            case 2:
+                if (bsw->timedQuery(SPELL_SPIKE_CALL, uiDiff)) 
+                {
+                    pTarget = bsw->SelectUnit();
+//                  bsw->doCast(SPELL_SPIKE_CALL);
+//                  This summon not supported in database. Temporary override.
+                    Unit* spike = bsw->doSummon(NPC_SPIKE,TEMPSUMMON_TIMED_DESPAWN,60000);
+                    if (spike) 
+                    { 
+                        spike->AddThreat(pTarget, 1000.0f);
+                        DoScriptText(-1713558,me,pTarget);
+                        bsw->doCast(SPELL_MARK,pTarget);
+                        spike->GetMotionMaster()->MoveChase(pTarget);
+                    }
+                }
+                if (bsw->timedQuery(SPELL_SUMMON_BEATLES, uiDiff)) 
+                {
+                    bsw->doCast(SPELL_SUMMON_BEATLES);
+                    bsw->doCast(SUMMON_SCARAB);
+                    DoScriptText(-1713560,me);
+                }
+                if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff)) stage = 3;
+                break;
+            case 3:
+                stage = 0;
+                DoScriptText(-1713559,me);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                bsw->doRemove(SPELL_SUBMERGE_0,me);
+                break;
+            case 4:
+                bsw->doCast(SPELL_LEECHING_SWARM);
+                DoScriptText(-1713561,me);
+                stage = 5;
+                break;
+            case 5:
+                bsw->timedCast(SPELL_POUND, uiDiff);
+                bsw->timedCast(SPELL_COLD, uiDiff);
+                break;
         }
         bsw->timedCast(SUMMON_FROSTSPHERE, uiDiff);
 
         bsw->timedCast(SPELL_BERSERK, uiDiff);
 
-        if (me->GetHealthPercent() < 30.0f && stage == 0) stage = 4;
+        if (me->GetHealthPercent() < 30.0f && stage == 0) 
+            stage = 4;
 
         DoMeleeAttackIfReady();
     }
@@ -298,25 +307,25 @@ struct mob_nerubian_borrowerAI : public ScriptedAI
         bsw->timedCast(SPELL_EXPOSE_WEAKNESS, uiDiff);
 
         if (bsw->timedQuery(SPELL_SPIDER_FRENZY, uiDiff))
-            if(Creature* pTemp = GetClosestCreatureWithEntry(me, NPC_BURROWER, 50.0f))
+            if (Creature* pTemp = GetClosestCreatureWithEntry(me, NPC_BURROWER, 50.0f))
             {
-            currentTarget = pTemp;
-            bsw->doCast(SPELL_SPIDER_FRENZY);
-            };
+                currentTarget = pTemp;
+                bsw->doCast(SPELL_SPIDER_FRENZY);
+            }
 
         if (me->GetHealthPercent() < 20.0f && bsw->timedQuery(SPELL_SUBMERGE_1, uiDiff) && !submerged)
-           {
+        {
             bsw->doCast(SPELL_SUBMERGE_1);
             submerged = true;
             DoScriptText(-1713557,me);
-            };
+        }
 
         if (me->GetHealthPercent() > 50.0f && submerged)
-            {
+        {
              bsw->doRemove(SPELL_SUBMERGE_1,me);
              submerged = false;
              DoScriptText(-1713559,me);
-             };
+        }
 
         DoMeleeAttackIfReady();
     }
