@@ -681,9 +681,9 @@ void Aura::SetDuration(int32 duration, bool withMods)
 void Aura::RefreshDuration()
 {
     SetDuration(GetMaxDuration());
-    //for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-    //    if(m_effects[i])
-    //        m_effects[i]->ResetPeriodic();
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if(m_effects[i])
+            m_effects[i]->ResetPeriodic();
 
     if (m_spellProto->manaPerSecond || m_spellProto->manaPerSecondPerLevel)
         m_timeCla = 1 * IN_MILISECONDS;
