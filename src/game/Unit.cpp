@@ -7707,7 +7707,7 @@ bool Unit::HandleAuraProc(Unit * /*pVictim*/, uint32 damage, Aura * triggeredByA
                     if (!aurEff)
                         return false;
                     // Reset amplitude - set death rune remove timer to 30s
-                    aurEff->ResetPeriodic();
+                    aurEff->ResetPeriodic(true);
                     uint32 runesLeft;
 
                     if (dummySpell->SpellIconID == 2622)
@@ -8288,7 +8288,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
     // Blade Barrier
     if (auraSpellInfo->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && auraSpellInfo->SpellIconID == 85)
     {
-        if (this->GetTypeId() != TYPEID_PLAYER || !this->ToPlayer()->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
+        if (this->GetTypeId() != TYPEID_PLAYER)
+            return false;
+
+        if(!this->ToPlayer()->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
             return false;
     }
     // Rime
