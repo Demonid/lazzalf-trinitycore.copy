@@ -4,6 +4,9 @@
 enum eTypes
 {
     TYPE_SARTHARION_EVENT       = 1,
+    TYPE_TENEBRON_PREKILLED     = 2,
+    TYPE_SHADRON_PREKILLED      = 3,
+    TYPE_VESPERON_PREKILLED     = 4,
 
     DATA_SARTHARION             = 10,
     DATA_TENEBRON               = 11,

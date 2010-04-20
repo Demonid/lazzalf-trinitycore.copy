@@ -89,6 +89,28 @@ int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
+// movement anticheat
+bool World::m_EnableMvAnticheat = true;
+bool World::m_EnableMistiming = true;
+bool World::m_EnableMistimingBlock = true;
+bool World::m_EnableAntiGravity = true;
+bool World::m_EnableAntiGravityBlock = true;
+bool World::m_EnableAntiMultiJump = true;
+bool World::m_EnableAntiMultiJumpBlock = true;
+bool World::m_EnableAntiSpeedTele = true;
+bool World::m_EnableAntiSpeedTeleBlock = true;
+bool World::m_EnableAntiMountainHack = true;
+bool World::m_EnableAntiMountainHackBlock = true;
+bool World::m_EnableAntiFlyHack = true;
+bool World::m_EnableAntiFlyHackBlock = true;
+bool World::m_EnableAntiWaterwalk = true;
+bool World::m_EnableAntiWaterwalkBlock = true;
+bool World::m_EnableTeleportToPlane = true;
+bool World::m_EnableTeleportToPlaneBlock = true;
+uint32 World::m_TeleportToPlaneAlarms = 50;
+uint32 World::m_MistimingAlarms = 200;
+uint32 World::m_MistimingDelta = 15000;
+uint32 World::m_LogCheatDeltaTime = 0;
 /// World constructor
 World::World()
 {
@@ -105,7 +127,9 @@ World::World()
     m_MaxPlayerCount = 0;
     m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
+    m_LastDailyQuestReset = 0;
     m_NextWeeklyQuestReset = 0;
+    m_LastWeeklyQuestReset = 0;
     m_scheduledScripts = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
@@ -591,6 +615,71 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog.outError("DurabilityLossChance.Block (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_BLOCK]);
         rate_values[RATE_DURABILITY_LOSS_BLOCK] = 0.0f;
+    }
+
+    // movement anticheat
+    m_EnableMvAnticheat = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);    
+    m_EnableMistiming = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
+    m_EnableMistimingBlock = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
+    m_EnableAntiGravity = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravity.Enable", true);
+    m_EnableAntiGravityBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravityBlock.Enable", true);
+    m_EnableAntiMultiJump = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJump.Enable", true);
+    m_EnableAntiMultiJumpBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJumpBlock.Enable", true);
+    m_EnableAntiSpeedTele = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTele.Enable", true);
+    m_EnableAntiSpeedTeleBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTeleBlock.Enable", true);
+    m_EnableAntiMountainHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHack.Enable", true);
+    m_EnableAntiMountainHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
+    m_EnableAntiFlyHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHack.Enable", true);
+    m_EnableAntiFlyHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHackBlock.Enable", true);
+    m_EnableAntiMountainHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHack.Enable", true);
+    m_EnableAntiMountainHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
+    m_EnableAntiWaterwalk = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalk.Enable", true);
+    m_EnableAntiWaterwalkBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalkBlock.Enable", true);
+    m_EnableTeleportToPlane = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlane.Enable", true);
+    m_EnableTeleportToPlaneBlock = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlaneBlock.Enable", true);
+    m_TeleportToPlaneAlarms = sConfig.GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
+    if (m_TeleportToPlaneAlarms < 20)
+    {
+        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 20;
+    }
+    if (m_TeleportToPlaneAlarms > 100)
+    {
+        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_TeleportToPlaneAlarms);
+        m_TeleportToPlaneAlarms = 100;
+    }
+    m_MistimingDelta = sConfig.GetIntDefault("Anticheat.Movement.MistimingDelta", 15000);
+    if (m_MistimingDelta < 5000)
+    {
+        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_MistimingDelta);
+        m_MistimingDelta = 5000;
+    }
+    if (m_MistimingDelta > 50000)
+    {
+        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_MistimingDelta);
+        m_MistimingDelta = 50000;
+    }
+    m_MistimingAlarms = sConfig.GetIntDefault("Anticheat.Movement.MistimingAlarms", 200);
+    if (m_MistimingAlarms < 100)
+    {
+        sLog.outError("Anticheat.Movement.MistimingAlarms (%d) must be >= 100. Using 100 instead.", m_MistimingAlarms);
+        m_MistimingAlarms = 100;
+    }
+    if (m_MistimingAlarms > 500)
+    {
+        sLog.outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <= 500. Using 500 instead.", m_MistimingAlarms);
+        m_MistimingAlarms = 500;    
+    }
+    m_LogCheatDeltaTime = sConfig.GetIntDefault("Anticheat.LogCheatDeltaTime", 5000);
+    if (m_LogCheatDeltaTime < 0)
+    {
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be >= 0. Using 0 instead.", m_LogCheatDeltaTime);
+        m_LogCheatDeltaTime = 0;
+    }
+    if (m_LogCheatDeltaTime > 60000)
+    {
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_LogCheatDeltaTime);
+        m_LogCheatDeltaTime = 0;    
     }
     ///- Read other configuration items from the config file
 
@@ -1203,6 +1292,26 @@ void World::LoadConfigSettings(bool reload)
     if (m_configs[CONFIG_PVP_TOKEN_COUNT] < 1)
         m_configs[CONFIG_PVP_TOKEN_COUNT] = 1;
 
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]          = sConfig.GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME]       = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.StartTime", 30);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME]      = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.BattleTime", 30);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL]         = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.Interval", 150);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR]     = sConfig.GetBoolDefault("OutdoorPvP.Wintergrasp.CustomHonorRewards", false);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE]       = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleWin", 3000);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE]      = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleLose", 1250);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER]    = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamageTower", 750);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER]  = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower", 750);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING] = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
+    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]  = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
+
+	m_configs[CONFIG_ARENAMOD_ENABLE]                         = sConfig.GetBoolDefault("ArenaMod.Enabled", 0);
+	m_configs[CONFIG_ARENAMOD_MODE]                           = sConfig.GetIntDefault("ArenaMod.Mode", 3);
+    m_configs[CONFIG_ARENAMOD_MAX_TEAM_WIN]                   = sConfig.GetIntDefault("ArenaMod.MaximalTeamWins", 40);	
+	m_configs[CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM]      = sConfig.GetIntDefault("ArenaMod.MaximalTeamWinsAgainstTeam", 20);
+    m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN]                 = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWins", 30);
+    m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM]    = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWinsAgainstTeam", 15);
+    m_configs[CONFIG_ARENAMOD_TIME_RESET]                     = sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+    m_configs[CONFIG_ARENAMOD_CONTROLL_IP]                    = sConfig.GetIntDefault("ArenaMod.ControllIp", 0);
 
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfig.GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
@@ -1422,6 +1531,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Quests...");
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
+    sLog.outString();
+    sLog.outString("Loading Quest Pool...");
+    objmgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
+
     sLog.outString("Loading Quest POI");
     objmgr.LoadQuestPOI();
 
@@ -1576,6 +1689,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Returning old mails...");
     objmgr.ReturnOrDeleteOldMails(false);
 
+	// Loads the jail conf out of the database
+    sLog.outString("Loading JailConfing...");    
+    objmgr.LoadJailConf();
+
     sLog.outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
 
@@ -1663,6 +1780,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting BattleGround System");
     sBattleGroundMgr.CreateInitialBattleGrounds();
     sBattleGroundMgr.InitAutomaticArenaPointDistribution();
+	sBattleGroundMgr.InitAutomaticArenaModTimer();
 
     ///- Initialize outdoor pvp
     sLog.outString("Starting Outdoor PvP System");
@@ -1678,11 +1796,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Deleting expired bans...");
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
 
-    sLog.outString("Calculate next daily quest reset time...");
-    InitDailyQuestResetTime();
-
-    sLog.outString("Calculate next weekly quest reset time..." );
-    InitWeeklyQuestResetTime();
+    sLog.outString("Calculating next daily/weekly quest reset times...");
+    InitTimedQuestResetTime();
 
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();
@@ -1841,18 +1956,13 @@ void World::Update(uint32 diff)
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
 
-    /// Handle daily quests reset time
+    /// Handle daily quest reset time
     if (m_gameTime > m_NextDailyQuestReset)
-    {
-        ResetDailyQuests();
-        m_NextDailyQuestReset += DAY;
-    }
+        ResetTimedQuests(true);
 
+    /// Handle weekly quest reset time
     if (m_gameTime > m_NextWeeklyQuestReset)
-    {
-        ResetWeeklyQuests();
-        m_NextWeeklyQuestReset += WEEK;
-    }
+        ResetTimedQuests(false);
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
@@ -2109,7 +2219,7 @@ void World::SendGMText(int32 string_id, ...)
         if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
             continue;
 
-        if (itr->second->GetSecurity() < SEC_MODERATOR)
+        if(itr->second->GetSecurity() < SEC_MODERATOR )
             continue;
 
         wt_do(itr->second->GetPlayer());
@@ -2496,68 +2606,93 @@ void World::_UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 ac
     }
 }
 
-void World::InitWeeklyQuestResetTime()
+void World::InitTimedQuestResetTime()
 {
-    time_t wtime = uint64(sWorld.getWorldState(WS_WEEKLY_QUEST_RESET_TIME));
-    if (!wtime)
-    {
-        m_NextWeeklyQuestReset = time_t(m_gameTime + WEEK);
-        sWorld.setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
-    }
-    else
-    {
-        // move to just before if need
-        time_t cur = time(NULL);
-        if (m_NextWeeklyQuestReset < cur)
-            m_NextWeeklyQuestReset += WEEK * ((cur - m_NextWeeklyQuestReset) / WEEK);
-    }
-}
-
-void World::InitDailyQuestResetTime()
-{
-    time_t mostRecentQuestTime;
-
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
-    if (result)
-    {
-        Field *fields = result->Fetch();
-
-        mostRecentQuestTime = (time_t)fields[0].GetUInt64();
-    }
-    else
-        mostRecentQuestTime = 0;
-
-    // client built-in time for reset is 6:00 AM
-    // FIX ME: client not show day start time
     time_t curTime = time(NULL);
-    tm localTm = *localtime(&curTime);
-    localTm.tm_hour = 6;
-    localTm.tm_min  = 0;
-    localTm.tm_sec  = 0;
 
-    // current day reset time
-    time_t curDayResetTime = mktime(&localTm);
+    m_LastDailyQuestReset = (time_t)getWorldState(LAST_TIME_DAILY);
+    m_LastWeeklyQuestReset = (time_t)getWorldState(LAST_TIME_WEEKLY);
 
-    // last reset time before current moment
-    time_t resetTime = (curTime < curDayResetTime) ? curDayResetTime - DAY : curDayResetTime;
-
-    // need reset (if we have quest time before last reset time (not processed by some reason)
-    if (mostRecentQuestTime && mostRecentQuestTime <= resetTime)
-        m_NextDailyQuestReset = mostRecentQuestTime;
+    // Dailies must restart/reset always at 03:00am (german wintertime) _on npc side_!
+    if (m_LastDailyQuestReset)
+        m_NextDailyQuestReset = m_LastDailyQuestReset + DAY;
     else
     {
-        // plan next reset time
-        m_NextDailyQuestReset = (curTime >= curDayResetTime) ? curDayResetTime + DAY : curDayResetTime;
+        sLog.outString("Creating the very first start time for dailies...");
+
+        // TODO: Calculate and set the very first last reset time correct and remove this default time (it's wrong because of timezones!)
+        time_t newTime = 1268103600; // Default first last reset time (if no time is set yet): Tue, 09 Mar 2010 03:00:00 GMT
+
+        do { newTime += DAY; }
+        while (newTime < curTime);
+
+        m_NextDailyQuestReset = newTime;
+
+        ResetTimedQuests(true);
+    }
+
+    // Weeklies must restart/reset always at 03:00am on tuesday (german wintertime) _on npc side_!
+    if (m_LastWeeklyQuestReset)
+         m_NextWeeklyQuestReset = m_LastWeeklyQuestReset + WEEK;
+    else
+    {
+        sLog.outString("Creating the very first start time for weeklies...");
+
+        // TODO: Calculate and set the very first last reset time correct and remove this default time (it's wrong because of timezones!)
+        time_t newTime = 1268103600; // Default first last reset time (if no time is set yet): Tue, 09 Mar 2010 03:00:00 GMT
+
+        do { newTime += WEEK; }
+        while (newTime < curTime);
+
+        m_NextWeeklyQuestReset = newTime;
+
+        ResetTimedQuests(false);
     }
 }
 
-void World::ResetDailyQuests()
+void World::ResetTimedQuests(bool daily)
 {
-    sLog.outDetail("Daily quests reset for all characters.");
-    CharacterDatabase.Execute("DELETE FROM character_queststatus_daily");
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if (itr->second->GetPlayer())
-            itr->second->GetPlayer()->ResetDailyQuestStatus();
+    if (daily)
+    {
+        sLog.outDetail("Reset of the daily quests.");
+
+        // Happens only at the very first time... else the first last time is in the future...
+        if (!m_LastDailyQuestReset)
+            m_LastDailyQuestReset = m_NextDailyQuestReset - DAY;
+        else
+        {
+            m_LastDailyQuestReset = m_NextDailyQuestReset;
+            m_NextDailyQuestReset += DAY;
+        }
+
+        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='1' AND time<'%lu'", uint64(m_LastDailyQuestReset));
+        
+        setWorldState(LAST_TIME_DAILY, uint64(m_LastDailyQuestReset));
+
+        // Reset player daily slots for online chars - offline chars get their reset @ login
+        for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+            if (itr->second->GetPlayer())
+                itr->second->GetPlayer()->ResetDailyQuestStatus();
+    }
+    // Weekly
+    else
+    {
+        sLog.outDetail("Reset of the weekly quests.");
+
+        // Happens only at the very first time... else the first last time is in the future...
+        if (!m_LastWeeklyQuestReset)
+            m_LastWeeklyQuestReset = m_NextWeeklyQuestReset - WEEK;
+        else
+        {
+            m_LastWeeklyQuestReset = m_NextWeeklyQuestReset;
+            m_NextWeeklyQuestReset += WEEK;
+        }
+
+        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='0' AND time<'%lu'", uint64(m_LastWeeklyQuestReset));
+        
+        setWorldState(LAST_TIME_WEEKLY, uint64(m_LastWeeklyQuestReset));  
+    }
+    objmgr.ResetQuestPool(daily);
 }
 
 void World::UpdateAllowedSecurity()
@@ -2568,17 +2703,6 @@ void World::UpdateAllowedSecurity()
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
         sLog.outDebug("Allowed Level: %u Result %u", m_allowedSecurityLevel, result->Fetch()->GetUInt16());
     }
-}
-
-void World::ResetWeeklyQuests()
-{
-    CharacterDatabase.Execute("DELETE FROM character_queststatus_weekly");
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if (itr->second->GetPlayer())
-            itr->second->GetPlayer()->ResetWeeklyQuestStatus();
-
-    m_NextWeeklyQuestReset = time_t(m_NextWeeklyQuestReset + WEEK);
-    sWorld.setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
 }
 
 void World::SetPlayerLimit(int32 limit, bool /*needUpdate*/)
