@@ -54,6 +54,7 @@ enum Data64
     DATA_IGNIS,
     DATA_EXP_COMMANDER,
     DATA_XT002,
+    DATA_KOLOGARN,
 };
 
 enum Npcs
