@@ -931,7 +931,16 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBonusDamage(int32(val));
                     break;
                 }
-                case 1964: //force of nature
+				case 89: // Infernal
+                {
+                    //60% damage bonus of warlock's fire damage
+                    float val = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6;
+                    SetBonusDamage( int32(val));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((val) - petlevel));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((val) + petlevel));
+                    break;
+                }
+				case 1964: //force of nature
                 {
                     if (!pInfo)
                         SetCreateHealth(30 + 30*petlevel);
@@ -998,8 +1007,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier));
 
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE,float((petlevel * 4 - petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier)));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE,float((petlevel * 4 + petlevel) + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier)));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE,float((petlevel * 4 - petlevel)/* + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier * 0.14)*/));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE,float((petlevel * 4 + petlevel)/* + (m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier * 0.14)*/));
 
                     SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, float(m_owner->GetArmor()) * 0.35f);  //  Bonus Armor (35% of player armor)
                     SetModifierValue(UNIT_MOD_STAT_STAMINA, BASE_VALUE,float(m_owner->GetStat(STAT_STAMINA)) * 0.3f);  //  Bonus Stamina (30% of player stamina)
@@ -1920,6 +1929,12 @@ void Pet::CastPetAuras(bool current)
             owner->RemovePetAura(pa);
         else
             CastPetAura(pa);
+    }
+
+    if (AuraEffect *avoidance = owner->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2718, 0)) 
+    {
+        int32 bp = (avoidance->GetAmount() / 1000);
+        CastCustomSpell(this, 62137, &bp, NULL, NULL, true);
     }
 }
 

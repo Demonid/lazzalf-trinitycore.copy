@@ -43,7 +43,7 @@
 #define EVENT_SHOCK                 5
 
 //Creatures
-#define MOB_TEMPEST_MINION          33998
+#define MOB_TEMPEST_MINION          34049
 
 #define MAX_TEMPEST_MINIONS         4
 
@@ -60,16 +60,34 @@ struct Position TempestMinions[MAX_TEMPEST_MINIONS] =
 ######*/
 struct boss_emalonAI : public BossAI
 {
-    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT)
-    {
-    }
+    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT) {}
+
+    uint32 checktimer;
 
     void Reset()
     {
         _Reset();
 
+        CheckForVoA();
+
+        checktimer = 10000;
+
         for (uint8 i = 0; i < MAX_TEMPEST_MINIONS; ++i)
             me->SummonCreature(MOB_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
+    }
+
+    void CheckForVoA()
+    {
+        if (!sOutdoorPvPMgr.CanBeAttacked(me))
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+        }
+        else
+        {
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
     }
 
     void JustSummoned(Creature *summoned)
@@ -102,9 +120,16 @@ struct boss_emalonAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        //Return since we have no target
         if (!UpdateVictim())
+        {
+            if (checktimer <= diff)
+            {
+                CheckForVoA();
+                checktimer = 10000;
+            } else checktimer -= diff;
+
             return;
+        }
 
         events.Update(diff);
 
