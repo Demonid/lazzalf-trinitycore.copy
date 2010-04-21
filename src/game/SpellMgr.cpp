@@ -3879,6 +3879,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 3;
             count++;
             break;
+        case 53651:
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            break;
         default:
             break;
         }
