@@ -5678,7 +5678,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         case 28169:                                     // Mutating Injection
                         {
                             // Mutagen Explosion
-                            target->CastSpell(target, 28206, true, NULL, this);
+                            //target->CastSpell(target, 28206, true, NULL, this);
                             // Poison Cloud
                             target->CastSpell(target, 28240, true, NULL, this);
                             return;
