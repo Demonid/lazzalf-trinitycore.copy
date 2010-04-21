@@ -435,8 +435,8 @@ enum RealmZone
 // Daily/Weekly quest last time entries within the worldstates table
 enum LastTimesPoolQuest
 {
-    LAST_TIME_DAILY     = 90101,
-    LAST_TIME_WEEKLY    = 90102
+    NEXT_TIME_DAILY     = 90101,
+    NEXT_TIME_WEEKLY    = 90102
 };
 
 enum ArenaModSystem
@@ -584,10 +584,6 @@ class World
         time_t GetNextDailyQuestReset() const { return m_NextDailyQuestReset; }
         /// Next weekly quest reset time
         time_t GetNextWeeklyQuestReset() const { return m_NextWeeklyQuestReset; }
-        /// Last daily quest reset time
-        time_t GetLastDailyQuestReset() const { return m_LastDailyQuestReset; }
-        /// Last weekly quest reset time
-        time_t GetLastWeeklyQuestReset() const { return m_LastWeeklyQuestReset; }
  
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
@@ -835,12 +831,8 @@ class World
 
         // Next daily quest reset time
          time_t m_NextDailyQuestReset;
-        // Last daily quest reset time
-        time_t m_LastDailyQuestReset;
         // Next weekly quest reset time
         time_t m_NextWeeklyQuestReset;
-        // Last weekly quest reset time
-        time_t m_LastWeeklyQuestReset;
 
         //Player Queue
         Queue m_QueuedPlayer;
