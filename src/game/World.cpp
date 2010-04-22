@@ -2632,7 +2632,7 @@ void World::InitTimedQuestResetTime()
     // Weekly
     // ------
 
-    int32 WeekdayOffset = localTm.tm_wday - sConfig.GetIntDefault("Quest.Weekly.ResetDay", 4); // Wednesday since 3.3.3.11723
+    int32 WeekdayOffset = localTm.tm_wday - sConfig.GetIntDefault("Quest.Weekly.ResetDay", 3); // Wednesday since 3.3.3.11723
     nextWeekResetTime -= WeekdayOffset * DAY; // Move time to proper day
 
     // Current week reset time
