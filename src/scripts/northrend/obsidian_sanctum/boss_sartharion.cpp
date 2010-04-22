@@ -318,7 +318,7 @@ struct boss_sartharionAI : public BossAI
         if (pFetchTene && pFetchTene->isAlive() && !pFetchTene->getVictim())
         {
             bCanUseWill = true;
-            pFetchTene->AddAura(SPELL_POWER_OF_TENEBRON, pFetchTene);
+            //pFetchTene->AddAura(SPELL_POWER_OF_TENEBRON, pFetchTene);
             pFetchTene->AddAura(SPELL_WILL_OF_SARTHARION, pFetchTene);
             AddDrakeLootMode();
             achievProgress++;            
@@ -853,7 +853,7 @@ struct mob_tenebronAI : public dummy_dragonAI
     {
         DoScriptText(SAY_TENEBRON_AGGRO, me);
         DoZoneInCombat();
-        DoCast(me, SPELL_POWER_OF_TENEBRON);
+        //DoCast(me, SPELL_POWER_OF_TENEBRON);
     }
 
     void KilledUnit(Unit* pVictim)
