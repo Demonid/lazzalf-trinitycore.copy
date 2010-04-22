@@ -20330,17 +20330,20 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             return false;
     }
 
-    if (u->GetVisibility() == VISIBILITY_OFF)
+    if (Unit* owner = u->GetCharmerOrOwnerOrSelf())
     {
-        // GMs see any players, not higher GMs and all units
-        if (isGameMaster())
+        if (owner->GetVisibility() == VISIBILITY_OFF)
         {
-            if (u->GetTypeId() == TYPEID_PLAYER)
-                return u->ToPlayer()->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
-            else
-                return true;
+            // GMs see any players, not higher GMs and all units
+            if (isGameMaster())
+            {
+                if (owner->GetTypeId() == TYPEID_PLAYER)
+                    return owner->ToPlayer()->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+                else
+                    return true;
+            }
+            return false;
         }
-        return false;
     }
 
     // GM's can see everyone with invisibilitymask with less or equal security level
@@ -20523,6 +20526,28 @@ void Player::UpdateVisibilityOf(WorldObject* target)
                 SendInitialVisiblePackets((Unit*)target);
         }
     }
+}
+
+void Player::UpdateTriggerVisibility()
+{
+    if (m_clientGUIDs.empty())
+        return;
+
+    UpdateData udata;
+    WorldPacket packet;
+    for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+    {
+        if (IS_CREATURE_GUID(*itr))
+        {
+            Creature *obj = IsInWorld() ? GetMap()->GetCreature(*itr) : NULL;
+            if (!obj || !obj->isTrigger())
+                continue;
+
+            obj->BuildCreateUpdateBlockForPlayer(&udata,this);
+        }
+    }
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
