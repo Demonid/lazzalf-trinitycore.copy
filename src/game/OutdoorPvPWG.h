@@ -506,17 +506,11 @@ enum OutdoorPvPWGCreEntry
 // To be deleted soon!
 const TeamPair OutdoorPvPWGCreEntryPair[] =
 {
-    //{32307, 32308}, // Guards
-    //{30739, 30740}, // Champions
-    //{32296, 32294}, // Quartermaster
-    //{39173, 39172}, // Quartermaster
-    //{32615, 32626}, // Warbringer & Brigadier General
-    //{0,0} // Do not delete Used in LoadTeamPair
-    {32308, 32307}, // Guards
-    {30740, 30739}, // Champions
-    {32294, 32296}, // Quartermaster
-    {39172, 39173}, // Quartermaster
-    {32626, 32615}, // Warbringer & Brigadier General
+    {32307, 32308}, // Guards
+    {30739, 30740}, // Champions
+    {32296, 32294}, // Quartermaster
+    {39173, 39172}, // Quartermaster
+    {32615, 32626}, // Warbringer & Brigadier General
     {0,0} // Do not delete Used in LoadTeamPair
 };
 
