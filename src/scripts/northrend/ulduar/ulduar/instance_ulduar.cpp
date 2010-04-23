@@ -24,7 +24,15 @@ const DoorData doorData[] =
     {194905,    BOSS_LEVIATHAN, DOOR_TYPE_ROOM,     0},
     {194630,    BOSS_LEVIATHAN, DOOR_TYPE_PASSAGE,  0},
     {194631,    BOSS_XT002,     DOOR_TYPE_ROOM,     0},
+    {194553,    BOSS_KOLOGARN,  DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
+};
+
+enum eGameObjects
+{
+    GO_Kologarn_CHEST_HERO  = 195047,
+    GO_Kologarn_CHEST       = 195046,
+    GO_Kologarn_BRIDGE      = 194232
 };
 
 struct instance_ulduar : public InstanceData
@@ -41,10 +49,19 @@ struct instance_ulduar : public InstanceData
     uint64 uiExpCommander;
     uint64 uiXT002;
     uint64 uiKologarn;
+    uint64 uiKologarnBridge;
+    
+    GameObject* KologarnChest;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
         AddDoor(pGo, add);
+        switch(pGo->GetEntry())
+        {
+            case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
+            case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
+            case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
+        }
     }
 
     void OnCreatureCreate(Creature* pCreature, bool add)
@@ -86,6 +103,12 @@ struct instance_ulduar : public InstanceData
     {
         if (!InstanceData::SetBossState(id, state))
             return false;
+            
+        if (id == BOSS_KOLOGARN && state == DONE)
+        {
+            HandleGameObject(uiKologarnBridge, false);
+            KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+        }
 
         return true;
     }

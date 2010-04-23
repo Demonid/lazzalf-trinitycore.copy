@@ -20,7 +20,7 @@
 SDName: Kologarn
 SDAuthor: PrinceCreed
 SD%Complete: 85
-SD%Comments: TODO: add Achievements, EyeBeam Visual and Stone Grip
+SD%Comments: TODO: EyeBeam Visual and Stone Grip
 EndScriptData */
 
 #include "ScriptedPch.h"
@@ -38,6 +38,7 @@ EndScriptData */
 #define SPELL_ARM_SWEEP         RAID_MODE(63766,63983)
 #define SPELL_EYE_BEAM          RAID_MODE(63347,63977)
 #define SPELL_ARM_RESPAWN       64753
+#define SPELL_SHOCKWAVE_VISUAL  63788
 
 enum Events
 {
@@ -54,13 +55,13 @@ enum Events
 
 enum Actions
 {
-    ACTION_RESPAWN_RIGHT      = 0,
-    ACTION_RESPAWN_LEFT       = 1,
+    ACTION_RESPAWN_RIGHT                         = 0,
+    ACTION_RESPAWN_LEFT                          = 1,
 };
 
-#define NPC_EYEBEAM_1           33632
-#define NPC_EYEBEAM_2           33802
-#define NPC_RUBBLE              33768
+#define NPC_EYEBEAM_1                              33632
+#define NPC_EYEBEAM_2                              33802
+#define NPC_RUBBLE                                 33768
 
 enum Yells
 {
@@ -79,6 +80,13 @@ enum Yells
 #define EMOTE_LEFT       "The Left Arm has regrown!"
 #define EMOTE_STONE      "Kologarn casts Stone Grip!"
 
+// Achievements
+#define ACHIEVEMENT_DISARMED                  RAID_MODE(2953, 2954) // TODO
+#define ACHIEVEMENT_LOOKS_COULD_KILL          RAID_MODE(2955, 2956) // TODO
+#define ACHIEVEMENT_RUBBLE_AND_ROLL           RAID_MODE(2959, 2960)
+#define ACHIEVEMENT_WITH_OPEN_ARMS            RAID_MODE(2951, 2952)
+#define MAX_DISARMED_TIME                     12000
+
 // Positiones
 const Position RubbleRight = {1781.814, -3.716, 448.808, 4.211};
 const Position RubbleLeft  = {1781.814, -45.07, 448.808, 2.260};
@@ -89,11 +97,12 @@ struct boss_kologarnAI : public BossAI
         left(false), right(false)
     {
         assert(vehicle);
+        pInstance = pCreature->GetInstanceData();
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    ScriptedInstance* m_pInstance;
+    ScriptedInstance* pInstance;
 
     Vehicle *vehicle;
     bool left, right;
@@ -101,6 +110,8 @@ struct boss_kologarnAI : public BossAI
     Creature* EyeBeam[2];
     Creature* RightArm;
     Creature* LeftArm;
+    
+    uint32 RubbleCount;
 
     void AttackStart(Unit *who)
     {
@@ -109,8 +120,17 @@ struct boss_kologarnAI : public BossAI
 
     void JustDied(Unit *victim)
     {
+        // Rubble and Roll
+        if (RubbleCount >= 5)
+            pInstance->DoCompleteAchievement(ACHIEVEMENT_RUBBLE_AND_ROLL);
+        // With Open Arms
+        if (RubbleCount == 0)
+            pInstance->DoCompleteAchievement(ACHIEVEMENT_WITH_OPEN_ARMS);
+                
         DoScriptText(SAY_DEATH, me);
         _JustDied();
+        // Hack to disable corpse fall
+        me->GetMotionMaster()->MoveTargetedHome();
     }
 
     void PassengerBoarded(Unit *who, int8 seatId, bool apply)
@@ -130,11 +150,12 @@ struct boss_kologarnAI : public BossAI
     {
         DoScriptText(SAY_AGGRO, me);
         _EnterCombat();
+        RubbleCount = 0;
         events.ScheduleEvent(EVENT_SMASH, 5000);
         events.ScheduleEvent(EVENT_SWEEP, 10000);
         events.ScheduleEvent(EVENT_EYEBEAM, 10000);
         events.ScheduleEvent(EVENT_SHOCKWAVE, 12000);
-        //events.ScheduleEvent(EVENT_GRIP, 40000);
+        //events.ScheduleEvent(EVENT_GRIP, 40000); It cause player's death after about 20 sec
     }
     
     void KilledUnit(Unit* Victim)
@@ -152,7 +173,7 @@ struct boss_kologarnAI : public BossAI
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
-            
+                        
         if (events.GetTimer() > 15000 && !me->IsWithinMeleeRange(me->getVictim()))
             DoCastAOE(SPELL_PETRIFY_BREATH, true);
             
@@ -174,21 +195,21 @@ struct boss_kologarnAI : public BossAI
                     DoCastAOE(SPELL_ARM_SWEEP, true);
                 events.RepeatEvent(15000);
                 break;
-            case EVENT_GRIP: // TODO: Add Grip in Arm #65343
+            case EVENT_GRIP: // Deactived due to spell problems
                 if (right)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-                        DoCastVictim(SPELL_STONE_GRIP, true);
+                    DoCastAOE(SPELL_STONE_GRIP, true);
                     me->MonsterTextEmote(EMOTE_STONE, 0, true);
                     DoScriptText(SAY_GRAB_PLAYER, me);
                 }
-                events.RepeatEvent(15000);
+                events.RepeatEvent(40000);
                 break;
             case EVENT_SHOCKWAVE:
                 if (left)
                 {
                     DoScriptText(SAY_SHOCKWAVE, me);
                     DoCastAOE(SPELL_SHOCKWAVE, true);
+                    DoCastAOE(SPELL_SHOCKWAVE_VISUAL, true);
                 }
                 events.RepeatEvent(urand(15000, 25000));
                 break;
@@ -235,11 +256,13 @@ struct boss_kologarnAI : public BossAI
             case ACTION_RESPAWN_RIGHT:
                 DoScriptText(SAY_RIGHT_ARM_GONE, me);
                 me->DealDamage(me, int32(me->GetMaxHealth() * 0.15)); // decreases Kologarn's health by 15%
+                ++RubbleCount;
                 events.ScheduleEvent(EVENT_RIGHT, 30000);
                 break;
             case ACTION_RESPAWN_LEFT:
                 DoScriptText(SAY_LEFT_ARM_GONE, me);
                 me->DealDamage(me, int32(me->GetMaxHealth() * 0.15));
+                ++RubbleCount;
                 events.ScheduleEvent(EVENT_LEFT, 30000);
                 break;
         }

@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * Copyright (C) 2006 - 2010 TrinityCore <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -265,6 +265,8 @@ struct boss_sartharionAI : public BossAI
     {
         _JustDied();
         DoScriptText(SAY_SARTHARION_DEATH,me);
+        if (instance)
+            instance->SetData(TYPE_SARTHARION_EVENT, DONE);
 
         if (instance)
         {
@@ -627,6 +629,7 @@ enum VespText
     SAY_VESPERON_SPECIAL_1                  = -1615039,
     SAY_VESPERON_SPECIAL_2                  = -1615040
 };
+#define ACTION_TELEPORT_BACK                20
 
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
@@ -840,6 +843,7 @@ struct mob_tenebronAI : public dummy_dragonAI
     uint32 m_uiShadowFissureTimer;
     uint32 m_uiHatchEggTimer;
     bool m_bHasPortalOpen;
+    uint32 Eggs;
 
     void Reset()
     {
@@ -856,6 +860,21 @@ struct mob_tenebronAI : public dummy_dragonAI
         //DoCast(me, SPELL_POWER_OF_TENEBRON);
     }
 
+    void DoAction(const int32 action)
+    {
+        switch(action)
+        {
+            case ACTION_TELEPORT_BACK:
+                Eggs--;
+                break;
+        }
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        Eggs = 6;
+    }
+
     void KilledUnit(Unit* pVictim)
     {
         DoScriptText(RAND(SAY_TENEBRON_SLAY_1,SAY_TENEBRON_SLAY_2), me);
@@ -865,6 +884,31 @@ struct mob_tenebronAI : public dummy_dragonAI
 
     void UpdateAI(const uint32 uiDiff)
     {
+        if (Eggs == 0)
+        {
+            if (pInstance)
+            {
+                Map *map = me->GetMap();
+                if (map->IsDungeon())
+                {
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                        {
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
+                        }
+                    }
+                }
+            }
+        }
         //if no target, update dummy and return
         if (!UpdateVictim())
         {
@@ -1282,7 +1326,7 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
         pInstance = pCreature->GetInstanceData();
     }
     uint32 m_uiFadeArmorTimer;
-    uint32 m_uiHatchEggTimer;
+    uint32 m_uiHatchEggTimer;    
 
     ScriptedInstance* pInstance;
 
@@ -1295,13 +1339,17 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
         m_uiHatchEggTimer = 20000;
         m_uiFadeArmorTimer = 1000;
     }
+    void JustDied (Unit *victim)
+    {
+        if (Creature* pTenebron = me->GetCreature(*me, pInstance->GetData64(DATA_TENEBRON)))
+        pTenebron->AI()->DoAction(ACTION_TELEPORT_BACK);
+    }
     void SpawnWhelps()
     {
         if (!pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             me->SummonCreature(NPC_TWILIGHT_WHELP, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
         else
-            me->SummonCreature(NPC_SHARTHARION_TWILIGHT_WHELP, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
-        me->DealDamage(me, me->GetHealth());
+            me->SummonCreature(NPC_SHARTHARION_TWILIGHT_WHELP, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);        
     }
     void UpdateAI(const uint32 uiDiff)
     {
@@ -1315,6 +1363,11 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
         else
             m_uiHatchEggTimer -= uiDiff;
     }
+    void JustSummoned(Creature *summon)
+    {
+        summon->AI()->DoZoneInCombat();
+        summon->DealDamage(me, me->GetHealth());       
+    }    
     void AttackStart(Unit* pWho) {}
     void MoveInLineOfSight(Unit* pWho) {}
 };
@@ -1363,7 +1416,9 @@ struct npc_flame_tsunamiAI : public ScriptedAI
         }
     }
 };
-// Twilight Fissure
+/*######
+## Twilight Fissure
+######*/
 struct npc_twilight_fissureAI : public Scripted_NoMovementAI
 {
     npc_twilight_fissureAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
@@ -1414,9 +1469,10 @@ struct mob_twilight_whelpAI : public ScriptedAI
     uint32 m_uiFadeArmorTimer;
 
     void Reset()
-    {
+    {        
         me->RemoveAllAuras();
         m_uiFadeArmorTimer = 1000;
+        me->SetPhaseMask(1, true);
     }
 
     void UpdateAI(const uint32 uiDiff)
