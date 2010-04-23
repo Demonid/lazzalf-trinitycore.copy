@@ -1385,7 +1385,6 @@ struct npc_flame_tsunamiAI : public ScriptedAI
     npc_flame_tsunamiAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         me->AddAura(SPELL_FLAME_TSUNAMI, me);
-        me->AddAura(SPELL_FLAME_TSUNAMI_DMG_AURA, me);
         me->SetFlying(true);
     }
 
@@ -1408,6 +1407,7 @@ struct npc_flame_tsunamiAI : public ScriptedAI
             {
                 Position pos;
                 me->GetPosition(&pos);
+                DoCast(me, SPELL_FLAME_TSUNAMI_DMG_AURA);
                 pos.m_positionX -= pos.GetPositionX() < 3240.0f ? -82.0f : 82.0f;
                 me->GetMotionMaster()->MovePoint(0, pos);
                 bMoved = true;

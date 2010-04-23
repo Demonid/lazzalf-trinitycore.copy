@@ -209,7 +209,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         if (uiMojoWaveTimer <= diff)
         {
             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                DoCast(pTarget, DUNGEON_MODE(SPELL_MOJO_WAVE,H_SPELL_MOJO_WAVE));
+                DoCast(pTarget, SPELL_MOJO_WAVE);
             uiMojoWaveTimer = 3*IN_MILISECONDS;
         } else uiMojoWaveTimer -= diff;
 
