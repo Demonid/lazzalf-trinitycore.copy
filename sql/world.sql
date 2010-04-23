@@ -4642,6 +4642,30 @@ LOCK TABLES `script_waypoint` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `season_linked_event`
+--
+
+DROP TABLE IF EXISTS `season_linked_event`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `season_linked_event` (
+ `season` int(3) UNSIGNED NOT NULL default '0',
+ `event` int(8) UNSIGNED NOT NULL default '0',
+ PRIMARY KEY (`season`),
+ UNIQUE (`season`,`event`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `season_linked_event`
+--
+
+LOCK TABLES `season_linked_event` WRITE;
+/*!40000 ALTER TABLE `season_linked_event` DISABLE KEYS */;
+/*!40000 ALTER TABLE `season_linked_event` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `skill_discovery_template`
 --
 
@@ -6454,6 +6478,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 31836, 0x00,  10, 0x80000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Light's Grace (Rank 3)
 ( 31871, 0x00,  10, 0x00000010, 0x00000000, 0x00000000, 0x00004000, 0x00000000,   0,   0,   0), -- Divine Purpose (Rank 1)
 ( 31872, 0x00,  10, 0x00000010, 0x00000000, 0x00000000, 0x00004000, 0x00000000,   0,   0,   0), -- Divine Purpose (Rank 2)
+( 53530,    1,  10, 0x00000000, 0x00000000,     0x0004,     0x0400,     0x0001,   0, 100,   0), -- Divine Guardian
 ( 31876, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Judgements of the Wise (Rank 1)
 ( 31877, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Judgements of the Wise (Rank 2)
 ( 31878, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Judgements of the Wise (Rank 3)
@@ -7111,7 +7136,9 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 58375, 0x00,   4, 0x00000000, 0x00000200, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Blocking
 ( 58387, 0x00,   4, 0x00004000, 0x00000040, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Sunder Armor
 ( 54925, 0x02,  10, 0x00000000, 0x00000208, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Seal of Command
-( 67356, 0x08,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0); -- Item - Druid T9 Restoration Relic (Rejuvenation)
+( 67356, 0x08,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Druid T9 Restoration Relic (Rejuvenation)
+( 67771,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45), -- Item - Coliseum Melee Trinket 10men
+( 67702,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45); -- Item - Coliseum Melee Trinket 25men
 /*!40000 ALTER TABLE `spell_proc_event` ENABLE KEYS */;
 UNLOCK TABLES;
 
