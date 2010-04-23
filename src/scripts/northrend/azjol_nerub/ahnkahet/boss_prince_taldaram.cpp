@@ -330,6 +330,7 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
     }
 
     uint32 uiDespawnTimer;
+    uint32 uiSpellFlameSphere;
     ScriptedInstance* pInstance;
 
     void Reset()
