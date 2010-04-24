@@ -19,8 +19,8 @@
  /* ScriptData
 SDName: Kologarn
 SDAuthor: PrinceCreed
-SD%Complete: 85
-SD%Comments: TODO: EyeBeam Visual and Stone Grip
+SD%Complete: 95
+SD%Comments: TODO: EyeBeam Visual Effect
 EndScriptData */
 
 #include "ScriptedPch.h"
@@ -39,6 +39,7 @@ EndScriptData */
 #define SPELL_EYE_BEAM          RAID_MODE(63347,63977)
 #define SPELL_ARM_RESPAWN       64753
 #define SPELL_SHOCKWAVE_VISUAL  63788
+#define ARM_DEAD_DAMAGE         RAID_MODE(543855,2300925)
 
 enum Events
 {
@@ -100,18 +101,22 @@ struct boss_kologarnAI : public BossAI
         pInstance = pCreature->GetInstanceData();
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 64708, true);
     }
 
     ScriptedInstance* pInstance;
 
     Vehicle *vehicle;
     bool left, right;
+    bool Gripped;
     
     Creature* EyeBeam[2];
     Creature* RightArm;
     Creature* LeftArm;
     
     uint32 RubbleCount;
+    uint64 uiGripTarget;
+    uint64 uiRightHealth;
 
     void AttackStart(Unit *who)
     {
@@ -126,11 +131,19 @@ struct boss_kologarnAI : public BossAI
         // With Open Arms
         if (RubbleCount == 0)
             pInstance->DoCompleteAchievement(ACHIEVEMENT_WITH_OPEN_ARMS);
+            
+        if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
+        {
+            pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
+            pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
+            pGripTarget->RemoveAurasDueToSpell(64708);
+        }
                 
         DoScriptText(SAY_DEATH, me);
         _JustDied();
         // Hack to disable corpse fall
         me->GetMotionMaster()->MoveTargetedHome();
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void PassengerBoarded(Unit *who, int8 seatId, bool apply)
@@ -151,17 +164,23 @@ struct boss_kologarnAI : public BossAI
         DoScriptText(SAY_AGGRO, me);
         _EnterCombat();
         RubbleCount = 0;
+        Gripped = false;
         events.ScheduleEvent(EVENT_SMASH, 5000);
         events.ScheduleEvent(EVENT_SWEEP, 10000);
         events.ScheduleEvent(EVENT_EYEBEAM, 10000);
         events.ScheduleEvent(EVENT_SHOCKWAVE, 12000);
-        //events.ScheduleEvent(EVENT_GRIP, 40000); It cause player's death after about 20 sec
+        events.ScheduleEvent(EVENT_GRIP, 40000);
     }
     
     void KilledUnit(Unit* Victim)
     {
         if (!(rand()%5))
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
+    }
+    
+    void Reset()
+    {
+        _Reset();
     }
 
     void UpdateAI(const uint32 diff)
@@ -176,7 +195,19 @@ struct boss_kologarnAI : public BossAI
                         
         if (events.GetTimer() > 15000 && !me->IsWithinMeleeRange(me->getVictim()))
             DoCastAOE(SPELL_PETRIFY_BREATH, true);
-            
+        
+        if (Gripped)   
+            if (RightArm->GetHealth() <= int32(uiRightHealth - RAID_MODE(100000, 480000)))
+            {
+                if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
+                {
+                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
+                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
+                    pGripTarget->RemoveAurasDueToSpell(64708);
+                    Gripped = false;
+                }
+            }
+        
         if (!left && !right)
             DoCast(me, SPELL_STONE_SHOUT, true);
 
@@ -195,12 +226,25 @@ struct boss_kologarnAI : public BossAI
                     DoCastAOE(SPELL_ARM_SWEEP, true);
                 events.RepeatEvent(15000);
                 break;
-            case EVENT_GRIP: // Deactived due to spell problems
+            case EVENT_GRIP: // Need better implementation
                 if (right)
                 {
-                    DoCastAOE(SPELL_STONE_GRIP, true);
-                    me->MonsterTextEmote(EMOTE_STONE, 0, true);
-                    DoScriptText(SAY_GRAB_PLAYER, me);
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
+                    {
+                        DoCast(pTarget, SPELL_STONE_GRIP, true);
+                        me->AddAura(64708, pTarget); //It cause player's death after about 15 sec
+                        uiGripTarget = pTarget->GetGUID(); 
+                        pTarget->NearTeleportTo(1781.814, -3.716, 448.808, 4.211);
+                        me->MonsterTextEmote(EMOTE_STONE, 0, true);
+                        DoScriptText(SAY_GRAB_PLAYER, me);
+                        if (pInstance)
+                        {
+                            RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM));
+                            if (RightArm)
+                                uiRightHealth = int32(RightArm->GetHealth());
+                            Gripped = true;
+                        }
+                    }
                 }
                 events.RepeatEvent(40000);
                 break;
@@ -224,20 +268,24 @@ struct boss_kologarnAI : public BossAI
                 events.RepeatEvent(20000);
                 break;
             case EVENT_RIGHT:
-                if (RightArm = me->SummonCreature(32934, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 0))
-                {    
+                if (RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM)))
+                {
+                    RightArm->Respawn(true);
                     RightArm->EnterVehicle(vehicle, 1);
                     DoCast(me, SPELL_ARM_RESPAWN, true);
                     me->MonsterTextEmote(EMOTE_RIGHT, 0, true);
+                    me->ModifyHealth(ARM_DEAD_DAMAGE);
                 }
                 events.CancelEvent(EVENT_RIGHT);
                 break;
             case EVENT_LEFT:
-                if (LeftArm = me->SummonCreature(32933, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 0))
-                {    
+                if (LeftArm = me->GetCreature(*me, pInstance->GetData64(DATA_LEFT_ARM)))
+                {
+                    LeftArm->Respawn(true);
                     LeftArm->EnterVehicle(vehicle, 0);
                     DoCast(me, SPELL_ARM_RESPAWN, true);
                     me->MonsterTextEmote(EMOTE_LEFT, 0, true);
+                    me->ModifyHealth(ARM_DEAD_DAMAGE);
                 }
                 events.CancelEvent(EVENT_LEFT);
                 break;                
@@ -255,13 +303,19 @@ struct boss_kologarnAI : public BossAI
         {
             case ACTION_RESPAWN_RIGHT:
                 DoScriptText(SAY_RIGHT_ARM_GONE, me);
-                me->DealDamage(me, int32(me->GetMaxHealth() * 0.15)); // decreases Kologarn's health by 15%
+                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15% for 30 sec
                 ++RubbleCount;
+                if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
+                {
+                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
+                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
+                    pGripTarget->RemoveAurasDueToSpell(64708);
+                }
                 events.ScheduleEvent(EVENT_RIGHT, 30000);
                 break;
             case ACTION_RESPAWN_LEFT:
                 DoScriptText(SAY_LEFT_ARM_GONE, me);
-                me->DealDamage(me, int32(me->GetMaxHealth() * 0.15));
+                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15% for 30 sec
                 ++RubbleCount;
                 events.ScheduleEvent(EVENT_LEFT, 30000);
                 break;
@@ -318,6 +372,9 @@ struct mob_right_armAI : public ScriptedAI
             if (Creature* pKologarn = me->GetCreature(*me, m_pInstance->GetData64(DATA_KOLOGARN)))
                 if (pKologarn->AI())
                     pKologarn->AI()->DoAction(ACTION_RESPAWN_RIGHT);
+                    
+        // Hack to disable corpse fall
+        me->GetMotionMaster()->MoveTargetedHome();
     }
     
     void JustSummoned(Creature *summon)
@@ -358,6 +415,9 @@ struct mob_left_armAI : public ScriptedAI
             if (Creature* pKologarn = me->GetCreature(*me, m_pInstance->GetData64(DATA_KOLOGARN)))
                 if (pKologarn->AI())
                     pKologarn->AI()->DoAction(ACTION_RESPAWN_LEFT);
+                    
+        // Hack to disable corpse fall
+        me->GetMotionMaster()->MoveTargetedHome();
     }
     
     void JustSummoned(Creature *summon)
