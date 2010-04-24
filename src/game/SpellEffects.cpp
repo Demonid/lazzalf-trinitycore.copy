@@ -506,12 +506,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // found Immolate or Shadowflame
                     if (aura)
                     {
-                        //uint32 damagetick = aura->GetAmount() > 0 ? aura->GetAmount() : 0;
-						// Conflagrate DOT
-                        int32 damagetick = m_caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aura->GetBase()->GetStackAmount(), DOT);
-                        // Save value of further damage
-                        m_currentBasePoints[1] = damagetick * 2 / 3;
-                        damage += damagetick * 3;
+                        uint32 pdamage = aura->GetAmount() > 0 ? aura->GetAmount() : 0;
+                        pdamage = m_caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), pdamage, DOT, aura->GetBase()->GetStackAmount());
+                        uint32 pct_dir = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, (effect_idx + 1));
+                        damage += pdamage * aura->GetTotalTicks() * pct_dir / 100;
+
+                        uint32 pct_dot = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, (effect_idx + 2)) / 3;
+                        m_currentBasePoints[1] = pdamage * aura->GetTotalTicks() * pct_dot / 100;
+
                         apply_direct_bonus = false;
                         // Glyph of Conflagrate
                         if (!m_caster->HasAura(56235))
