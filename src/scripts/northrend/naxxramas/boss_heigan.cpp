@@ -42,11 +42,6 @@ enum Phases
     PHASE_DANCE,
 };
 
-// Anti-cheaters position check
-#define CHECK_X             2821.88
-#define CHECK_Y            -3684.89
-#define CHECK_Z             273.62
-
 struct boss_heiganAI : public BossAI
 {
     boss_heiganAI(Creature *c) : BossAI(c, BOSS_HEIGAN) {}
@@ -110,21 +105,31 @@ struct boss_heiganAI : public BossAI
         }
     }
 
+    void SendPhaseDance()
+    {
+        if (Map* pMap = me->GetMap())
+        {
+            if (pMap->IsDungeon())
+            {
+                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                if (!PlayerList.isEmpty())
+                {
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        if (i->getSource() && i->getSource()->isAlive() && (i->getSource()->GetPositionX() > 2823))
+                            DoTeleportPlayer(i->getSource(), 2780, -3672, 274, i->getSource()->GetOrientation());
+                    }
+                }
+            }
+        }            
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() || !CheckInRoom())
             return;
 
         events.Update(diff);
-
-        // Distance check
-        if(me->GetDistance(CHECK_X, CHECK_Y, CHECK_Z) <= 4)
-        {
-            std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
-            for (std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
-                if((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
-                    (*itr)->getTarget()->NearTeleportTo(2793.86, -3707.38, 276.627, 0);
-        }
 
         while (uint32 eventId = events.ExecuteEvent())
         {
@@ -140,6 +145,7 @@ struct boss_heiganAI : public BossAI
                     break;
                 case EVENT_PHASE:
                     // TODO : Add missing texts for both phase switches
+                    SendPhaseDance();
                     EnterPhase(phase == PHASE_FIGHT ? PHASE_DANCE : PHASE_FIGHT);
                     break;
                 case EVENT_ERUPT:
