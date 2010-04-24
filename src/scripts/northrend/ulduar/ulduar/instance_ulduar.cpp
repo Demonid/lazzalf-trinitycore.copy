@@ -24,6 +24,9 @@ const DoorData doorData[] =
     {194905,    BOSS_LEVIATHAN, DOOR_TYPE_ROOM,     0},
     {194630,    BOSS_LEVIATHAN, DOOR_TYPE_PASSAGE,  0},
     {194631,    BOSS_XT002,     DOOR_TYPE_ROOM,     0},
+    {194553,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
+    {194554,    BOSS_ASSEMBLY,  DOOR_TYPE_ROOM,     0},
+    {194556,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
     {194553,    BOSS_KOLOGARN,  DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
@@ -49,6 +52,8 @@ struct instance_ulduar : public InstanceData
     uint64 uiExpCommander;
     uint64 uiXT002;
     uint64 uiKologarn;
+    uint64 uiRightArm;
+    uint64 uiLeftArm;
     uint64 uiKologarnBridge;
     
     GameObject* KologarnChest;
@@ -74,6 +79,8 @@ struct instance_ulduar : public InstanceData
             case 33210: uiExpCommander = pCreature->GetGUID(); return;
             case 33293: uiXT002 = pCreature->GetGUID(); return;
             case 32930: uiKologarn = pCreature->GetGUID(); return;
+            case 32934: uiRightArm = pCreature->GetGUID(); return;
+            case 32933: uiLeftArm = pCreature->GetGUID(); return;
         }
 
         AddMinion(pCreature, add);
@@ -95,6 +102,10 @@ struct instance_ulduar : public InstanceData
             return uiXT002;
         case DATA_KOLOGARN:
             return uiKologarn;
+        case DATA_RIGHT_ARM:
+            return uiRightArm;
+        case DATA_LEFT_ARM:
+            return uiLeftArm;
         }
         return 0;
     }

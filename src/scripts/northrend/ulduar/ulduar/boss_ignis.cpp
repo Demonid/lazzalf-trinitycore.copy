@@ -120,8 +120,6 @@ struct boss_ignis_AI : public BossAI
 {
     boss_ignis_AI(Creature *pCreature) : BossAI(pCreature, BOSS_IGNIS), vehicle(me->GetVehicleKit())
     {
-        // Do not let Ignis be affected by Scorch Ground haste buff
-        me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HEAT, true);
         assert(vehicle);
         pInstance = pCreature->GetInstanceData();
     }
@@ -246,9 +244,10 @@ struct boss_ignis_AI : public BossAI
     void JustSummoned(Creature *summon)
     {
         if (summon->GetEntry() == MOB_IRON_CONSTRUCT)
+        {
             summon->setFaction(16);
-	
-        summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+        }
         summon->AI()->AttackStart(me->getVictim());
         summon->AI()->DoZoneInCombat();
         summons.Summon(summon);
@@ -298,7 +297,7 @@ struct mob_iron_constructAI : public ScriptedAI
             if (Creature *pIgnis = me->GetCreature(*me, pInstance->GetData64(DATA_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
-            me->ForcedDespawn();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
         }
     }
 

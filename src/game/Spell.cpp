@@ -2339,7 +2339,6 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             }
                         }
                         break;
-                    case 62343: // Heat buff (Ignis)
  	                case 62834: // Boom (Boombot)
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
                         break;
@@ -2472,7 +2471,6 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         break;
                     case 55789: // Improved Icy Talons
                     case 59725: // Improved Spell Reflection - aoe aura
-                    case 62343: // Heat (Ignis) not hits the trigger
                         unitList.remove(m_caster);
                         break;
                     case 57669: //Replenishment (special target selection) 10 targets with lowest mana
