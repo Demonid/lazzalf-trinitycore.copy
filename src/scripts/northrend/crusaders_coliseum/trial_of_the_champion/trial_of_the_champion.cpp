@@ -313,7 +313,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
             uiPhase = uiPhaseStep;
     }
 		
-    void SetData(uint32 uiType, uint32 /*uiData*/)
+    void SetData(uint32 uiType, uint32 uiData)
     {
         switch (uiType)
         {
@@ -324,7 +324,9 @@ struct npc_announcer_toc5AI : public ScriptedAI
                     pInstance->HandleGameObject(pGO->GetGUID(),false);	
                 DoScriptText(SAY_START, me);			
                 DoSummonGrandChampion(uiFirstBoss);
-                NextStep(10000,false,1);
+                
+				
+				NextStep(10000,false,1);
                 break;
             case DATA_IN_POSITION: //movement done.		
 		        me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);			
@@ -334,6 +336,37 @@ struct npc_announcer_toc5AI : public ScriptedAI
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
                 NextStep(20000,false,3);
                 break;
+			case DATA_RESET:
+				me->GetMotionMaster()->MovePoint(2,746.626, 618.54, 411.09);
+				
+				uiSummonTimes = 0;
+				uiPosition = 0;
+				uiLesserChampions = 0;
+
+				uiFirstBoss = 0;
+				uiSecondBoss = 0;
+				uiThirdBoss = 0;
+
+				uiArgentChampion = 0;
+
+				uiPhase = 0;
+				uiTimer = 0;
+
+				uiVehicle1GUID = 0;
+				uiVehicle2GUID = 0;
+				uiVehicle3GUID = 0;
+
+				Champion1List.clear();
+				Champion2List.clear();
+				Champion3List.clear();
+			
+				me->SetReactState(REACT_PASSIVE);
+				me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+				me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+				SetGrandChampionsForEncounter();
+				SetArgentChampion();
+
+				break;
             case DATA_LESSER_CHAMPIONS_DEFEATED:
             {
                 ++uiLesserChampions;
@@ -363,6 +396,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 
     void StartGrandChampionsAttack()
     {
+		//qui se nn si sta attenti con i guid nn aggrano
         Creature* pGrandChampion1 = Unit::GetCreature(*me, uiVehicle1GUID);
         Creature* pGrandChampion2 = Unit::GetCreature(*me, uiVehicle2GUID);
         Creature* pGrandChampion3 = Unit::GetCreature(*me, uiVehicle3GUID);
@@ -580,7 +614,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
             if (pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == NOT_STARTED && pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == NOT_STARTED)
             {
                 if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
-                    me->AI()->SetData(DATA_START,0);
+                    me->AI()->SetData(DATA_START,NOT_STARTED);
 
                 if (pInstance->GetData(BOSS_GRAND_CHAMPIONS) == DONE)
                     DoStartArgentChampionEncounter();
@@ -721,7 +755,7 @@ bool GossipHello_npc_announcer_toc5(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_announcer_toc5(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+bool GossipSelect_npc_announcer_toc5(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
