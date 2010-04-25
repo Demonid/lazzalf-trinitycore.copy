@@ -1253,7 +1253,7 @@ void Player::Update(uint32 p_time)
 	{
 		m_jail_warning = false;
 		
-		if(objmgr.m_jailconf_warn_player == m_jail_times || objmgr.m_jailconf_warn_player <= m_jail_times)
+		if(objmgr.m_jailconf_warn_player && objmgr.m_jailconf_warn_player == m_jail_times)
 		{
 			if (((objmgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (objmgr.m_jailconf_ban - 1))
 			{
