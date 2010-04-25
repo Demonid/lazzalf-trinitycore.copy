@@ -2339,6 +2339,9 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             }
                         }
                         break;
+ 	                case 62834: // Boom (Boombot)
+                        SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
+                        break;
 
                     default:
                         sLog.outDebug("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`", m_spellInfo->Id, m_caster->GetEntry());
@@ -2460,6 +2463,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 switch (m_spellInfo->Id)
                 {
                     case 27285: // Seed of Corruption proc spell
+                    case 49821: // Mind Sear proc spell Rank 1
+                    case 53022: // Mind Sear proc spell Rank 2
+                    case 63025: // Gravity Bomb Normal
+ 	                case 64233: // Gravity Bomb Hero
                         unitList.remove(m_targets.getUnitTarget());
                         break;
                     case 55789: // Improved Icy Talons
@@ -2481,6 +2488,50 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
                         unitList.clear();
                         while (!manaUsers.empty() && unitList.size()<10)
+                        {
+                            unitList.push_back(manaUsers.top().getUnit());
+                            manaUsers.pop();
+                        }
+                        break;
+                    }
+					case 64844: // Divine Hymn
+                    case 64843:
+                    {
+                        typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
+                        TopHealth healedMembers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->IsInRaidWith(m_targets.getUnitTarget()))
+                            {
+                                PrioritizeHealthUnitWraper  WTarget(*itr);
+                                healedMembers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!healedMembers.empty() && unitList.size()<3)
+                        {
+                            unitList.push_back(healedMembers.top().getUnit());
+                            healedMembers.pop();
+                        }
+                        break;
+                    } 
+                    case 64904: // Hymn of Hope
+                    case 64901:
+                    {
+                        typedef std::priority_queue<PrioritizeManaUnitWraper, std::vector<PrioritizeManaUnitWraper>, PrioritizeMana> TopMana;
+                        TopMana manaUsers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->getPowerType() == POWER_MANA)
+                            {
+                                PrioritizeManaUnitWraper  WTarget(*itr);
+                                manaUsers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!manaUsers.empty() && unitList.size()<3)
                         {
                             unitList.push_back(manaUsers.top().getUnit());
                             manaUsers.pop();
@@ -5184,6 +5235,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(m_spellInfo->Id == 698) //ritual of summoning
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleGround())
+                            return SPELL_FAILED_NOT_HERE;
+                }
+                break;
+            }
             default:break;
         }
     }
@@ -5304,6 +5365,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (target->GetCharmerGUID())
                         return SPELL_FAILED_CHARMED;
 
+                    if (target->IsMounted())
+                        return SPELL_FAILED_NOT_ON_MOUNTED;
+
                     int32 damage = CalculateDamage(i, target);
                     if (damage && int32(target->getLevel()) > damage)
                         return SPELL_FAILED_HIGHLEVEL;
@@ -5323,7 +5387,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattleGroundOrArena();
                 InstanceTemplate const *it = objmgr.GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount |= it->allowMount;
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
@@ -5360,7 +5424,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
-            case SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS:
+            /*case SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS:
             {
                 if (!m_targets.getUnitTarget() && m_targets.getUnitTarget()->GetTypeId() != TYPEID_UNIT)
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
@@ -5370,7 +5434,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_TARGET_FRIENDLY;
 
                 break;
-            }
+            }*/
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
                 if (!m_targets.getUnitTarget())
@@ -5467,6 +5531,10 @@ SpellCastResult Spell::CheckCasterAuras() const
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
             mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     }
+
+    // Caster with Cyclone can only use PvP trinket
+    if (m_caster->HasAura(33786) && mechanic_immune != IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK)
+        return SPELL_FAILED_STUNNED;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;
@@ -6684,7 +6752,10 @@ int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float *mul
             {
                 if (IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetA[i]] || IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetB[i]])
                 {
-                    if (int32 reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
+                    int32 reducedPct;
+                    if(reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
+                        m_damage = m_damage * (100 + reducedPct) / 100;
+                    if(reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE))
                         m_damage = m_damage * (100 + reducedPct) / 100;
 
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)

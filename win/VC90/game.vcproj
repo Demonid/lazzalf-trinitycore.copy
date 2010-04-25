@@ -1607,6 +1607,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\OutdoorPvPWG.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\OutdoorPvPZM.cpp"
 				>
 			</File>
@@ -1674,7 +1682,15 @@
 				Name="Custom"
 				>
 				<File
+					RelativePath="..\..\src\scripts\custom\GuildHouse_npc.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\scripts\custom\npc_acherus_taxi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\scripts\custom\npc_teleport.cpp"
 					>
 				</File>
 				<File
@@ -3118,6 +3134,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\scripts\northrend\wintergrasp.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\scripts\northrend\zuldrak.cpp"
 					>
 				</File>
@@ -3777,6 +3797,42 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="Trial of the Crusader"
+					>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_anubarak_trial.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_faction_champions.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_jaraxxus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_northrend_beasts.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\boss_twin_valkyr.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\instance_trial_of_the_crusader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\trial_of_the_crusader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\trial_of_the_crusader.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Outland"
@@ -4240,6 +4296,14 @@
 			</Filter>
 		</Filter>
 		<File
+			RelativePath="..\..\src\game\GuildHouse.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\GuildHouse.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\game\pchdef.cpp"
 			>
 			<FileConfiguration
@@ -4278,6 +4342,22 @@
 					PrecompiledHeaderThrough="pchdef.h"
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_boss_spell_worker.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_boss_spell_worker.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\sc_npc_teleport.h"
+			>
 		</File>
 	</Files>
 	<Globals>

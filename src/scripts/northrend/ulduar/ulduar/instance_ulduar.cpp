@@ -19,6 +19,130 @@
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
+const DoorData doorData[] =
+{
+    {194905,    BOSS_LEVIATHAN, DOOR_TYPE_ROOM,     0},
+    {194630,    BOSS_LEVIATHAN, DOOR_TYPE_PASSAGE,  0},
+    {194631,    BOSS_XT002,     DOOR_TYPE_ROOM,     0},
+    {194553,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
+    {194554,    BOSS_ASSEMBLY,  DOOR_TYPE_ROOM,     0},
+    {194556,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
+    {194553,    BOSS_KOLOGARN,  DOOR_TYPE_ROOM,     0},
+    {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
+};
+
+enum eGameObjects
+{
+    GO_Kologarn_CHEST_HERO  = 195047,
+    GO_Kologarn_CHEST       = 195046,
+    GO_Kologarn_BRIDGE      = 194232
+};
+
+struct instance_ulduar : public InstanceData
+{
+    instance_ulduar(Map* pMap) : InstanceData(pMap)
+    {
+        SetBossNumber(MAX_BOSS_NUMBER);
+        LoadDoorData(doorData);
+    }
+
+    uint64 uiLeviathan;
+    uint64 uiLeviathan_Trigger;
+    uint64 uiIgnis;
+    uint64 uiExpCommander;
+    uint64 uiXT002;
+    uint64 uiKologarn;
+    uint64 uiRightArm;
+    uint64 uiLeftArm;
+    uint64 uiKologarnBridge;
+    
+    GameObject* KologarnChest;
+
+    void OnGameObjectCreate(GameObject* pGo, bool add)
+    {
+        AddDoor(pGo, add);
+        switch(pGo->GetEntry())
+        {
+            case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
+            case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
+            case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
+        }
+    }
+
+    void OnCreatureCreate(Creature* pCreature, bool add)
+    {
+        switch(pCreature->GetEntry())
+        {
+            case 33113: uiLeviathan = pCreature->GetGUID(); return;
+            case 33115: uiLeviathan_Trigger = pCreature->GetGUID(); return;
+            case 33118: uiIgnis = pCreature->GetGUID(); return;
+            case 33210: uiExpCommander = pCreature->GetGUID(); return;
+            case 33293: uiXT002 = pCreature->GetGUID(); return;
+            case 32930: uiKologarn = pCreature->GetGUID(); return;
+            case 32934: uiRightArm = pCreature->GetGUID(); return;
+            case 32933: uiLeftArm = pCreature->GetGUID(); return;
+        }
+
+        AddMinion(pCreature, add);
+    }
+
+    uint64 GetData64(uint32 id)
+    {
+        switch(id)
+        {
+        case DATA_LEVIATHAN:
+            return uiLeviathan;
+        case DATA_LEVIATHAN_TRIGGER:
+            return uiLeviathan_Trigger;
+        case DATA_IGNIS:
+            return uiIgnis;
+        case DATA_EXP_COMMANDER:
+            return uiExpCommander;
+        case DATA_XT002:
+            return uiXT002;
+        case DATA_KOLOGARN:
+            return uiKologarn;
+        case DATA_RIGHT_ARM:
+            return uiRightArm;
+        case DATA_LEFT_ARM:
+            return uiLeftArm;
+        }
+        return 0;
+    }
+
+    bool SetBossState(uint32 id, EncounterState state)
+    {
+        if (!InstanceData::SetBossState(id, state))
+            return false;
+            
+        if (id == BOSS_KOLOGARN && state == DONE)
+        {
+            HandleGameObject(uiKologarnBridge, false);
+            KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+        }
+
+        return true;
+    }
+};
+
+InstanceData* GetInstanceData_instance_ulduar(Map* pMap)
+{
+    return new instance_ulduar(pMap);
+}
+
+void AddSC_instance_ulduar()
+{
+    Script *newscript;
+    newscript = new Script;
+    newscript->Name = "instance_ulduar";
+    newscript->GetInstanceData = &GetInstanceData_instance_ulduar;
+    newscript->RegisterSelf();
+}
+/*enum Spells
+{
+    SPELL_DEVOURINGFLAME    = 64709
+};
+
 enum eGameObjects
 {
     GO_Kologarn_CHEST_HERO  = 195047,
@@ -29,6 +153,10 @@ enum eGameObjects
     GO_Hodir_CHEST          = 194307,
     GO_Freya_CHEST_HERO     = 194325,
     GO_Freya_CHEST          = 194324,
+    GO_XT002_DOOR           = 194631,
+    GO_LEVIATHAN_DOOR       = 194905,
+    GO_LEVIATHAN_GATE       = 194630,
+    GO_HARPOON              = 194565
 };
 
 struct instance_ulduar : public ScriptedInstance
@@ -36,6 +164,8 @@ struct instance_ulduar : public ScriptedInstance
     instance_ulduar(Map* pMap) : ScriptedInstance(pMap), KologarnChest(NULL), ThorimChest(NULL), HodirChest(NULL), FreyaChest(NULL) { Initialize(); };
 
     uint32 m_auiEncounter[MAX_ENCOUNTER];
+    uint32  flag;
+    uint32  flag2;
     std::string m_strInstData;
 
     uint64 m_uiLeviathanGUID;
@@ -52,6 +182,13 @@ struct instance_ulduar : public ScriptedInstance
     uint64 m_uiVezaxGUID;
     uint64 m_uiYoggSaronGUID;
     uint64 m_uiAlgalonGUID;
+	
+    uint64 m_uiXT002Door;
+    uint64 m_uiLeviathanGate;
+    uint64 m_uiLeviathanDoor[7];
+    uint64 m_uiCommanderGUID;
+    uint64 m_uiHarpoon[2];
+    uint64 mole_machine[3];
 
     GameObject* KologarnChest, *ThorimChest, *HodirChest, *FreyaChest;
 
@@ -75,6 +212,12 @@ struct instance_ulduar : public ScriptedInstance
         HodirChest              = 0;
         FreyaChest              = 0;
 
+        m_uiXT002Door           = 0;
+        m_uiLeviathanGate       = 0;
+        flag                    = 0;
+        flag2                   = 0;
+        m_uiCommanderGUID       = 0;
+
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
         memset(&m_auiAssemblyGUIDs, 0, sizeof(m_auiAssemblyGUIDs));
     }
@@ -90,7 +233,7 @@ struct instance_ulduar : public ScriptedInstance
         return false;
     }
 
-    void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+    void OnCreatureCreate(Creature* pCreature, bool add)
     {
         switch(pCreature->GetEntry())
         {
@@ -145,6 +288,9 @@ struct instance_ulduar : public ScriptedInstance
             case NPC_ALGALON:
                 m_uiAlgalonGUID = pCreature->GetGUID();
                 break;
+            case NPC_COMMANDER:
+                m_uiCommanderGUID = pCreature->GetGUID();
+                break;
         }
 
      }
@@ -161,6 +307,26 @@ struct instance_ulduar : public ScriptedInstance
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
             case GO_Freya_CHEST_HERO: FreyaChest = add ? pGo : NULL; break;
             case GO_Freya_CHEST: FreyaChest = add ? pGo : NULL; break;
+            case 194631:
+                m_uiXT002Door = pGo->GetGUID();
+                HandleGameObject(NULL, true, pGo);
+                break;
+            case 194905:
+                m_uiLeviathanDoor[flag] = pGo->GetGUID();
+                HandleGameObject(NULL, true, pGo);
+                flag++;
+            if (flag == 7)
+                flag =0;
+                break;
+            case 194630:
+                m_uiLeviathanGate = pGo->GetGUID();
+                HandleGameObject(NULL, false, pGo);
+                break;
+            case 186880:
+                mole_machine[flag2] = pGo->GetGUID();
+                HandleGameObject(NULL, false, pGo);
+                flag2++;
+                break;
         }
     }
 
@@ -169,9 +335,47 @@ struct instance_ulduar : public ScriptedInstance
         switch(type)
         {
             case TYPE_LEVIATHAN:
+                if (data == IN_PROGRESS)
+                {
+                    HandleGameObject(m_uiLeviathanGate,true);
+                    //m_uiLeviathanGate -> DoCast(m_uiLeviathanGate, SEAFORIUM_BLAST);
+                    HandleGameObject(m_uiLeviathanDoor[0],false);
+                    HandleGameObject(m_uiLeviathanDoor[1],false);
+                    HandleGameObject(m_uiLeviathanDoor[2],false);
+                    HandleGameObject(m_uiLeviathanDoor[3],false);
+                    HandleGameObject(m_uiLeviathanDoor[4],false);
+                    HandleGameObject(m_uiLeviathanDoor[5],false);
+                    HandleGameObject(m_uiLeviathanDoor[6],false);				  
+                }
+                else
+                {
+                    HandleGameObject(m_uiLeviathanDoor[0],true);
+                    HandleGameObject(m_uiLeviathanDoor[1],true);
+                    HandleGameObject(m_uiLeviathanDoor[2],true);
+                    HandleGameObject(m_uiLeviathanDoor[3],true);
+                    HandleGameObject(m_uiLeviathanDoor[4],true);
+                    HandleGameObject(m_uiLeviathanDoor[5],true);
+                    HandleGameObject(m_uiLeviathanDoor[6],true);
+                }
             case TYPE_IGNIS:
             case TYPE_RAZORSCALE:
+                if (data == IN_PROGRESS)
+                {
+                    HandleGameObject(mole_machine[0],true);
+                    HandleGameObject(mole_machine[1],true);
+                    HandleGameObject(mole_machine[2],true);
+                }
+                else
+                {
+                    HandleGameObject(mole_machine[0],false);
+                    HandleGameObject(mole_machine[1],false);
+                    HandleGameObject(mole_machine[2],false);
+                }
             case TYPE_XT002:
+                if (data == IN_PROGRESS) 
+                    HandleGameObject(m_uiXT002Door,false);
+                else 
+                    HandleGameObject(m_uiXT002Door,true);
             case TYPE_ASSEMBLY:
             case TYPE_KOLOGARN:
                 m_auiEncounter[TYPE_KOLOGARN] = data;
@@ -334,6 +538,40 @@ InstanceData* GetInstanceData_instance_ulduar(Map* pMap)
     return new instance_ulduar(pMap);
 }
 
+struct devouring_flame : public ScriptedAI
+{
+    devouring_flame(Creature *pCreature) : ScriptedAI(pCreature)
+    {
+        pInstance = pCreature->GetInstanceData();
+    }
+    ScriptedInstance* pInstance;
+	
+    uint32 DevouringFlameTimer;
+	
+    void EnterCombat(Unit* who)
+    {
+        me->CastSpell(me,SPELL_DEVOURINGFLAME,true);
+    }
+	
+    void Reset()
+    {
+        DevouringFlameTimer = 25000;
+    }
+	
+    void UpdateAI(const uint32 diff)
+    {
+        if (DevouringFlameTimer <= diff)
+        {
+            me->setDeathState(JUST_DIED);
+        }else DevouringFlameTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_devouring_flame(Creature* pCreature)
+{
+    return new devouring_flame(pCreature);
+}
+
 void AddSC_instance_ulduar()
 {
     Script *newscript;
@@ -341,4 +579,9 @@ void AddSC_instance_ulduar()
     newscript->Name = "instance_ulduar";
     newscript->GetInstanceData = &GetInstanceData_instance_ulduar;
     newscript->RegisterSelf();
-}
+
+    newscript = new Script;
+    newscript->Name = "devouring_flame";
+    newscript->GetAI = &GetAI_devouring_flame;
+    newscript->RegisterSelf();
+}*/
