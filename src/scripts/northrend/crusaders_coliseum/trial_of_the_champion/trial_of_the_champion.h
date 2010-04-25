@@ -19,6 +19,7 @@ enum eData
     DATA_START,
     DATA_IN_POSITION,
     DATA_ARGENT_SOLDIER_DEFEATED,
+	DATA_RESET,
 };
 
 enum Data64

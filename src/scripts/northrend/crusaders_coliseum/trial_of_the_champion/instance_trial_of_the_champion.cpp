@@ -28,6 +28,8 @@ EndScriptData */
 
 #define MAX_ENCOUNTER  4
 
+
+//enumerazione di alcuni say --> controllo corrispondenza sul db
 enum eEnums
 {
     SAY_START                               = -1999927,
@@ -35,12 +37,15 @@ enum eEnums
 	SAY_START_9                             = -1999950
 };
 
+
+//definizione della struttura instance
 struct instance_trial_of_the_champion : public ScriptedInstance
 {
+	
     instance_trial_of_the_champion(Map* pMap) : ScriptedInstance(pMap) {Initialize();}
-
+	//4 incontri
     uint32 m_auiEncounter[MAX_ENCOUNTER];
-
+	
 	uint8 uiAgroDone;
 	uint8 uiAggroDone;
     uint8 uiMovementDone;
@@ -60,6 +65,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
     uint64 uiArgentChampionGUID;
 
     std::list<uint64> VehicleList;
+	std::list<uint64> VehicleListChampion;
 
     std::string str_data;
 
@@ -87,13 +93,18 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 
         bDone = false;
 
-        VehicleList.clear();
 
+        VehicleList.clear();
+		VehicleListChampion.clear();
+		//m_auiEncounter[i]=0 per ogni i compreso tra 0 e 3 estremi inclusi
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
+	//true se è in progress almeno un incontro 
     bool IsEncounterInProgress() const
     {
+
+		//possibile valore di m_auiEncounter[i] è evidentemente 1 che equivale a incontro in progress
         for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
         {
             if (m_auiEncounter[i] == IN_PROGRESS)
@@ -102,8 +113,12 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 
         return false;
     }
-
-    void OnCreatureCreate(Creature* pCreature, bool /*bAdd*/)
+	/*
+	 * 1)alla creazione di una creatura controlla se i players in instance sono ally o horda
+	 * 2)con uno switch sceglie in base all'entry creatura non so precisamente cosa va ad aggiornare da capire...
+	 *
+	 */
+    void OnCreatureCreate(Creature* pCreature, bool bAdd)
     {
         Map::PlayerList const &players = instance->GetPlayers();
         uint32 TeamInInstance = 0;
@@ -120,42 +135,53 @@ struct instance_trial_of_the_champion : public ScriptedInstance
             case VEHICLE_MOKRA_SKILLCRUSHER_MOUNT:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_MARSHAL_JACOB_ALERIUS_MOUNT, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
             case VEHICLE_ERESSEA_DAWNSINGER_MOUNT:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_AMBROSE_BOLTSPARK_MOUNT, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
+
                 break;
             case VEHICLE_RUNOK_WILDMANE_MOUNT:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_COLOSOS_MOUNT, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
             case VEHICLE_ZUL_TORE_MOUNT:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_EVENSONG_MOUNT, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
             case VEHICLE_DEATHSTALKER_VESCERI_MOUNT:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_LANA_STOUTHAMMER_MOUNT, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
 			case VEHICLE_ORGRIMMAR_WOLF:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_STORMWIND_STEED, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
 			case VEHICLE_SILVERMOON_HAWKSTRIDER:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_GNOMEREGAN_MECHANOSTRIDER, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
 			case VEHICLE_THUNDER_BLUFF_KODO:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_EXODAR_ELEKK, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;
 			case VEHICLE_DARKSPEAR_RAPTOR:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_DARNASSIA_NIGHTSABER, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;	
 			case VEHICLE_FORSAKE_WARHORSE:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(VEHICLE_IRONFORGE_RAM, ALLIANCE);
+				VehicleListChampion.push_back(pCreature->GetGUID());
                 break;	
 			case NPC_RISEN_JAEREN:
                 if (TeamInInstance == ALLIANCE)
@@ -182,7 +208,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
         }
     }
 
-    void OnGameObjectCreate(GameObject* pGO, bool /*bAdd*/)
+    void OnGameObjectCreate(GameObject* pGO, bool bAdd)
     {
         switch(pGO->GetEntry())
         {
@@ -198,6 +224,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 break;
         }
     }
+
 
     void SetData(uint32 uiType, uint32 uiData)
     {
@@ -217,9 +244,13 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 {
                     for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                         if (Creature* pSummon = instance->GetCreature(*itr))
-                            pSummon->RemoveFromWorld();
-                }else if (uiData == DONE)
-                {
+						{
+							
+							pSummon->Unmount();
+							pSummon->SetVisibility(VISIBILITY_OFF);
+						}
+				}else if (uiData == DONE)
+					{
                     ++uiGrandChampionsDeaths;
                     if (uiGrandChampionsDeaths == 3)
                     {
@@ -229,9 +260,67 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 							DoScriptText(SAY_START, pAnnouncer);
                             pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                             pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_CHAMPIONS_LOOT_H : GO_CHAMPIONS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
-							}
+						}
                     }
-                }
+                }else if(uiData== FAIL)
+				{
+					if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
+					{
+						
+						for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
+							if (Creature* pSummon = instance->GetCreature(*itr))
+								pSummon->SetVisibility(VISIBILITY_ON);
+						    	uiAgroDone = 0;
+					
+
+						//rimuovo le eventuali mount
+						if(!VehicleListChampion.empty())
+							for(std::list<uint64>::const_iterator itr = VehicleListChampion.begin(); itr != VehicleListChampion.end(); ++itr)
+								if (Creature* pSummon = instance->GetCreature(*itr))
+									pSummon->RemoveFromWorld();
+
+						VehicleListChampion.clear();
+						VehicleList.clear();
+						//rimuovo gli eventuali boss
+						if(Creature* boss1=instance->GetCreature(uiGrandChampion1GUID))
+							boss1->RemoveFromWorld();
+						if(Creature* boss2=instance->GetCreature(uiGrandChampion2GUID))
+							boss2->RemoveFromWorld();
+						if(Creature* boss3=instance->GetCreature(uiGrandChampion3GUID))
+							boss3->RemoveFromWorld();
+								
+						
+						uiAggroDone = 0;
+						uiMovementDone = 0;
+						uiGrandChampionsDeaths = 0;
+						uiArgentSoldierDeaths = 0;
+
+						
+						
+						uiGrandChampionVehicle1GUID   = 0;
+						uiGrandChampionVehicle2GUID   = 0;
+						uiGrandChampionVehicle3GUID   = 0;
+						uiGrandChampion1GUID          = 0;
+						uiGrandChampion2GUID          = 0;
+						uiGrandChampion3GUID          = 0;
+						uiChampionLootGUID            = 0;
+						uiArgentChampionGUID          = 0;
+						bDone = false;
+						memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+						pAnnouncer->AI()->SetData(DATA_RESET,0);
+						//Initialize();
+						
+						//Creature* tmp=pAnnouncer->SummonCreature(35005, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 600000);
+						//tmp->AI()->SetData(DATA_START,0);
+						 //pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+						//pAnnouncer->RemoveFromWorld();
+						//tmp->AI()->SetData(DATA_IN_POSITION,DONE);
+
+						
+						
+
+					}
+				}
                 break;
             case DATA_ARGENT_SOLDIER_DEFEATED:
                 uiArgentSoldierDeaths = uiData;
@@ -246,6 +335,8 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                     {
                         pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                         pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+						//fix faction
+						pBoss->setFaction(14);
                         pBoss->SetReactState(REACT_AGGRESSIVE);
                     }
                     if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
@@ -304,7 +395,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 break;
         }
 
-        if (uiData == DONE)
+        if (uiGrandChampionsDeaths == 3)
             SaveToDB();
     }
 
@@ -340,6 +431,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
         return 0;
     }
 
+	//posso aggiornare i guid
     void SetData64(uint32 uiType, uint64 uiData)
     {
         switch(uiType)
@@ -415,6 +507,7 @@ InstanceData* GetInstanceData_instance_trial_of_the_champion(Map* pMap)
     return new instance_trial_of_the_champion(pMap);
 }
 
+//registrazione script
 void AddSC_instance_trial_of_the_champion()
 {
     Script *newscript;

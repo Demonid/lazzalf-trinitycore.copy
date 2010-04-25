@@ -90,6 +90,7 @@ struct boss_eadricAI : public ScriptedAI
         pCreature->SetReactState(REACT_PASSIVE);
         pCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
 		pCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+		hasBeenInCombat=false;
     }
 
     ScriptedInstance* pInstance;
@@ -100,6 +101,7 @@ struct boss_eadricAI : public ScriptedAI
     uint32 uiResetTimer;
 
     bool bDone;
+	bool hasBeenInCombat;
 
     void Reset()
     {
@@ -109,9 +111,32 @@ struct boss_eadricAI : public ScriptedAI
         uiResetTimer = 5000;
 
         bDone = false;
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			
+			if(pInstance)
+			{
+				
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				if(GO)
+					pInstance->HandleGameObject(GO->GetGUID(),true);
+				Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+				announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+			}
+			me->RemoveFromWorld();
+
+			//ResetEncounter();
+		}
     }
 
-    void DamageTaken(Unit * /*done_by*/, uint32 &damage)
+    void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if (damage >= me->GetHealth())
         {		
@@ -131,15 +156,17 @@ struct boss_eadricAI : public ScriptedAI
 		}
     }
 
-    void MovementInform(uint32 MovementType, uint32 /*Data*/)
+    void MovementInform(uint32 MovementType, uint32 Data)
     {
         if (MovementType != POINT_MOTION_TYPE)
             return;
     }
 
-			void EnterCombat(Unit* pWho)
-    {
-	 DoScriptText(SAY_START_9, me);
+	void EnterCombat(Unit* pWho)
+	{
+		me->SetHomePosition(746.843, 665.000, 412.339,4.670);
+		DoScriptText(SAY_START_9, me);
+		hasBeenInCombat = true;
 	}
 	
     void UpdateAI(const uint32 uiDiff)
@@ -199,6 +226,7 @@ struct boss_paletressAI : public ScriptedAI
     {
         pInstance = pCreature->GetInstanceData();
 
+		hasBeenInCombat = false;
         MemoryGUID = 0;
         pCreature->SetReactState(REACT_PASSIVE);
         pCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
@@ -213,6 +241,7 @@ struct boss_paletressAI : public ScriptedAI
 
     bool bHealth;
     bool bDone;
+	bool hasBeenInCombat;
 
     uint32 uiHolyFireTimer;
     uint32 uiHolySmiteTimer;
@@ -231,19 +260,51 @@ struct boss_paletressAI : public ScriptedAI
 
         bHealth = false;
         bDone = false;
-
+		
         if (Creature *pMemory = Unit::GetCreature(*me, MemoryGUID))
             if (pMemory->isAlive())
                 pMemory->RemoveFromWorld();
+
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			 
+			if(pInstance)
+			{
+
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+			if(GO)
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+			Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+			 announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+			}
+
+			me->RemoveFromWorld();
+			//ResetEncounter();
+		}
+
+    }
+	void EnterCombat(Unit* pWho)
+    {
+		me->SetHomePosition(746.843, 665.000, 412.339,4.670);
+		hasBeenInCombat = true;
+		DoScriptText(SAY_START_10, me);
+		
     }
 
-    void SetData(uint32 uiId, uint32 /*uiValue*/)
+    void SetData(uint32 uiId, uint32 uiValue)
     {
         if (uiId == 1)
             me->RemoveAura(SPELL_SHIELD);
     }
 
-    void DamageTaken(Unit * /*done_by*/, uint32 &damage)
+    void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if (damage >= me->GetHealth())
         {
@@ -271,11 +332,6 @@ struct boss_paletressAI : public ScriptedAI
 
     }
 
-			void EnterCombat(Unit* pWho)
-    {
-		 DoScriptText(SAY_START_10, me);
-	}
-	
     void UpdateAI(const uint32 uiDiff)
     {
         if (bDone && uiResetTimer <= uiDiff)
@@ -463,7 +519,7 @@ struct npc_memoryAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
         if (me->isSummon())
         {
@@ -565,7 +621,7 @@ struct npc_argent_soldierAI : public npc_escortAI
         }  
     }
 
-    void SetData(uint32 uiType, uint32 /*uiData*/)
+    void SetData(uint32 uiType, uint32 uiData)
     {
         switch(me->GetEntry())
         {
@@ -699,7 +755,7 @@ struct npc_argent_soldierAI : public npc_escortAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
         if (pInstance)
             pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,pInstance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);

@@ -26,6 +26,8 @@ EndScriptData */
 #include "ScriptedPch.h"
 #include "ScriptedEscortAI.h"
 #include "trial_of_the_champion.h"
+#define SAY_RESET  -1999927
+
 
 enum eEnums
 {
@@ -87,11 +89,23 @@ enum ePhases
     PHASE_SKELETON  = 2,
     PHASE_GHOST     = 3
 };
+/*
+enum eState
+{
+	START =0,
+	IDLE  =1,
+	ENABLE  =2
+
+
+};
+*/
 
 enum Misc
 {
     ACHIEV_WORSE                                  = 3804
 };
+
+
 
 struct boss_black_knightAI : public ScriptedAI
 {
@@ -107,8 +121,10 @@ struct boss_black_knightAI : public ScriptedAI
     bool bEvent;
     bool bSummonArmy;
     bool bDeathArmyDone;
+	bool bReset;
 
     uint8 uiPhase;
+	//uint8 uiState;
 
     uint32 uiPlagueStrikeTimer;
     uint32 uiPlagueStrike1Timer;
@@ -124,18 +140,38 @@ struct boss_black_knightAI : public ScriptedAI
     uint32 uiGhoulExplodeTimer;
     uint32 uiDeathBiteTimer;
     uint32 uiMarkedDeathTimer;
+	
+	
 
     void Reset()
     {
         RemoveSummons();
         me->SetDisplayId(me->GetNativeDisplayId());
         me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-
+	    Map* pMap = me->GetMap();
+        if (pMap && pMap->IsDungeon())
+        {
+			bReset=true;
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource())
+						if(itr->getSource()->isAlive())
+							bReset=false;
+						
+			}
+		}
+		
+		ResetEncounter();
+		
+		//me->SummonCreature(28859,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_CORPSE_DESPAWN);
+		//uiState=IDLE;
         bEventInProgress = false;
         bEvent = false;
         bSummonArmy = false;
         bDeathArmyDone = false;
-
+		
+		
         uiPhase = PHASE_UNDEAD;
 
         uiIcyTouchTimer = urand(5000,9000);
@@ -172,14 +208,25 @@ struct boss_black_knightAI : public ScriptedAI
     {
         SummonList.push_back(pSummon->GetGUID());
         pSummon->AI()->AttackStart(me->getVictim());
+		
+		
 
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
+		//me->set
         if (!UpdateVictim())
-            return;
-			
+		{   
+			/*
+			if(uiState==START)
+				uiState=IDLE;
+
+			if(uiState==IDLE)
+				ResetEncounter();
+			*/
+			return;
+		}	
         if (bEventInProgress)
             if (uiResurrectTimer <= uiDiff)
             {
@@ -300,17 +347,19 @@ struct boss_black_knightAI : public ScriptedAI
             DoMeleeAttackIfReady();
     }
 
-    void EnterCombat(Unit* pWho)
-    {
+	    void EnterCombat(Unit* pWho)
+		 {
+		//uiState=START;
+		
         DoScriptText(SAY_AGGRO_2, me);
 		me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
 		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),false);
-
+		//me->SetHomePosition(746.843, 695.68, 412.339, 4.70776);
 
 		if (pInstance)
             pInstance->SetData(DATA_AGGRO_DONE,DONE);
-    }
+		}
 
 	void KilledUnit(Unit* pVictim)
     {
@@ -340,19 +389,53 @@ struct boss_black_knightAI : public ScriptedAI
             bEventInProgress = true;
         }
     }
+		
+	void ResetEncounter()
+	{
+			if(bReset)
+			{	if(me)
+				{
+					Map *instance=me->GetMap();
+					if(instance && pInstance)
+					{
+						Creature*  npc =instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+						GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+						pInstance->HandleGameObject(GO->GetGUID(),true);
+					if(npc)
+					{
+						npc->RemoveFromWorld();
+					}					
+					me->SummonCreature(35004,742.835, 639.134, 411.571,0,TEMPSUMMON_CORPSE_DESPAWN);
+					me->RemoveFromWorld();
+				}
+			}
+			}
+			
+			
+	}
 
-    void JustDied(Unit* /*pKiller*/)
+
+
+    void JustDied(Unit* pKiller)
     {
+		
+		//uiState=ENABLE;
 		DoScriptText(SAY_DEATH_3, me);
 		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
                     pInstance->HandleGameObject(pGO->GetGUID(),true);
-
+		
         if (pInstance)
         {
             pInstance->SetData(BOSS_BLACK_KNIGHT, DONE);
             if (IsHeroic())
                 pInstance->DoCompleteAchievement(ACHIEV_WORSE);
         }
+		Map* instance=me->GetMap();
+		Creature* npc;
+		if(instance)
+			npc=instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+		if(npc)
+			npc->RemoveFromWorld();
     }
 };
 
@@ -366,12 +449,33 @@ struct npc_risen_ghoulAI : public ScriptedAI
     npc_risen_ghoulAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
     uint32 uiAttackTimer;
-
+	bool bReset;
     void Reset()
     {
+		Map* pMap = me->GetMap();
+        if (pMap && pMap->IsDungeon())
+        {
+			bReset=true;
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource())
+						if(itr->getSource()->isAlive())
+							bReset=false;
+						
+			}
+		}
+		Despawn();
         uiAttackTimer = 3500;
     }
 	
+	void Despawn()
+	{
+		if(bReset)
+			me->RemoveFromWorld();
+	
+	}
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!UpdateVictim())
