@@ -137,7 +137,7 @@ struct NotOnSameSide : public std::unary_function<Unit *, bool>
     }
 };
 
-struct TRINITY_DLL_DECL boss_gothikAI : public BossAI
+struct boss_gothikAI : public BossAI
 {
     boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) {}
 
@@ -433,7 +433,7 @@ struct TRINITY_DLL_DECL boss_gothikAI : public BossAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_gothik_minionAI : public CombatAI
+struct mob_gothik_minionAI : public CombatAI
 {
     mob_gothik_minionAI(Creature *c) : CombatAI(c)
     {
