@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 - 2009 Trinity <http://www.trinitycore.org/>
+/* Copyright (C) 2008 - 2010 Trinity <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -24,6 +24,7 @@ enum Yells
     SAY_DEATH                   = -1533042,
     SAY_TELEPORT                = -1533043
 };
+
 //Gothik
 enum Spells
 {
@@ -37,6 +38,7 @@ enum Spells
     SPELL_INFORM_DEAD_KNIGHT    = 27931,
     SPELL_INFORM_DEAD_RIDER     = 27937
 };
+
 enum Creatures
 {
     MOB_LIVE_TRAINEE    = 16124,
@@ -48,44 +50,35 @@ enum Creatures
     MOB_DEAD_HORSE      = 16149
 };
 
-struct Waves { uint32 entry, time, mode; };
-// wave setups are not the same in heroic and normal difficulty,
-// mode is 0 only normal, 1 both and 2 only heroic
+struct Waves { uint32 entry, time; };
+// wave setups are the same in heroic and normal difficulty, only count of mobs is different, 
 // but this is handled in DoGothikSummon function
 const Waves waves[] =
 {
-    {MOB_LIVE_TRAINEE, 20000, 1},
-    {MOB_LIVE_TRAINEE, 20000, 1},
-    {MOB_LIVE_TRAINEE, 10000, 1},
-    {MOB_LIVE_KNIGHT, 10000, 1},
-    {MOB_LIVE_TRAINEE, 15000, 1},
-    {MOB_LIVE_KNIGHT, 5000, 1},
-    {MOB_LIVE_TRAINEE, 20000, 1},
-    {MOB_LIVE_TRAINEE, 0, 1},
-    {MOB_LIVE_KNIGHT, 10000, 1},
-    {MOB_LIVE_TRAINEE, 10000, 2},
-    {MOB_LIVE_RIDER, 10000, 0},
-    {MOB_LIVE_RIDER, 5000, 2},
-    {MOB_LIVE_TRAINEE, 5000, 0},
-    {MOB_LIVE_TRAINEE, 15000, 2},
-    {MOB_LIVE_KNIGHT, 15000, 0},
-    {MOB_LIVE_TRAINEE, 0, 0},
-    {MOB_LIVE_RIDER, 10000, 1},
-    {MOB_LIVE_KNIGHT, 10000, 1},
-    {MOB_LIVE_TRAINEE, 10000, 0},
-    {MOB_LIVE_RIDER, 10000, 2},
-    {MOB_LIVE_TRAINEE, 0, 2},
-    {MOB_LIVE_RIDER, 5000, 1},
-    {MOB_LIVE_TRAINEE, 0, 2},
-    {MOB_LIVE_KNIGHT, 5000, 1},
-    {MOB_LIVE_RIDER, 0, 2},
-    {MOB_LIVE_TRAINEE, 20000, 1},
-    {MOB_LIVE_RIDER, 0, 1},
-    {MOB_LIVE_KNIGHT, 0, 1},
-    {MOB_LIVE_TRAINEE, 25000, 2},
-    {MOB_LIVE_TRAINEE, 15000, 0},
-    {MOB_LIVE_TRAINEE, 25000, 0},
-    {0, 0, 1},
+    {MOB_LIVE_TRAINEE, 20000},
+    {MOB_LIVE_TRAINEE, 20000},
+    {MOB_LIVE_TRAINEE, 10000},
+    {MOB_LIVE_KNIGHT, 10000},
+    {MOB_LIVE_TRAINEE, 15000},
+    {MOB_LIVE_KNIGHT, 5000},
+    {MOB_LIVE_TRAINEE, 20000},
+    {MOB_LIVE_TRAINEE, 5000},
+    {MOB_LIVE_KNIGHT, 10000},
+    {MOB_LIVE_RIDER, 10000},
+    {MOB_LIVE_TRAINEE, 5000},
+    {MOB_LIVE_KNIGHT, 15000},
+    {MOB_LIVE_RIDER, 5000},
+    {MOB_LIVE_TRAINEE, 10000},
+    {MOB_LIVE_KNIGHT, 10000},
+    {MOB_LIVE_TRAINEE, 10000},
+    {MOB_LIVE_RIDER, 5000},
+    {MOB_LIVE_KNIGHT, 5000},
+    {MOB_LIVE_TRAINEE, 20000},
+    {MOB_LIVE_RIDER, 5000},
+    {MOB_LIVE_KNIGHT, 5000},
+    {MOB_LIVE_TRAINEE, 20000},
+    {MOB_LIVE_TRAINEE, 30000},
+    {0, 0},
 };
 
 #define POS_Y_GATE  -3360.78f
@@ -133,16 +126,18 @@ const float PosGroundLiveSide[4] = {2691.2, -3387.0, 267.68, 1.52};
 const float PosGroundDeadSide[4] = {2693.5, -3334.6, 267.68, 4.67};
 const float PosPlatform[4] = {2640.5, -3360.6, 285.26, 0};
 
-// Predicate function to check that the r   efzr unit is NOT on the same side as the source.
-struct NotOnSameSide : public std::unary_function<Unit *, bool> {
+// Predicate function to check that the refzr unit is NOT on the same side as the source.
+struct NotOnSameSide : public std::unary_function<Unit *, bool> 
+{
     bool m_inLiveSide;
     NotOnSameSide(Unit *pSource) : m_inLiveSide(IN_LIVE_SIDE(pSource)) {}
-    bool operator() (const Unit *pTarget) {
+    bool operator() (const Unit *pTarget) 
+    {
       return (m_inLiveSide != IN_LIVE_SIDE(pTarget));
     }
 };
 
-struct boss_gothikAI : public BossAI
+struct TRINITY_DLL_DECL boss_gothikAI : public BossAI
 {
     boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) {}
 
@@ -153,15 +148,11 @@ struct boss_gothikAI : public BossAI
     bool phaseTwo;
     bool thirtyPercentReached;
 
-    std::vector<uint64> LiveTriggerGUID;
-    std::vector<uint64> DeadTriggerGUID;
-
     void Reset()
     {
-        LiveTriggerGUID.clear();
-        DeadTriggerGUID.clear();
-
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+        liveTrigger.clear();
+        deadTrigger.clear();
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
         me->SetReactState(REACT_PASSIVE);
         if (instance)
             instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
@@ -171,16 +162,16 @@ struct boss_gothikAI : public BossAI
         thirtyPercentReached = false;
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         for (uint32 i = 0; i < POS_LIVE; ++i)
             if (Creature *trigger = DoSummon(WORLD_TRIGGER, PosSummonLive[i]))
-                LiveTriggerGUID.push_back(trigger->GetGUID());
+                liveTrigger.push_back(trigger);
         for (uint32 i = 0; i < POS_DEAD; ++i)
             if (Creature *trigger = DoSummon(WORLD_TRIGGER, PosSummonDead[i]))
-                DeadTriggerGUID.push_back(trigger->GetGUID());
+                deadTrigger.push_back(trigger);
 
-        if (LiveTriggerGUID.size() < POS_LIVE || DeadTriggerGUID.size() < POS_DEAD)
+        if (liveTrigger.size() < POS_LIVE || deadTrigger.size() < POS_DEAD)
         {
             error_log("Script Gothik: cannot summon triggers!");
             EnterEvadeMode();
@@ -188,7 +179,7 @@ struct boss_gothikAI : public BossAI
         }
 
         _EnterCombat();
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
         waveCount = 0;
         events.ScheduleEvent(EVENT_SUMMON, 30000);
         DoTeleportTo(PosPlatform);
@@ -219,16 +210,16 @@ struct boss_gothikAI : public BossAI
         summons.Despawn(summon);
     }
 
-    void KilledUnit(Unit* /*victim*/)
+    void KilledUnit(Unit* victim)
     {
         if (!(rand()%5))
             DoScriptText(SAY_KILL, me);
     }
 
-    void JustDied(Unit* /*Killer*/)
+    void JustDied(Unit* Killer)
     {
-        LiveTriggerGUID.clear();
-        DeadTriggerGUID.clear();
+        liveTrigger.clear();
+        deadTrigger.clear();
         _JustDied();
         DoScriptText(SAY_DEATH, me);
         if (instance)
@@ -237,27 +228,38 @@ struct boss_gothikAI : public BossAI
 
     void DoGothikSummon(uint32 entry)
     {
-        switch(entry)
+        if (HeroicMode)
         {
-            case MOB_LIVE_TRAINEE:
+            switch(entry)
             {
-                if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                    DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                    DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                break;
+                case MOB_LIVE_TRAINEE:
+                    DoSummon(MOB_LIVE_TRAINEE, liveTrigger[0], 1);
+                    DoSummon(MOB_LIVE_TRAINEE, liveTrigger[1], 1);
+                    DoSummon(MOB_LIVE_TRAINEE, liveTrigger[2], 1);
+                    break;
+                case MOB_LIVE_KNIGHT:
+                    DoSummon(MOB_LIVE_KNIGHT, liveTrigger[3], 1);
+                    DoSummon(MOB_LIVE_KNIGHT, liveTrigger[5], 1);
+                    break;
+                case MOB_LIVE_RIDER:
+                    DoSummon(MOB_LIVE_RIDER, liveTrigger[4], 1);
+                    break;
             }
-            case MOB_LIVE_KNIGHT:
+        }
+        else
+        {
+            switch(entry)
             {
-                if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                    DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                break;
-            }
-            case MOB_LIVE_RIDER:
-            {
-                if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                    DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                break;
+                case MOB_LIVE_TRAINEE:
+                    DoSummon(MOB_LIVE_TRAINEE, liveTrigger[0], 1);
+                    DoSummon(MOB_LIVE_TRAINEE, liveTrigger[1], 1);
+                    break;
+                case MOB_LIVE_KNIGHT:
+                    DoSummon(MOB_LIVE_KNIGHT, liveTrigger[5], 1);
+                    break;
+                case MOB_LIVE_RIDER:
+                    DoSummon(MOB_LIVE_RIDER, liveTrigger[4], 1);
+                    break;
             }
         }
     }
@@ -301,7 +303,7 @@ struct boss_gothikAI : public BossAI
         return false;
     }
 
-    void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+    void SpellHit(Unit *caster, const SpellEntry *spell)
     {
         uint32 spellId = 0;
         switch(spell->Id)
@@ -313,8 +315,7 @@ struct boss_gothikAI : public BossAI
         if (spellId && me->isInCombat())
         {
             me->HandleEmoteCommand(EMOTE_ONESHOT_SPELLCAST);
-            if (Creature *pRandomDeadTrigger = Unit::GetCreature(*me, DeadTriggerGUID[rand() % POS_DEAD]))
-                me->CastSpell(pRandomDeadTrigger, spellId, true);
+            me->CastSpell(deadTrigger[rand()%POS_DEAD], spellId, true);
         }
     }
 
@@ -325,15 +326,15 @@ struct boss_gothikAI : public BossAI
 
         switch(spell->Id)
         {
-            case SPELL_INFORM_DEAD_TRAINEE:
-                DoSummon(MOB_DEAD_TRAINEE, pTarget, 0);
+            case SPELL_INFORM_DEAD_TRAINEE: 
+                DoSummon(MOB_DEAD_TRAINEE, pTarget, 0);  
                 break;
-            case SPELL_INFORM_DEAD_KNIGHT:
-                DoSummon(MOB_DEAD_KNIGHT, pTarget, 0);
+            case SPELL_INFORM_DEAD_KNIGHT:  
+                DoSummon(MOB_DEAD_KNIGHT, pTarget, 0);   
                 break;
-            case SPELL_INFORM_DEAD_RIDER:
+            case SPELL_INFORM_DEAD_RIDER:   
                 DoSummon(MOB_DEAD_RIDER, pTarget, 1.0f);
-                DoSummon(MOB_DEAD_HORSE, pTarget, 1.0f);
+                DoSummon(MOB_DEAD_HORSE, pTarget, 1.0f); 
                 break;
         }
     }
@@ -355,19 +356,14 @@ struct boss_gothikAI : public BossAI
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while(uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
                 case EVENT_SUMMON:
                     if (waves[waveCount].entry)
                     {
-                        if ((waves[waveCount].mode == 2) && (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL))
-                           DoGothikSummon(waves[waveCount].entry);
-                        else if ((waves[waveCount].mode == 0) && (getDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL))
-                            DoGothikSummon(waves[waveCount].entry);
-                        else if (waves[waveCount].mode == 1)
-                            DoGothikSummon(waves[waveCount].entry);
+                        DoGothikSummon(waves[waveCount].entry);
 
                         // if group is not splitted, open gate and merge both sides at ~ 2 minutes (wave 11)
                         if (waveCount == 11)
@@ -382,15 +378,7 @@ struct boss_gothikAI : public BossAI
                             }
                         }
 
-                        if (waves[waveCount].mode == 1)
-                            events.ScheduleEvent(EVENT_SUMMON,waves[waveCount].time);
-                        else if ((waves[waveCount].mode == 2) && (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL))
-                            events.ScheduleEvent(EVENT_SUMMON,waves[waveCount].time);
-                        else if ((waves[waveCount].mode == 0) && (getDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL))
-                            events.ScheduleEvent(EVENT_SUMMON,waves[waveCount].time);
-                        else
-                            events.ScheduleEvent(EVENT_SUMMON, 0);
-
+                        events.ScheduleEvent(EVENT_SUMMON, waves[waveCount].time);
                         ++waveCount;
                     }
                     else
@@ -399,7 +387,7 @@ struct boss_gothikAI : public BossAI
                         DoScriptText(SAY_TELEPORT, me);
                         DoTeleportTo(PosGroundLiveSide);
                         me->SetReactState(REACT_AGGRESSIVE);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                         summons.DoAction(0, 0);
                         summons.DoZoneInCombat();
                         events.ScheduleEvent(EVENT_BOLT, 1000);
@@ -408,7 +396,7 @@ struct boss_gothikAI : public BossAI
                     }
                     break;
                 case EVENT_BOLT:
-                    DoCast(me->getVictim(), RAID_MODE(SPELL_SHADOW_BOLT, H_SPELL_SHADOW_BOLT));
+                    DoCast(me->getVictim(), HEROIC(SPELL_SHADOW_BOLT, H_SPELL_SHADOW_BOLT));
                     events.ScheduleEvent(EVENT_BOLT, 1000);
                     break;
                 case EVENT_HARVEST:
@@ -445,7 +433,7 @@ struct boss_gothikAI : public BossAI
     }
 };
 
-struct mob_gothik_minionAI : public CombatAI
+struct TRINITY_DLL_DECL mob_gothik_minionAI : public CombatAI
 {
     mob_gothik_minionAI(Creature *c) : CombatAI(c)
     {
@@ -455,7 +443,7 @@ struct mob_gothik_minionAI : public CombatAI
     bool liveSide;
     bool gateClose;
 
-    bool isOnSameSide(const Unit *pWho)
+    bool isOnSameSide(const Unit *pWho) 
     {
         return (liveSide == IN_LIVE_SIDE(pWho));
     }
@@ -471,7 +459,7 @@ struct mob_gothik_minionAI : public CombatAI
             damage = 0;
     }
 
-    void JustDied(Unit * /*killer*/)
+    void JustDied(Unit *killer)
     {
         if (me->isSummon())
         {
