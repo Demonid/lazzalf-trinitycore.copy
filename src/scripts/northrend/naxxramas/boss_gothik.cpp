@@ -228,7 +228,7 @@ struct boss_gothikAI : public BossAI
 
     void DoGothikSummon(uint32 entry)
     {
-        if (HeroicMode)
+        if (IsHeroic())
         {
             switch(entry)
             {
@@ -396,7 +396,7 @@ struct boss_gothikAI : public BossAI
                     }
                     break;
                 case EVENT_BOLT:
-                    DoCast(me->getVictim(), HEROIC(SPELL_SHADOW_BOLT, H_SPELL_SHADOW_BOLT));
+                    DoCast(me->getVictim(), RAID_MODE(SPELL_SHADOW_BOLT, H_SPELL_SHADOW_BOLT));
                     events.ScheduleEvent(EVENT_BOLT, 1000);
                     break;
                 case EVENT_HARVEST:
