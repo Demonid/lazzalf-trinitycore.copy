@@ -8296,7 +8296,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         if (this->GetTypeId() != TYPEID_PLAYER || !plr || plr->getClass() != CLASS_DEATH_KNIGHT)
             return false;
 
-        if(!plr->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
+        if (!plr->IsBaseRuneSlotsOnCooldown(RUNE_BLOOD))
             return false;
     }
     // Rime
@@ -12300,7 +12300,7 @@ Unit* Creature::SelectVictim()
     // search nearby enemy before enter evade mode
     if (HasReactState(REACT_AGGRESSIVE))
     {
-        target = SelectNearestTarget();
+        target = SelectNearestTargetInAttackDistance();
         if (target && _IsTargetAcceptable(target))
                 return target;
     }
@@ -12721,8 +12721,6 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
         return false;
     }
 
-    float val = 1.0f;
-
     switch (modifierType)
     {
         case BASE_VALUE:
@@ -12731,14 +12729,7 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
             break;
         case BASE_PCT:
         case TOTAL_PCT:
-            if (amount <= -100.0f)                           //small hack-fix for -100% modifiers
-                amount = -200.0f;
-
-            val = (100.0f + amount) / 100.0f;
-            m_auraModifiersGroup[unitMod][modifierType] *= apply ? val : (1.0f/val);
-            break;
-
-        default:
+            m_auraModifiersGroup[unitMod][modifierType] += (apply ? amount : -amount) / 100.0f;
             break;
     }
 
