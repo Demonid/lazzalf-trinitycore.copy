@@ -145,12 +145,22 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
-    Corpse *corpse = GetPlayer()->GetCorpse();
+    /*Corpse *corpse = GetPlayer()->GetCorpse();
     if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
     {
         if (mEntry->IsDungeon())
         {
             GetPlayer()->ResurrectPlayer(0.5f,false);
+            GetPlayer()->SpawnCorpseBones();
+        }
+    }*/
+    // Trilogy - Revive player enter in istance
+    Corpse *corpse = GetPlayer()->GetCorpse();
+    if (mEntry->IsDungeon() && !GetPlayer()->isAlive())
+    {
+        GetPlayer()->ResurrectPlayer(0.5f,false);
+        if (corpse)
+        {
             GetPlayer()->SpawnCorpseBones();
         }
     }
