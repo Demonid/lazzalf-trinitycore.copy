@@ -51,6 +51,9 @@ struct instance_ulduar : public InstanceData
     uint64 uiIgnis;
     uint64 uiExpCommander;
     uint64 uiXT002;
+    uint64 uiSteelbreaker;
+    uint64 uiMolgeim;
+    uint64 uiBrundir;
     uint64 uiKologarn;
     uint64 uiRightArm;
     uint64 uiLeftArm;
@@ -78,6 +81,9 @@ struct instance_ulduar : public InstanceData
             case 33118: uiIgnis = pCreature->GetGUID(); return;
             case 33210: uiExpCommander = pCreature->GetGUID(); return;
             case 33293: uiXT002 = pCreature->GetGUID(); return;
+            case 32867: uiSteelbreaker = pCreature->GetGUID(); return;
+            case 32927: uiMolgeim = pCreature->GetGUID(); return;
+            case 32857: uiBrundir = pCreature->GetGUID(); return;
             case 32930: uiKologarn = pCreature->GetGUID(); return;
             case 32934: uiRightArm = pCreature->GetGUID(); return;
             case 32933: uiLeftArm = pCreature->GetGUID(); return;
@@ -100,6 +106,12 @@ struct instance_ulduar : public InstanceData
             return uiExpCommander;
         case DATA_XT002:
             return uiXT002;
+        case DATA_STEELBREAKER:
+            return uiSteelbreaker;
+        case DATA_MOLGEIM:
+            return uiMolgeim;
+        case DATA_BRUNDIR:
+            return uiBrundir;
         case DATA_KOLOGARN:
             return uiKologarn;
         case DATA_RIGHT_ARM:
