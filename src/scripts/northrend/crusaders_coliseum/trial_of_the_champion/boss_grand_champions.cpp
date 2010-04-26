@@ -282,7 +282,7 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
 					me->RemoveFromWorld();
 				}
 				
-
+		uiCheckTimer=5000;
 		}else uiCheckTimer -= uiDiff;
 		
         if (!UpdateVictim())
