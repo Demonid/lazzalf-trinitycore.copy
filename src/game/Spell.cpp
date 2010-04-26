@@ -2340,6 +2340,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         }
                         break;
  	                case 62834: // Boom (Boombot)
+                    case 64320: // Rune of Power (Assembly of Iron)
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
                         break;
 

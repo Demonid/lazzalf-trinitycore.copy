@@ -220,7 +220,7 @@ struct boss_ignis_AI : public BossAI
                     break;
                 case EVENT_CONSTRUCT:
                     DoScriptText(SAY_SUMMON, me);
-                    DoSummon(MOB_IRON_CONSTRUCT, Pos[rand()%20]);
+                    DoSummon(MOB_IRON_CONSTRUCT, Pos[rand()%20], 30000, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT);
                     DoCast(SPELL_STRENGHT);
                     DoCast(me, SPELL_ACTIVATE_CONSTRUCT);
                     events.ScheduleEvent(EVENT_CONSTRUCT, RAID_MODE(40000, 30000));
