@@ -248,8 +248,15 @@ struct mob_tempest_minionAI : public ScriptedAI
                 if (overchargedAura->GetStackAmount() == 10)
                 {
                     DoCast(me, SPELL_OVERCHARGED_BLAST);
+                    if (Creature *pEmalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
+                    {
+                        if (pEmalon->isAlive())
+                        {
+                            pEmalon->SummonCreature(MOB_TEMPEST_MINION, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            DoScriptText(EMOTE_MINION_RESPAWN, me);
+                        }
+                    }
                     me->ForcedDespawn();
-                    DoScriptText(EMOTE_MINION_RESPAWN, me);
                 }
             }
         }
