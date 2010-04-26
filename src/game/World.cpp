@@ -2656,7 +2656,7 @@ void World::ResetTimedQuests(bool daily)
     if (daily)
     {
         sLog.outDetail("Reset of the daily quests.");
-        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='1' AND time<'%lu'", uint64(m_NextDailyQuestReset-DAY));
+        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='1' AND time<'%lu'", uint64(m_NextDailyQuestReset));
 
         // Reset player daily slots for online chars - offline chars get their reset @ login
         for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
