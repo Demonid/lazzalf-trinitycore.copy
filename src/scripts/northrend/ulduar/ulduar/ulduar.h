@@ -50,7 +50,8 @@ enum Data64
     DATA_BRUNDIR,
     DATA_KOLOGARN,
     DATA_RIGHT_ARM,
-    DATA_LEFT_ARM
+    DATA_LEFT_ARM,
+    DATA_AURIAYA
 };
 
 enum Npcs
