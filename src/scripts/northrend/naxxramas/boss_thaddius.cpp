@@ -155,18 +155,25 @@ struct boss_thaddiusAI : public BossAI
 
     void Reset()
     {
-        if (!checkStalaggAlive)
-        {
-            if (instance)
-                if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
-                    pStalagg->Respawn();
-        }
-        else
-        {
-            if (instance)
-                if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
-                    pFeugen->Respawn();
-        }
+        if(checkStalaggAlive != checkFeugenAlive)
+            if (!checkStalaggAlive)
+            {
+                if (instance)
+                    if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
+                    {
+                        pStalagg->Respawn();
+                        checkStalaggAlive = true;
+                    }
+            }
+            else
+            {
+                if (instance)
+                    if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
+                    {
+                        pFeugen->Respawn();
+                        checkFeugenAlive = true;
+                    }                
+            }
         _Reset();
     }
 
