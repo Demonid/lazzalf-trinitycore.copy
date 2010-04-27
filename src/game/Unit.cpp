@@ -1090,8 +1090,8 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
 
                 if (critPctDamageMod != 0)
                     damage = int32(damage * float((100.0f + critPctDamageMod)/100.0f));
-
             }
+
             // Spell weapon based damage CAN BE crit & blocked at same time
             if (blocked)
             {
@@ -1103,6 +1103,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                     damageInfo->blocked = damage;
                 damage -= damageInfo->blocked;
             }
+
             // Reduce damage from resilience for players and pets only.
             // As of patch 3.3 pets inherit 100% of master resilience.
             if (GetSpellModOwner())
