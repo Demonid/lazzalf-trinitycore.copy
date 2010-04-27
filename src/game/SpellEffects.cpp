@@ -2327,7 +2327,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                 return;
 
             // get highest rank of the Stealth spell
-            uint32 spellId = 0;
+            /*uint32 spellId = 0;
             SpellEntry const *spellInfo;
             const PlayerSpellMap& sp_list = unitTarget->ToPlayer()->GetSpellMap();
             for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
@@ -2349,6 +2349,13 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
 
             // no Stealth spell found
             if (!spellId)
+                return;*/
+
+            // Stealth spell
+            uint32 spellId = 1784;
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+
+            if (!spellInfo)
                 return;
 
             // reset cooldown on it if needed
@@ -6205,7 +6212,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         && m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE
         && (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VANISH))
     {
-        m_caster->ToPlayer()->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
+        //m_caster->ToPlayer()->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
         // Overkill
         if (m_caster->ToPlayer()->HasSpell(58426))
            m_caster->CastSpell(m_caster, 58427, true);
