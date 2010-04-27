@@ -57,6 +57,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiKologarn;
     uint64 uiRightArm;
     uint64 uiLeftArm;
+    uint64 uiAuriaya;
     uint64 uiKologarnBridge;
     
     GameObject* KologarnChest;
@@ -87,6 +88,7 @@ struct instance_ulduar : public InstanceData
             case 32930: uiKologarn = pCreature->GetGUID(); return;
             case 32934: uiRightArm = pCreature->GetGUID(); return;
             case 32933: uiLeftArm = pCreature->GetGUID(); return;
+            case 33515: uiAuriaya = pCreature->GetGUID(); return;
         }
 
         AddMinion(pCreature, add);
@@ -118,6 +120,8 @@ struct instance_ulduar : public InstanceData
             return uiRightArm;
         case DATA_LEFT_ARM:
             return uiLeftArm;
+        case DATA_AURIAYA:
+            return uiAuriaya;
         }
         return 0;
     }
@@ -562,7 +566,7 @@ struct devouring_flame : public ScriptedAI
 	
     void EnterCombat(Unit* who)
     {
-        me->CastSpell(me,SPELL_DEVOURINGFLAME,true);
+        m_creature->CastSpell(m_creature,SPELL_DEVOURINGFLAME,true);
     }
 	
     void Reset()
@@ -574,7 +578,7 @@ struct devouring_flame : public ScriptedAI
     {
         if (DevouringFlameTimer <= diff)
         {
-            me->setDeathState(JUST_DIED);
+            m_creature->setDeathState(JUST_DIED);
         }else DevouringFlameTimer -= diff;
     }
 };
