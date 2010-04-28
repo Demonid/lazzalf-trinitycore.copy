@@ -359,7 +359,7 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
         if (uiSpellFlameSphere <= diff)
         {
             DoCast(me, DUNGEON_MODE(SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED, H_SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED));
-            uiSpellFlameSphere = 1*IN_MILISECONDS;
+            uiSpellFlameSphere = 5*IN_MILISECONDS;
         } else uiSpellFlameSphere -= diff;
 
         if (uiDespawnTimer <= diff)
