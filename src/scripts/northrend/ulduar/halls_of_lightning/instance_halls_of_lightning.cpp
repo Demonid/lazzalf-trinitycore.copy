@@ -89,10 +89,10 @@ struct instance_halls_of_lightning : public ScriptedInstance
         {
             case GO_BJARNGRIM_DOOR:
                 m_uiBjarngrimDoorGUID = pGo->GetGUID();
-                if (m_auiEncounter[0] == DONE)
+                /*if (m_auiEncounter[0] == DONE)
                     pGo->SetGoState(GO_STATE_ACTIVE);
                 else
-                    pGo->SetGoState(GO_STATE_READY);
+                    pGo->SetGoState(GO_STATE_READY);*/
                 break;
             case GO_VOLKHAN_DOOR:
                 m_uiVolkhanDoorGUID = pGo->GetGUID();
@@ -126,8 +126,8 @@ struct instance_halls_of_lightning : public ScriptedInstance
         switch(uiType)
         {
             case TYPE_BJARNGRIM:
-                if (uiData == DONE)
-                    DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
+                //if (uiData == DONE)
+                //    DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
                 m_auiEncounter[0] = uiData;
                 break;
             case TYPE_VOLKHAN:
