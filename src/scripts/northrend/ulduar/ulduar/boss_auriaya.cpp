@@ -325,14 +325,17 @@ struct mob_feral_defenderAI : public ScriptedAI
     int32 RushTimer;
     int32 RessTimer;
     int32 Lifes;
+    bool Dead;
 
     void Reset()
     {
         PounceTimer = 5000;
         RushTimer = 12000;
+        Lifes = 8;
+        Dead = false;
         RessTimer = 999999;
         
-        for (uint8 i = 0; i < 9; ++i)
+        for (uint8 i = 0; i < Lifes; ++i)
             DoCast(me, SPELL_FERAL_ESSENCE);
     }
 
@@ -369,9 +372,11 @@ struct mob_feral_defenderAI : public ScriptedAI
         {
             me->RemoveAurasDueToSpell(SPELL_DEATH_EFFECT);
             me->SetHealth(me->GetMaxHealth());
+            for (uint8 i = 0; i < Lifes; ++i)
+                DoCast(me, SPELL_FERAL_ESSENCE);
  	        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
  	        me->SetReactState(REACT_AGGRESSIVE);
- 	        me->RemoveAuraFromStack(SPELL_FERAL_ESSENCE, 0, AURA_REMOVE_BY_DEFAULT);
+ 	        Dead = false;
             RessTimer = 999999;
             DoZoneInCombat();
         } else RessTimer -= uiDiff;
@@ -383,18 +388,25 @@ struct mob_feral_defenderAI : public ScriptedAI
  	{
  	    if(damage >= me->GetHealth()) // Feign Death
  	    {
- 	        DoCast(me, SPELL_SUMMON_ESSENCE);
- 	        me->SetHealth(0);
- 	        me->AddAura(SPELL_DEATH_EFFECT, me);
- 	        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
- 	        me->SetReactState(REACT_PASSIVE);
- 	        me->AttackStop();
- 	        PounceTimer = 35000;
-            RushTimer = 42000;
- 	        RessTimer = 30000;
- 	        if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
-                if (pAuriaya->AI())
-                    pAuriaya->AI()->DoAction(ACTION_NINE_LIVES);
+ 	        if (!Dead)
+ 	        {
+ 	            DoCast(me, SPELL_SUMMON_ESSENCE);
+ 	            me->SetHealth(0);
+ 	            me->RemoveAllAuras();
+ 	            me->AddAura(SPELL_DEATH_EFFECT, me);
+ 	            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+ 	            me->SetReactState(REACT_PASSIVE);
+ 	            me->AttackStop();
+ 	            Lifes--;
+ 	            Dead = true;
+ 	            PounceTimer = 35000;
+                RushTimer = 42000;
+ 	            RessTimer = 30000;
+ 	            if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
+                    if (pAuriaya->AI())
+                        pAuriaya->AI()->DoAction(ACTION_NINE_LIVES);
+            }
+            else damage = 0;
  	    }
  	}
 };
