@@ -126,7 +126,7 @@ struct boss_gluthAI : public BossAI
                     DoCastAOE(SPELL_DECIMATE);
                     events.ScheduleEvent(EVENT_DECIMATE, 105000);
                     std::list<Creature*> ZombieList;
-                    m_creature->GetCreatureListWithEntryInGrid(ZombieList, MOB_ZOMBIE, 100.0f);
+                    me->GetCreatureListWithEntryInGrid(ZombieList, MOB_ZOMBIE, 100.0f);
                     if (!ZombieList.empty())
                         for (std::list<Creature*>::iterator iter = ZombieList.begin(); iter != ZombieList.end(); iter++)
                         {  
