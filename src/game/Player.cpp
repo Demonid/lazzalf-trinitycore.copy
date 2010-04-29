@@ -768,7 +768,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
     // original action bar
     for (PlayerCreateInfoActions::const_iterator action_itr = info->action.begin(); action_itr != info->action.end(); ++action_itr)
-        addActionButton(action_itr->button,action_itr->action,action_itr->type);
+        addActionButton(action_itr->button,action_itr->action, action_itr->type);
 
     // original items
     CharStartOutfitEntry const* oEntry = NULL;
@@ -1323,6 +1323,8 @@ void Player::Update(uint32 p_time)
             }
         }
     }
+
+    GetAchievementMgr().UpdateTimedAchievements(p_time);
 
     if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CASTING))
     {
@@ -6062,7 +6064,13 @@ void Player::SendActionButtons(uint32 state) const
     sLog.outDetail("Sending Action Buttons for '%u' spec '%u'", GetGUIDLow(), m_activeSpec);
 
     WorldPacket data(SMSG_ACTION_BUTTONS, 1+(MAX_ACTION_BUTTONS*4));
-    data << uint8(state);                                       // can be 0, 1, 2
+    data << uint8(state); 
+    /*
+        state can be 0, 1, 2
+        0 - Looks to be sent when initial action buttons get sent, however on Trinity we use 1 since 0 had some difficulties
+        1 - Used in any SMSG_ACTION_BUTTONS packet with button data on Trinity. Only used after spec swaps on retail.
+        2 - Clears the action bars client sided. This is sent during spec swap before unlearning and before sending the new buttons
+    */
     if (state != 2)
     {
         for (uint16 button = 0; button < MAX_ACTION_BUTTONS; ++button)
@@ -6079,18 +6087,18 @@ void Player::SendActionButtons(uint32 state) const
     sLog.outDetail("Action Buttons for '%u' spec '%u' Sent", GetGUIDLow(), m_activeSpec);
 }
 
-ActionButton* Player::addActionButton(uint8 button, uint32 action, uint8 type)
+bool Player::IsActionButtonDataValid(uint8 button, uint32 action, uint8 type)
 {
     if (button >= MAX_ACTION_BUTTONS)
     {
-        sLog.outError("Action %u not added into button %u for player %s: button must be < 144", action, button, GetName());
-        return NULL;
+        sLog.outError( "Action %u not added into button %u for player %s: button must be < %u", action, button, GetName(), MAX_ACTION_BUTTONS );
+        return false;
     }
 
     if (action >= MAX_ACTION_BUTTON_ACTION_VALUE)
     {
-        sLog.outError("Action %u not added into button %u for player %s: action must be < %u", action, button, GetName(), MAX_ACTION_BUTTON_ACTION_VALUE);
-        return NULL;
+        sLog.outError( "Action %u not added into button %u for player %s: action must be < %u", action, button, GetName(), MAX_ACTION_BUTTON_ACTION_VALUE );
+        return false;
     }
 
     switch (type)
@@ -6098,26 +6106,34 @@ ActionButton* Player::addActionButton(uint8 button, uint32 action, uint8 type)
         case ACTION_BUTTON_SPELL:
             if (!sSpellStore.LookupEntry(action))
             {
-                sLog.outError("Action %u not added into button %u for player %s: spell not exist", action, button, GetName());
-                return NULL;
+                sLog.outError( "Spell action %u not added into button %u for player %s: spell not exist", action, button, GetName() );
+                return false;
             }
 
             if (!HasSpell(action))
             {
-                sLog.outError("Action %u not added into button %u for player %s: player don't known this spell", action, button, GetName());
-                return NULL;
+                sLog.outError( "Spell action %u not added into button %u for player %s: player don't known this spell", action, button, GetName() );
+                return false;
             }
             break;
         case ACTION_BUTTON_ITEM:
             if (!objmgr.GetItemPrototype(action))
             {
-                sLog.outError("Action %u not added into button %u for player %s: item not exist", action, button, GetName());
-                return NULL;
+                sLog.outError( "Item action %u not added into button %u for player %s: item not exist", action, button, GetName() );
+                return false;
             }
             break;
         default:
-            break;                                          // pther cases not checked at this moment
+            break;                                          // other cases not checked at this moment
     }
+
+    return true;
+}
+
+ActionButton* Player::addActionButton(uint8 button, uint32 action, uint8 type)
+{
+    if (!IsActionButtonDataValid(button, action, type))
+        return NULL;
 
     // it create new button (NEW state) if need or return existed
     ActionButton& ab = m_actionButtons[button];
@@ -6132,14 +6148,9 @@ ActionButton* Player::addActionButton(uint8 button, uint32 action, uint8 type)
 void Player::removeActionButton(uint8 button)
 {
     ActionButtonList::iterator buttonItr = m_actionButtons.find(button);
-    if (buttonItr == m_actionButtons.end())
+    if (buttonItr == m_actionButtons.end() || buttonItr->second.uState == ACTIONBUTTON_DELETED)
         return;
 
-    if (!buttonItr->second.canRemoveByClient)
-    {
-        buttonItr->second.canRemoveByClient = true;
-        return;
-    }
     if (buttonItr->second.uState == ACTIONBUTTON_NEW)
         m_actionButtons.erase(buttonItr);                   // new and not saved
     else
@@ -6148,6 +6159,15 @@ void Player::removeActionButton(uint8 button)
     sLog.outDetail("Action Button '%u' Removed from Player '%u'", button, GetGUIDLow());
 }
 
+ActionButton const* Player::GetActionButton(uint8 button)
+{
+    ActionButtonList::iterator buttonItr = m_actionButtons.find(button);
+    if (buttonItr == m_actionButtons.end() || buttonItr->second.uState == ACTIONBUTTON_DELETED)
+        return NULL;
+
+    return &buttonItr->second;
+}
+        
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
@@ -12141,6 +12161,7 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
     if (IsInventoryPos(dst))
     {
         // change item amount before check (for unique max count check)
+        AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() - count);
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
 
         ItemPosCountVec dest;
@@ -12149,6 +12170,7 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         {
             delete pNewItem;
             pSrcItem->SetCount(pSrcItem->GetCount() + count);
+            AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() + count);
             SendEquipError(msg, pSrcItem, NULL);
             return;
         }
@@ -12157,10 +12179,18 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
             pSrcItem->SendUpdateToPlayer(this);
         pSrcItem->SetState(ITEM_CHANGED, this);
         StoreItem(dest, pNewItem, true);
+        AddRefundReference(pNewItem->GetGUID(), count);
+        pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
+        pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
+        pNewItem->SetRefundRecipient(GetGUIDLow());
+        pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
+        pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
+        pNewItem->SaveRefundDataToDB(count);
     }
     else if (IsBankPos (dst))
     {
         // change item amount before check (for unique max count check)
+        AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() - count);
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
 
         ItemPosCountVec dest;
@@ -12168,6 +12198,7 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         if (msg != EQUIP_ERR_OK)
         {
             delete pNewItem;
+            AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() + count);
             pSrcItem->SetCount(pSrcItem->GetCount() + count);
             SendEquipError(msg, pSrcItem, NULL);
             return;
@@ -12177,6 +12208,13 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
             pSrcItem->SendUpdateToPlayer(this);
         pSrcItem->SetState(ITEM_CHANGED, this);
         BankItem(dest, pNewItem, true);
+        AddRefundReference(pNewItem->GetGUID(), count);
+        pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
+        pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
+        pNewItem->SetRefundRecipient(GetGUIDLow());
+        pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
+        pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
+        pNewItem->SaveRefundDataToDB(count);
     }
     else if (IsEquipmentPos (dst))
     {
@@ -14126,6 +14164,8 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
     if (questStatusData.uState != QUEST_NEW)
         questStatusData.uState = QUEST_CHANGED;
 
+    GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_QUEST, quest_id);
+
     //starting initial quest script
     if (questGiver && pQuest->GetQuestStartScript() != 0)
         GetMap()->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
@@ -15068,7 +15108,9 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
             real_entry = killed->GetEntry();
     }
 
+    GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, real_entry);   // MUST BE CALLED FIRST
     GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, real_entry, addkillcount);
+
     for (uint8 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         uint32 questid = GetQuestSlotQuestId(i);
@@ -16238,7 +16280,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
 
-    _LoadActions(holder->GetResult(PLAYER_LOGIN_QUERY_LOADACTIONS), true);
+    _LoadActions(holder->GetResult(PLAYER_LOGIN_QUERY_LOADACTIONS));
 
     // unread mails and next delivery time, actual mails not loaded
     _LoadMailInit(holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILCOUNT), holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILDATE));
@@ -16469,8 +16511,10 @@ bool Player::isAllowedToLoot(const Creature* creature)
     return false;
 }
 
-void Player::_LoadActions(QueryResult_AutoPtr result, bool /*startup*/)
+void Player::_LoadActions(QueryResult_AutoPtr result)
 {
+    m_actionButtons.clear();
+
     if (result)
     {
         do
@@ -16686,7 +16730,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                 else
                 {
                     QueryResult_AutoPtr result2 = CharacterDatabase.PQuery(
-                    "SELECT player_guid,paidMoney,paidExtendedCost FROM `item_refund_instance` WHERE item_guid = '%u' AND player_guid = '%u' LIMIT 1",
+                    "SELECT count,player_guid,paidMoney,paidExtendedCost FROM `item_refund_instance` WHERE item_guid = '%u' AND player_guid = '%u' LIMIT 1",
                     item->GetGUIDLow(), GetGUIDLow());
                     if (!result2)
                     {
@@ -16698,10 +16742,10 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                     else
                     {
                         fields = result2->Fetch();
-                        item->SetRefundRecipient(fields[0].GetUInt32());
-                        item->SetPaidMoney(fields[1].GetUInt32());
-                        item->SetPaidExtendedCost(fields[2].GetUInt32());
-                        AddRefundReference(item->GetGUID());
+                        item->SetRefundRecipient(fields[1].GetUInt32());
+                        item->SetPaidMoney(fields[2].GetUInt32());
+                        item->SetPaidExtendedCost(fields[3].GetUInt32());
+                        AddRefundReference(item->GetGUID(), fields[0].GetUInt32());
                     }
                 }
             }
@@ -17750,18 +17794,18 @@ void Player::_SaveActions()
         {
             case ACTIONBUTTON_NEW:
                 CharacterDatabase.PExecute("INSERT INTO character_action (guid,spec,button,action,type) VALUES ('%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), (uint32)m_activeSpec, (uint32)itr->first, (uint32)itr->second.GetAction(), (uint32)itr->second.GetType());
+                    GetGUIDLow(), m_activeSpec, (uint32)itr->first, (uint32)itr->second.GetAction(), (uint32)itr->second.GetType());
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_CHANGED:
                 CharacterDatabase.PExecute("UPDATE character_action SET action = '%u', type = '%u' WHERE guid = '%u' AND button = '%u' AND spec = '%u'",
-                    (uint32)itr->second.GetAction(), (uint32)itr->second.GetType(), GetGUIDLow(), (uint32)itr->first, (uint32)m_activeSpec);
+                    (uint32)itr->second.GetAction(), (uint32)itr->second.GetType(), GetGUIDLow(), (uint32)itr->first, m_activeSpec);
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_DELETED:
-                CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u' and button = '%u' and spec = '%u'", GetGUIDLow(), (uint32)itr->first, (uint32)m_activeSpec);
+                CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u' and button = '%u' and spec = '%u'", GetGUIDLow(), (uint32)itr->first, m_activeSpec);
                 m_actionButtons.erase(itr++);
                 break;
             default:
@@ -17829,14 +17873,14 @@ void Player::_SaveInventory()
     // the client auto counts down in real time after having received the initial played time on the first
     // SMSG_ITEM_REFUND_INFO_RESPONSE packet.
     // Item::UpdatePlayedTime is only called when needed, which is in DB saves, and item refund info requests.
-    std::set<uint64>::iterator i_next;
-    for (std::set<uint64>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
+    std::map<uint64, uint32>::iterator i_next;
+    for (std::map<uint64, uint32>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
     {
         // use copy iterator because itr may be invalid after operations in this loop
         i_next = itr;
         ++i_next;
 
-        Item* iPtr = GetItemByGuid(*itr);
+        Item* iPtr = GetItemByGuid(itr->first);
         if (iPtr)
         {
             iPtr->UpdatePlayedTime(this);
@@ -17844,7 +17888,7 @@ void Player::_SaveInventory()
         }
         else
         {
-            sLog.outError("Can't find item guid " UI64FMTD " but is in refundable storage for player %u ! Removing.", (*itr), GetGUIDLow());
+            sLog.outError("Can't find item guid " UI64FMTD " but is in refundable storage for player %u ! Removing.", itr->first, GetGUIDLow());
             m_refundableItems.erase(itr);
         }
     }
@@ -19666,8 +19710,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUID());
+                it->SaveRefundDataToDB(it->GetCount());
+                AddRefundReference(it->GetGUID(), it->GetCount());
             }
         }
     }
@@ -19724,8 +19768,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUID());
+                it->SaveRefundDataToDB(it->GetCount());
+                AddRefundReference(it->GetGUID(), it->GetCount());
             }
         }
     }
@@ -23520,25 +23564,30 @@ void Player::_SaveTalents()
 
 void Player::UpdateSpecCount(uint8 count)
 {
-    if (GetSpecsCount() == count)
+    uint32 curCount = GetSpecsCount();
+    if (curCount == count)
         return;
+        
+    if (m_activeSpec >= count)
+        ActivateSpec(0);
 
-    if (count == MIN_TALENT_SPECS)
-    {
-        _SaveActions(); // make sure the button list is cleaned up
-        // active spec becomes only spec?
-        CharacterDatabase.PExecute("DELETE FROM character_action WHERE spec<>'%u' AND guid='%u'",m_activeSpec, GetGUIDLow());
-        m_activeSpec = 0;
-    }
-    else if (count == MAX_TALENT_SPECS)
+    // Copy spec data 
+    if (count > curCount)
     {
         _SaveActions(); // make sure the button list is cleaned up
         for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end(); ++itr)
             CharacterDatabase.PExecute("INSERT INTO character_action (guid,button,action,type,spec) VALUES ('%u', '%u', '%u', '%u', '%u')",
-                GetGUIDLow(), uint32(itr->first), uint32(itr->second.GetAction()), uint32(itr->second.GetType()), 1);
+            GetGUIDLow(), uint32(itr->first), uint32(itr->second.GetAction()), uint32(itr->second.GetType()), 1);
+        
     }
-    else
-        return;
+    // Delete spec data for removed spec.
+    else if (count < curCount)
+    { 
+        _SaveActions();
+        CharacterDatabase.PExecute("DELETE FROM character_action WHERE spec<>'%u' AND guid='%u'",m_activeSpec, GetGUIDLow());
+        m_activeSpec = 0;
+    }
+
 
     SetSpecsCount(count);
 
@@ -23550,16 +23599,18 @@ void Player::ActivateSpec(uint8 spec)
     if (GetActiveSpec() == spec)
         return;
 
-    if (GetSpecsCount() != MAX_TALENT_SPECS)
+    if (spec > GetSpecsCount())
         return;
 
+    // TODO:
+    // HACK: this shouldn't be checked at such a low level function but rather at the moment the spell is casted
     if (GetMap()->IsBattleGround() && !HasAura(44521)) // In BattleGround with no Preparation buff
         return;
 
-    _SaveActions();
-
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
+
+    _SaveActions();
 
     UnsummonPetTemporaryIfAny();
     ClearComboPointHolders();
@@ -23575,8 +23626,7 @@ void Player::ActivateSpec(uint8 spec)
 
     // Let client clear his current Actions
     SendActionButtons(2);
-    m_actionButtons.clear();
-
+    // m_actionButtons.clear() is called in the next _LoadActionButtons
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const *talentInfo = sTalentStore.LookupEntry(i);
@@ -23669,8 +23719,10 @@ void Player::ActivateSpec(uint8 spec)
     m_usedTalentCount = spentTalents;
     InitTalentForLevel();
 
-    if (QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT button,action,type FROM character_action WHERE guid = '%u' AND spec = '%u' ORDER BY button", GetGUIDLow(), m_activeSpec))
-        _LoadActions(result, false);
+    if (QueryResult_AutoPtr result = 
+        CharacterDatabase.PQuery("SELECT button,action,type FROM character_action WHERE guid = '%u' AND spec = '%u' ORDER BY button", GetGUIDLow(), m_activeSpec))
+        _LoadActions(result);
+    
 
     ResummonPetTemporaryUnSummonedIfAny();
     SendActionButtons(1);
@@ -23721,12 +23773,25 @@ void Player::SendDuelCountdown(uint32 counter)
     GetSession()->SendPacket(&data);
 }
 
-void Player::AddRefundReference(uint64 it)
+void Player::AddRefundReference(uint64 it, uint32 stackCount)
 {
-    m_refundableItems.insert(it);
+    m_refundableItems[it] = stackCount;
 }
 
 void Player::DeleteRefundReference(uint64 it)
 {
-    m_refundableItems.erase(it);
+    std::map<uint64,uint32>::iterator itr = m_refundableItems.find(it);
+    if (itr != m_refundableItems.end())
+    {
+        m_refundableItems.erase(itr);
+    }    
+}
+
+void Player::AlterRefundReferenceCount(uint64 it, uint32 newCount)
+{
+    std::map<uint64,uint32>::iterator itr = m_refundableItems.find(it);
+    if (itr != m_refundableItems.end())
+    {
+        itr->second = newCount;
+    } 
 }
