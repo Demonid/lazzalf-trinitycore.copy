@@ -147,7 +147,7 @@ enum Target
 
     TARGET_T_END
 };
-
+/*
 enum CastFlags
 {
     CAST_INTURRUPT_PREVIOUS     = 0x01,                     //Interrupt any spell casting
@@ -157,7 +157,7 @@ enum CastFlags
     CAST_FORCE_TARGET_SELF      = 0x10,                     //Forces the target to cast this spell on itself
     CAST_AURA_NOT_PRESENT       = 0x20,                     //Only casts the spell if the target does not have an aura from the spell
 };
-
+*/
 enum EventFlags
 {
     EFLAG_REPEATABLE            = 0x01,                     //Event repeats

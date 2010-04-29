@@ -21,6 +21,12 @@ SDComment: Is missing the ai to make the npcs look for a new mount and use it.
 SDCategory: Trial Of the Champion
 EndScriptData */
 
+/*TODO: Nel primo incontro l'apertura del cancello è legata al fatto
+che 3 dei 5 boss hanno nella funzione JustKilled il codice che permette
+alla porta di aprirsi. Questo approccio non è propriamente corretto
+perchè il cancello non deve aprirsi finchè TUTTI e 3 i boss non sono
+morti e non durante l'incontro (come può succedere ora)*/
+
 #include "ScriptedPch.h"
 #include "ScriptedEscortAI.h"
 #include "Vehicle.h"
@@ -29,10 +35,10 @@ EndScriptData */
 enum eSpells
 {
     //Vehicle
-    SPELL_CHARGE                    = 63010,
+	
     SPELL_SHIELD_BREAKER            = 68504,
-    SPELL_SHIELD                    = 66482,
-
+    SPELL_SHIELD                    = 62544,
+	
     // Marshal Jacob Alerius && Mokra the Skullcrusher || Warrior
     SPELL_MORTAL_STRIKE             = 68783,
     SPELL_MORTAL_STRIKE_H           = 68784,
@@ -60,7 +66,7 @@ enum eSpells
     // Jaelyne Evensong && Zul'tore || Hunter
     SPELL_DISENGAGE                 = 68340, //not implemented in the AI yet...
     SPELL_LIGHTNING_ARROWS          = 66083,
-    SPELL_MULTI_SHOT                = 66081,
+    SPELL_MULTI_SHOT                = 49047,
     SPELL_SHOOT                     = 65868,
     SPELL_SHOOT_H                   = 67988,
 
@@ -70,7 +76,12 @@ enum eSpells
     SPELL_FAN_OF_KNIVES             = 67706,
     SPELL_POISON_BOTTLE             = 67701
 };
-
+enum eEnums
+{
+    SAY_START                       = -1999939,
+    SAY_START2                      = -1999937
+};
+	
 enum eSeat
 {
     SEAT_ID_0                       = 0
@@ -92,17 +103,17 @@ void AggroAllPlayers(Creature* pTemp)
 {
     Map::PlayerList const &PlList = pTemp->GetMap()->GetPlayers();
 
-    if (PlList.isEmpty())
+    if(PlList.isEmpty())
             return;
 
     for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
     {
-        if (Player* pPlayer = i->getSource())
+        if(Player* pPlayer = i->getSource())
         {
-            if (pPlayer->isGameMaster())
+            if(pPlayer->isGameMaster())
                 continue;
 
-            if (pPlayer->isAlive())
+            if(pPlayer->isAlive())
             {
                 pTemp->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 pTemp->SetReactState(REACT_AGGRESSIVE);
@@ -145,48 +156,64 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
 {
     generic_vehicleAI_toc5AI(Creature* pCreature) : npc_escortAI(pCreature)
     {
+		hasBeenInCombat = false;
         SetDespawnAtEnd(false);
         uiWaypointPath = 0;
-
+		uiCheckTimer=5000;
         pInstance = pCreature->GetInstanceData();
     }
 
-    ScriptedInstance* pInstance;
 
-    uint32 uiChargeTimer;
+
+    ScriptedInstance* pInstance;
+	
+	bool hasBeenInCombat;
+
     uint32 uiShieldBreakerTimer;
     uint32 uiBuffTimer;
-
+	uint32 uiCheckTimer;
     uint32 uiWaypointPath;
 
     void Reset()
     {
-        uiChargeTimer = 5000;
         uiShieldBreakerTimer = 8000;
         uiBuffTimer = urand(30000,60000);
+		
+
+
     }
 
-    void SetData(uint32 uiType, uint32 /*uiData*/)
+    void SetData(uint32 uiType, uint32 uiData)
     {
         switch(uiType)
         {
             case 1:
-                AddWaypoint(0,747.36,634.07,411.572);
-                AddWaypoint(1,780.43,607.15,411.82);
-                AddWaypoint(2,785.99,599.41,411.92);
-                AddWaypoint(3,778.44,601.64,411.79);
+                AddWaypoint(0,746.45,647.03,411.57);
+                AddWaypoint(1,771.434, 642.606, 411.9);
+                AddWaypoint(2,779.807, 617.535, 411.716);
+                AddWaypoint(3,771.098, 594.635, 411.625);
+				AddWaypoint(4,746.887, 583.425, 411.668);
+				AddWaypoint(5,715.176, 583.782, 412.394);
+				AddWaypoint(6,720.719, 591.141, 411.737);
                 uiWaypointPath = 1;
                 break;
             case 2:
-                AddWaypoint(0,747.35,634.07,411.57);
-                AddWaypoint(1,768.72,581.01,411.92);
-                AddWaypoint(2,763.55,590.52,411.71);
+                AddWaypoint(0,746.45,647.03,411.57);
+                AddWaypoint(1,771.434, 642.606, 411.9);
+                AddWaypoint(2,779.807, 617.535, 411.716);
+                AddWaypoint(3,771.098, 594.635, 411.625);
+				AddWaypoint(4,746.887, 583.425, 411.668);
+				AddWaypoint(5,746.16, 571.678, 412.389);
+				AddWaypoint(6,746.887, 583.425, 411.668);
                 uiWaypointPath = 2;
                 break;
             case 3:
-                AddWaypoint(0,747.35,634.07,411.57);
-                AddWaypoint(1,784.02,645.33,412.39);
-                AddWaypoint(2,775.67,641.91,411.91);
+                AddWaypoint(0,746.45,647.03,411.57);
+                AddWaypoint(1,771.434, 642.606, 411.9);
+                AddWaypoint(2,779.807, 617.535, 411.716);
+                AddWaypoint(3,771.098, 594.635, 411.625);
+				AddWaypoint(4,777.759, 584.577, 412.393);
+				AddWaypoint(5,772.48, 592.99, 411.68);
                 uiWaypointPath = 3;
                 break;
         }
@@ -210,10 +237,26 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
         }
     }
 
-    void EnterCombat(Unit* /*pWho*/)
+    void EnterCombat(Unit* pWho)
     {
+		hasBeenInCombat = true;
         DoCastSpellShield();
     }
+	bool CheckPlayersAlive()
+	{
+		Map* pMap = me->GetMap();
+		if (pMap && pMap->IsDungeon())
+        {
+			
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return true;				
+			}
+		}
+		return false;
+	}
 
     void DoCastSpellShield()
     {
@@ -224,7 +267,24 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
     void UpdateAI(const uint32 uiDiff)
     {
         npc_escortAI::UpdateAI(uiDiff);
-
+		
+		if (uiCheckTimer <= uiDiff)
+        {
+			if(!CheckPlayersAlive())
+				if(pInstance)
+				{
+					//DoScriptText(SAY_START2, me);
+					pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
+					GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+					if(GO)
+						pInstance->HandleGameObject(GO->GetGUID(),true);
+			 
+					me->RemoveFromWorld();
+				}
+				
+		uiCheckTimer=5000;
+		}else uiCheckTimer -= uiDiff;
+		
         if (!UpdateVictim())
             return;
 
@@ -236,32 +296,13 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
             uiBuffTimer = urand(30000,45000);
         }else uiBuffTimer -= uiDiff;
 
-        if (uiChargeTimer <= uiDiff)
-        {
-            Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            if (me->GetMap()->IsDungeon() && !players.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                {
-                    Player* pPlayer = itr->getSource();
-                    if (pPlayer && !pPlayer->isGameMaster() && me->IsInRange(pPlayer,8.0f,25.0f,false))
-                    {
-                        DoResetThreat();
-                        me->AddThreat(pPlayer,1.0f);
-                        DoCast(pPlayer, SPELL_CHARGE);
-                        break;
-                    }
-                }
-            }
-            uiChargeTimer = 5000;
-        }else uiChargeTimer -= uiDiff;
-
         //dosen't work at all
         if (uiShieldBreakerTimer <= uiDiff)
         {
             Vehicle *pVehicle = me->GetVehicleKit();
             if (!pVehicle)
-                return;
+				return;
+
 
             if (Unit* pPassenger = pVehicle->GetPassenger(SEAT_ID_0))
             {
@@ -301,6 +342,8 @@ struct boss_warrior_toc5AI : public ScriptedAI
         bDone = false;
         bHome = false;
 
+		hasBeenInCombat = false;
+
         uiPhase = 0;
         uiPhaseTimer = 0;
 
@@ -313,7 +356,7 @@ struct boss_warrior_toc5AI : public ScriptedAI
 
     uint8 uiPhase;
     uint32 uiPhaseTimer;
-
+    
     uint32 uiBladeStormTimer;
     uint32 uiInterceptTimer;
     uint32 uiMortalStrikeTimer;
@@ -322,12 +365,39 @@ struct boss_warrior_toc5AI : public ScriptedAI
     bool bDone;
     bool bHome;
 
+	bool hasBeenInCombat;	
+
     void Reset()
     {
         uiBladeStormTimer = urand(15000,20000);
         uiInterceptTimer  = 7000;
         uiMortalStrikeTimer = urand(8000,12000);
-    }
+
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			
+			if(pInstance)
+			 pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
+			 	 
+			if(pInstance)
+			{
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+			if(GO)
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+			 
+			// pInstance->SetData(BOSS_GRAND_CHAMPIONS, NOT_STARTED);
+			}
+			me->RemoveFromWorld();
+			//ResetEncounter();
+		}
+	}
 
     void JustReachedHome()
     {
@@ -342,11 +412,20 @@ struct boss_warrior_toc5AI : public ScriptedAI
         bHome = false;
     }
 
+	void EnterCombat(Unit* pWho)
+    {
+		hasBeenInCombat = true;
+		
+    }
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!bDone && GrandChampionsOutVehicle(me))
         {
             bDone = true;
+
+			
+ 		DoScriptText(SAY_START2, me);	
 
             if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
                 me->SetHomePosition(739.678,662.541,412.393,4.49);
@@ -388,29 +467,112 @@ struct boss_warrior_toc5AI : public ScriptedAI
                     }
                 }
             }
-            uiInterceptTimer = 7000;
+            uiInterceptTimer = 25000;
         } else uiInterceptTimer -= uiDiff;
 
         if (uiBladeStormTimer <= uiDiff)
         {
             DoCastVictim(SPELL_BLADESTORM);
-            uiBladeStormTimer = urand(15000,20000);
+            uiBladeStormTimer = urand(25000,35000);
         } else uiBladeStormTimer -= uiDiff;
 
         if (uiMortalStrikeTimer <= uiDiff)
         {
-            DoCastVictim(SPELL_MORTAL_STRIKE);
-            uiMortalStrikeTimer = urand(8000,12000);
+            DoCastVictim(DUNGEON_MODE(SPELL_MORTAL_STRIKE, SPELL_MORTAL_STRIKE_H));
+            uiMortalStrikeTimer = urand(22000,26000);
         } else uiMortalStrikeTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
+	 	hasBeenInCombat = false;	
+		DoScriptText(SAY_START, me);	
         if (pInstance)
             pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
     }
+	
+	void ResetEncounter()
+	{
+		Creature* spawn_1;
+		
+		if(me)
+		{
+			Map *instance=me->GetMap();
+			if(instance && pInstance)
+			{
+				//apri il cancello
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+				
+				/*sostanzialmente vede qual è il boss e respawna gli altri due solo se sono morti o despawnati, tenendo conto che 
+				 *quelli già vivi respawnano da soli*/
+				if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
+				{
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_2))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_3))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					spawn_1 = me->SummonCreature(me->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+				}				
+				
+				//if(spawn_1) //perchè non si può mai essere troppo sicuri :S (appunto)
+				//{
+				//	spawn_1->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				//	spawn_1->SetReactState(REACT_AGGRESSIVE);
+				//}
+				 //a questo punto il boss, vivo o morto che sia, viene despawnato
+				me->RemoveFromWorld();
+							
+			}
+		}			
+	}
+
+	void Respawn(uint32 id, int posizione)
+	{
+		Map *instance=me->GetMap();
+		Creature* npc = instance->GetCreature(pInstance->GetData64(id)); //vediamo se c'è l'npc da respawnare
+		Creature* spawn_2;
+
+		if(!npc)
+			return;
+
+		if((npc && !(npc->isAlive()))) //ovvero se il boss c'è ma è morto oppure se il boss è già despawnato
+		{
+			switch(posizione)
+			{
+				case 1:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 2:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 3:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+			}
+
+			//if(spawn_2) //perchè non si può mai essere troppo sicuri :S (appunto)
+			//{
+			//	spawn_2->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			//	spawn_2->SetReactState(REACT_AGGRESSIVE);
+			//}
+
+			if(npc) //solo se è ancora spawnato (quello vecchio) lo despawna
+				npc->RemoveFromWorld();
+		}
+	}
 };
 
 CreatureAI* GetAI_boss_warrior_toc5(Creature* pCreature)
@@ -427,6 +589,8 @@ struct boss_mage_toc5AI : public ScriptedAI
 
         bDone = false;
         bHome = false;
+
+		hasBeenInCombat = false;
 
         uiPhase = 0;
         uiPhaseTimer = 0;
@@ -449,14 +613,40 @@ struct boss_mage_toc5AI : public ScriptedAI
     bool bDone;
     bool bHome;
 
+	bool hasBeenInCombat;
+
     void Reset()
     {
         uiFireBallTimer = 5000;
         uiPolymorphTimer  = 8000;
         uiBlastWaveTimer = 12000;
         uiHasteTimer = 22000;
-    }
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			
+			//ResetEncounter();
+			if(pInstance)
+				 pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
 
+			 	 
+			if(pInstance)
+			{
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+			if(GO)
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+			 
+			}
+			// pInstance->SetData(BOSS_GRAND_CHAMPIONS, NOT_STARTED);
+			 me->RemoveFromWorld();
+		}
+	}
     void JustReachedHome()
     {
         ScriptedAI::JustReachedHome();
@@ -468,6 +658,11 @@ struct boss_mage_toc5AI : public ScriptedAI
         uiPhase = 1;
 
         bHome = false;
+    }
+
+	void EnterCombat(Unit* pWho)
+    {
+		hasBeenInCombat = true;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -499,34 +694,26 @@ struct boss_mage_toc5AI : public ScriptedAI
             }
         }else uiPhaseTimer -= uiDiff;
 
-        if (uiFireBallTimer <= uiDiff)
-        {
-            if (me->getVictim())
-                DoCastVictim(SPELL_FIREBALL);
-            uiFireBallTimer = 5000;
-        } else uiFireBallTimer -= uiDiff;
-
-
         if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
             return;
 
         if (uiFireBallTimer <= uiDiff)
         {
-            DoCastVictim(SPELL_FIREBALL);
-            uiFireBallTimer = 5000;
+            DoCastVictim(DUNGEON_MODE(SPELL_FIREBALL,SPELL_FIREBALL_H));
+            uiFireBallTimer = 17000;
         } else uiFireBallTimer -= uiDiff;
 
         if (uiPolymorphTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget, SPELL_POLYMORPH);
-            uiPolymorphTimer = 8000;
+                DoCast(pTarget, DUNGEON_MODE(SPELL_POLYMORPH,SPELL_POLYMORPH_H));
+            uiPolymorphTimer = 22000;
         } else uiPolymorphTimer -= uiDiff;
 
         if (uiBlastWaveTimer <= uiDiff)
         {
-            DoCastAOE(SPELL_BLAST_WAVE,false);
-            uiBlastWaveTimer = 13000;
+            DoCastAOE(DUNGEON_MODE(SPELL_BLAST_WAVE,SPELL_BLAST_WAVE_H),false);
+            uiBlastWaveTimer = 30000;
         } else uiBlastWaveTimer -= uiDiff;
 
         if (uiHasteTimer <= uiDiff)
@@ -534,17 +721,99 @@ struct boss_mage_toc5AI : public ScriptedAI
             me->InterruptNonMeleeSpells(true);
 
             DoCast(me,SPELL_HASTE);
-            uiHasteTimer = 22000;
+            uiHasteTimer = 40000;
         } else uiHasteTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
+	 	hasBeenInCombat = false;	
+		DoScriptText(SAY_START, me);	
         if (pInstance)
             pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
     }
+		void ResetEncounter()
+	{
+		Creature* spawn_1;
+		
+		if(me)
+		{
+			Map *instance=me->GetMap();
+			if(instance && pInstance)
+			{
+				//apri il cancello
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+				
+				/*sostanzialmente vede qual è il boss e respawna gli altri due solo se sono morti o despawnati, tenendo conto che 
+				 *quelli già vivi respawnano da soli*/
+				if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
+				{
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_2))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_3))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					spawn_1 = me->SummonCreature(me->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+				}				
+				
+				//if(spawn_1) //perchè non si può mai essere troppo sicuri :S
+				//{
+				//	spawn_1->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				//	spawn_1->SetReactState(REACT_AGGRESSIVE);
+				//}
+				 //a questo punto il boss, vivo o morto che sia, viene despawnato
+				me->RemoveFromWorld();
+							
+			}
+		}			
+	}
+
+	void Respawn(uint32 id, int posizione)
+	{
+		Map *instance=me->GetMap();
+		Creature* npc = instance->GetCreature(pInstance->GetData64(id)); //vediamo se c'è l'npc da respawnare
+		Creature* spawn_2;
+
+		if(!npc)
+			return;
+
+		if((npc && !(npc->isAlive()))) //ovvero se il boss c'è ma è morto oppure se il boss è già despawnato
+		{
+			switch(posizione)
+			{
+				case 1:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 2:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 3:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+			}
+
+			//if(spawn_2) //perchè non si può mai essere troppo sicuri :S
+			//{
+			//	spawn_2->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			//	spawn_2->SetReactState(REACT_AGGRESSIVE);
+			//}
+
+			if(npc) //solo se è ancora spawnato (quello vecchio) lo despawna
+				npc->RemoveFromWorld();
+		}
+	}
 };
 
 CreatureAI* GetAI_boss_mage_toc5(Creature* pCreature)
@@ -561,6 +830,8 @@ struct boss_shaman_toc5AI : public ScriptedAI
 
         bDone = false;
         bHome = false;
+
+		hasBeenInCombat = false;
 
         uiPhase = 0;
         uiPhaseTimer = 0;
@@ -583,17 +854,43 @@ struct boss_shaman_toc5AI : public ScriptedAI
     bool bDone;
     bool bHome;
 
+	bool hasBeenInCombat;
+
     void Reset()
     {
         uiChainLightningTimer = 16000;
         uiHealingWaveTimer = 12000;
         uiEartShieldTimer = urand(30000,35000);
         uiHexMendingTimer = urand(20000,25000);
-    }
-
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+		 if(pInstance)
+			pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
+		 	 
+		 if(pInstance)
+		 {
+			GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+		 if(GO)
+			pInstance->HandleGameObject(GO->GetGUID(),true);
+		  
+		 }
+		// pInstance->SetData(BOSS_GRAND_CHAMPIONS, NOT_STARTED);
+		 //pInstance->SetData(DATA_MOVEMENT_DONE,DONE);
+		 me->RemoveFromWorld();
+			//ResetEncounter();
+		}
+	}
     void EnterCombat(Unit* pWho)
     {
-        DoCast(me,SPELL_EARTH_SHIELD);
+        hasBeenInCombat = true;
+		DoCast(me,SPELL_EARTH_SHIELD);
         DoCast(pWho,SPELL_HEX_OF_MENDING);
     };
 
@@ -645,9 +942,9 @@ struct boss_shaman_toc5AI : public ScriptedAI
         if (uiChainLightningTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget,SPELL_CHAIN_LIGHTNING);
+                DoCast(pTarget,DUNGEON_MODE(SPELL_CHAIN_LIGHTNING,SPELL_CHAIN_LIGHTNING_H));
 
-            uiChainLightningTimer = 16000;
+            uiChainLightningTimer = 23000;
         } else uiChainLightningTimer -= uiDiff;
 
         if (uiHealingWaveTimer <= uiDiff)
@@ -657,35 +954,125 @@ struct boss_shaman_toc5AI : public ScriptedAI
             if (!bChance)
             {
                 if (Unit* pFriend = DoSelectLowestHpFriendly(40))
-                    DoCast(pFriend,SPELL_HEALING_WAVE);
+                    DoCast(pFriend,DUNGEON_MODE(SPELL_HEALING_WAVE,SPELL_HEALING_WAVE_H));
             } else
-                DoCast(me,SPELL_HEALING_WAVE);
+                DoCast(me,DUNGEON_MODE(SPELL_HEALING_WAVE,SPELL_HEALING_WAVE_H));
 
-            uiHealingWaveTimer = 12000;
+            uiHealingWaveTimer = 19000;
         } else uiHealingWaveTimer -= uiDiff;
 
         if (uiEartShieldTimer <= uiDiff)
         {
             DoCast(me,SPELL_EARTH_SHIELD);
 
-            uiEartShieldTimer = urand(30000,35000);
+            uiEartShieldTimer = urand(40000,45000);
         } else uiEartShieldTimer -= uiDiff;
 
         if (uiHexMendingTimer <= uiDiff)
         {
             DoCastVictim(SPELL_HEX_OF_MENDING,true);
 
-            uiHexMendingTimer = urand(20000,25000);
+            uiHexMendingTimer = urand(30000,35000);
         } else uiHexMendingTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
+	 	hasBeenInCombat = false;	
+		DoScriptText(SAY_START, me);	
+			
         if (pInstance)
             pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+
+		//what a nonsense! -.-
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+		
+
     }
+	
+	void ResetEncounter()
+	{
+		Creature* spawn_1;
+		
+		if(me)
+		{
+			Map *instance=me->GetMap();
+			if(instance && pInstance)
+			{
+				//apri il cancello
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+				
+				/*sostanzialmente vede qual è il boss e respawna gli altri due solo se sono morti o despawnati, tenendo conto che 
+				 *quelli già vivi respawnano da soli*/
+				if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
+				{
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_2))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_3))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					spawn_1 = me->SummonCreature(me->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+				}				
+				
+				//if(spawn_1) //perchè non si può mai essere troppo sicuri :S
+				//{
+				//	spawn_1->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				//	spawn_1->SetReactState(REACT_AGGRESSIVE);
+				//}
+				 //a questo punto il boss, vivo o morto che sia, viene despawnato
+				me->RemoveFromWorld();
+							
+			}
+		}			
+	}
+
+	void Respawn(uint32 id, int posizione)
+	{
+		Map *instance=me->GetMap();
+		Creature* npc = instance->GetCreature(pInstance->GetData64(id)); //vediamo se c'è l'npc da respawnare
+		Creature* spawn_2;
+
+		if(!npc)
+			return;
+
+		if((npc && !(npc->isAlive()))) //ovvero se il boss c'è ma è morto oppure se il boss è già despawnato
+		{
+			switch(posizione)
+			{
+				case 1:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 2:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 3:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+			}
+
+			//if(spawn_2) //perchè non si può mai essere troppo sicuri :S
+			//{
+			//	spawn_2->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			//	spawn_2->SetReactState(REACT_AGGRESSIVE);
+			//}
+
+			if(npc) //solo se è ancora spawnato (quello vecchio) lo despawna
+				npc->RemoveFromWorld();
+		}
+	}
 };
 
 CreatureAI* GetAI_boss_shaman_toc5(Creature* pCreature)
@@ -702,6 +1089,8 @@ struct boss_hunter_toc5AI : public ScriptedAI
 
         bDone = false;
         bHome = false;
+		
+		hasBeenInCombat = false;
 
         uiPhase = 0;
         uiPhaseTimer = 0;
@@ -717,6 +1106,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
     uint32 uiPhaseTimer;
 
     uint32 uiShootTimer;
+    uint32 uiDisengageCooldown;
     uint32 uiMultiShotTimer;
     uint32 uiLightningArrowsTimer;
 
@@ -726,16 +1116,43 @@ struct boss_hunter_toc5AI : public ScriptedAI
     bool bDone;
     bool bHome;
 
+	bool hasBeenInCombat;
+
     void Reset()
     {
         uiShootTimer = 12000;
         uiMultiShotTimer = 0;
         uiLightningArrowsTimer = 7000;
+        uiDisengageCooldown = 10000;
 
         uiTargetGUID = 0;
 
         bShoot = false;
-    }
+		Map* pMap = me->GetMap();
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+        {
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			
+			 if(pInstance)
+				pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
+			 if(pInstance)
+			 {
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+			 if(GO)
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+			
+			// pInstance->SetData(BOSS_GRAND_CHAMPIONS, NOT_STARTED);
+			 }
+			
+			 me->RemoveFromWorld();
+			//ResetEncounter();
+		}
+	}
 
     void JustReachedHome()
     {
@@ -748,6 +1165,11 @@ struct boss_hunter_toc5AI : public ScriptedAI
         uiPhase = 1;
 
         bHome = false;
+    }
+
+	void EnterCombat(Unit* pWho)
+    {
+		hasBeenInCombat = true;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -769,7 +1191,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
             EnterEvadeMode();
             bHome = true;
         }
-
+				
         if (uiPhaseTimer <= uiDiff)
         {
             if (uiPhase == 1)
@@ -782,10 +1204,23 @@ struct boss_hunter_toc5AI : public ScriptedAI
         if (!UpdateVictim() || me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
             return;
 
+        if (uiDisengageCooldown <= uiDiff)
+        {
+            if (me->IsWithinDistInMap(me->getVictim(), 5) && uiDisengageCooldown == 0)
+            {
+                DoCast(me, SPELL_DISENGAGE);
+                uiDisengageCooldown = 35000;
+            }
+            uiDisengageCooldown = 20000;
+        }else uiDisengageCooldown -= uiDiff;
+		
         if (uiLightningArrowsTimer <= uiDiff)
         {
-            DoCastAOE(SPELL_LIGHTNING_ARROWS,false);
-            uiLightningArrowsTimer = 7000;
+            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                DoCast(pTarget,SPELL_LIGHTNING_ARROWS);
+				
+            uiLightningArrowsTimer = 15000;
+
         } else uiLightningArrowsTimer -= uiDiff;
 
         if (uiShootTimer <= uiDiff)
@@ -793,10 +1228,10 @@ struct boss_hunter_toc5AI : public ScriptedAI
             if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST,0,30.0f))
             {
                 uiTargetGUID = pTarget->GetGUID();
-                DoCast(pTarget, SPELL_SHOOT);
+                DoCast(pTarget, DUNGEON_MODE(SPELL_SHOOT,SPELL_SHOOT_H));
             }
-            uiShootTimer = 12000;
-            uiMultiShotTimer = 3000;
+            uiShootTimer = 19000;
+            uiMultiShotTimer = 8000;
             bShoot = true;
         } else uiShootTimer -= uiDiff;
 
@@ -830,11 +1265,99 @@ struct boss_hunter_toc5AI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
+	 	hasBeenInCombat = false;	
+		DoScriptText(SAY_START, me);	
         if (pInstance)
             pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+
+		//what a nonsense! -.-
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
     }
+		
+	void ResetEncounter()
+	{
+		Creature* spawn_1;
+		
+		if(me)
+		{
+			Map *instance=me->GetMap();
+			if(instance && pInstance)
+			{
+				//apri il cancello
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+				
+				/*sostanzialmente vede qual è il boss e respawna gli altri due solo se sono morti o despawnati, tenendo conto che 
+				 *quelli già vivi respawnano da soli*/
+				if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
+				{
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_2))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_3))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					spawn_1 = me->SummonCreature(me->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+				}				
+				
+				//if(spawn_1) //perchè non si può mai essere troppo sicuri :S
+				//{
+				//	spawn_1->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				//	spawn_1->SetReactState(REACT_AGGRESSIVE);
+				//}
+				 //a questo punto il boss, vivo o morto che sia, viene despawnato
+				me->RemoveFromWorld();
+							
+			}
+		}			
+	}
+
+	void Respawn(uint32 id, int posizione)
+	{
+		Map *instance=me->GetMap();
+		Creature* npc = instance->GetCreature(pInstance->GetData64(id)); //vediamo se c'è l'npc da respawnare
+		Creature* spawn_2;
+
+		if(!npc)
+			return;
+
+		if((npc && !(npc->isAlive()))) //ovvero se il boss c'è ma è morto oppure se il boss è già despawnato
+		{
+			switch(posizione)
+			{
+				case 1:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 2:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 3:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+			}
+
+			//if(spawn_2) //perchè non si può mai essere troppo sicuri :S
+			//{
+			//	spawn_2->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			//	spawn_2->SetReactState(REACT_AGGRESSIVE);
+			//}
+
+			if(npc) //solo se è ancora spawnato (quello vecchio) lo despawna
+				npc->RemoveFromWorld();
+		}
+	}
+	
 };
 
 CreatureAI* GetAI_boss_hunter_toc5(Creature* pCreature)
@@ -855,6 +1378,8 @@ struct boss_rouge_toc5AI : public ScriptedAI
         uiPhase = 0;
         uiPhaseTimer = 0;
 
+		hasBeenInCombat = false;
+
         me->SetReactState(REACT_PASSIVE);
         // THIS IS A HACK, SHOULD BE REMOVED WHEN THE EVENT IS FULL SCRIPTED
         me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE);
@@ -871,12 +1396,38 @@ struct boss_rouge_toc5AI : public ScriptedAI
     bool bDone;
     bool bHome;
 
+	bool hasBeenInCombat;
+
     void Reset()
     {
         uiEviscerateTimer = 8000;
         uiFanKivesTimer   = 14000;
         uiPosionBottleTimer = 19000;
-    }
+		Map* pMap = me->GetMap();
+
+		if (hasBeenInCombat && pMap && pMap->IsDungeon())
+		{
+			Map::PlayerList const &players = pMap->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+				if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+					return; //se almeno un player è vivo, esce						
+			}
+			if(pInstance)
+				pInstance->SetData(BOSS_GRAND_CHAMPIONS, FAIL);
+				 
+			if(pInstance)
+			{
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+			if(GO)
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+			
+			}
+			 me->RemoveFromWorld();
+			//ResetEncounter();
+		}
+		
+	}
 
     void JustReachedHome()
     {
@@ -889,6 +1440,11 @@ struct boss_rouge_toc5AI : public ScriptedAI
         uiPhase = 1;
 
         bHome = false;
+    }
+
+	void EnterCombat(Unit* pWho)
+    {
+		hasBeenInCombat = true;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -925,31 +1481,117 @@ struct boss_rouge_toc5AI : public ScriptedAI
 
         if (uiEviscerateTimer <= uiDiff)
         {
-            DoCast(me->getVictim(),SPELL_EVISCERATE);
-            uiEviscerateTimer = 8000;
+            DoCast(me->getVictim(),DUNGEON_MODE(SPELL_EVISCERATE,SPELL_EVISCERATE_H));
+            uiEviscerateTimer = 22000;
         } else uiEviscerateTimer -= uiDiff;
 
         if (uiFanKivesTimer <= uiDiff)
         {
             DoCastAOE(SPELL_FAN_OF_KNIVES,false);
-            uiFanKivesTimer = 14000;
+            uiFanKivesTimer = 20000;
         } else uiFanKivesTimer -= uiDiff;
 
         if (uiPosionBottleTimer <= uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget,SPELL_POISON_BOTTLE);
+            DoCast(pTarget,SPELL_POISON_BOTTLE);
             uiPosionBottleTimer = 19000;
         } else uiPosionBottleTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    void JustDied(Unit* pKiller)
     {
+		hasBeenInCombat = false;
+		DoScriptText(SAY_START, me);	
         if (pInstance)
             pInstance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
+
+		//where's the sense in that?
+		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+                    pInstance->HandleGameObject(pGO->GetGUID(),true);
     }
+	void ResetEncounter()
+	{
+		Creature* spawn_1;
+		
+		if(me)
+		{
+			Map *instance=me->GetMap();
+			if(instance && pInstance)
+			{
+				//apri il cancello
+				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+				pInstance->HandleGameObject(GO->GetGUID(),true);
+				
+				/*sostanzialmente vede qual è il boss e respawna gli altri due solo se sono morti o despawnati, tenendo conto che 
+				 *quelli già vivi respawnano da soli*/
+				if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_1))
+				{
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_2))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_3,3);
+					spawn_1 = me->SummonCreature(me->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+				}
+				else if (pInstance && me->GetGUID() == pInstance->GetData64(DATA_GRAND_CHAMPION_3))
+				{
+					Respawn(DATA_GRAND_CHAMPION_1,1);
+					Respawn(DATA_GRAND_CHAMPION_2,2);
+					spawn_1 = me->SummonCreature(me->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+				}				
+				
+				//if(spawn_1) //perchè non si può mai essere troppo sicuri :S
+				//{
+				//	spawn_1->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+				//	spawn_1->SetReactState(REACT_AGGRESSIVE);
+				//}
+				 //a questo punto il boss, vivo o morto che sia, viene despawnato
+				me->RemoveFromWorld();
+							
+			}
+		}			
+	}
+
+	void Respawn(uint32 id, int posizione)
+	{
+		Map *instance=me->GetMap();
+		Creature* npc = instance->GetCreature(pInstance->GetData64(id)); //vediamo se c'è l'npc da respawnare
+		Creature* spawn_2;
+
+		if(!npc)
+			return;
+
+		if((npc && !(npc->isAlive()))) //ovvero se il boss c'è ma è morto oppure se il boss è già despawnato
+		{
+			switch(posizione)
+			{
+				case 1:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),739.678,662.541,412.393,4.49,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 2:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),746.71,661.02,411.69,4.6,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+				case 3:
+					spawn_2 = me->SummonCreature(npc->GetEntry(),754.34,660.70,412.39,4.79,TEMPSUMMON_MANUAL_DESPAWN);
+					break;
+			}
+
+			//if(spawn_2) //perchè non si può mai essere troppo sicuri :S
+			//{
+			//	spawn_2->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+			//	spawn_2->SetReactState(REACT_AGGRESSIVE);
+			//}
+
+			if(npc) //solo se è ancora spawnato (quello vecchio) lo despawna
+				npc->RemoveFromWorld();
+		}
+	}
 };
 
 CreatureAI* GetAI_boss_rouge_toc5(Creature* pCreature)
