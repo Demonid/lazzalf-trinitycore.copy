@@ -24,6 +24,20 @@
 #define SAY_SLAY -1
 */
 
+enum
+{
+    // Con-speed-atory timed achievement. 
+    // TODO Should be started when 1st trash is killed.
+    ACHIEV_CON_SPEED_ATORY_START_EVENT            = 21597,
+    SPELL_ACHIEVEMENT_CHECK                       = 65074,
+
+    // Lumberjacked timed achievement.
+    // TODO should be started when 1st elder is killed.
+    // Spell should be casted when 3rd elder is killed.
+    ACHIEV_LUMBERJACKED                           = 21686,
+    SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK          = 65296,
+};
+
 struct boss_freyaAI : public BossAI
 {
     boss_freyaAI(Creature* pCreature) : BossAI(pCreature, BOSS_FREYA){}
@@ -41,6 +55,10 @@ struct boss_freyaAI : public BossAI
     void JustDied(Unit *victim)
     {
         _JustDied();
+
+        // cast is not rewarding the achievement.
+        // DoCast(SPELL_ACHIEVEMENT_CHECK);
+        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT_CHECK);
     }
 
     void Aggro(Unit* pWho)
