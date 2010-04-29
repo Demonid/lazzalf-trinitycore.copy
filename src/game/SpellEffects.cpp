@@ -4724,11 +4724,17 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         }
     }
 
+    WeaponAttackType attackType = m_attackType;
+    
+    // Threat of Thassarian
+    if (m_triggeredByAuraSpell && m_triggeredByAuraSpell->SpellIconID == 2023)
+        attackType = OFF_ATTACK;
+
     // apply to non-weapon bonus weapon total pct effect, weapon total flat effect included in weapon damage
     if (fixed_bonus || spell_bonus)
     {
         UnitMods unitMod;
-        switch(m_attackType)
+        switch(attackType)
         {
             default:
             case BASE_ATTACK:   unitMod = UNIT_MOD_DAMAGE_MAINHAND; break;
@@ -4740,7 +4746,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         if (m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL)
              weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
 
-        if (m_attackType == OFF_ATTACK) // Off-Hand fixed_bonus is not reduced by Off-Hand Penality (50%)
+        if (attackType == OFF_ATTACK) // Off-Hand fixed_bonus is not reduced by Off-Hand Penality (50%)
  	            weapon_total_pct *= 2;
 
         if (fixed_bonus)
@@ -4749,7 +4755,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             spell_bonus = int32(spell_bonus * weapon_total_pct);
     }
 
-    int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, true);
+    int32 weaponDamage = m_caster->CalculateDamage(attackType, normalized, true);
 
     // Sequence is important
     for (int j = 0; j < 3; ++j)
@@ -4780,7 +4786,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
     uint32 eff_damage = uint32(weaponDamage > 0 ? weaponDamage : 0);
 
     // Add melee damage bonuses (also check for negative)
-    m_caster->MeleeDamageBonus(unitTarget, &eff_damage, m_attackType, m_spellInfo);
+    m_caster->MeleeDamageBonus(unitTarget, &eff_damage, attackType, m_spellInfo);
     m_damage+= eff_damage;
 }
 
