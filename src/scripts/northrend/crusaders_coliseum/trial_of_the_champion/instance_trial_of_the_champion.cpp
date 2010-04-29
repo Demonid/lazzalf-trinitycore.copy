@@ -246,7 +246,9 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                         if (Creature* pSummon = instance->GetCreature(*itr))
 						{
 							
-							pSummon->Unmount();
+							Vehicle* pVehicle=pSummon->GetVehicleKit();
+							if(pVehicle)
+								pVehicle->Dismiss();
 							pSummon->SetVisibility(VISIBILITY_OFF);
 						}
 				}else if (uiData == DONE)
