@@ -307,7 +307,7 @@ struct generic_vehicleAI_toc5AI : public npc_escortAI
 		if (uiTimerSpell2 <= uiDiff)
         {
 			DoCast(SPELL_SHIELD_1);
-			uiTimerSpell2=urand(15000,50000);
+			uiTimerSpell2=urand(80000,90000);
 
 		}else uiTimerSpell2-=uiDiff;
 
