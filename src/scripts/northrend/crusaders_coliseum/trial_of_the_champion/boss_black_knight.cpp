@@ -155,9 +155,8 @@ struct boss_black_knightAI : public ScriptedAI
 			Map::PlayerList const &players = pMap->GetPlayers();
 			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
 			{
-					if(itr->getSource())
-						if(itr->getSource()->isAlive())
-							bReset=false;
+					if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
+						bReset=false;
 						
 			}
 		}
