@@ -9297,7 +9297,7 @@ void ObjectMgr::LoadGMTickets()
 
     } while (result->NextRow());
 
-    result = CharacterDatabase.PQuery("SELECT MAX(guid) from gm_tickets");
+    result = CharacterDatabase.Query("SELECT MAX(guid) from gm_tickets");
 
     if (result)
     {

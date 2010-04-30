@@ -9311,8 +9311,11 @@ void Unit::SetMinion(Minion *minion, bool apply)
             {
             }
         }
-        //else if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-        //    AddUInt64Value(UNIT_FIELD_CRITTER, minion->GetGUID());
+
+        if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
+        {
+            SetCritterGUID(minion->GetGUID());
+        }
 
         // PvP, FFAPvP
         minion->SetByteValue(UNIT_FIELD_BYTES_2, 1, GetByteValue(UNIT_FIELD_BYTES_2, 1));
@@ -9344,6 +9347,12 @@ void Unit::SetMinion(Minion *minion, bool apply)
 
         m_Controlled.erase(minion);
 
+        if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
+        {
+            if (GetCritterGUID() == minion->GetGUID())
+                SetCritterGUID(0);
+        }
+
         if (minion->IsGuardianPet())
         {
             if (GetPetGUID() == minion->GetGUID())
@@ -9352,14 +9361,14 @@ void Unit::SetMinion(Minion *minion, bool apply)
         else if (minion->isTotem())
         {
             // All summoned by totem minions must disappear when it is removed.
-      if (const SpellEntry* spInfo = sSpellStore.LookupEntry(minion->ToTotem()->GetSpell()))
-                for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                {
-                    if (spInfo->Effect[i] != SPELL_EFFECT_SUMMON)
-                        continue;
+        if (const SpellEntry* spInfo = sSpellStore.LookupEntry(minion->ToTotem()->GetSpell()))
+            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (spInfo->Effect[i] != SPELL_EFFECT_SUMMON)
+                    continue;
 
-                    this->RemoveAllMinionsByEntry(spInfo->EffectMiscValue[i]);
-                }
+                this->RemoveAllMinionsByEntry(spInfo->EffectMiscValue[i]);
+            }
         }
 
         if (GetTypeId() == TYPEID_PLAYER)
@@ -9409,8 +9418,6 @@ void Unit::SetMinion(Minion *minion, bool apply)
                 }
             }
         }
-        //else if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-        //    RemoveUInt64Value(UNIT_FIELD_CRITTER, minion->GetGUID());
     }
 }
 
@@ -15232,17 +15239,21 @@ void Unit::RemoveCharmedBy(Unit *charmer)
     if (GetTypeId() == TYPEID_UNIT)
     {
         this->ToCreature()->AI()->OnCharmed(false);
-        this->ToCreature()->AIM_Initialize();
 
-        if (this->ToCreature()->AI() && charmer && charmer->isAlive())
-            this->ToCreature()->AI()->AttackStart(charmer);
-        /*if (isAlive() && this->ToCreature()->IsAIEnabled)
+        if (type != CHARM_TYPE_VEHICLE)//Vehicles' AI is never modified
         {
-            if (charmer && !IsFriendlyTo(charmer))
+            this->ToCreature()->AIM_Initialize();
+
+            if (this->ToCreature()->AI() && charmer && charmer->isAlive())
                 this->ToCreature()->AI()->AttackStart(charmer);
-            else
-                this->ToCreature()->AI()->EnterEvadeMode();
-        }*/
+            /*if (isAlive() && this->ToCreature()->IsAIEnabled)
+            {
+                if (charmer && !IsFriendlyTo(charmer))
+                    this->ToCreature()->AI()->AttackStart(charmer);
+                else
+                    this->ToCreature()->AI()->EnterEvadeMode();
+            }*/
+        }
     }
     else
         this->ToPlayer()->SetClientControl(this, 1);

@@ -6064,7 +6064,7 @@ void Player::SendActionButtons(uint32 state) const
     sLog.outDetail("Sending Action Buttons for '%u' spec '%u'", GetGUIDLow(), m_activeSpec);
 
     WorldPacket data(SMSG_ACTION_BUTTONS, 1+(MAX_ACTION_BUTTONS*4));
-    data << uint8(state); 
+    data << uint8(state);
     /*
         state can be 0, 1, 2
         0 - Looks to be sent when initial action buttons get sent, however on Trinity we use 1 since 0 had some difficulties
@@ -6167,7 +6167,7 @@ ActionButton const* Player::GetActionButton(uint8 button)
 
     return &buttonItr->second;
 }
-        
+
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
@@ -12161,19 +12161,17 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
     if (IsInventoryPos(dst))
     {
         bool isRefundable = pSrcItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-        if (isRefundable)
-            AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() - count);
-        
+       
         // change item amount before check (for unique max count check)
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
+        
+        if (isRefundable)
+            SendRefundInfo(pSrcItem);
 
         ItemPosCountVec dest;
         uint8 msg = CanStoreItem(dstbag, dstslot, dest, pNewItem, false);
         if (msg != EQUIP_ERR_OK)
         {
-            if (isRefundable)
-                AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() + count);
-
             delete pNewItem;
             pSrcItem->SetCount(pSrcItem->GetCount() + count);
             SendEquipError(msg, pSrcItem, NULL);
@@ -12186,31 +12184,27 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         StoreItem(dest, pNewItem, true);
         if (isRefundable)
         {
-            AddRefundReference(pNewItem->GetGUID(), count);
             pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
             pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
             pNewItem->SetRefundRecipient(GetGUIDLow());
             pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
             pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-            pNewItem->SaveRefundDataToDB(count);
         }
     }
     else if (IsBankPos (dst))
     {
         bool isRefundable = pSrcItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-        if (isRefundable)
-            AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() - count);
         
         // change item amount before check (for unique max count check)
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
+
+        if (isRefundable)
+            SendRefundInfo(pSrcItem);
 
         ItemPosCountVec dest;
         uint8 msg = CanBankItem(dstbag, dstslot, dest, pNewItem, false);
         if (msg != EQUIP_ERR_OK)
         {
-            if (isRefundable)
-                AlterRefundReferenceCount(pSrcItem->GetGUID(), pSrcItem->GetCount() + count);
-                
             delete pNewItem;
             pSrcItem->SetCount(pSrcItem->GetCount() + count);
             SendEquipError(msg, pSrcItem, NULL);
@@ -12223,13 +12217,12 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         BankItem(dest, pNewItem, true);
         if (isRefundable)
         {
-            AddRefundReference(pNewItem->GetGUID(), count);
+            AddRefundReference(pNewItem->GetGUID());
             pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
             pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
             pNewItem->SetRefundRecipient(GetGUIDLow());
             pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
             pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-            pNewItem->SaveRefundDataToDB(count);
         }
     }
     else if (IsEquipmentPos (dst))
@@ -12423,6 +12416,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
                     pDstItem->SendUpdateToPlayer(this);
                 }
             }
+            SendRefundInfo(pDstItem);
             return;
         }
     }
@@ -16746,7 +16740,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                 else
                 {
                     QueryResult_AutoPtr result2 = CharacterDatabase.PQuery(
-                    "SELECT count,player_guid,paidMoney,paidExtendedCost FROM `item_refund_instance` WHERE item_guid = '%u' AND player_guid = '%u' LIMIT 1",
+                    "SELECT player_guid,paidMoney,paidExtendedCost FROM `item_refund_instance` WHERE item_guid = '%u' AND player_guid = '%u' LIMIT 1",
                     item->GetGUIDLow(), GetGUIDLow());
                     if (!result2)
                     {
@@ -16758,10 +16752,10 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                     else
                     {
                         fields = result2->Fetch();
-                        item->SetRefundRecipient(fields[1].GetUInt32());
-                        item->SetPaidMoney(fields[2].GetUInt32());
-                        item->SetPaidExtendedCost(fields[3].GetUInt32());
-                        AddRefundReference(item->GetGUID(), fields[0].GetUInt32());
+                        item->SetRefundRecipient(fields[0].GetUInt32());
+                        item->SetPaidMoney(fields[1].GetUInt32());
+                        item->SetPaidExtendedCost(fields[2].GetUInt32());
+                        AddRefundReference(item->GetGUID());
                     }
                 }
             }
@@ -17889,14 +17883,14 @@ void Player::_SaveInventory()
     // the client auto counts down in real time after having received the initial played time on the first
     // SMSG_ITEM_REFUND_INFO_RESPONSE packet.
     // Item::UpdatePlayedTime is only called when needed, which is in DB saves, and item refund info requests.
-    std::map<uint64, uint32>::iterator i_next;
-    for (std::map<uint64, uint32>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
+    std::set<uint64>::iterator i_next;
+    for (std::set<uint64>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
     {
         // use copy iterator because itr may be invalid after operations in this loop
         i_next = itr;
         ++i_next;
 
-        Item* iPtr = GetItemByGuid(itr->first);
+        Item* iPtr = GetItemByGuid(*itr);
         if (iPtr)
         {
             iPtr->UpdatePlayedTime(this);
@@ -17904,7 +17898,7 @@ void Player::_SaveInventory()
         }
         else
         {
-            sLog.outError("Can't find item guid " UI64FMTD " but is in refundable storage for player %u ! Removing.", itr->first, GetGUIDLow());
+            sLog.outError("Can't find item guid " UI64FMTD " but is in refundable storage for player %u ! Removing.", *itr, GetGUIDLow());
             m_refundableItems.erase(itr);
         }
     }
@@ -19726,8 +19720,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB(it->GetCount());
-                AddRefundReference(it->GetGUID(), it->GetCount());
+                it->SaveRefundDataToDB();
+                AddRefundReference(it->GetGUID());
             }
         }
     }
@@ -19784,8 +19778,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB(it->GetCount());
-                AddRefundReference(it->GetGUID(), it->GetCount());
+                it->SaveRefundDataToDB();
+                AddRefundReference(it->GetGUID());
             }
         }
     }
@@ -23583,22 +23577,22 @@ void Player::UpdateSpecCount(uint8 count)
     uint32 curCount = GetSpecsCount();
     if (curCount == count)
         return;
-        
+
     if (m_activeSpec >= count)
         ActivateSpec(0);
 
-    // Copy spec data 
+    // Copy spec data
     if (count > curCount)
     {
         _SaveActions(); // make sure the button list is cleaned up
         for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end(); ++itr)
             CharacterDatabase.PExecute("INSERT INTO character_action (guid,button,action,type,spec) VALUES ('%u', '%u', '%u', '%u', '%u')",
             GetGUIDLow(), uint32(itr->first), uint32(itr->second.GetAction()), uint32(itr->second.GetType()), 1);
-        
+
     }
     // Delete spec data for removed spec.
     else if (count < curCount)
-    { 
+    {
         _SaveActions();
         CharacterDatabase.PExecute("DELETE FROM character_action WHERE spec<>'%u' AND guid='%u'",m_activeSpec, GetGUIDLow());
         m_activeSpec = 0;
@@ -23735,10 +23729,10 @@ void Player::ActivateSpec(uint8 spec)
     m_usedTalentCount = spentTalents;
     InitTalentForLevel();
 
-    if (QueryResult_AutoPtr result = 
+    if (QueryResult_AutoPtr result =
         CharacterDatabase.PQuery("SELECT button,action,type FROM character_action WHERE guid = '%u' AND spec = '%u' ORDER BY button", GetGUIDLow(), m_activeSpec))
         _LoadActions(result);
-    
+
 
     ResummonPetTemporaryUnSummonedIfAny();
     SendActionButtons(1);
@@ -23789,25 +23783,170 @@ void Player::SendDuelCountdown(uint32 counter)
     GetSession()->SendPacket(&data);
 }
 
-void Player::AddRefundReference(uint64 it, uint32 stackCount)
+void Player::AddRefundReference(uint64 it)
 {
-    m_refundableItems[it] = stackCount;
+    m_refundableItems.insert(it);
 }
 
 void Player::DeleteRefundReference(uint64 it)
 {
-    std::map<uint64,uint32>::iterator itr = m_refundableItems.find(it);
+    std::set<uint64>::iterator itr = m_refundableItems.find(it);
     if (itr != m_refundableItems.end())
     {
         m_refundableItems.erase(itr);
-    }    
+    }
 }
 
-void Player::AlterRefundReferenceCount(uint64 it, uint32 newCount)
+void Player::SendRefundInfo(Item *item)
 {
-    std::map<uint64,uint32>::iterator itr = m_refundableItems.find(it);
-    if (itr != m_refundableItems.end())
+    // This function call unsets ITEM_FLAGS_REFUNDABLE if played time is over 2 hours.
+    item->UpdatePlayedTime(this);
+
+    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
     {
-        itr->second = newCount;
-    } 
+        sLog.outDebug("Item refund: item not refundable!");
+        return;
+    }
+
+    if (GetGUIDLow() != item->GetRefundRecipient()) // Formerly refundable item got traded
+    {
+        sLog.outDebug("Item refund: item was traded!");
+        item->SetNotRefundable(this);
+        return;
+    }
+
+    ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(item->GetPaidExtendedCost());
+    if (!iece)
+    {
+        sLog.outDebug("Item refund: cannot find extendedcost data.");
+        return;
+    }
+
+    uint32 itemCount = item->GetCount();
+
+    WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
+    data << uint64(item->GetGUID());                    // item guid
+    data << uint32(item->GetPaidMoney() * itemCount);   // money cost
+    data << uint32(iece->reqhonorpoints * itemCount);   // honor point cost
+    data << uint32(iece->reqarenapoints * itemCount);   // arena point cost
+    for (uint8 i = 0; i < 5; ++i)                       // item cost data
+    {
+        data << iece->reqitem[i];
+        data << (iece->reqitemcount[i] * itemCount);
+    }
+    data << uint32(0);
+    data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
+    GetSession()->SendPacket(&data);
+}
+
+void Player::RefundItem(Item *item)
+{
+    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
+    {
+        sLog.outDebug("Item refund: item not refundable!");
+        return;
+    }
+
+    if (item->IsRefundExpired())    // item refund has expired
+    {
+        item->SetNotRefundable(this);
+        WorldPacket data(SMSG_ITEM_REFUND_RESULT, 8+4);
+        data << uint64(item->GetGUID());             // Guid
+        data << uint32(10);                          // Error!
+        GetSession()->SendPacket(&data);
+        return;
+    }
+
+    if (GetGUIDLow() != item->GetRefundRecipient()) // Formerly refundable item got traded
+    {
+        sLog.outDebug("Item refund: item was traded!");
+        item->SetNotRefundable(this);
+        return;
+    }
+
+    ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(item->GetPaidExtendedCost());
+    if (!iece)
+    {
+        sLog.outDebug("Item refund: cannot find extendedcost data.");
+        return;
+    }
+
+    uint32 itemCount = item->GetCount(); // stacked refundable items.
+    uint32 moneyRefund = item->GetPaidMoney()*itemCount;
+
+    bool store_error = false;
+    for (uint8 i = 0; i < 5; ++i)
+    {
+        uint32 count = iece->reqitemcount[i] * itemCount;
+        uint32 itemid = iece->reqitem[i];
+
+        if (count && itemid)
+        {
+            ItemPosCountVec dest;
+            uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, count);
+            if (msg != EQUIP_ERR_OK)
+            {
+                store_error = true;
+                break;
+            }
+         }
+    }
+
+    if (store_error)
+    {
+        WorldPacket data(SMSG_ITEM_REFUND_RESULT, 8+4);
+        data << uint64(item->GetGUID());                 // Guid
+        data << uint32(10);                              // Error!
+        GetSession()->SendPacket(&data);
+        return;
+    }
+
+    WorldPacket data(SMSG_ITEM_REFUND_RESULT, 8+4+4+4+4+4*4+4*4);
+    data << uint64(item->GetGUID());                    // item guid
+    data << uint32(0);                                  // 0, or error code
+    data << uint32(moneyRefund);                        // money cost
+    data << uint32(iece->reqhonorpoints * itemCount);   // honor point cost
+    data << uint32(iece->reqarenapoints * itemCount);   // arena point cost
+    for (uint8 i = 0; i < 5; ++i)                       // item cost data
+    {
+        data << iece->reqitem[i];
+        data << (iece->reqitemcount[i] * itemCount);
+    }
+    GetSession()->SendPacket(&data);
+
+    // Delete any references to the refund data
+    item->SetNotRefundable(this);
+
+    // Destroy item
+    DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+
+    // Grant back extendedcost items
+    for (uint8 i = 0; i < 5; ++i)
+    {
+        uint32 count = iece->reqitemcount[i] * itemCount;
+        uint32 itemid = iece->reqitem[i];
+        if (count && itemid)
+        {
+            ItemPosCountVec dest;
+            uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, count);
+            ASSERT(msg == EQUIP_ERR_OK) /// Already checked before
+            Item* it = StoreNewItem(dest, itemid, true);
+            SendNewItem(it, count, true, false, true);
+        }
+    }
+
+    // Grant back money
+    if (moneyRefund)
+        ModifyMoney(moneyRefund);
+
+    // Grant back Honor points
+    uint32 honorRefund = iece->reqhonorpoints * itemCount;
+    if (honorRefund)
+        ModifyHonorPoints(honorRefund);
+
+    // Grant back Arena points
+    uint32 arenaRefund = iece->reqarenapoints * itemCount;
+    if (arenaRefund)
+        ModifyArenaPoints(arenaRefund);
+
 }
