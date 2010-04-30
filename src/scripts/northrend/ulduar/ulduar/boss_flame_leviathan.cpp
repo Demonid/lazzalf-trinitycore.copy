@@ -50,7 +50,9 @@ enum Mobs
     MOB_COLOSSUS                                = 33240,
 };
 
-#define INCREASE_COLOSSUS_COUNT                   20
+#define ACTION_VEHICLE_RESPAWN                    0
+#define ACTION_VEHICLE_DESPAWN                    1
+#define INCREASE_COLOSSUS_COUNT                   2
 
 enum Events
 {
@@ -70,9 +72,10 @@ enum Seats
     SEAT_DEVICE                                 = 2,
 };
 
-#define EMOTE_PURSUE    "Flame Leviathan pursues $N."
-#define EMOTE_OVERLOAD  "Flame Leviathan's circuits overloaded."
-#define EMOTE_REPAIR    "Automatic repair sequence initiated."
+#define EMOTE_PURSUE          "Flame Leviathan pursues $N."
+#define EMOTE_OVERLOAD        "Flame Leviathan's circuits overloaded."
+#define EMOTE_REPAIR          "Automatic repair sequence initiated."
+#define GOSSIP_ITEM_1         "Summon vehicles!"
 
 enum Yells
 {
@@ -93,9 +96,6 @@ enum Yells
     SAY_OVERLOAD_2                              = -1603074,
     SAY_OVERLOAD_3                              = -1603075,
 };
-
-uint32 ColossusCount = 0;
-bool wipe = false;
 
 #define VEHICLE_SIEGE                              33060
 #define VEHICLE_CHOPPER                            33062
@@ -140,6 +140,7 @@ struct boss_flame_leviathanAI : public BossAI
     {
         assert(vehicle);
         pInstance = pCreature->GetInstanceData();
+        ColossusCount = 0;
         
         me->SetVisibility(VISIBILITY_OFF);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
@@ -147,26 +148,19 @@ struct boss_flame_leviathanAI : public BossAI
         
         // Summon Ulduar Colossus
         for(uint32 i = 0; i < 2; ++i)
-            DoSummon(MOB_COLOSSUS, PosColossus[i], 0, TEMPSUMMON_CORPSE_DESPAWN);
+            DoSummon(MOB_COLOSSUS, PosColossus[i], 7000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 	}
 
     ScriptedInstance* pInstance;
     Vehicle *vehicle;
+    uint32 ColossusCount;
 
     void Reset()
     {
         _Reset();
-        
-        // vehicles respawn
-        if (Creature* pTrigger = Unit::GetCreature(*me, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
-            if (wipe)
-            {
-                me->Kill(pTrigger);
-                pTrigger->Respawn(true);
-            }
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         _EnterCombat();
         DoScriptText(SAY_AGGRO, me);
@@ -176,20 +170,21 @@ struct boss_flame_leviathanAI : public BossAI
         events.ScheduleEvent(EVENT_SPEED, 2000);
         events.ScheduleEvent(EVENT_SUMMON, 0);
         events.ScheduleEvent(EVENT_SHUTDOWN, 120000);
-        wipe = true;
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }
 
-    void JustDied(Unit * /*victim*/)
+    void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, me);
-        if (Creature* pTrigger = Unit::GetCreature(*me, pInstance->GetData64(DATA_LEVIATHAN_TRIGGER)))
-            me->Kill(pTrigger);
+        if(Creature* Norgannon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
+            if(Norgannon->isAlive())
+                Norgannon->AI()->DoAction(ACTION_VEHICLE_DESPAWN);
+                    
         _JustDied();
     }
 
-    void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+    void SpellHit(Unit *caster, const SpellEntry *spell)
     {
         if(spell->Id == 62472)
             vehicle->InstallAllAccessories();
@@ -420,7 +415,7 @@ struct boss_flame_leviathan_safety_containerAI : public PassiveAI
 {
     boss_flame_leviathan_safety_containerAI(Creature *c) : PassiveAI(c) {}
 
-    void MovementInform(uint32 /*type*/, uint32 id)
+    void MovementInform(uint32 type, uint32 id)
     {
         if(id == me->GetEntry())
         {
@@ -430,7 +425,7 @@ struct boss_flame_leviathan_safety_containerAI : public PassiveAI
         }
     }
 
-    void UpdateAI(const uint32 /*diff*/)
+    void UpdateAI(const uint32 diff)
     {
         if(!me->GetVehicle() && me->isSummon() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
             me->GetMotionMaster()->MoveFall(409.8f, me->GetEntry());
@@ -444,21 +439,21 @@ struct spell_pool_of_tarAI : public TriggerAI
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void DamageTaken(Unit * /*who*/, uint32 &damage)
+    void DamageTaken(Unit *who, uint32 &damage)
     {
         damage = 0;
     }
 
-    void SpellHit(Unit* /*caster*/, const SpellEntry *spell)
+    void SpellHit(Unit* caster, const SpellEntry *spell)
     {
         if(spell->SchoolMask & SPELL_SCHOOL_MASK_FIRE && !me->HasAura(SPELL_BLAZE))
             me->CastSpell(me, SPELL_BLAZE, true);
     }
 };
 
-struct flame_leviathan_triggerAI : public ScriptedAI
+struct keeper_norgannonAI : public ScriptedAI
 {
-    flame_leviathan_triggerAI(Creature *c) : ScriptedAI(c), summons(me)
+    keeper_norgannonAI(Creature *c) : ScriptedAI(c), summons(me)
     {
         pInstance = c->GetInstanceData();
     }
@@ -471,22 +466,63 @@ struct flame_leviathan_triggerAI : public ScriptedAI
         summons.DespawnAll();
     }
 
-    void Reset()
-    {
-        summons.DespawnAll();
-        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-            DoSummon(VEHICLE_SIEGE, PosSiege[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
-        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-            DoSummon(VEHICLE_CHOPPER, PosChopper[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
-        for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-            DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
-    }
-
     void JustSummoned(Creature *summon)
     {
         summons.Summon(summon);
     }
+    
+    void DoAction(const int32 action)
+    {
+        switch (action)
+        {
+            case ACTION_VEHICLE_RESPAWN:
+                summons.DespawnAll();
+                for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    DoSummon(VEHICLE_SIEGE, PosSiege[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+                for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    DoSummon(VEHICLE_CHOPPER, PosChopper[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+                for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+                break;
+            case ACTION_VEHICLE_DESPAWN:
+                summons.DespawnAll();
+                me->DisappearAndDie();
+                break;
+        }
+    }
 };
+
+bool GossipHello_keeper_norgannon(Player* pPlayer, Creature* pCreature)
+{
+    InstanceData *data = pPlayer->GetInstanceData();
+    ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
+    
+    if (data->GetBossState(BOSS_LEVIATHAN) != DONE && pInstance && pPlayer)
+    {
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
+        pPlayer->SEND_GOSSIP_MENU(13910, pCreature->GetGUID());
+    }
+    else pPlayer->SEND_GOSSIP_MENU(1, pCreature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_keeper_norgannon(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    ScriptedInstance* pInstance = pCreature->GetInstanceData();
+    switch(uiAction)
+    {
+        case GOSSIP_ACTION_INFO_DEF:
+            if (pPlayer)
+                pPlayer->CLOSE_GOSSIP_MENU();
+            if(Creature* Norgannon = Unit::GetCreature(*pCreature, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
+                if(Norgannon->isAlive())
+                    Norgannon->AI()->DoAction(ACTION_VEHICLE_RESPAWN);
+            break;
+    }
+    return true;
+}
 
 struct mob_colossusAI : public ScriptedAI
 {
@@ -525,6 +561,7 @@ struct mob_colossusAI : public ScriptedAI
     }
 };
 
+
 CreatureAI* GetAI_boss_flame_leviathan(Creature* pCreature)
 {
     return new boss_flame_leviathanAI (pCreature);
@@ -555,9 +592,9 @@ CreatureAI* GetAI_spell_pool_of_tar(Creature* pCreature)
     return new spell_pool_of_tarAI (pCreature);
 }
 
-CreatureAI* GetAI_flame_leviathan_trigger(Creature* pCreature)
+CreatureAI* GetAI_keeper_norgannon(Creature* pCreature)
 {
-    return new flame_leviathan_triggerAI (pCreature);
+    return new keeper_norgannonAI (pCreature);
 }
 
 CreatureAI* GetAI_mob_colossus(Creature* pCreature)
@@ -597,10 +634,12 @@ void AddSC_boss_flame_leviathan()
     newscript->Name = "spell_pool_of_tar";
     newscript->GetAI = &GetAI_spell_pool_of_tar;
     newscript->RegisterSelf();
-
+   
     newscript = new Script;
-    newscript->Name = "flame_leviathan_trigger";
-    newscript->GetAI = &GetAI_flame_leviathan_trigger;
+    newscript->Name="npc_keeper_norgannon";
+    newscript->pGossipHello =  &GossipHello_keeper_norgannon;
+    newscript->pGossipSelect = &GossipSelect_keeper_norgannon;
+    newscript->GetAI = &GetAI_keeper_norgannon;
     newscript->RegisterSelf();
     
     newscript = new Script;
