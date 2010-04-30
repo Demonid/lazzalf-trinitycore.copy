@@ -673,7 +673,7 @@ struct mob_boombotAI : public ScriptedAI
                 DoCast(me, SPELL_BOOM);
 
                 //Despawns the boombot
-                me->ForcedDespawn();
+                me->ForcedDespawn(500);
             }
         }
         if (HealthBelowPct(50))
@@ -682,7 +682,7 @@ struct mob_boombotAI : public ScriptedAI
             DoCast(me, SPELL_BOOM);
 
             //Despawns the boombot
-            me->ForcedDespawn();
+            me->ForcedDespawn(500);
         }
     }
 };

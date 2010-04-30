@@ -405,7 +405,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
                     }
 
                     if (!bosschoosed || !bosschoosed->isAlive())
-                        break;
+                        bosschoosed = Unit::GetCreature(*me, pInstance->GetData64(DATA_MOLGEIM));
                     
                     DoCast(bosschoosed, SPELL_RUNE_OF_POWER);
                     events.ScheduleEvent(EVENT_RUNE_OF_POWER, 35000);
@@ -634,12 +634,10 @@ struct mob_lightning_elementalAI : public ScriptedAI {
     mob_lightning_elementalAI(Creature *c) : ScriptedAI(c) {}
     
     Unit* Target;
-    uint32 DespawnTimer;
     bool Casted;
 
     void Reset() 
     {
-        DespawnTimer = 120000;
         Casted = false;
         me->GetMotionMaster()->MoveRandom(30);
     }
@@ -649,14 +647,9 @@ struct mob_lightning_elementalAI : public ScriptedAI {
         if (me->IsWithinMeleeRange(me->getVictim()) && !Casted)
         {
             me->CastSpell(me, SPELL_LIGHTNING_BLAST, true);
-            DespawnTimer = 500;
+            me->ForcedDespawn(500);
             Casted = true;
         }
-        
-        // To take time for visual SPELL_LIGHTNING_BLAST before despawning
-        if (DespawnTimer <= diff) 
-            me->ForcedDespawn();
-        else DespawnTimer -= diff;
     }
 };
 /***************
@@ -671,12 +664,11 @@ struct mob_rune_of_summoningAI : public ScriptedAI
     }
 
     uint32 SummonTimer;
-    uint32 DespawnTimer;
 
     void Reset()
     {
         SummonTimer = 1500;
-        DespawnTimer = 12500;
+        me->ForcedDespawn(12500);
         DoCast(me, SPELL_RUNE_OF_SUMMONING_VISUAL);
     }
 
@@ -689,10 +681,6 @@ struct mob_rune_of_summoningAI : public ScriptedAI
             SummonTimer = 1500;
         } 
         else SummonTimer -= uiDiff;
-
-        if (DespawnTimer <= uiDiff)
-            me->ForcedDespawn();
-        else DespawnTimer -= uiDiff;
     }
 };
 
@@ -706,19 +694,10 @@ struct mob_rune_of_powerAI : public ScriptedAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
     
-    uint32 DespawnTimer;
-
     void Reset()
     {
         DoCast(me, SPELL_RUNE_OF_POWER_VISUAL, true);
-        DespawnTimer = 35000;
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (DespawnTimer <= uiDiff)
-            me->ForcedDespawn();
-        else DespawnTimer -= uiDiff;
+        me->ForcedDespawn(35000);
     }
 };
 

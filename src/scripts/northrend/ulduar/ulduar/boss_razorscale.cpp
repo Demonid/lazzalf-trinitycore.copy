@@ -57,7 +57,7 @@ enum Spells
 };
 
 const Position Harpoon1 = { 590.442322, -130.550278, 391.516998, 4.789456};
-const Position Harpoon2 = { 574.850159, -133.687439, 391.517151, 4.789456};
+const Position Harpoon2 = { 574.850159, -133.687439, 391.517151, 4.252456};
  
 const Position pos1 = {614.975403, -155.138214, 391.517090, 4.154516};
 const Position pos2 = {609.814331, -204.968185, 391.517090, 5.385465};
@@ -160,16 +160,11 @@ struct boss_razorscaleAI : public BossAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         me->GetMotionMaster()->MovePoint(0,RazorGround);
         
-        // Expedition Commander respawn
+        // Razorscale despawn
         if (wipe)
         {
-            if (Creature* pCommander = Unit::GetCreature(*me, pInstance->GetData64(DATA_EXP_COMMANDER)))
-            {
-                me->ForcedDespawn();
-                me->SetVisibility(VISIBILITY_OFF);
-                pCommander->SetVisibility(VISIBILITY_ON);
-                pCommander->Respawn();
-            }
+            me->ForcedDespawn();
+            me->SetVisibility(VISIBILITY_OFF);
         }
     }
 
@@ -460,8 +455,8 @@ struct npc_expedition_commanderAI : public ScriptedAI
             switch(uiPhase)
             {
                 case 1:
+                    pInstance->SetBossState(BOSS_RAZORSCALE, IN_PROGRESS);
                     me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
-                    me->SetVisibility(VISIBILITY_OFF);
                     uiTimer = 1000;
                     uiPhase = 2;
                     break;
@@ -517,10 +512,8 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 6;
                     break;
                 case 6:
-                    pInstance->SetData(BOSS_RAZORSCALE, IN_PROGRESS);
-                    razorscale = me->SummonCreature (RAZORSCALE,RazorFlight,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 999999);
+                    razorscale = me->SummonCreature (RAZORSCALE, RazorFlight, TEMPSUMMON_MANUAL_DESPAWN, 0);
                     uiPhase =7;
-                    me->Kill(me, false);
                     break;
             }
             if (!UpdateVictim())
@@ -540,8 +533,10 @@ CreatureAI* GetAI_commander_ulduar(Creature* pCreature)
 
 bool Expedition_commander_ulduar(Player* pPlayer, Creature* pCreature)
 {
-    ScriptedInstance* pInstance = pCreature->GetInstanceData();
-    if (pInstance && pPlayer)
+    InstanceData *data = pPlayer->GetInstanceData();
+    ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
+    
+    if (pInstance && pPlayer && data->GetBossState(BOSS_RAZORSCALE) == NOT_STARTED)
     {
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
         pPlayer->SEND_GOSSIP_MENU(13853, pCreature->GetGUID());
