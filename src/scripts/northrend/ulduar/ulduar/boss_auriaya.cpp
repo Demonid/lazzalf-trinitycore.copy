@@ -423,19 +423,10 @@ struct seeping_triggerAI : public ScriptedAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
     
-    uint32 DespawnTimer;
-
     void Reset()
     {
-        DespawnTimer = 600000;
+        me->ForcedDespawn(600000);
         DoCast(me, SPELL_SEEPING_ESSENCE);
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (DespawnTimer <= uiDiff)
-            me->ForcedDespawn();
-        else DespawnTimer -= uiDiff;
     }
 };
 

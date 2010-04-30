@@ -297,7 +297,8 @@ struct mob_iron_constructAI : public ScriptedAI
             if (Creature *pIgnis = me->GetCreature(*me, pInstance->GetData64(DATA_IGNIS)))
                 if (pIgnis->AI())
                     pIgnis->AI()->DoAction(ACTION_REMOVE_BUFF);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+                    
+            me->ForcedDespawn(1000);
         }
     }
 
