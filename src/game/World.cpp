@@ -2611,19 +2611,19 @@ void World::InitTimedQuestResetTime()
 {
     time_t curTime = time(NULL);
     tm localTm = *localtime(&curTime);
-    time_t nextDayResetTime = mktime(&localTm);
-    time_t nextWeekResetTime = mktime(&localTm);
 
     m_NextDailyQuestReset = (time_t)getWorldState(NEXT_TIME_DAILY);
     m_NextWeeklyQuestReset = (time_t)getWorldState(NEXT_TIME_WEEKLY);
 
     // Daily
     // -----
-
-    // Current day reset time
+    
     localTm.tm_hour = sConfig.GetIntDefault("Quest.Daily.ResetHour", 4);
     localTm.tm_min  = 0;
     localTm.tm_sec  = 0;
+
+    // current day reset time
+    time_t nextDayResetTime = mktime(&localTm);
 
     // Next daily reset time before current moment
     if (curTime >= nextDayResetTime)
@@ -2635,13 +2635,15 @@ void World::InitTimedQuestResetTime()
     // Weekly
     // ------
 
-    int32 WeekdayOffset = localTm.tm_wday - sConfig.GetIntDefault("Quest.Weekly.ResetDay", 3); // Wednesday since 3.3.3.11723
-    nextWeekResetTime -= WeekdayOffset * DAY; // Move time to proper day
-
     // Current week reset time
     localTm.tm_hour = sConfig.GetIntDefault("Quest.Weekly.ResetHour", 4);
     localTm.tm_min  = 0;
     localTm.tm_sec  = 0;
+    
+    time_t nextWeekResetTime = mktime(&localTm);
+
+    int32 WeekdayOffset = localTm.tm_wday - sConfig.GetIntDefault("Quest.Weekly.ResetDay", 3); // Wednesday since 3.3.3.11723
+    nextWeekResetTime -= WeekdayOffset * DAY; // Move time to proper day   
 
     // Next weekly reset time before current moment
     if (curTime >= nextWeekResetTime)
@@ -2656,23 +2658,23 @@ void World::ResetTimedQuests(bool daily)
     if (daily)
     {
         sLog.outDetail("Reset of the daily quests.");
-        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='1' AND time<'%lu'", uint64(m_NextDailyQuestReset));
+        CharacterDatabase.Execute("DELETE FROM character_queststatus_timed WHERE daily='1'");
 
         // Reset player daily slots for online chars - offline chars get their reset @ login
         for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
             if (itr->second->GetPlayer())
                 itr->second->GetPlayer()->ResetDailyQuestStatus();
 
-        m_NextDailyQuestReset += DAY;
+        m_NextDailyQuestReset = time_t(m_NextDailyQuestReset + DAY);
         setWorldState(NEXT_TIME_DAILY, uint64(m_NextDailyQuestReset));
     }
     // Weekly
     else
     {
         sLog.outDetail("Reset of the weekly quests.");
-        CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE daily='0' AND time<'%lu'", uint64(m_NextWeeklyQuestReset));
+        CharacterDatabase.Execute("DELETE FROM character_queststatus_timed WHERE daily='0'");
         
-        m_NextWeeklyQuestReset += WEEK;
+        m_NextWeeklyQuestReset = time_t(m_NextWeeklyQuestReset + WEEK);
         setWorldState(NEXT_TIME_WEEKLY, uint64(m_NextWeeklyQuestReset));
     }
     objmgr.ResetQuestPool(daily);
