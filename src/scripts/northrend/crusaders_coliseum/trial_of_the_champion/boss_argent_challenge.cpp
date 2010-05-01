@@ -128,6 +128,7 @@ struct boss_eadricAI : public ScriptedAI
 				if(GO)
 					pInstance->HandleGameObject(GO->GetGUID(),true);
 				Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+				pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,0);
 				announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 			}
 			me->RemoveFromWorld();
@@ -281,8 +282,9 @@ struct boss_paletressAI : public ScriptedAI
 				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
 			if(GO)
 				pInstance->HandleGameObject(GO->GetGUID(),true);
-			Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
-			 announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+				Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+				pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,0);
+				announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 			}
 
 			me->RemoveFromWorld();
