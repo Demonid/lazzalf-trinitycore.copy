@@ -17,6 +17,8 @@ SET(scripts_STAT_SRCS
    ../game/ScriptedSimpleAI.cpp
    ../game/ScriptedSimpleAI.h
    custom/on_events.cpp
+   custom/npc_teleport.cpp
+   custom/GuildHouse_npc.cpp
    eastern_kingdoms/alterac_valley/alterac_valley.cpp
    eastern_kingdoms/alterac_valley/boss_balinda.cpp
    eastern_kingdoms/alterac_valley/boss_drekthar.cpp
@@ -229,8 +231,8 @@ SET(scripts_STAT_SRCS
    kalimdor/caverns_of_time/culling_of_stratholme/boss_mal_ganis.cpp
    kalimdor/caverns_of_time/culling_of_stratholme/boss_salramm.cpp
    kalimdor/caverns_of_time/culling_of_stratholme/boss_infinite.cpp
-   kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp
    kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.h
+   kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp
    kalimdor/caverns_of_time/dark_portal/dark_portal.h
    kalimdor/caverns_of_time/dark_portal/instance_dark_portal.cpp
    kalimdor/caverns_of_time/dark_portal/dark_portal.cpp
@@ -333,6 +335,16 @@ SET(scripts_STAT_SRCS
    northrend/crusaders_coliseum/trial_of_the_champion/instance_trial_of_the_champion.cpp
    northrend/crusaders_coliseum/trial_of_the_champion/trial_of_the_champion.cpp
    northrend/crusaders_coliseum/trial_of_the_champion/trial_of_the_champion.h
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_anubarak_toc.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_champions.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_dreadscale.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_fjola.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_gormok.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_icehowl.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/boss_lord_jaraksus.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/def.h
+   northrend/crusaders_coliseum/trial_of_the_crusader/instance_trial_of_the_crusader.cpp
+   northrend/crusaders_coliseum/trial_of_the_crusader/trial_of_the_crusader.cpp
    northrend/draktharon_keep/instance_drak_tharon_keep.cpp
    northrend/draktharon_keep/boss_trollgore.cpp
    northrend/draktharon_keep/boss_novos.cpp
@@ -464,6 +476,7 @@ SET(scripts_STAT_SRCS
    northrend/storm_peaks.cpp
    northrend/zuldrak.cpp
    northrend/crystalsong_forest.cpp
+   northrend/wintergrasp.cpp
    outland/auchindoun/auchenai_crypts/boss_exarch_maladaar.cpp
    outland/auchindoun/auchenai_crypts/boss_shirrak_the_dead_watcher.cpp
    outland/auchindoun/mana_tombs/boss_nexusprince_shaffar.cpp
