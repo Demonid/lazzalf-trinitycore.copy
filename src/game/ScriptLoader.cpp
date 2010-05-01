@@ -318,6 +318,16 @@ void AddSC_ungoro_crater();
 void AddSC_winterspring();
 
 //northrend
+void AddSC_boss_gormok();				// Trial of The crusader
+void AddSC_the_two_jormungar();
+void AddSC_boss_icehowl();
+void AddSC_boss_anub_arak_crusader();
+void AddSC_npc_toc6_announcer();
+void AddSC_instance_trial_of_the_crusader();
+void AddSC_boss_lord_jaraksus();
+void AddSC_boss_champions();
+void AddSC_boss_twin_fjola();
+
 void AddSC_boss_slad_ran();
 void AddSC_boss_moorabi();
 void AddSC_boss_drakkari_colossus();
@@ -823,6 +833,16 @@ void AddScripts()
     AddSC_winterspring();
 
     //northrend
+    AddSC_boss_gormok();				// Trial of The crusader
+    AddSC_the_two_jormungar();
+    AddSC_boss_icehowl();
+    AddSC_boss_anub_arak_crusader();
+    AddSC_npc_toc6_announcer();
+    AddSC_instance_trial_of_the_crusader();
+    AddSC_boss_lord_jaraksus();
+    AddSC_boss_champions();
+    AddSC_boss_twin_fjola();
+
     AddSC_boss_slad_ran();               //Gundrak
     AddSC_boss_moorabi();
     AddSC_boss_drakkari_colossus();
