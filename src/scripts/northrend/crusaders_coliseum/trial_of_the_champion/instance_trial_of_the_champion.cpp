@@ -272,7 +272,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 						for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
 							if (Creature* pSummon = instance->GetCreature(*itr))
 								pSummon->SetVisibility(VISIBILITY_ON);
-						    	uiAgroDone = 0;
+						    	
 					
 
 						//rimuovo le eventuali mount
@@ -282,7 +282,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 									pSummon->RemoveFromWorld();
 
 						VehicleListChampion.clear();
-						VehicleList.clear();
+						//VehicleList.clear();
 						//rimuovo gli eventuali boss
 						if(Creature* boss1=instance->GetCreature(uiGrandChampion1GUID))
 							boss1->RemoveFromWorld();
