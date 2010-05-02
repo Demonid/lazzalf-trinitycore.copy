@@ -4996,18 +4996,19 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
+    bool bResurrect = false;
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -500.0f)
     {
-        ResurrectPlayer(0.5f);
         SpawnCorpseBones();
+        bResurrect = true;
     }
 
     // Naxxramas is unreachable as a ghost and the player must be automatically revived - HACK
     if ((!isAlive() && zone && zone->ID == 4188 && GetPositionZ() > 240))
     {
-        ResurrectPlayer(0.5f);
         SpawnCorpseBones();
+        bResurrect = true;
     }
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
@@ -5038,6 +5039,10 @@ void Player::RepopAtGraveyard()
     }
     else if (GetPositionZ() < -500.0f)
         TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+
+    // player must be resurrected after teleport to avoid aggroing creatures at death location
+    if (bResurrect)
+        ResurrectPlayer(0.5f);
 }
 
 void Player::JoinedChannel(Channel *c)
