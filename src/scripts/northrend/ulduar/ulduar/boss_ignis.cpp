@@ -133,7 +133,6 @@ struct boss_ignis_AI : public BossAI
     void Reset()
     {
         _Reset();
-        Shattered = false;
     }
 
     void EnterCombat(Unit *who)
@@ -148,6 +147,7 @@ struct boss_ignis_AI : public BossAI
         events.ScheduleEvent(EVENT_BERSERK, 480000);
         EncounterTime = 0;
         ConstructTimer = 0;
+        Shattered = false;
     }
 
     void JustDied(Unit *victim)
