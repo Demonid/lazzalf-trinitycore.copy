@@ -102,10 +102,21 @@ struct boss_gluthAI : public BossAI
                     events.ScheduleEvent(EVENT_ENRAGE, 15000);
                     break;
                 case EVENT_DECIMATE:
-                    // TODO : Add missing text
-                    DoCastAOE(SPELL_DECIMATE);
-                    events.ScheduleEvent(EVENT_DECIMATE, 105000);
-                    break;
+                    {
+                        // TODO : Add missing text
+                        DoCastAOE(SPELL_DECIMATE);
+                        events.ScheduleEvent(EVENT_DECIMATE, 105000);
+                        std::list<Creature*> ZombieList;
+                        me->GetCreatureListWithEntryInGrid(ZombieList, MOB_ZOMBIE, 100.0f);
+                        if (!ZombieList.empty())
+                            for (std::list<Creature*>::iterator iter = ZombieList.begin(); iter != ZombieList.end(); iter++)
+                            {  
+                                Creature* zombie = (*iter);
+                                if (zombie)
+                                    zombie->SetHealth(zombie->GetMaxHealth() * 5 /100);     
+                            }
+                    }
+                    break; 
                 case EVENT_BERSERK:
                     DoCast(me, SPELL_BERSERK);
                     events.ScheduleEvent(EVENT_BERSERK, 5*60000);
