@@ -1250,8 +1250,8 @@ enum Opcodes
     SMSG_CALENDAR_ACTION_PENDING                    = 0x4BB, // SMSG, calendar related EVENT_CALENDAR_ACTION_PENDING
     SMSG_EQUIPMENT_SET_LIST                         = 0x4BC, // SMSG, equipment manager list?
     CMSG_EQUIPMENT_SET_SAVE                         = 0x4BD, // CMSG, lua: SaveEquipmentSet
-    CMSG_UNKNOWN_1214                               = 0x4BE, // CMSG, missle?
-    SMSG_UNKNOWN_1215                               = 0x4BF, // SMSG, uint64, uint8, 3 x float
+    CMSG_UPDATE_PROJECTILE_POSITION                 = 0x4BE, // CMSG, uint64 caster, uint32 spellId, uint8 castId, vector3 position
+    SMSG_SET_PROJECTILE_POSITION                    = 0x4BF, // SMSG, uint64 caster, uint8 castId, vector3 position
     SMSG_TALENTS_INFO                               = 0x4C0, // SMSG, talents related
     CMSG_LEARN_PREVIEW_TALENTS                      = 0x4C1, // CMSG, lua: LearnPreviewTalents (for player?)
     CMSG_LEARN_PREVIEW_TALENTS_PET                  = 0x4C2, // CMSG, lua: LearnPreviewTalents (for pet?)
@@ -1327,7 +1327,7 @@ enum Opcodes
     CMSG_SET_ALLOW_LOW_LEVEL_RAID1                  = 0x508, // lua: SetAllowLowLevelRaid
     CMSG_SET_ALLOW_LOW_LEVEL_RAID2                  = 0x509, // lua: SetAllowLowLevelRaid
     SMSG_CAMERA_SHAKE                               = 0x50A, // uint32 SpellEffectCameraShakes.dbc index, uint32
-    SMSG_UNKNOWN_1291                               = 0x50B, // some item update packet?
+    SMSG_UPDATE_ITEM_ENCHANTMENTS                   = 0x50B, // some item update packet?
     UMSG_UNKNOWN_1292                               = 0x50C, // not found
     SMSG_REDIRECT_CLIENT                            = 0x50D, // uint32 ip, uint16 port, uint32 unk, uint8[20] hash (ip + port, seed=sessionkey)
     CMSG_REDIRECTION_FAILED                         = 0x50E, // something with networking
