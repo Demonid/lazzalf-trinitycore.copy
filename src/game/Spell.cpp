@@ -1263,6 +1263,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     // Recheck immune (only for delayed spells)
     if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
+    // Deterrence Hack for delayed spells
+    if (m_spellInfo->speed && unit->HasAura(19263))
+        return SPELL_MISS_DEFLECT;
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -1293,7 +1296,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
             // I do not think this is a correct way to fix it. Sanctuary effect should make all delayed spells invalid
             // for delayed spells ignore not visible explicit target
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
-                && (unit->m_invisibilityMask || m_caster->m_invisibilityMask)
+                && (unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH) 
+                || (unit->m_invisibilityMask || m_caster->m_invisibilityMask))
                 && !m_caster->canSeeOrDetect(unit, true))
             {
                 // that was causing CombatLog errors
