@@ -27,6 +27,8 @@ EndScriptData */
 #include "ScriptedEscortAI.h"
 #include "trial_of_the_champion.h"
 #define SAY_RESET  -1999927
+#define GO_BK_LOOT_H 320002
+#define GO_BK_LOOT 320001
 
 
 enum eEnums
@@ -429,10 +431,15 @@ struct boss_black_knightAI : public ScriptedAI
             if (IsHeroic())
                 pInstance->DoCompleteAchievement(ACHIEV_WORSE);
         }
+		
 		Map* instance=me->GetMap();
 		Creature* npc;
 		if(instance)
+		{
 			npc=instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+			//fix brutale per il loot °O°
+			me->SummonGameObject(instance->IsHeroic()? GO_BK_LOOT_H : GO_BK_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+		}
 		if(npc)
 			npc->RemoveFromWorld();
     }
