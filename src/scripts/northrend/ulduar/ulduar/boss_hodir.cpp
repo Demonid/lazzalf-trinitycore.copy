@@ -26,23 +26,68 @@ EndScriptData */
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
-// Hodir spells
-#define SPELL_FROZEN_BLOWS                      RAID_MODE(62478, 63512)
-#define SPELL_FLASH_FREEZE                      61968
-#define SPELL_BITING_COLD                       48094 //62038 from Keristrasza
-#define SPELL_FREEZE                            62469
-#define SPELL_ICICLE                            62234
-#define SPELL_ICICLE_SNOWDRIFT                  62462
-#define SPELL_BLOCK_OF_ICE                      61990
-#define SPELL_FROZEN_KILL                       62226
-#define SPELL_ICICLE_FALL                       69428
-#define SPELL_FALL_DAMAGE                       62236
-#define SPELL_FALL_SNOWDRIFT                    62460
-#define SPELL_BERSERK                           47008
+enum Spells
+{
+    // Hodir
+    SPELL_FROZEN_BLOWS_10                     = 62478,
+    SPELL_FROZEN_BLOWS_25                     = 63512,
+    SPELL_FLASH_FREEZE                        = 61968,
+    SPELL_FLASH_FREEZE_VISUAL                 = 62148,
+    SPELL_BITING_COLD                         = 48094, //62038
+    SPELL_FREEZE                              = 62469,
+    SPELL_ICICLE                              = 62234,
+    SPELL_ICICLE_SNOWDRIFT                    = 62462,
+    SPELL_BLOCK_OF_ICE                        = 61990,
+    SPELL_FROZEN_KILL                         = 62226,
+    SPELL_ICICLE_FALL                         = 69428,
+    SPELL_FALL_DAMAGE                         = 62236,
+    SPELL_FALL_SNOWDRIFT                      = 62460,
+    SPELL_BERSERK                             = 47008,
+    
+    // Druids
+    SPELL_WRATH                               = 62793,
+    SPELL_STARLIGHT                           = 62807,
+    // Shamans
+    SPELL_LAVA_BURST                          = 61924,
+    SPELL_STORM_CLOUD_10                      = 65123,
+    SPELL_STORM_CLOUD_25                      = 65133,
+    SPELL_STORM_POWER                         = 65134,
+    // Mages
+    SPELL_FIREBALL                            = 61909,
+    SPELL_CONJURE_FIRE                        = 62823,
+    SPELL_MELT_ICE                            = 64528,
+    SPELL_SINGED                              = 65280,
+    // Priests
+    SPELL_SMITE                               = 61923,
+    SPELL_GREATER_HEAL                        = 62809,
+    SPELL_DISPEL_MAGIC                        = 63499
+};
 
-// NPCs
-#define NPC_FLASH_FREEZE                        32938
-#define NPC_ICICLE_TARGET                       33174
+enum NPCs
+{
+    NPC_FLASH_FREEZE                          = 32938,
+    NPC_ICICLE_TARGET                         = 33174,
+
+    // Alliance
+    NPC_EIVI_NIGHTFEATHER                     = 33325,
+    NPC_ELLIE_NIGHTFEATHER                    = 32901,
+    NPC_ELEMENTALIST_MAHFUUN                  = 33328,
+    NPC_ELEMENTALIST_AVUUN                    = 32901,
+    NPC_MISSY_FLAMECUFFS                      = 32893,
+    NPC_SISSY_FLAMECUFFS                      = 33327,
+    NPC_FIELD_MEDIC_PENNY                     = 32897,
+    NPC_FIELD_MEDIC_JESSY                     = 33326,
+    
+    // Horde
+    NPC_TOR_GREYCLOUD                         = 32941,
+    NPC_KAR_GREYCLOUD                         = 33333,
+    NPC_SPIRITWALKER_TARA                     = 33332,
+    NPC_SPIRITWALKER_YONA                     = 32950,
+    NPC_AMIRA_BLAZEWEAVER                     = 33331,
+    NPC_VEESHA_BLAZEWEAVER                    = 32946,
+    NPC_BATTLE_PRIEST_ELIZA                   = 32948,
+    NPC_BATTLE_PRIEST_GINA                    = 33330
+};
 
 enum Events
 {
@@ -57,15 +102,15 @@ enum Events
 
 enum Yells
 {
-    SAY_AGGRO                                   = -1603210,
-    SAY_SLAY_1                                  = -1603211,
-    SAY_SLAY_2                                  = -1603212,
-    SAY_FLASH_FREEZE                            = -1603213,
-    SAY_STALACTITE                              = -1603214,
-    SAY_DEATH                                   = -1603215,
-    SAY_BERSERK                                 = -1603216,
-    SAY_YS_HELP                                 = -1603217,
-    SAY_HARD_MODE_MISSED                        = -1603218,
+    SAY_AGGRO                                 = -1603210,
+    SAY_SLAY_1                                = -1603211,
+    SAY_SLAY_2                                = -1603212,
+    SAY_FLASH_FREEZE                          = -1603213,
+    SAY_STALACTITE                            = -1603214,
+    SAY_DEATH                                 = -1603215,
+    SAY_BERSERK                               = -1603216,
+    SAY_YS_HELP                               = -1603217,
+    SAY_HARD_MODE_MISSED                      = -1603218
 };
 
 #define EMOTE_FREEZE      "Hodir begins to cast Flash Freeze!"
@@ -158,7 +203,7 @@ struct boss_hodir_AI : public BossAI
                 case EVENT_FLASH_CAST:
                     DoScriptText(SAY_FLASH_FREEZE, me);
                     me->MonsterTextEmote(EMOTE_FREEZE, 0, true);
-                    for (uint32 i = 0; i < 2; ++i)
+                    for (uint32 i = 0; i < RAID_MODE(2,3); ++i)
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             if (pTarget->isAlive())
                                 pTarget->CastSpell(pTarget, SPELL_ICICLE_SNOWDRIFT, true);
@@ -168,12 +213,12 @@ struct boss_hodir_AI : public BossAI
                     break;
                 case EVENT_FLASH_EFFECT:
                     FlashFreeze();
-                    //DoCast(62148);
+                    DoCast(SPELL_FLASH_FREEZE_VISUAL);
                     events.CancelEvent(EVENT_FLASH_EFFECT);
                     break;
                 case EVENT_BLOWS:
                     me->MonsterTextEmote(EMOTE_BLOWS, 0, true);
-                    DoCast(me, SPELL_FROZEN_BLOWS);
+                    DoCast(me, RAID_MODE(SPELL_FROZEN_BLOWS_10, SPELL_FROZEN_BLOWS_25));
                     events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
                     break;
                 case EVENT_BERSERK:
@@ -195,9 +240,6 @@ struct boss_hodir_AI : public BossAI
         {
             Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
             
-            if (pTarget->GetTypeId() != TYPEID_PLAYER)
-                continue;
-
             if (pTarget->HasAura(SPELL_BLOCK_OF_ICE))
             {
                 DoCast(pTarget, SPELL_FROZEN_KILL);
