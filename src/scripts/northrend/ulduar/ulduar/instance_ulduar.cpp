@@ -28,6 +28,9 @@ const DoorData doorData[] =
     {194554,    BOSS_ASSEMBLY,  DOOR_TYPE_ROOM,     0},
     {194556,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
     {194553,    BOSS_KOLOGARN,  DOOR_TYPE_ROOM,     0},
+    {194441,    BOSS_HODIR,     DOOR_TYPE_PASSAGE,  0},
+    {194634,    BOSS_HODIR,     DOOR_TYPE_PASSAGE,  0},
+    {194442,    BOSS_HODIR,     DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
 
@@ -35,7 +38,9 @@ enum eGameObjects
 {
     GO_Kologarn_CHEST_HERO  = 195047,
     GO_Kologarn_CHEST       = 195046,
-    GO_Kologarn_BRIDGE      = 194232
+    GO_Kologarn_BRIDGE      = 194232,
+    GO_Hodir_CHEST_HERO     = 194308,
+    GO_Hodir_CHEST          = 194307
 };
 
 struct instance_ulduar : public InstanceData
@@ -61,6 +66,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiKologarnBridge;
     
     GameObject* KologarnChest;
+    GameObject* HodirChest;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -70,6 +76,8 @@ struct instance_ulduar : public InstanceData
             case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
             case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
             case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
+            case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
+            case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
         }
     }
 
@@ -135,6 +143,11 @@ struct instance_ulduar : public InstanceData
         {
             HandleGameObject(uiKologarnBridge, false);
             KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+        }
+        
+        if (id == BOSS_HODIR && state == DONE)
+        {
+            HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
         }
 
         return true;

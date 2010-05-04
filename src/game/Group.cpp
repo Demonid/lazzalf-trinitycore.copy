@@ -117,7 +117,10 @@ bool Group::Create(const uint64 &guid, const char * name)
     }
 
     if (!AddMember(guid, name))
+    {
+        CharacterDatabase.RollbackTransaction();
         return false;
+    }
 
     if (!isBGGroup()) CharacterDatabase.CommitTransaction();
 
@@ -1289,7 +1292,7 @@ void Group::_setLeader(const uint64 &guid)
             "DELETE FROM group_instance WHERE leaderguid='%u' AND (permanent = 1 OR "
             "instance IN (SELECT instance FROM character_instance WHERE guid = '%u')"
             ")", GUID_LOPART(m_leaderGuid), GUID_LOPART(slot->guid)
-);
+        );
 
         Player *player = objmgr.GetPlayer(slot->guid);
         if (player)
