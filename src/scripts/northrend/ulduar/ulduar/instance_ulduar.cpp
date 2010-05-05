@@ -54,6 +54,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiLeviathan;
     uint64 uiNorgannon;
     uint64 uiIgnis;
+    uint64 uiRazorscale;
     uint64 uiExpCommander;
     uint64 uiXT002;
     uint64 uiSteelbreaker;
@@ -88,6 +89,7 @@ struct instance_ulduar : public InstanceData
             case 33113: uiLeviathan = pCreature->GetGUID(); return;
             case 33686: uiNorgannon = pCreature->GetGUID(); return;
             case 33118: uiIgnis = pCreature->GetGUID(); return;
+            case 33186: uiRazorscale = pCreature->GetGUID(); return;
             case 33210: uiExpCommander = pCreature->GetGUID(); return;
             case 33293: uiXT002 = pCreature->GetGUID(); return;
             case 32867: uiSteelbreaker = pCreature->GetGUID(); return;
@@ -112,6 +114,8 @@ struct instance_ulduar : public InstanceData
             return uiNorgannon;
         case DATA_IGNIS:
             return uiIgnis;
+        case DATA_RAZORSCALE:
+            return uiRazorscale;
         case DATA_EXP_COMMANDER:
             return uiExpCommander;
         case DATA_XT002:
