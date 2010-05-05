@@ -15,75 +15,341 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+ 
+ /* ScriptData
+SDName: Hodir
+SDAuthor: PrinceCreed
+SD%Complete: 80
+SDComments: TODO: NPC helper scripts and Achievements
+EndScriptData */
 
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
-enum Yells
+enum Spells
 {
-    SAY_AGGRO                                   = -1603210,
-    SAY_SLAY_1                                  = -1603211,
-    SAY_SLAY_2                                  = -1603212,
-    SAY_FLASH_FREEZE                            = -1603213,
-    SAY_STALACTITE                              = -1603214,
-    SAY_DEATH                                   = -1603215,
-    SAY_BERSERK                                 = -1603216,
-    SAY_YS_HELP                                 = -1603217,
-    SAY_HARD_MODE_MISSED                        = -1603218,
+    // Hodir
+    SPELL_FROZEN_BLOWS_10                     = 62478,
+    SPELL_FROZEN_BLOWS_25                     = 63512,
+    SPELL_FLASH_FREEZE                        = 61968,
+    SPELL_FLASH_FREEZE_VISUAL                 = 62148,
+    SPELL_BITING_COLD                         = 48094, //62038
+    SPELL_FREEZE                              = 62469,
+    SPELL_ICICLE                              = 62234,
+    SPELL_ICICLE_SNOWDRIFT                    = 62462,
+    SPELL_BLOCK_OF_ICE                        = 61990,
+    SPELL_FROZEN_KILL                         = 62226,
+    SPELL_ICICLE_FALL                         = 69428,
+    SPELL_FALL_DAMAGE                         = 62236,
+    SPELL_FALL_SNOWDRIFT                      = 62460,
+    SPELL_BERSERK                             = 47008,
+    
+    // Druids
+    SPELL_WRATH                               = 62793,
+    SPELL_STARLIGHT                           = 62807,
+    // Shamans
+    SPELL_LAVA_BURST                          = 61924,
+    SPELL_STORM_CLOUD_10                      = 65123,
+    SPELL_STORM_CLOUD_25                      = 65133,
+    SPELL_STORM_POWER                         = 65134,
+    // Mages
+    SPELL_FIREBALL                            = 61909,
+    SPELL_CONJURE_FIRE                        = 62823,
+    SPELL_MELT_ICE                            = 64528,
+    SPELL_SINGED                              = 65280,
+    // Priests
+    SPELL_SMITE                               = 61923,
+    SPELL_GREATER_HEAL                        = 62809,
+    SPELL_DISPEL_MAGIC                        = 63499
 };
 
-struct boss_hodirAI : public BossAI
+enum NPCs
 {
-    boss_hodirAI(Creature *pCreature) : BossAI(pCreature, TYPE_HODIR)
+    NPC_FLASH_FREEZE                          = 32938,
+    NPC_ICICLE_TARGET                         = 33174,
+
+    // Alliance
+    NPC_EIVI_NIGHTFEATHER                     = 33325,
+    NPC_ELLIE_NIGHTFEATHER                    = 32901,
+    NPC_ELEMENTALIST_MAHFUUN                  = 33328,
+    NPC_ELEMENTALIST_AVUUN                    = 32901,
+    NPC_MISSY_FLAMECUFFS                      = 32893,
+    NPC_SISSY_FLAMECUFFS                      = 33327,
+    NPC_FIELD_MEDIC_PENNY                     = 32897,
+    NPC_FIELD_MEDIC_JESSY                     = 33326,
+    
+    // Horde
+    NPC_TOR_GREYCLOUD                         = 32941,
+    NPC_KAR_GREYCLOUD                         = 33333,
+    NPC_SPIRITWALKER_TARA                     = 33332,
+    NPC_SPIRITWALKER_YONA                     = 32950,
+    NPC_AMIRA_BLAZEWEAVER                     = 33331,
+    NPC_VEESHA_BLAZEWEAVER                    = 32946,
+    NPC_BATTLE_PRIEST_ELIZA                   = 32948,
+    NPC_BATTLE_PRIEST_GINA                    = 33330
+};
+
+enum Events
+{
+    EVENT_NONE,
+    EVENT_FREEZE,
+    EVENT_FLASH_CAST,
+    EVENT_FLASH_EFFECT,
+    EVENT_ICICLE,
+    EVENT_BLOWS,
+    EVENT_BERSERK
+};
+
+enum Yells
+{
+    SAY_AGGRO                                 = -1603210,
+    SAY_SLAY_1                                = -1603211,
+    SAY_SLAY_2                                = -1603212,
+    SAY_FLASH_FREEZE                          = -1603213,
+    SAY_STALACTITE                            = -1603214,
+    SAY_DEATH                                 = -1603215,
+    SAY_BERSERK                               = -1603216,
+    SAY_YS_HELP                               = -1603217,
+    SAY_HARD_MODE_MISSED                      = -1603218
+};
+
+#define EMOTE_FREEZE      "Hodir begins to cast Flash Freeze!"
+#define EMOTE_BLOWS       "Hodir gains Frozen Blows!"
+
+struct mob_flash_freezeAI : public ScriptedAI
+{
+    mob_flash_freezeAI(Creature *c) : ScriptedAI(c)
     {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_PACIFIED);
+        me->SetReactState(REACT_PASSIVE);
+        FrozenTargetGUID = 0;
     }
 
+    uint64 FrozenTargetGUID;
+
+    void SetPrisoner(Unit* uPrisoner)
+    {
+        FrozenTargetGUID = uPrisoner->GetGUID();
+    }
+
+    void Reset(){ FrozenTargetGUID = 0; }
+};
+
+CreatureAI* GetAI_mob_flash_freeze(Creature* pCreature)
+{
+    return new mob_flash_freezeAI(pCreature);
+}
+
+struct boss_hodir_AI : public BossAI
+{
+    boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
+    {
+        pInstance = pCreature->GetInstanceData();
+    }
+    
+    ScriptedInstance* pInstance;
+        
     void Reset()
     {
         _Reset();
     }
 
-    void KilledUnit(Unit * /*victim*/)
+    void EnterCombat(Unit* who)
     {
-        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
-    }
-
-    void JustDied(Unit * /*victim*/)
-    {
-        DoScriptText(SAY_DEATH, me);
-        _JustDied();
-    }
-
-    void EnterCombat(Unit* /*pWho*/)
-    {
-        DoScriptText(SAY_AGGRO, me);
         _EnterCombat();
+        DoScriptText(SAY_AGGRO,me);
+        DoCast(me, SPELL_BITING_COLD);
+        events.ScheduleEvent(EVENT_ICICLE, 2000);
+        events.ScheduleEvent(EVENT_FREEZE, 25000);
+        events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
+        events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
+        events.ScheduleEvent(EVENT_BERSERK, 480000);
+    }
+    void KilledUnit(Unit* victim)
+    {
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
+    }
+
+    void JustDied(Unit *victim)
+    {
+        _JustDied();
+        DoScriptText(SAY_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if (!UpdateVictim() || !CheckInRoom())
             return;
-//SPELLS TODO:
 
-//
+        events.Update(diff);
+
+        if (me->hasUnitState(UNIT_STAT_CASTING))
+            return;
+
+        while(uint32 eventId = events.ExecuteEvent())
+        {
+            switch(eventId)
+            {
+                case EVENT_FREEZE:
+                    DoCastAOE(SPELL_FREEZE);
+                    events.ScheduleEvent(EVENT_FREEZE, urand(30000, 35000));
+                    break;
+                case EVENT_ICICLE:
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (pTarget->isAlive())
+                            DoCast(pTarget, SPELL_ICICLE);
+                    events.ScheduleEvent(EVENT_ICICLE, 2000);
+                    break;
+                case EVENT_FLASH_CAST:
+                    DoScriptText(SAY_FLASH_FREEZE, me);
+                    me->MonsterTextEmote(EMOTE_FREEZE, 0, true);
+                    for (uint32 i = 0; i < RAID_MODE(2,3); ++i)
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            if (pTarget->isAlive())
+                                pTarget->CastSpell(pTarget, SPELL_ICICLE_SNOWDRIFT, true);
+                    DoCast(SPELL_FLASH_FREEZE);
+                    events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
+                    events.ScheduleEvent(EVENT_FLASH_EFFECT, 9000);
+                    break;
+                case EVENT_FLASH_EFFECT:
+                    FlashFreeze();
+                    DoCast(SPELL_FLASH_FREEZE_VISUAL);
+                    events.CancelEvent(EVENT_FLASH_EFFECT);
+                    break;
+                case EVENT_BLOWS:
+                    me->MonsterTextEmote(EMOTE_BLOWS, 0, true);
+                    DoCast(me, RAID_MODE(SPELL_FROZEN_BLOWS_10, SPELL_FROZEN_BLOWS_25));
+                    events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
+                    break;
+                case EVENT_BERSERK:
+                    DoCast(me, SPELL_BERSERK, true);
+                    DoScriptText(SAY_BERSERK, me);
+                    events.CancelEvent(EVENT_BERSERK);
+                    break;
+            }
+        }
+
         DoMeleeAttackIfReady();
-
-        EnterEvadeIfOutOfCombatArea(diff);
+    }
+    
+    void FlashFreeze()
+    {
+        DoZoneInCombat();
+        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+        for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+        {
+            Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+            
+            if (pTarget->HasAura(SPELL_BLOCK_OF_ICE))
+            {
+                DoCast(pTarget, SPELL_FROZEN_KILL);
+                continue;
+            }
+            else
+            {
+                if (GetClosestCreatureWithEntry(pTarget, NPC_ICICLE_TARGET, 5.0f))
+                    continue;
+                    
+                else if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000))
+                {
+                        CAST_AI(mob_flash_freezeAI, pIceBlock->AI())->SetPrisoner(pTarget);
+                        pIceBlock->CastSpell(pTarget, SPELL_BLOCK_OF_ICE, true);
+                }
+            }
+        }
     }
 };
 
 CreatureAI* GetAI_boss_hodir(Creature* pCreature)
 {
-    return new boss_hodirAI(pCreature);
+    return new boss_hodir_AI (pCreature);
 }
+
+struct mob_icicleAI : public ScriptedAI
+{
+    mob_icicleAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        me->SetReactState(REACT_PASSIVE);
+    }
+    
+    int32 IcicleTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (IcicleTimer <= diff)
+        {
+            DoCast(me, SPELL_FALL_DAMAGE);
+            DoCast(me, SPELL_ICICLE_FALL);
+            IcicleTimer = 10000;
+        } else IcicleTimer -= diff;
+    }
+    
+    void Reset()
+    {
+        IcicleTimer = 2000;
+    }
+};
+
+CreatureAI* GetAI_mob_icicle(Creature* pCreature)
+{
+    return new mob_icicleAI(pCreature);
+}
+
+struct mob_icicle_snowdriftAI : public ScriptedAI
+{
+    mob_icicle_snowdriftAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        me->SetReactState(REACT_PASSIVE);
+    }
+    
+    int32 IcicleTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (IcicleTimer <= diff)
+        {
+            DoCast(me, SPELL_FALL_SNOWDRIFT);
+            DoCast(me, SPELL_ICICLE_FALL);
+            IcicleTimer = 10000;
+        } else IcicleTimer -= diff;
+    }
+    
+    void Reset()
+    {
+        IcicleTimer = 2000;
+    }
+};
+
+CreatureAI* GetAI_mob_icicle_snowdrift(Creature* pCreature)
+{
+    return new mob_icicle_snowdriftAI(pCreature);
+}
+
 
 void AddSC_boss_hodir()
 {
     Script *newscript;
+    
     newscript = new Script;
     newscript->Name = "boss_hodir";
     newscript->GetAI = &GetAI_boss_hodir;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_flash_freeze";
+    newscript->GetAI = &GetAI_mob_flash_freeze;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_icicle";
+    newscript->GetAI = &GetAI_mob_icicle;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_icicle_snowdrift";
+    newscript->GetAI = &GetAI_mob_icicle_snowdrift;
     newscript->RegisterSelf();
 
 }

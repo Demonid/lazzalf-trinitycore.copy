@@ -25,6 +25,7 @@
 #define SPELL_SPELL_DISRUPTION  29310
 #define SPELL_DECREPIT_FEVER    RAID_MODE(29998,55011)
 #define SPELL_PLAGUE_CLOUD      29350
+#define ACHIEV_SAFETY_DANCE     RAID_MODE(1996,2139)
 
 enum Events
 {
@@ -47,21 +48,32 @@ struct boss_heiganAI : public BossAI
 
     uint32 eruptSection;
     bool eruptDirection;
+    bool bIsSomeoneDied;
     Phases phase;
 
-    void KilledUnit(Unit* /*Victim*/)
+    void Reset()
     {
+        bIsSomeoneDied = false;
+        _Reset();
+    }
+
+    void KilledUnit(Unit* Victim)
+    {
+        bIsSomeoneDied = true;
         if (!(rand()%5))
             DoScriptText(SAY_SLAY, me);
     }
 
-    void JustDied(Unit* /*Killer*/)
+    void JustDied(Unit* Killer)
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
+
+        if (instance && !bIsSomeoneDied)
+            instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         _EnterCombat();
         DoScriptText(SAY_AGGRO, me);
@@ -75,6 +87,7 @@ struct boss_heiganAI : public BossAI
         eruptSection = 3;
         if (phase == PHASE_FIGHT)
         {
+            me->SetReactState(REACT_AGGRESSIVE);
             events.ScheduleEvent(EVENT_DISRUPT, urand(10000, 25000));
             events.ScheduleEvent(EVENT_FEVER, urand(15000, 20000));
             events.ScheduleEvent(EVENT_PHASE, 90000);
@@ -85,10 +98,30 @@ struct boss_heiganAI : public BossAI
             float x, y, z, o;
             me->GetHomePosition(x, y, z, o);
             me->NearTeleportTo(x, y, z, o);
+            me->SetReactState(REACT_PASSIVE);
             DoCastAOE(SPELL_PLAGUE_CLOUD);
             events.ScheduleEvent(EVENT_PHASE, 45000);
             events.ScheduleEvent(EVENT_ERUPT, 8000);
         }
+    }
+
+    void SendPhaseDance()
+    {
+        if (Map* pMap = me->GetMap())
+        {
+            if (pMap->IsDungeon())
+            {
+                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                if (!PlayerList.isEmpty())
+                {
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        if (i->getSource() && i->getSource()->isAlive() && (i->getSource()->GetPositionX() > 2823))
+                            DoTeleportPlayer(i->getSource(), 2780, -3672, 274, i->getSource()->GetOrientation());
+                    }
+                }
+            }
+        }            
     }
 
     void UpdateAI(const uint32 diff)
@@ -112,6 +145,7 @@ struct boss_heiganAI : public BossAI
                     break;
                 case EVENT_PHASE:
                     // TODO : Add missing texts for both phase switches
+                    SendPhaseDance();
                     EnterPhase(phase == PHASE_FIGHT ? PHASE_DANCE : PHASE_FIGHT);
                     break;
                 case EVENT_ERUPT:
