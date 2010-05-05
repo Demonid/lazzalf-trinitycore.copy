@@ -103,6 +103,8 @@ enum DarkRuneSpells
 
 #define ACHIEVEMENT_QUICK_SHAVE     RAID_MODE(2919, 2921)
 
+#define ACTION_EVENT_START          1
+
 enum Phases
 {
     PHASE_NULL = 0,
@@ -138,7 +140,6 @@ struct boss_razorscaleAI : public BossAI
         pInstance = pCreature->GetInstanceData();
         pMap = me->GetMap();
         PermaGround = false;
-        wipe = false;
     }
 
     Phases phase;
@@ -151,21 +152,15 @@ struct boss_razorscaleAI : public BossAI
     Creature* Harpoon[2];
     Creature* MoleTrigger;
     bool PermaGround;
-    bool wipe;
 
     void Reset()
     {
         _Reset();
         me->SetFlying(true);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-        me->GetMotionMaster()->MovePoint(0,RazorGround);
-        
-        // Razorscale despawn
-        if (wipe)
-        {
-            me->ForcedDespawn();
-            me->SetVisibility(VISIBILITY_OFF);
-        }
+        //me->SetVisibility(VISIBILITY_OFF);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        me->SetReactState(REACT_PASSIVE);
+        me->GetMotionMaster()->MoveTargetedHome();
     }
 
     void EnterCombat(Unit* who)
@@ -181,7 +176,6 @@ struct boss_razorscaleAI : public BossAI
         me->SetReactState(REACT_PASSIVE);
         phase = PHASE_GROUND;
         events.SetPhase(PHASE_GROUND);
-        wipe = true;
         FlyCount = 0;
         EnrageTimer = 15*60*1000; // Enrage in 15 min
         events.ScheduleEvent(EVENT_FLIGHT, 0, 0, PHASE_GROUND);
@@ -322,6 +316,8 @@ struct boss_razorscaleAI : public BossAI
                         if (Harpoon[0])
                             Harpoon[0]->MonsterTextEmote(EMOTE_HARPOON, 0, true);
                         me->GetMotionMaster()->MovePoint(0,RazorGround);
+                        me->SetSpeed(MOVE_RUN, 3.0f);
+                        me->SetSpeed(MOVE_FLIGHT, 3.0f);
                         events.ScheduleEvent(EVENT_LAND, 5500, 0, PHASE_GROUND);
                         return;
                     case EVENT_FIREBALL:
@@ -382,6 +378,19 @@ struct boss_razorscaleAI : public BossAI
             }
         }
     }
+    
+    void DoAction(const int32 action)
+    {
+        switch(action)
+        {
+            case ACTION_EVENT_START:
+                //me->SetVisibility(VISIBILITY_ON);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat();
+                break;
+        }
+    }
 };
 
 CreatureAI* GetAI_boss_razorscale(Creature* pCreature)
@@ -409,7 +418,6 @@ struct npc_expedition_commanderAI : public ScriptedAI
     uint8  uiPhase;
     Creature* engineer[2];
     Creature* defender[4];
-    Creature* razorscale;
 
     void Initialize()
     {
@@ -461,12 +469,12 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 2;
                     break;
                 case 2:
-                    engineer[0] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 480000);
+                    engineer[0] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                     engineer[0]->SetSpeed(MOVE_RUN, 0.5f);
                     engineer[0]->SetHomePosition(Harpoon1);
                     engineer[0]->GetMotionMaster()->MoveTargetedHome();
-                    engineer[1] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 480000);
+                    engineer[1] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                     engineer[1]->SetSpeed(MOVE_RUN, 0.5f);
                     engineer[1]->SetHomePosition(Harpoon2);
@@ -512,7 +520,9 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 6;
                     break;
                 case 6:
-                    razorscale = me->SummonCreature (RAZORSCALE, RazorFlight, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                    if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(DATA_RAZORSCALE)))
+                        if (pRazorscale->AI())
+                            pRazorscale->AI()->DoAction(ACTION_EVENT_START);
                     uiPhase =7;
                     break;
             }
