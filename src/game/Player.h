@@ -1272,6 +1272,7 @@ class Player : public Unit, public GridObject<Player>
         void AddEnchantmentDuration(Item *item,EnchantmentSlot slot,uint32 duration);
         void ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool apply_dur = true, bool ignore_condition = false);
         void ApplyEnchantment(Item *item,bool apply);
+        void UpdateSkillEnchantments(uint16 skill_id, uint16 curr_value, uint16 new_value);
         void SendEnchantmentDurations();
         void BuildEnchantmentsInfoData(WorldPacket *data);
         void AddItemDurations(Item *item);
@@ -2280,6 +2281,7 @@ class Player : public Unit, public GridObject<Player>
         void SendSavedInstances();
         static void ConvertInstancesToGroup(Player *player, Group *group = NULL, uint64 player_guid = 0);
         bool Satisfy(AccessRequirement const*, uint32 target_map, bool report = false);
+        bool CheckInstanceLoginValid();
 
         // last used pet number (for BG's)
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }

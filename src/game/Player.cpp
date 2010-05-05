@@ -816,12 +816,6 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
                 if (iProto->Stackable < count)
                     count = iProto->Stackable;
             }
-            // special amount for daggers
-            else if (iProto->Class == ITEM_CLASS_WEAPON && iProto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
-            {
-                count = 2;                                  // will placed to 2 slots
-            }
-
             StoreNewItemInBestSlots(item_id, count);
         }
     }
@@ -1941,7 +1935,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
-        if (!MapManager::Instance().CanPlayerEnter(mapid, this))
+        if (!MapManager::Instance().CanPlayerEnter(mapid, this, false))
             return false;
 
         // If the map is not created, assume it is possible to enter it.
@@ -5539,6 +5533,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
         SetUInt32Value(valueIndex,MAKE_SKILL_VALUE(new_value,max));
         if (itr->second.uState != SKILL_NEW)
             itr->second.uState = SKILL_CHANGED;
+        UpdateSkillEnchantments(skill_id, value, new_value);
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,skill_id);
         return true;
     }
@@ -5679,6 +5674,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
                 break;
             }
         }
+        UpdateSkillEnchantments(SkillId, SkillValue, new_value);
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,SkillId);
         sLog.outDebug("Player::UpdateSkillPro Chance=%3.1f%% taken", Chance/10.0);
         return true;
@@ -5857,30 +5853,40 @@ void Player::UpdateSkillsToMaxSkillsForLevel()
 
 // This functions sets a skill line value (and adds if doesn't exist yet)
 // To "remove" a skill line, set it's values to zero
-void Player::SetSkill(uint16 id, uint16 step, uint16 currVal, uint16 maxVal)
+void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
 {
     if (!id)
         return;
 
+    uint16 currVal;
     SkillStatusMap::iterator itr = mSkillStatus.find(id);
 
     //has skill
     if (itr != mSkillStatus.end() && itr->second.uState != SKILL_DELETED)
     {
-        if (currVal)
+        currVal = SKILL_VALUE(GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos)));
+        if (newVal)
         {
+            // if skill value is going down, update enchantments before setting the new value
+            if (newVal < currVal)
+                UpdateSkillEnchantments(id, currVal, newVal);
             // update step
-            SetUInt32Value(PLAYER_SKILL_INDEX(itr->second.pos), MAKE_PAIR32(id, step));
+            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos), MAKE_PAIR32(id, step));
             // update value
-            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos),MAKE_SKILL_VALUE(currVal,maxVal));
+            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos),MAKE_SKILL_VALUE(newVal,maxVal));
             if (itr->second.uState != SKILL_NEW)
                 itr->second.uState = SKILL_CHANGED;
-            learnSkillRewardedSpells(id, currVal);
+            learnSkillRewardedSpells(id, newVal);
+            // if skill value is going up, update enchantments after setting the new value
+            if (newVal > currVal)
+                UpdateSkillEnchantments(id, currVal, newVal);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,id);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL,id);
         }
         else                                                //remove
         {
+            //remove enchantments needing this skill
+            UpdateSkillEnchantments(id, currVal, 0);
             // clear skill fields
             SetUInt32Value(PLAYER_SKILL_INDEX(itr->second.pos),0);
             SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos),0);
@@ -5899,8 +5905,9 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 currVal, uint16 maxVal)
                         removeSpell(spellmgr.GetFirstSpellInChain(pAbility->spellId));
         }
     }
-    else if (currVal)                                        //add
+    else if (newVal)                                        //add
     {
+        currVal = 0;
         for (int i=0; i < PLAYER_MAX_SKILLS; ++i)
             if (!GetUInt32Value(PLAYER_SKILL_INDEX(i)))
         {
@@ -5912,7 +5919,8 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 currVal, uint16 maxVal)
             }
 
             SetUInt32Value(PLAYER_SKILL_INDEX(i), MAKE_PAIR32(id, step));
-            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i),MAKE_SKILL_VALUE(currVal, maxVal));
+            SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i),MAKE_SKILL_VALUE(newVal, maxVal));
+            UpdateSkillEnchantments(id, currVal, newVal);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, id);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL, id);
 
@@ -5941,7 +5949,7 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 currVal, uint16 maxVal)
                         (*j)->HandleEffect(this, 0, true);
 
             // Learn all spells for skill
-            learnSkillRewardedSpells(id, currVal);
+            learnSkillRewardedSpells(id, newVal);
             return;
         }
     }
@@ -13268,6 +13276,35 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
     }
 }
 
+void Player::UpdateSkillEnchantments(uint16 skill_id, uint16 curr_value, uint16 new_value)
+{
+    for (uint8 i = 0; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        if (m_items[i])
+        {
+            for (uint8 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+            {
+                uint32 ench_id = m_items[i]->GetEnchantmentId(EnchantmentSlot(slot));
+                if (!ench_id)
+                    continue;
+
+                SpellItemEnchantmentEntry const *Enchant = sSpellItemEnchantmentStore.LookupEntry(ench_id);
+                if (!Enchant)
+                    return;
+
+                if (Enchant->requiredSkill == skill_id)
+                {
+                    // Checks if the enchantment needs to be applied or removed
+                    if (curr_value < Enchant->requiredSkillValue && new_value >= Enchant->requiredSkillValue)
+                        ApplyEnchantment(m_items[i], EnchantmentSlot(slot), true);
+                    else if (new_value < Enchant->requiredSkillValue && curr_value >= Enchant->requiredSkillValue)
+                        ApplyEnchantment(m_items[i], EnchantmentSlot(slot), false);
+                }
+            }
+        }
+    }
+}
+
 void Player::SendEnchantmentDurations()
 {
     for (EnchantDurationList::const_iterator itr = m_enchantDuration.begin(); itr != m_enchantDuration.end(); ++itr)
@@ -17533,6 +17570,31 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
     return true;
 }
 
+bool Player::CheckInstanceLoginValid()
+{
+    if (!GetMap())
+        return false;
+
+    if (!GetMap()->IsDungeon() || isGameMaster())
+        return true;
+
+    if (GetMap()->IsRaid())
+    {
+        // cannot be in raid instance without a raid group
+        if (!GetGroup() || !GetGroup()->isRaidGroup())
+            return false;
+    }
+    else
+    {
+        // cannot be in normal instance without a group and more players than 1 in instance
+        if (!GetGroup() && GetMap()->GetPlayersCountExceptGMs() > 1)
+            return false;
+    }
+
+    // do checks for satisfy accessreqs, instance full, encounter in progress (raid), perm bind group != perm bind player
+    return MapManager::Instance().CanPlayerEnter(GetMap()->GetId(), this, true);
+}
+
 bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 {
     PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
@@ -17955,13 +18017,16 @@ void Player::_SaveInventory()
         Bag *container = item->GetContainer();
         uint32 bag_guid = container ? container->GetGUIDLow() : 0;
 
-        switch(item->GetState())
+        switch (item->GetState())
         {
             case ITEM_NEW:
                 CharacterDatabase.PExecute("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", GetGUIDLow(), bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
                 break;
             case ITEM_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", GetGUIDLow(), bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUIDLow());
+                CharacterDatabase.BeginTransaction();
+                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
+                CharacterDatabase.PExecute("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", GetGUIDLow(), bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
+                CharacterDatabase.CommitTransaction();
                 break;
             case ITEM_REMOVED:
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
