@@ -48,6 +48,8 @@
 #include "CreatureAI.h"
 #include "DBCEnums.h"
 #include "ScriptMgr.h"
+#include "MapManager.h"
+#include "InstanceData.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket & recv_data)
 {
@@ -913,6 +915,10 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         return;
 
     if (!GetPlayer()->Satisfy(objmgr.GetAccessRequirement(at->access_id), at->target_mapId, true))
+        return;
+
+    // check if player can enter instance : instance not full, and raid instance not in encounter fight
+    if (!MapManager::Instance().CanPlayerEnter(at->target_mapId, GetPlayer(), false))
         return;
 
     GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
