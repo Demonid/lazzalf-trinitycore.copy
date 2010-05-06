@@ -256,9 +256,7 @@ enum WG_NPC_ENTRIES
     WG_CREATURE_WHISPERING_WIND         = 30848,
     WG_CREATURE_TEMPEST_REVENANT        = 30875,
     WG_CREATURE_RAGING_FLAME            = 30847,
-    WG_CREATURE_FLAME_REVENANT          = 30873,
-
-    WG_CREATURE_INVISIBLE_STALKER       = 23033
+    WG_CREATURE_FLAME_REVENANT          = 30873
 };
 
 typedef uint32 TeamPairs[2];
@@ -659,8 +657,6 @@ class OutdoorPvPWG : public OutdoorPvP
         GameObject *m_gate_collision1;
         GameObject *m_gate_collision2;
 
-        Creature *m_stalker1;
-        Creature *m_stalker2;
         // To be deleted soon!
         CreatureSet m_creatures;
         CreatureSet m_vehicles[2];
@@ -685,7 +681,6 @@ class OutdoorPvPWG : public OutdoorPvP
         uint32 m_towerDamagedCount[2];
         uint32 m_VehicleCnt[2];
         uint32 m_saveinterval; // Minimum save interval if nothing happends - 300000 - 5 Min.
-        uint32 m_checktime;
 
         int32 m_tenacityStack;
 
@@ -722,8 +717,6 @@ class OutdoorPvPWG : public OutdoorPvP
 //        void LoadCreatureMap(uint64 guid, WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
         // To be enabled soon.
 //        Position SetQuestgiverPos(WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
-        Creature *SearchVehicleForTeleport(Creature* cr, uint32 CEntry);
-        void CheckVehicleTeleport();
         void LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair);
         void SaveData();
 };
