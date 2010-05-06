@@ -161,9 +161,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     m_gate_collision1 = NULL;
     m_gate_collision2 = NULL;
 
-    m_stalker1 = NULL;
-    m_stalker2 = NULL;
-
     std::list<uint32> engGuids;
     std::list<uint32> spiritGuids;
 
@@ -513,7 +510,6 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
 
     m_saveinterval = WG_MIN_SAVE;
-    m_checktime = WG_STALKER_CHECKTIME;
 
     RegisterZone(NORTHREND_WINTERGRASP);
 
@@ -818,25 +814,6 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
         team = TEAM_ALLIANCE;
     else if (creature->getFaction() == WintergraspFaction[TEAM_HORDE])
         team = TEAM_HORDE;
-
-    switch(creature->GetEntry())
-    {
-        case WG_CREATURE_INVISIBLE_STALKER:
-            if (!m_stalker1 && uint32(creature->GetPositionX()) == uint32(WG_VEHICLE_TRANSPORTER_INVISIBLE_STALKER_POS_MAP[0][0]) &&
-                uint32(creature->GetPositionY()) == uint32(WG_VEHICLE_TRANSPORTER_INVISIBLE_STALKER_POS_MAP[0][1]))
-            {
-                m_stalker1 = const_cast<Creature*>(creature);
-                break;
-            }
-
-            if (!m_stalker2 && uint32(creature->GetPositionX()) == uint32(WG_VEHICLE_TRANSPORTER_INVISIBLE_STALKER_POS_MAP[1][0]) &&
-                uint32(creature->GetPositionY()) == uint32(WG_VEHICLE_TRANSPORTER_INVISIBLE_STALKER_POS_MAP[1][1]))
-            {
-                m_stalker2 = const_cast<Creature*>(creature);
-                break;
-            }
-            break;
-    }
 
     switch(GetCreatureType(creature->GetEntry()))
     {
@@ -1545,62 +1522,6 @@ void OutdoorPvPWG::UpdateClock()
         UpdateClockDigit(timer, 0, 10);
 }
 
-Creature *OutdoorPvPWG::SearchVehicleForTeleport(Creature* pCr, uint32 CEntry)
-{
-    if (!isWarTime() || !pCr || !pCr->IsInWorld())
-        return NULL;
-
-    std::list<Creature*> VehicleList;
-    GetCreatureListWithEntryInGrid(VehicleList, pCr, CEntry, 3.0f);
-    for (std::list<Creature*>::iterator iter = VehicleList.begin(); iter != VehicleList.end(); ++iter)
-    {
-        for (std::set<Creature*>::iterator iter2 = m_vehicles[getDefenderTeamId()].begin(); iter2 != m_vehicles[getDefenderTeamId()].end(); ++iter)
-            if ((*iter) == (*iter2) && (*iter)->IsInWorld())
-                return (*iter);
-    }
-    return NULL;
-}
-
-void OutdoorPvPWG::CheckVehicleTeleport()
-{
-    Unit* pVehicle;
-
-    Position m_stalker1Pos;
-    Position m_stalker2Pos;
-
-    m_stalker1Pos.m_positionX = WG_VEHICLE_TRANPORTER_POS_MAP[1][1][0];
-    m_stalker1Pos.m_positionY = WG_VEHICLE_TRANPORTER_POS_MAP[1][1][1];
-    m_stalker1Pos.m_positionZ = WG_VEHICLE_TRANPORTER_POS_MAP[1][1][2];
-    m_stalker1Pos.m_orientation = WG_VEHICLE_TRANPORTER_POS_MAP[1][1][3];
-
-    m_stalker2Pos.m_positionX = WG_VEHICLE_TRANPORTER_POS_MAP[0][1][0];
-    m_stalker2Pos.m_positionY = WG_VEHICLE_TRANPORTER_POS_MAP[0][1][1];
-    m_stalker2Pos.m_positionZ = WG_VEHICLE_TRANPORTER_POS_MAP[0][1][2];
-    m_stalker2Pos.m_orientation = WG_VEHICLE_TRANPORTER_POS_MAP[0][1][3];
-
-    // m_stalker1
-    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_A))
-        pVehicle->SetPosition(m_stalker1Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_SIEGE_VEHICLE_H))
-        pVehicle->SetPosition(m_stalker1Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_CATAPULT_A))
-        pVehicle->SetPosition(m_stalker1Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker1, WG_CREATURE_DEMOLISHER_A))
-        pVehicle->SetPosition(m_stalker1Pos, true);
-
-    // m_stalker2
-    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_A))
-        pVehicle->SetPosition(m_stalker2Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_SIEGE_VEHICLE_H))
-        pVehicle->SetPosition(m_stalker2Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_CATAPULT_A))
-        pVehicle->SetPosition(m_stalker2Pos, true);
-    if (pVehicle = SearchVehicleForTeleport(m_stalker2, WG_CREATURE_DEMOLISHER_A))
-        pVehicle->SetPosition(m_stalker2Pos, true);
-
-    m_checktime = WG_STALKER_CHECKTIME;
-}
-
 bool OutdoorPvPWG::Update(uint32 diff)
 {
     if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
@@ -1610,11 +1531,6 @@ bool OutdoorPvPWG::Update(uint32 diff)
         SaveData();
     else
         m_saveinterval -= diff;
-
-    if (m_checktime <= diff)
-        CheckVehicleTeleport();
-    else
-        m_checktime -= diff;
 
     if (m_timer > diff)
     {
