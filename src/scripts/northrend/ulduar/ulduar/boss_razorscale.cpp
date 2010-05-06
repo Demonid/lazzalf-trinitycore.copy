@@ -157,7 +157,6 @@ struct boss_razorscaleAI : public BossAI
     {
         _Reset();
         me->SetFlying(true);
-        //me->SetVisibility(VISIBILITY_OFF);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
         me->GetMotionMaster()->MoveTargetedHome();
@@ -384,7 +383,6 @@ struct boss_razorscaleAI : public BossAI
         switch(action)
         {
             case ACTION_EVENT_START:
-                //me->SetVisibility(VISIBILITY_ON);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoZoneInCombat();
