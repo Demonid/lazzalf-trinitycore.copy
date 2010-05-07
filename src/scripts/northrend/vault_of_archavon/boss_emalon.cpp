@@ -98,6 +98,11 @@ struct boss_emalonAI : public BossAI
             summoned->AI()->AttackStart(me->getVictim());
     }
 
+    void JustDied(Unit* /*Killer*/)
+    {
+        _JustDied();
+    }
+
     void EnterCombat(Unit * who)
     {
         if (!summons.empty())

@@ -111,10 +111,13 @@ struct boss_toravonAI : public ScriptedAI
 
     void KilledUnit(Unit* Victim) {}
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if (pInstance)
+        {
             pInstance->SetData(DATA_TORAVON_EVENT, DONE);
+            pInstance->SaveToDB();
+        }
     }
 
     void EnterCombat(Unit *who)
