@@ -19,8 +19,8 @@
  /* ScriptData
 SDName: Hodir
 SDAuthor: PrinceCreed
-SD%Complete: 80
-SDComments: TODO: Achievements
+SD%Complete: 90
+SDComments: TODO: Achievements and Hardmode Chest spawn
 EndScriptData */
 
 #include "ScriptedPch.h"
@@ -34,6 +34,7 @@ enum Spells
     SPELL_FLASH_FREEZE                        = 61968,
     SPELL_FLASH_FREEZE_VISUAL                 = 62148,
     SPELL_BITING_COLD                         = 48094, //62038
+    SPELL_BITING_COLD_TRIGGERED               = 48095,
     SPELL_FREEZE                              = 62469,
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
@@ -61,6 +62,13 @@ enum Spells
     SPELL_GREATER_HEAL                        = 62809,
     SPELL_DISPEL_MAGIC                        = 63499
 };
+
+// Achievements
+#define ACHIEVEMENT_CHEESE_THE_FREEZE         RAID_MODE(2961, 2962) // TODO
+#define ACHIEVEMENT_COLD_IN_HERE              RAID_MODE(2967, 2968)
+#define ACHIEVEMENT_THIS_CACHE_WAS_RARE       RAID_MODE(3182, 3184)
+#define ACHIEVEMENT_COOLEST_FRIENDS           RAID_MODE(2963, 2965) // TODO
+#define MAX_ENCOUNTER_TIME                    3 * 60 * 1000
 
 enum NPCs
 {
@@ -123,7 +131,11 @@ struct boss_hodir_AI : public BossAI
     }
     
     ScriptedInstance* pInstance;
+    
     Creature* Helper[8];
+    uint32 EncounterTime;
+    uint32 uiCheckIntenseColdTimer;
+    bool bMoreThanTwoIntenseCold;
         
     void Reset()
     {
@@ -198,6 +210,9 @@ struct boss_hodir_AI : public BossAI
         events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
         events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
         events.ScheduleEvent(EVENT_BERSERK, 480000);
+        EncounterTime = 0;
+        uiCheckIntenseColdTimer = 2000;
+        bMoreThanTwoIntenseCold = false;
     }
     void KilledUnit(Unit* victim)
     {
@@ -208,17 +223,52 @@ struct boss_hodir_AI : public BossAI
     {
         _JustDied();
         DoScriptText(SAY_DEATH, me);
+        
+        // Achievements
+        if (pInstance)
+        {
+            // Getting Cold in Here
+            if (!bMoreThanTwoIntenseCold)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_COLD_IN_HERE);
+            // I Could Say That This Cache Was Rare
+            if (EncounterTime <= MAX_ENCOUNTER_TIME)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_THIS_CACHE_WAS_RARE);
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() || !CheckInRoom())
             return;
+            
+        if (me->getVictim() && !me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself())
+            me->Kill(me->getVictim());
 
         events.Update(diff);
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
+            
+        EncounterTime += diff;
+        
+        if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
+        {
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
+                    continue;
+
+                Aura *AuraIntenseCold = pTarget->GetAura(SPELL_BITING_COLD_TRIGGERED);
+                if (AuraIntenseCold && AuraIntenseCold->GetStackAmount() > 2)
+                {
+                    bMoreThanTwoIntenseCold = true;
+                    break;
+                }
+            }
+            uiCheckIntenseColdTimer = 2000;
+        } else uiCheckIntenseColdTimer -= diff;
 
         while(uint32 eventId = events.ExecuteEvent())
         {
@@ -246,8 +296,8 @@ struct boss_hodir_AI : public BossAI
                     events.ScheduleEvent(EVENT_FLASH_EFFECT, 9000);
                     break;
                 case EVENT_FLASH_EFFECT:
-                    FlashFreeze();
                     DoCast(SPELL_FLASH_FREEZE_VISUAL);
+                    FlashFreeze();
                     events.CancelEvent(EVENT_FLASH_EFFECT);
                     break;
                 case EVENT_BLOWS:

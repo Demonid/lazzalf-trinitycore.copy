@@ -259,7 +259,7 @@ struct boss_kologarnAI : public BossAI
                 events.RepeatEvent(urand(15000, 25000));
                 break;
             case EVENT_EYEBEAM: // TODO: Add Eye Beam spell visual
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                 {
                     if (EyeBeam[0] = me->SummonCreature(NPC_EYEBEAM_1, pTarget->GetPositionX(), pTarget->GetPositionY() + 3, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
                     EyeBeam[0]->GetMotionMaster()->MoveChase(pTarget, -0.5);

@@ -84,7 +84,6 @@ enum ConstructSpells
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
 #define ACHIEVEMENT_SHATTERED                 RAID_MODE(2925, 2926)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
-bool Shattered = false;
 
 // Water coords
 #define WATER_1_X                                646.77
@@ -129,6 +128,7 @@ struct boss_ignis_AI : public BossAI
     
     uint32 EncounterTime;
     uint32 ConstructTimer;
+    bool Shattered;
 
     void Reset()
     {
