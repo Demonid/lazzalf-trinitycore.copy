@@ -169,8 +169,8 @@ struct boss_razorscaleAI : public BossAI
             Harpoon[0]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         if (Harpoon[1] = me->SummonCreature(NPC_FIRE_STATE, 571.947021, -136.011993, 391.516998, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
             Harpoon[1]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-        me->SetSpeed(MOVE_RUN, 3.0f);
-        me->SetSpeed(MOVE_FLIGHT, 3.0f);
+        me->SetSpeed(MOVE_RUN, 3.0f, true);
+        me->SetSpeed(MOVE_FLIGHT, 3.0f, true);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_PASSIVE);
         phase = PHASE_GROUND;
@@ -315,8 +315,6 @@ struct boss_razorscaleAI : public BossAI
                         if (Harpoon[0])
                             Harpoon[0]->MonsterTextEmote(EMOTE_HARPOON, 0, true);
                         me->GetMotionMaster()->MovePoint(0,RazorGround);
-                        me->SetSpeed(MOVE_RUN, 3.0f);
-                        me->SetSpeed(MOVE_FLIGHT, 3.0f);
                         events.ScheduleEvent(EVENT_LAND, 5500, 0, PHASE_GROUND);
                         return;
                     case EVENT_FIREBALL:
@@ -347,8 +345,8 @@ struct boss_razorscaleAI : public BossAI
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_AGGRESSIVE);
         me->RemoveAurasDueToSpell(SPELL_STUN);
-        me->SetSpeed(MOVE_RUN, 1.0f);
-        me->SetSpeed(MOVE_FLIGHT, 1.0f);
+        me->SetSpeed(MOVE_RUN, 1.0f, true);
+        me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
         me->SendMovementFlagUpdate();
         PermaGround = true;
         DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
