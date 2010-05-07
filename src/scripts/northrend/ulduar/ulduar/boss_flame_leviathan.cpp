@@ -50,8 +50,7 @@ enum Mobs
     MOB_COLOSSUS                                = 33240,
 };
 
-#define ACTION_VEHICLE_RESPAWN                    0
-#define ACTION_VEHICLE_DESPAWN                    1
+#define ACTION_VEHICLE_RESPAWN                    1
 #define INCREASE_COLOSSUS_COUNT                   2
 
 enum Events
@@ -177,12 +176,25 @@ struct boss_flame_leviathanAI : public BossAI
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, me);
-        if(Creature* Norgannon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
-            if(Norgannon->isAlive())
-                Norgannon->AI()->DoAction(ACTION_VEHICLE_DESPAWN);
                     
         _JustDied();
     }
+    
+    void DamageTaken(Unit* pKiller, uint32 &damage)
+ 	{
+ 	    if(damage >= me->GetHealth())
+ 	    {
+ 	        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+            
+                if (pTarget->GetTypeId() == TYPEID_PLAYER)
+                    continue;
+                else me->Kill(pTarget, false);
+            }
+ 	    }
+ 	}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -223,7 +235,12 @@ struct boss_flame_leviathanAI : public BossAI
             case 0: break;
             case EVENT_PURSUE:
                 DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
-                Pursue();
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
+                {
+                    me->AddAura(SPELL_PURSUED, pTarget);
+                    AttackStart(pTarget);
+                    me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
+                }
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
                 break;
             case EVENT_MISSILE:
@@ -259,34 +276,6 @@ struct boss_flame_leviathanAI : public BossAI
         }
 
         DoSpellAttackIfReady(SPELL_BATTERING_RAM);
-    }
-
-    void Pursue()
-    {
-        std::list<Creature*> PursueList;
-        me->GetCreatureListWithEntryInGrid(PursueList, RAND(33060,33109), 200.0f);
-        if (PursueList.empty())
-            {
-                me->GetCreatureListWithEntryInGrid(PursueList, 33060, 200.0f);
-                if (PursueList.empty())
-                    me->GetCreatureListWithEntryInGrid(PursueList, 33109, 200.0f);
-                if (!me->getVictim()) // all siege engines and demolishers are dead
-                    UpdateVictim();   // begin to kill other things
-            }
-		else
-        {
-            for (std::list<Creature*>::iterator itr = PursueList.begin(); itr != PursueList.end(); ++itr)
-            {
-                if (Creature* pPursued = *itr)
-                    {
-                        DoResetThreat();
-                        me->AddThreat(pPursued, 5000000.0f);
-                        AttackStart(pPursued);
-                    }
-            }
-        }
-        me->AddAura(SPELL_PURSUED, me->getVictim());
-        me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
     }
  
     void DoAction(const int32 action)
@@ -461,11 +450,6 @@ struct keeper_norgannonAI : public ScriptedAI
     ScriptedInstance* pInstance;
     SummonList summons;
 
-    void JustDied(Unit *victim)
-    {
-        summons.DespawnAll();
-    }
-
     void JustSummoned(Creature *summon)
     {
         summons.Summon(summon);
@@ -478,15 +462,11 @@ struct keeper_norgannonAI : public ScriptedAI
             case ACTION_VEHICLE_RESPAWN:
                 summons.DespawnAll();
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_SIEGE, PosSiege[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+                    DoSummon(VEHICLE_SIEGE, PosSiege[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_CHOPPER, PosChopper[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
+                    DoSummon(VEHICLE_CHOPPER, PosChopper[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 0, TEMPSUMMON_MANUAL_DESPAWN);
-                break;
-            case ACTION_VEHICLE_DESPAWN:
-                summons.DespawnAll();
-                me->DisappearAndDie();
+                    DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                 break;
         }
     }
