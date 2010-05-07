@@ -96,7 +96,10 @@ struct boss_archavonAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         if (pInstance)
+        {
             pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
+            pInstance->SaveToDB();
+        }
     }
 
     void EnterCombat(Unit *who)

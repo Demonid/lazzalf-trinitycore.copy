@@ -103,10 +103,13 @@ struct boss_koralonAI : public ScriptedAI
 
     void KilledUnit(Unit* Victim) {}
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* /*Killer*/)
     {
         if (pInstance)
+        {
             pInstance->SetData(DATA_KORALON_EVENT, DONE);
+            pInstance->SaveToDB();
+        }
     }
 
     void EnterCombat(Unit *who)
