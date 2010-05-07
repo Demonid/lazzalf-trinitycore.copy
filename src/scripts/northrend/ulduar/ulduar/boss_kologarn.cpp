@@ -34,7 +34,8 @@ EndScriptData */
 #define SPELL_PETRIFY_BREATH    RAID_MODE(62030,63980)
 #define SPELL_SHOCKWAVE         RAID_MODE(63783,63982)
 
-#define SPELL_STONE_GRIP        RAID_MODE(62166,63981)
+#define SPELL_STONE_GRIP        RAID_MODE(64290,64292)
+#define SPELL_STONE_GRIP_STUN   RAID_MODE(62056,63985)
 #define SPELL_ARM_SWEEP         RAID_MODE(63766,63983)
 #define SPELL_EYE_BEAM          RAID_MODE(63347,63977)
 #define SPELL_ARM_RESPAWN       64753
@@ -201,8 +202,8 @@ struct boss_kologarnAI : public BossAI
             {
                 if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
                 {
-                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
-                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
                     pGripTarget->RemoveAurasDueToSpell(64708);
                     Gripped = false;
                 }
@@ -231,8 +232,8 @@ struct boss_kologarnAI : public BossAI
                 {
                     if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
                     {
-                        DoCast(pTarget, SPELL_STONE_GRIP, true);
-                        me->AddAura(64708, pTarget); //It cause player's death after about 15 sec
+                        me->AddAura(SPELL_STONE_GRIP, pTarget);
+                        me->AddAura(SPELL_STONE_GRIP_STUN, pTarget); //It cause player's death after about 15 sec
                         uiGripTarget = pTarget->GetGUID(); 
                         pTarget->NearTeleportTo(1781.814, -3.716, 448.808, 4.211);
                         me->MonsterTextEmote(EMOTE_STONE, 0, true);
@@ -307,8 +308,8 @@ struct boss_kologarnAI : public BossAI
                 ++RubbleCount;
                 if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
                 {
-                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
-                    pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
                     pGripTarget->RemoveAurasDueToSpell(64708);
                 }
                 events.ScheduleEvent(EVENT_RIGHT, 30000);
