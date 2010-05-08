@@ -25,11 +25,11 @@ EndScriptData */
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
-#define SAY_GREET             "Welcome, champions! All of our attempts at grounding her have failed. We could use a hand in bring her down with these harpoon guns."
+#define SAY_GREET             -1603260
 #define SAY_AGGRO_1           "Give us a moment to prepare to build the turrets."
 #define SAY_AGGRO_2           "Be on the lookout! Mole machines will be surfacing soon with those nasty Iron dwarves aboard!"
 #define SAY_AGGRO_3           "Ready to move out, keep those dwarves off of our backs!"
-#define SAY_GROUND_PHASE      "Move! Quickly! She won’t remain grounded for long."
+#define SAY_GROUND_PHASE      -1603261
 #define SAY_TURRETS           "Fires out! Let's rebuild those turrets!"
 
 #define GOSSIP_ITEM_1         "Activate Harpoones!"
@@ -234,7 +234,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_LAND:
                         me->SetFlying(false);
-                        me->CastSpell(me ,SPELL_STUN, true);
+                        me->CastSpell(me, SPELL_STUN, true);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         events.ScheduleEvent(EVENT_HARPOON, 0, 0, PHASE_GROUND);
                         events.ScheduleEvent(EVENT_BREATH, 30000, 0, PHASE_GROUND);
@@ -439,7 +439,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
     {
         if (!greet && me->IsWithinDistInMap(who, 10.0f) && who->GetTypeId() == TYPEID_PLAYER)
         {
-            me->MonsterSay(SAY_GREET, LANG_UNIVERSAL, 0);
+            DoScriptText(SAY_GREET, me);
             greet = true;
         }
         ScriptedAI::MoveInLineOfSight(who);
@@ -460,7 +460,6 @@ struct npc_expedition_commanderAI : public ScriptedAI
             {
                 case 1:
                     pInstance->SetBossState(BOSS_RAZORSCALE, IN_PROGRESS);
-                    me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
                     uiTimer = 1000;
                     uiPhase = 2;
                     break;
@@ -475,7 +474,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     engineer[1]->SetSpeed(MOVE_RUN, 0.5f);
                     engineer[1]->SetHomePosition(Harpoon2);
                     engineer[1]->GetMotionMaster()->MoveTargetedHome();
-                    engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
+                    engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
                     uiPhase = 3;
                     uiTimer = 14000;
                     break;
@@ -511,7 +510,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     defender[1]->HandleEmoteCommand(EMOTE_STATE_READY2H);
                     defender[2]->HandleEmoteCommand(EMOTE_STATE_READY2H);
                     defender[3]->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                    engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
+                    me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
                     uiTimer = 16000;
                     uiPhase = 6;
                     break;
@@ -519,6 +518,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(DATA_RAZORSCALE)))
                         if (pRazorscale->AI())
                             pRazorscale->AI()->DoAction(ACTION_EVENT_START);
+                    engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
                     uiPhase =7;
                     break;
             }

@@ -201,7 +201,7 @@ struct boss_hodir_AI : public BossAI
     void EnterCombat(Unit* who)
     {
         _EnterCombat();
-        DoScriptText(SAY_AGGRO,me);
+        DoScriptText(SAY_AGGRO, me);
         me->SetReactState(REACT_AGGRESSIVE);
         DoZoneInCombat();
         DoCast(me, SPELL_BITING_COLD);
@@ -216,7 +216,8 @@ struct boss_hodir_AI : public BossAI
     }
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
+        if (!(rand()%5))
+            DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
     }
 
     void JustDied(Unit *victim)
@@ -253,10 +254,10 @@ struct boss_hodir_AI : public BossAI
         
         if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
         {
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                 if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
                     continue;
 
@@ -301,6 +302,7 @@ struct boss_hodir_AI : public BossAI
                     events.CancelEvent(EVENT_FLASH_EFFECT);
                     break;
                 case EVENT_BLOWS:
+                    DoScriptText(SAY_STALACTITE, me);
                     me->MonsterTextEmote(EMOTE_BLOWS, 0, true);
                     DoCast(me, RAID_MODE(SPELL_FROZEN_BLOWS_10, SPELL_FROZEN_BLOWS_25));
                     events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));

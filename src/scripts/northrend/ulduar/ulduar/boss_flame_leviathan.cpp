@@ -37,6 +37,7 @@ enum Spells
     SPELL_BLAZE                                 = 62292,
     SPELL_SMOKE_TRAIL                           = 63575,
     SPELL_ELECTROSHOCK                          = 62522,
+    SPELL_STUN                                  = 9032,
     
     // Ulduar Colossus spell
     SPELL_GROUND_SLAM                           = 62625,
@@ -165,9 +166,9 @@ struct boss_flame_leviathanAI : public BossAI
         DoScriptText(SAY_AGGRO, me);
         events.ScheduleEvent(EVENT_PURSUE, 0);
         events.ScheduleEvent(EVENT_MISSILE, 1500);
-        events.ScheduleEvent(EVENT_VENT, 30000);
+        events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 2000);
-        events.ScheduleEvent(EVENT_SUMMON, 0);
+        //events.ScheduleEvent(EVENT_SUMMON, 0);
         events.ScheduleEvent(EVENT_SHUTDOWN, 120000);
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
@@ -220,12 +221,13 @@ struct boss_flame_leviathanAI : public BossAI
         if (me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
         {
             me->SetReactState(REACT_PASSIVE);
-            me->AttackStop();
+            me->CastSpell(me, SPELL_STUN, true);
             return;
         }
 		else
         {
             me->SetReactState(REACT_AGGRESSIVE);
+            me->RemoveAurasDueToSpell(SPELL_STUN);
         }
 
         while(uint32 eventId = events.ExecuteEvent())
