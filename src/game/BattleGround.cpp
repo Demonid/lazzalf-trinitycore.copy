@@ -887,9 +887,19 @@ void BattleGround::EndBattleGround(uint32 winner)
             }
         }
 
+        // Reward winner team new 3.3.3a
+        //if (team == winner)
+        //    plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
+
         // Reward winner team
         if (team == winner)
+        {
+            RewardMark(plr,ITEM_WINNER_COUNT);
+            RewardQuestComplete(plr);
             plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
+        }
+        else if (winner)
+            RewardMark(plr,ITEM_LOSER_COUNT);
 
         plr->SetHealth(plr->GetMaxHealth());
         plr->SetPower(POWER_MANA, plr->GetMaxPower(POWER_MANA));
