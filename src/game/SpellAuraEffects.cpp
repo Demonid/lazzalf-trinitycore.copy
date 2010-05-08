@@ -2532,9 +2532,12 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
                     // Survival of the Fittest
                     if (AuraEffect const * aurEff = target->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE,SPELLFAMILY_DRUID, 961, 0))
                     {
-                        int32 bp = target->CalculateSpellDamage(target, aurEff->GetSpellProto(),2);
+                        /*int32 bp = target->CalculateSpellDamage(target, aurEff->GetSpellProto(),2);
                         bp = int32(float(bp) * ((target->m_form == FORM_DIREBEAR) ? 3.7 : (target->m_form == FORM_BEAR) ? 1.8 : 1));
-                        target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);
+                        target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);*/
+                        int32 bp = aurEff->GetSpellProto()->CalculateSimpleValue(2);
+                        if(bp)
+                            target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);
                     }
                 break;
                 case FORM_MOONKIN:
