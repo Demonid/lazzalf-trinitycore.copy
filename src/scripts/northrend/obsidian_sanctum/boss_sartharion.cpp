@@ -320,7 +320,7 @@ struct boss_sartharionAI : public BossAI
         if (pFetchTene && pFetchTene->isAlive() && !pFetchTene->getVictim())
         {
             bCanUseWill = true;
-            //pFetchTene->AddAura(SPELL_POWER_OF_TENEBRON, pFetchTene);
+            pFetchTene->AddAura(SPELL_POWER_OF_TENEBRON, pFetchTene);
             pFetchTene->AddAura(SPELL_WILL_OF_SARTHARION, pFetchTene);
             AddDrakeLootMode();
             achievProgress++;            
@@ -859,7 +859,7 @@ struct mob_tenebronAI : public dummy_dragonAI
     {
         DoScriptText(SAY_TENEBRON_AGGRO, me);
         DoZoneInCombat();
-        //DoCast(me, SPELL_POWER_OF_TENEBRON);
+        DoCast(me, SPELL_POWER_OF_TENEBRON);
     }
 
     void DoAction(const int32 action)
@@ -997,16 +997,16 @@ struct mob_shadronAI : public dummy_dragonAI
     void DoAction(const int32 action)
     {
         switch(action)
-        {
+        {           
             if (pInstance)
             {
                 case SHIELD_ON_SHADRON:
-                    if (Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON)))                        
-                        pShadron->AI()->DoCast(pShadron, SPELL_GIFT_OF_TWILIGTH_SHA, true);
+                    if (Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON))) 
+                        pShadron->AddAura(SPELL_GIFT_OF_TWILIGTH_SHA, me);                    
                     break;
                 case SHIELD_ON_SARTHARION:
                     if (Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))                        
-                        pSartharion->AI()->DoCast(pSartharion, SPELL_GIFT_OF_TWILIGTH_SAR, true);
+                        pSartharion->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, me);
                     break;
             }
         }
@@ -1134,7 +1134,7 @@ struct mob_vesperonAI : public dummy_dragonAI
             else
             {
                 OpenPortal();
-                DoCast(me->getVictim(), SPELL_TWILIGHT_TORMENT_VESP);
+                DoAddAuraToAllHostilePlayers(SPELL_TWILIGHT_TORMENT_VESP);
                 m_uiAcolyteVesperonTimer = urand(60000,70000);
             }
         }
@@ -1237,7 +1237,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
             Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON));
             if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 pShadron->AI()->DoAction(SHIELD_ON_SARTHARION);
-            else             
+            else            
                 pShadron->AI()->DoAction(SHIELD_ON_SHADRON);
                 
             uiShieldTimer = 5000;
@@ -1275,7 +1275,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         {
             me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
         }
-        DoCast(me, SPELL_TWILIGHT_TORMENT_VESP_ACO);
+        DoAddAuraToAllHostilePlayers(SPELL_TWILIGHT_TORMENT_VESP_ACO);
     }
 
     void JustDied(Unit* pKiller)
