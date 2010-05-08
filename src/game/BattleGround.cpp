@@ -953,7 +953,6 @@ uint32 BattleGround::GetBattlemasterEntry() const
     }
 }
 
-/*
 void BattleGround::RewardMark(Player *plr,uint32 count)
 {
     BattleGroundMarks mark;
@@ -1087,7 +1086,7 @@ void BattleGround::RewardQuestComplete(Player *plr)
 
     RewardSpellCast(plr, quest);
 }
-*/
+
 void BattleGround::BlockMovement(Player *plr)
 {
     plr->SetClientControl(plr, 0);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
