@@ -632,6 +632,33 @@ enum VespText
 #define ACTION_TELEPORT_BACK                20
 #define SHIELD_ON_SHADRON                   30
 #define SHIELD_ON_SARTHARION                40
+#define VESPERON_PORTAL_EVENT               50
+#define ACOLYTE_DEBUFF                      60
+
+struct npc_disciple_of_vesperonAI : public TriggerAI
+{
+    npc_disciple_of_vesperonAI(Creature *pCreature) : TriggerAI(pCreature)
+    {        
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetVisibility(VISIBILITY_OFF);
+    }
+    void DoAction(const int32 action)
+    {
+        switch(action)
+        {
+            case VESPERON_PORTAL_EVENT:
+                DoCast(SPELL_TWILIGHT_TORMENT_VESP);
+                    break;
+            case ACOLYTE_DEBUFF:
+                DoCast(SPELL_TWILIGHT_TORMENT_VESP_ACO);
+                    break;
+        }
+    }
+};
+CreatureAI* GetAI_npc_disciple_of_vesperon(Creature* pCreature)
+{
+    return new npc_disciple_of_vesperonAI(pCreature);
+}
 
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
@@ -1091,7 +1118,7 @@ struct mob_vesperonAI : public dummy_dragonAI
         m_uiShadowBreathTimer = 20000;
         m_uiShadowFissureTimer = 5000;
         m_uiAcolyteVesperonTimer = 60000;
-        m_bHasPortalOpen = false;
+        m_bHasPortalOpen = false;        
     }
 
     void Aggro(Unit* pWho)
@@ -1134,7 +1161,9 @@ struct mob_vesperonAI : public dummy_dragonAI
             else
             {
                 OpenPortal();
-                DoAddAuraToAllHostilePlayers(SPELL_TWILIGHT_TORMENT_VESP);
+                me->SummonCreature(NPC_DISCIPLE_OF_VESPERON, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+                if (Creature* pDisciple = pInstance->instance->GetCreature(pInstance->GetData64(DATA_DISCIPLE_OF_VESPERON)))
+                    pDisciple->AI()->DoAction(VESPERON_PORTAL_EVENT);
                 m_uiAcolyteVesperonTimer = urand(60000,70000);
             }
         }
@@ -1275,7 +1304,16 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         {
             me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
         }
-        DoAddAuraToAllHostilePlayers(SPELL_TWILIGHT_TORMENT_VESP_ACO);
+    }
+    
+    void EnterCombat(Unit* who)
+    {
+        if(pInstance)
+        {
+            me->SummonCreature(NPC_DISCIPLE_OF_VESPERON, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+            if (Creature* pDisciple = pInstance->instance->GetCreature(pInstance->GetData64(DATA_DISCIPLE_OF_VESPERON)))
+                pDisciple->AI()->DoAction(VESPERON_PORTAL_EVENT);
+        }
     }
 
     void JustDied(Unit* pKiller)
@@ -1307,7 +1345,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
                     }
-                    if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_TORMENT_VESP,0) && !i->getSource()->getVictim())
+                    if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_TORMENT_VESP,0))
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
                 }
             }
@@ -1316,7 +1354,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
     }
 
     void UpdateAI(const uint32 uiDiff)
-    {
+    {        
         if (!UpdateVictim())
             return;
 
@@ -1521,6 +1559,11 @@ void AddSC_boss_sartharion()
     newscript = new Script;
     newscript->Name = "boss_sartharion";
     newscript->GetAI = &GetAI_boss_sartharion;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_disciple_of_vesperon";
+    newscript->GetAI = &GetAI_npc_disciple_of_vesperon;
     newscript->RegisterSelf();
 
     newscript = new Script;
