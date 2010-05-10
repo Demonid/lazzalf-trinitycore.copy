@@ -50,7 +50,26 @@ struct boss_gluthAI : public BossAI
     {
         // Do not let Gluth be affected by zombies' debuff
         me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_INFECTED_WOUND, true);
+
+        pMap = NULL;
+	    if(me)	
+                pMap = me->GetMap();        
+	    // valuta il team in instance 
+        if(pMap)
+	    {	
+	        Map::PlayerList const& players = pMap->GetPlayers();
+            if (!players.isEmpty())
+            {
+                if (Player* pPlayer = players.begin()->getSource())
+                {
+                    TeamInInstance = pPlayer->GetTeam();
+                }
+            }
+	    }	
     }
+
+    Map* pMap;
+    uint32 TeamInInstance;
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -123,7 +142,16 @@ struct boss_gluthAI : public BossAI
                     break;
                 case EVENT_SUMMON:
                     for (uint32 i = 0; i < RAID_MODE(1,2); ++i)
-                        DoSummon(MOB_ZOMBIE, PosSummon[rand()%3]);
+                    {
+                        Creature* current = DoSummon(MOB_ZOMBIE, PosSummon[rand()%3]);
+                        if(current)
+			            {
+			                 if (TeamInInstance == ALLIANCE)
+                                current->setFaction(2);
+                             else
+                                current->setFaction(1);
+			            }
+                    }
                     events.ScheduleEvent(EVENT_SUMMON, 10000);
                     break;
             }
