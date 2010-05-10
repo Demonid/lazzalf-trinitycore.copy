@@ -1089,6 +1089,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Remove the immunity shield marker on Avenging Wrath removal if Forbearance is not present
                 if (GetId() == 61987 && target->HasAura(61988) && !target->HasAura(25771))
                     target->RemoveAura(61988);
+                // Hodir Flash Freeze immunity remove
+                if (GetId() == 61990 && removeMode == AURA_REMOVE_BY_DEATH)
+                    target->RemoveAura(7940);
                 break;
             case SPELLFAMILY_MAGE:
                 switch(GetId())
