@@ -60,8 +60,12 @@ struct Position TempestMinions[MAX_TEMPEST_MINIONS] =
 ######*/
 struct boss_emalonAI : public BossAI
 {
-    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT) {}
+    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
+    ScriptedInstance* pInstance;
     uint32 checktimer;
 
     void Reset()
@@ -98,9 +102,14 @@ struct boss_emalonAI : public BossAI
             summoned->AI()->AttackStart(me->getVictim());
     }
 
-    void JustDied(Unit* /*Killer*/)
+    void JustDied(Unit* Killer)
     {
-        _JustDied();
+        summons.DespawnAll();
+        if (pInstance)
+        {
+            pInstance->SetData(DATA_EMALON_EVENT, DONE);
+            pInstance->SaveToDB();
+        }
     }
 
     void EnterCombat(Unit * who)
