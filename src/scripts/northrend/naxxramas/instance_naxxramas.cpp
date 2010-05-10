@@ -110,7 +110,8 @@ struct instance_naxxramas : public InstanceData
         LoadMinionData(minionData);
     }
 
-    std::set<uint64> HeiganEruptionGUID[4];
+    //std::set<uint64> HeiganEruptionGUID[4];
+    std::set<GameObject*> HeiganEruption[4];
     uint64 GothikGateGUID;
     uint64 HorsemenChestGUID;
     uint64 SapphironGUID;
@@ -152,13 +153,22 @@ struct instance_naxxramas : public InstanceData
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
-        if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
+        /*if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
         {
             uint32 section = GetEruptionSection(pGo->GetPositionX(), pGo->GetPositionY());
             if (add)
                 HeiganEruptionGUID[section].insert(pGo->GetGUID());
             else
                 HeiganEruptionGUID[section].erase(pGo->GetGUID());
+            return;
+        }*/
+        if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
+        {
+            uint32 section = GetEruptionSection(pGo->GetPositionX(), pGo->GetPositionY());
+            if (add)
+                HeiganEruption[section].insert(pGo);
+            else
+                HeiganEruption[section].erase(pGo);
             return;
         }
 
@@ -268,7 +278,7 @@ struct instance_naxxramas : public InstanceData
         return true;
     }
 
-    void HeiganErupt(uint32 section)
+    /*void HeiganErupt(uint32 section)
     {
         for (uint32 i = 0; i < 4; ++i)
         {
@@ -282,6 +292,20 @@ struct instance_naxxramas : public InstanceData
                     pHeiganEruption->SendCustomAnim();
                     pHeiganEruption->CastSpell(NULL, SPELL_ERUPTION);
                 }
+            }
+        }
+    }*/
+    void HeiganErupt(uint32 section)
+    {
+        for (uint32 i = 0; i < 4; ++i)
+        {
+            if (i == section)
+                continue;
+
+            for (std::set<GameObject*>::iterator itr = HeiganEruption[i].begin(); itr != HeiganEruption[i].end(); ++itr)
+            {
+                (*itr)->SendCustomAnim();
+                (*itr)->CastSpell(NULL, SPELL_ERUPTION);
             }
         }
     }

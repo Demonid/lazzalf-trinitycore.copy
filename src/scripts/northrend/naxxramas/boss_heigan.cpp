@@ -145,12 +145,12 @@ struct boss_heiganAI : public BossAI
                     break;
                 case EVENT_PHASE:
                     // TODO : Add missing texts for both phase switches
-                    SendPhaseDance();
+                    TeleportCheaters();
+                    SendPhaseDance(); 
                     EnterPhase(phase == PHASE_FIGHT ? PHASE_DANCE : PHASE_FIGHT);
                     break;
                 case EVENT_ERUPT:
                     instance->SetData(DATA_HEIGAN_ERUPT, eruptSection);
-                    TeleportCheaters();
 
                     if (eruptSection == 0)
                         eruptDirection = true;
