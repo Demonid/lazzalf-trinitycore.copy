@@ -548,7 +548,7 @@ struct npc_announcer_toc5AI : public ScriptedAI
 		DoScriptText(SAY_START3, me);
         if (Creature* pBoss = me->SummonCreature(uiArgentChampion,SpawnPosition))
         {
-		pBoss->GetMotionMaster()->MovePoint(1,746.71,661.02,411.69);
+		    pBoss->GetMotionMaster()->MovePoint(1,746.71,661.02,411.69);
             for (uint8 i = 0; i < 3; ++i)
             {
                 if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))

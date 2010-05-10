@@ -596,7 +596,6 @@ struct npc_argent_soldierAI : public npc_escortAI
                     me->SetOrientation(4.60);
 			        me->SetReactState(REACT_AGGRESSIVE);					
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                    break;				
                     break;
             }
 		}	
