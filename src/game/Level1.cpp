@@ -2495,9 +2495,9 @@ bool ChatHandler::HandleJailCommand(const char *args)
             Field *fields = result->Fetch();
             uint32 acc_id = fields[1].GetUInt32();
 
-            loginDatabase.BeginTransaction();
-            result = loginDatabase.PQuery("SELECT * FROM `account` WHERE `id`='%u' LIMIT 1", acc_id);
-            loginDatabase.CommitTransaction();
+            LoginDatabase.BeginTransaction();
+            result = LoginDatabase.PQuery("SELECT * FROM `account` WHERE `id`='%u' LIMIT 1", acc_id);
+            LoginDatabase.CommitTransaction();
 
             if (!result)
             {
@@ -2507,9 +2507,9 @@ bool ChatHandler::HandleJailCommand(const char *args)
             ban_reason = GetTrinityString(LANG_JAIL_BAN_REASON);
             ban_by = GetTrinityString(LANG_JAIL_BAN_BY);
 
-            loginDatabase.BeginTransaction();
-            loginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
-            loginDatabase.CommitTransaction();
+            LoginDatabase.BeginTransaction();
+            LoginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
+            LoginDatabase.CommitTransaction();
         }
         return true;
     }
@@ -2573,9 +2573,9 @@ bool ChatHandler::HandleJailCommand(const char *args)
         ban_reason = GetTrinityString(LANG_JAIL_BAN_REASON);
         ban_by = GetTrinityString(LANG_JAIL_BAN_BY);
 
-	    loginDatabase.BeginTransaction();
-        loginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
-        loginDatabase.CommitTransaction();
+	    LoginDatabase.BeginTransaction();
+        LoginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
+        LoginDatabase.CommitTransaction();
 
         chr->GetSession()->LogoutPlayer(false);
     }
