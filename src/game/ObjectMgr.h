@@ -460,7 +460,7 @@ class ObjectMgr
         void LoadGameobjectInfo();
         void AddGameobjectInfo(GameObjectInfo *goinfo);
 
-        Group * GetGroupByLeader(const uint64 &guid) const;
+        Group * GetGroupByGUID(const uint64 &guid) const;
         void AddGroup(Group* group) { mGroupSet.insert(group); }
         void RemoveGroup(Group* group) { mGroupSet.erase(group); }
 
@@ -1055,6 +1055,7 @@ class ObjectMgr
         uint32 m_hiGoGuid;
         uint32 m_hiDoGuid;
         uint32 m_hiCorpseGuid;
+        uint32 m_hiGroupGuid;
 
         QuestMap            mQuestTemplates;
 
