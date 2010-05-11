@@ -453,7 +453,8 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             }
             else if (action > OFFSET_SHOWBUY_FROM)
             {
-                showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
+                if(QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0"))
+                    showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
             } 
             else if (action > OFFSET_GH_ID_TO_ACTION)
             {
