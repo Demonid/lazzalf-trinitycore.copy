@@ -1639,16 +1639,17 @@ void Spell::EffectDummy(uint32 i)
             {
                 // In 303 exist spirit depend
                 uint32 spirit = uint32(m_caster->GetStat(STAT_SPIRIT));
+                int32 mana = 0;
                 switch (m_spellInfo->Id)
                 {
-                    case  1454: damage+=spirit; break;
-                    case  1455: damage+=spirit*15/10; break;
-                    case  1456: damage+=spirit*2; break;
-                    case 11687: damage+=spirit*25/10; break;
-                    case 11688:
-                    case 11689:
-                    case 27222:
-                    case 57946: damage+=spirit*3; break;
+                    case  1454: damage=spirit*15/10; break;
+                    case  1455: damage=spirit*15/10+6; mana = 6; break;
+                    case  1456: damage=spirit*15/10+24; mana = 24; break;
+                    case 11687: damage=spirit*15/10+37; mana = 37; break;
+                    case 11688: damage=spirit*15/10+42; mana = 42; break;
+                    case 11689: damage=spirit*15/10+500; mana = 500; break;
+                    case 27222: damage=spirit*15/10+710; mana = 710; break;
+                    case 57946: damage=spirit*15/10+1490; mana = 1490; break;
                     default:
                         sLog.outError("Spell::EffectDummy: %u Life Tap need set spirit multipler", m_spellInfo->Id);
                         return;
@@ -1660,7 +1661,7 @@ void Spell::EffectDummy(uint32 i)
                     // Shouldn't Appear in Combat Log
                     unitTarget->ModifyHealth(-damage);
 
-                    int32 mana = damage;
+                    mana+= m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)) / 2;
                     // Improved Life Tap mod
                     if (AuraEffect const * aurEff = m_caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, 208, 0))
                         mana = (aurEff->GetAmount() + 100)* mana / 100;
