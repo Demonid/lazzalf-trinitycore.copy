@@ -82,9 +82,9 @@ enum eEnums
 	SAY_START_6                             = -1999951
 };
 
-struct boss_eadricAI : public ScriptedAI
+struct boss_eadricAI : public BossAI
 {
-    boss_eadricAI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_eadricAI(Creature* pCreature) : BossAI(pCreature,BOSS_ARGENT_CHALLENGE_E)
     {
         pInstance = pCreature->GetInstanceData();
         pCreature->SetReactState(REACT_PASSIVE);
@@ -165,6 +165,7 @@ struct boss_eadricAI : public ScriptedAI
 
 	void EnterCombat(Unit* pWho)
 	{
+		_EnterCombat();
 		me->SetHomePosition(746.843, 665.000, 412.339,4.670);
 		DoScriptText(SAY_START_9, me);
 		hasBeenInCombat = true;
@@ -221,9 +222,9 @@ CreatureAI* GetAI_boss_eadric(Creature* pCreature)
     return new boss_eadricAI(pCreature);
 }
 
-struct boss_paletressAI : public ScriptedAI
+struct boss_paletressAI : public BossAI
 {
-    boss_paletressAI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_paletressAI(Creature* pCreature) : BossAI(pCreature,BOSS_ARGENT_CHALLENGE_P)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -294,6 +295,7 @@ struct boss_paletressAI : public ScriptedAI
     }
 	void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
 		me->SetHomePosition(746.843, 665.000, 412.339,4.670);
 		hasBeenInCombat = true;
 		DoScriptText(SAY_START_10, me);

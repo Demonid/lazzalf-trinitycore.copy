@@ -379,9 +379,9 @@ CreatureAI* GetAI_generic_vehicleAI_toc5(Creature* pCreature)
 }
 
 // Marshal Jacob Alerius && Mokra the Skullcrusher || Warrior
-struct boss_warrior_toc5AI : public ScriptedAI
+struct boss_warrior_toc5AI : public BossAI
 {
-    boss_warrior_toc5AI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_warrior_toc5AI(Creature* pCreature) : BossAI(pCreature,BOSS_GRAND_CHAMPIONS)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -460,6 +460,7 @@ struct boss_warrior_toc5AI : public ScriptedAI
 
 	void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
 		hasBeenInCombat = true;
 		
     }
@@ -550,9 +551,9 @@ CreatureAI* GetAI_boss_warrior_toc5(Creature* pCreature)
 }
 
 // Ambrose Boltspark && Eressea Dawnsinger || Mage
-struct boss_mage_toc5AI : public ScriptedAI
+struct boss_mage_toc5AI : public BossAI
 {
-    boss_mage_toc5AI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_mage_toc5AI(Creature* pCreature) : BossAI(pCreature,BOSS_GRAND_CHAMPIONS)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -631,6 +632,7 @@ struct boss_mage_toc5AI : public ScriptedAI
 
 	void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
 		hasBeenInCombat = true;
     }
 
@@ -714,9 +716,9 @@ CreatureAI* GetAI_boss_mage_toc5(Creature* pCreature)
 }
 
 // Colosos && Runok Wildmane || Shaman
-struct boss_shaman_toc5AI : public ScriptedAI
+struct boss_shaman_toc5AI : public BossAI
 {
-    boss_shaman_toc5AI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_shaman_toc5AI(Creature* pCreature) : BossAI(pCreature,BOSS_GRAND_CHAMPIONS)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -781,6 +783,7 @@ struct boss_shaman_toc5AI : public ScriptedAI
 	}
     void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
         hasBeenInCombat = true;
 		DoCast(me,SPELL_EARTH_SHIELD);
         DoCast(pWho,SPELL_HEX_OF_MENDING);
@@ -896,9 +899,9 @@ CreatureAI* GetAI_boss_shaman_toc5(Creature* pCreature)
 }
 
 // Jaelyne Evensong && Zul'tore || Hunter
-struct boss_hunter_toc5AI : public ScriptedAI
+struct boss_hunter_toc5AI : public BossAI
 {
-    boss_hunter_toc5AI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_hunter_toc5AI(Creature* pCreature) : BossAI(pCreature,BOSS_GRAND_CHAMPIONS)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -984,6 +987,7 @@ struct boss_hunter_toc5AI : public ScriptedAI
 
 	void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
 		hasBeenInCombat = true;
     }
 
@@ -1103,9 +1107,9 @@ CreatureAI* GetAI_boss_hunter_toc5(Creature* pCreature)
 }
 
 // Lana Stouthammer Evensong && Deathstalker Visceri || Rouge
-struct boss_rouge_toc5AI : public ScriptedAI
+struct boss_rouge_toc5AI : public BossAI
 {
-    boss_rouge_toc5AI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_rouge_toc5AI(Creature* pCreature) : BossAI(pCreature,BOSS_GRAND_CHAMPIONS)
     {
         pInstance = pCreature->GetInstanceData();
 
@@ -1181,6 +1185,7 @@ struct boss_rouge_toc5AI : public ScriptedAI
 
 	void EnterCombat(Unit* pWho)
     {
+		_EnterCombat();
 		hasBeenInCombat = true;
     }
 
