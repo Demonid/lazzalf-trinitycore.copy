@@ -2940,6 +2940,14 @@
 						RelativePath="..\..\src\scripts\kalimdor\onyxias_lair\boss_onyxia.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\src\scripts\kalimdor\onyxias_lair\instance_onyxias_lair.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\kalimdor\onyxias_lair\onyxias_lair.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Razorfen Downs"
@@ -3326,78 +3334,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\scripts\northrend\gundrak\instance_gundrak.cpp"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="Naxxramas"
-					>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_anubrekhan.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_faerlina.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_four_horsemen.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_gluth.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_gothik.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_grobbulus.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_heigan.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_kelthuzad.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_loatheb.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_maexxna.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_noth.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_patchwerk.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_razuvious.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_sapphiron.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_thaddius.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\instance_naxxramas.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\scripts\northrend\naxxramas\naxxramas.h"
 						>
 					</File>
 				</Filter>
@@ -3838,6 +3774,78 @@
 					</File>
 					<File
 						RelativePath="..\..\src\scripts\northrend\crusaders_coliseum\trial_of_the_crusader\trial_of_the_crusader.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Naxxramas"
+					>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_anubrekhan.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_faerlina.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_four_horsemen.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_gluth.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_gothik.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_grobbulus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_heigan.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_kelthuzad.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_loatheb.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_maexxna.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_noth.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_patchwerk.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_razuvious.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_sapphiron.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\boss_thaddius.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\instance_naxxramas.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\scripts\northrend\naxxramas\naxxramas.h"
 						>
 					</File>
 				</Filter>
