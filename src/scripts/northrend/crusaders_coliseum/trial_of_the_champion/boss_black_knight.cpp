@@ -109,9 +109,9 @@ enum Misc
 
 
 
-struct boss_black_knightAI : public ScriptedAI
+struct boss_black_knightAI : public BossAI
 {
-    boss_black_knightAI(Creature* pCreature) : ScriptedAI(pCreature)
+    boss_black_knightAI(Creature* pCreature) : BossAI(pCreature,BOSS_BLACK_KNIGHT)
     {
         pInstance = pCreature->GetInstanceData();
     }
@@ -351,7 +351,7 @@ struct boss_black_knightAI : public ScriptedAI
 	    void EnterCombat(Unit* pWho)
 		 {
 		//uiState=START;
-		
+		_EnterCombat();
         DoScriptText(SAY_AGGRO_2, me);
 		me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
 		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
