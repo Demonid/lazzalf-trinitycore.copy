@@ -52,7 +52,8 @@ enum Data64
     DATA_KOLOGARN,
     DATA_RIGHT_ARM,
     DATA_LEFT_ARM,
-    DATA_AURIAYA
+    DATA_AURIAYA,
+    DATA_FREYA
 };
 
 enum Npcs
