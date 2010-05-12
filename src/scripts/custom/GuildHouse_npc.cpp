@@ -207,7 +207,7 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     } 
     else
     {
-        if (showFromId = 0)
+        if (showFromId == 0)
         {
             //all guildhouses are occupied
             _creature->MonsterWhisper(MSG_NOFREEGH, player->GetGUID());
@@ -283,7 +283,7 @@ bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
     } 
     else
     {
-        if (showFromId = 0)
+        if (showFromId == 0)
         {
             //all no GhAdd to Show
             _creature->MonsterWhisper(MSG_NOADDGH, player->GetGUID());
@@ -453,8 +453,7 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             }
             else if (action > OFFSET_SHOWBUY_FROM)
             {
-                if(QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0"))
-                    showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
+                showBuyList(player, _creature, action - OFFSET_SHOWBUY_FROM);
             } 
             else if (action > OFFSET_GH_ID_TO_ACTION)
             {
