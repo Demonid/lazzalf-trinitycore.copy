@@ -64,6 +64,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiRightArm;
     uint64 uiLeftArm;
     uint64 uiAuriaya;
+    uint64 uiFreya;
     uint64 uiKologarnBridge;
     
     GameObject* KologarnChest;
@@ -99,6 +100,7 @@ struct instance_ulduar : public InstanceData
             case 32934: uiRightArm = pCreature->GetGUID(); return;
             case 32933: uiLeftArm = pCreature->GetGUID(); return;
             case 33515: uiAuriaya = pCreature->GetGUID(); return;
+            case 32906: uiFreya = pCreature->GetGUID(); return;
         }
 
         AddMinion(pCreature, add);
@@ -134,6 +136,8 @@ struct instance_ulduar : public InstanceData
             return uiLeftArm;
         case DATA_AURIAYA:
             return uiAuriaya;
+        case DATA_FREYA:
+            return uiFreya;
         }
         return 0;
     }
