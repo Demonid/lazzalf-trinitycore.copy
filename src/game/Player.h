@@ -1762,6 +1762,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
+        void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -1788,6 +1789,7 @@ class Player : public Unit, public GridObject<Player>
         float GetRatingCoefficient(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
+        uint32 GetBaseSpellPenetrationBonus() { return m_baseSpellPenetration; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
@@ -2504,6 +2506,7 @@ class Player : public Unit, public GridObject<Player>
         uint16 m_baseFeralAP;
         uint16 m_baseManaRegen;
         uint16 m_baseHealthRegen;
+        uint16 m_baseSpellPenetration;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
         //uint32 m_pad;
