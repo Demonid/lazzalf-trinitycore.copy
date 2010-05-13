@@ -29,7 +29,8 @@ void OutdoorPvPWG::ResetCreatureEntry(Creature *cr, uint32 entry)
         return;
 
     cr->SetOriginalEntry(entry);
-    cr->Respawn(true);
+    if (entry != cr->GetEntry() || !cr->isAlive())
+        cr->Respawn(true);
     cr->SetVisibility(VISIBILITY_ON);
 }
 
@@ -505,6 +506,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
     LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
     LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
+    LoadTeamPair(m_creEntryPair2, OutdoorPvPWGCreEntryPair2);
 
     if (!m_timer)
         m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
@@ -1110,6 +1112,12 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                 TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
                 if (itr != m_creEntryPair.end())
                     ResetCreatureEntry(creature, getDefenderTeamId() == TEAM_ALLIANCE ? itr->second : itr->first);
+                else
+                {
+                    TeamPairMap::const_iterator itr = m_creEntryPair2.find(creature->GetCreatureData()->id);
+                    if (itr != m_creEntryPair2.end())
+                        ResetCreatureEntry(creature, getDefenderTeamId() == TEAM_ALLIANCE ? itr->first : itr->second);
+                }
 
                 return false;
             }
