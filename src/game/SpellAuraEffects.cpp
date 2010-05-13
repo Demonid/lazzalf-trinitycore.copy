@@ -363,7 +363,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //307 absorb healing?
     &AuraEffect::HandleNULL,                                      //308 new aura for hunter traps
     &AuraEffect::HandleNULL,                                      //309 absorb healing?
-    &AuraEffect::HandleNoImmediateEffect,                         //310 5 spells SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS implemented in Unit::MeleeDamageBonus
+    &AuraEffect::HandleNoImmediateEffect,                         //310 SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE
     &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3
     &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3
@@ -441,6 +441,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     }
 
     float DoneActualBenefit = 0.0f;
+    float BenefitMod = 1.0f;
 
     // custom amount calculations go here
     switch(GetAuraType())
@@ -646,7 +647,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             {
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    int32 value = int32((amount*-1)-10);
+                    int32 value = int32((amount*-1));
                     uint32 defva = uint32(caster->ToPlayer()->GetSkillValue(SKILL_DEFENSE) + caster->ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));
 
                     if (defva > 400)
@@ -701,6 +702,15 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
     }
     if (DoneActualBenefit != 0.0f)
     {
+        // Handle SPELL_AURA_ADD_PCT_MODIFIERs
+        Unit::AuraEffectList const& AuraPctMmodifiers = caster->GetAuraEffectsByType(SPELL_AURA_ADD_PCT_MODIFIER);
+        for (Unit::AuraEffectList::const_iterator i = AuraPctMmodifiers.begin(); i != AuraPctMmodifiers.end(); ++i)
+        {
+            if ((*i)->IsAffectedOnSpell(m_spellProto) && (*i)->GetMiscValue() == SPELLMOD_ALL_EFFECTS)
+                BenefitMod += (*i)->GetAmount() / 100.0f;
+        }
+        DoneActualBenefit *= BenefitMod;
+
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
         amount += (int32)DoneActualBenefit;
     }
@@ -1294,7 +1304,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
                 damage -= target->GetSpellCritDamageReduction(damage);
             }
-
+            
             // Reduce damage from resilience for players and pets only.
             // As of patch 3.3 pets inherit 100% of master resilience.
             if (caster->GetSpellModOwner())
@@ -1790,21 +1800,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     }
                 }
                 break;
-
-            case 51685: // Prey on the Weak
-            case 51686:
-            case 51687:
-            case 51688:
-            case 51689:
-                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
-                    if (!target->HasAura(58670)) {
-                        int32 basepoints = GetSpellProto()->EffectBasePoints[0];
-                        target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
-                    }
-                }
-                else
-                    target->RemoveAurasDueToSpell(58670);
-                break;
+            case 58730: // No Fly Zone - Wintergrasp
             case 58600: // No fly Zone - Dalaran
                 if (GetTickNumber() == 10)
                 {
@@ -1815,6 +1811,21 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 62292: // Blaze (Pool of Tar)
                 // should we use custom damage?
                 target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
+                break;
+            case 51685: // Prey on the Weak
+            case 51686:
+            case 51687:
+            case 51688:
+            case 51689:
+                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
+                    if (!target->HasAura(58670)) 
+                    {
+                        int32 basepoints = GetSpellProto()->EffectBasePoints[0];
+                        target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
+                    }
+                }
+                else
+                    target->RemoveAurasDueToSpell(58670);
                 break;
             case 62399: // Overload Circuit
                 if (target->GetMap()->IsDungeon() && target->GetAppliedAuras().count(62399) >= (target->GetMap()->IsHeroic() ? 4 : 2))
@@ -2521,8 +2532,12 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
                     // Survival of the Fittest
                     if (AuraEffect const * aurEff = target->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE,SPELLFAMILY_DRUID, 961, 0))
                     {
-                        int32 bp = target->CalculateSpellDamage(target, aurEff->GetSpellProto(),2);
-                        target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);
+                        /*int32 bp = target->CalculateSpellDamage(target, aurEff->GetSpellProto(),2);
+                        bp = int32(float(bp) * ((target->m_form == FORM_DIREBEAR) ? 3.7 : (target->m_form == FORM_BEAR) ? 1.8 : 1));
+                        target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);*/
+                        int32 bp = aurEff->GetSpellProto()->CalculateSimpleValue(2);
+                        if(bp)
+                            target->CastCustomSpell(target, 62069,&bp, NULL, NULL, true, 0, this);
                     }
                 break;
                 case FORM_MOONKIN:
@@ -4149,6 +4164,7 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
     {
         case 42292: // PvP trinket
         case 59752: // Every Man for Himself
+        case 53490: // Bullheaded
             mechanic = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
             // Actually we should apply immunities here, too, but the aura has only 100 ms duration, so there is practically no point
             break;
@@ -5634,20 +5650,48 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 case SPELLFAMILY_GENERIC:
                     switch(GetId())
                     {
+                        case 58600: // Restricted Flight Area
+                        {
+                            if (!target || target->GetAreaId() != 4395) break;
+                            // Remove Flight Auras
+                            target->RemoveAurasByType(SPELL_AURA_FLY);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK);
+                            target->CastSpell(target, 61286, true);
+                            // Parachute
+                            target->CastSpell(target, 45472, true);
+                            break;
+                        }
+                        case 58730: // Restricted Flight Area
+                        {
+                            if (!target || ((target->GetAreaId() != 4197) && (target->GetAreaId() != 4585) && (target->GetAreaId() != 4612) && (target->GetAreaId() != 4582) && (target->GetAreaId() != 4583) && (target->GetAreaId() != 4589) && (target->GetAreaId() != 4575) && (target->GetAreaId() != 4538) && (target->GetAreaId() != 4577))) break;
+                            // Remove Flight Auras
+                            target->RemoveAurasByType(SPELL_AURA_FLY);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS);
+                            target->RemoveAurasByType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK);
+                            target->CastSpell(target, 61286, true);
+                            // Parachute
+                            target->CastSpell(target, 45472, true);
+                            break;
+                        } 
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if (target->GetTypeId() == TYPEID_PLAYER)
                                 if (BattleGround *bg = target->ToPlayer()->GetBattleGround())
                                     bg->RemovePlayerFromResurrectQueue(target->GetGUID());
                             break;
-                        case 28169:                                     // Mutating Injection
+                        /*case 28169:                                     // Mutating Injection
                         {
                             // Mutagen Explosion
                             target->CastSpell(target, 28206, true, NULL, this);
                             // Poison Cloud
                             target->CastSpell(target, 28240, true, NULL, this);
                             return;
-                        }
+                        }*/
                         case 36730:                                     // Flame Strike
                         {
                             target->CastSpell(target, 36731, true, NULL, this);
@@ -5723,9 +5767,19 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     {
                         if (AuraEffect const * aurEff = GetBase()->GetEffect(1))
                         {
-                            int32 damage = aurEff->GetAmount()*4;
-                            // backfire damage
-                            target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL,GetCasterGUID());
+                            if (GetEffIndex() == 0) 
+                            {
+                                // backfire damage
+                                int32 damage = caster->SpellDamageBonus(target, GetSpellProto(), aurEff->GetAmount(), DOT) * 3;
+                                target->CastCustomSpell(target, 64085, &damage, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+                            }
+                            else 
+                            {
+                                // Shadow Affinity
+                                int32 returnmana = (GetSpellProto()->ManaCostPercentage * caster->GetCreateMana() / 100);
+                                if (AuraEffect* aureff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 178, 1))
+                                    caster->CastCustomSpell(caster, 64103, &returnmana, NULL, NULL, true, NULL, this, GetCasterGUID());
+                            }
                         }
                     }
                     break;
@@ -5734,11 +5788,11 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     if (GetId() == 34477)
                         target->SetReducedThreatPercent(0, 0);
                     break;
-                case SPELLFAMILY_DEATHKNIGHT:
+               /* case SPELLFAMILY_DEATHKNIGHT:
                     // Summon Gargoyle (will start feeding gargoyle)
                     if (GetId() == 61777)
                         target->CastSpell(target,m_spellProto->EffectTriggerSpell[m_effIndex],true);
-                    break;
+                    break;*/
                 default:
                     break;
             }
