@@ -601,13 +601,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
         }
-        // Scourge Strike
-        if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
-        {
-            int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
-            if (shadowdmg > 0)
-                CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
-        }
     }
 
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
@@ -11074,9 +11067,6 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
                 if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
                 {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
- 
-                    /*if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
-                        i = mModDamagePercentDone.begin();*/
                 }
         }
 
