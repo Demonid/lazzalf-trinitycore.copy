@@ -728,6 +728,7 @@ class OutdoorPvPWG : public OutdoorPvP
         // To be enabled soon.
 //        Position SetQuestgiverPos(WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
         void LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair);
+        void LoadTeam(TeamPairMap &pairMap, const TeamPair *pair);
         void SaveData();
 };
 

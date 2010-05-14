@@ -23,14 +23,22 @@ void OutdoorPvPWG::LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair)
     }
 }
 
+void OutdoorPvPWG::LoadTeam(TeamPairMap &pairMap, const TeamPair *pair)
+{
+    while((*pair)[0])
+    {
+        pairMap[(*pair)[0]]    = (*pair)[1];
+        ++pair;
+    }
+}
+
 void OutdoorPvPWG::ResetCreatureEntry(Creature *cr, uint32 entry)
 {
     if (!cr)
         return;
 
     cr->SetOriginalEntry(entry);
-    if (entry != cr->GetEntry() || !cr->isAlive())
-        cr->Respawn(true);
+    cr->Respawn(true);
     cr->SetVisibility(VISIBILITY_ON);
 }
 
@@ -505,8 +513,9 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     objmgr.AddGOData(WG_GO_TITAN_RELIC, 571, 5440.0f, 2840.8f, 420.43f + 10.0f, 0);
 
     LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
-    LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
-    LoadTeamPair(m_creEntryPair2, OutdoorPvPWGCreEntryPair2);
+    //LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
+    LoadTeam(m_creEntryPair, OutdoorPvPWGCreEntryPair); //Horde to Ally
+    LoadTeam(m_creEntryPair2, OutdoorPvPWGCreEntryPair2); //Ally to Horde
 
     if (!m_timer)
         m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
@@ -1109,16 +1118,26 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
         case CREATURE_GUARD:
         case CREATURE_SPECIAL:
             {
-                TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
+                /*TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
                 if (itr != m_creEntryPair.end())
                     ResetCreatureEntry(creature, getDefenderTeamId() == TEAM_ALLIANCE ? itr->second : itr->first);
+                */
+                if (getDefenderTeamId() == TEAM_ALLIANCE)
+                {
+                    TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
+                    if (itr != m_creEntryPair.end())
+                        ResetCreatureEntry(creature, itr->second);
+                    else
+                        creature->Respawn(true);
+                }
                 else
                 {
                     TeamPairMap::const_iterator itr = m_creEntryPair2.find(creature->GetCreatureData()->id);
                     if (itr != m_creEntryPair2.end())
-                        ResetCreatureEntry(creature, getDefenderTeamId() == TEAM_ALLIANCE ? itr->first : itr->second);
+                        ResetCreatureEntry(creature, itr->second);
+                    else
+                        creature->Respawn(true);
                 }
-
                 return false;
             }
         default:
