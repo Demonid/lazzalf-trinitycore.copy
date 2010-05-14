@@ -1671,67 +1671,80 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
     if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0)
     {
         float baseVictimResistance = (float) pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
-        float ignoredResistance = (float) GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
-        float victimResistance = baseVictimResistance + ignoredResistance;
-
-        uint32 BOSS_LEVEL = 83;
-        float BOSS_RESISTANCE_CONSTANT = 510.0;
-        uint32 level = getLevel();
-        float resistanceConstant = 0.0f;
-
-        if (level == BOSS_LEVEL)
+        float ignoredResistance = 0.0f;
+        if (GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT && ToCreature()->isPet())
         {
-            resistanceConstant = BOSS_RESISTANCE_CONSTANT;
-        }
-        else
-        {
-            resistanceConstant = level * 5.0f;
-        }
-
-        float averageResist = victimResistance / (victimResistance + resistanceConstant);
-        float discreteResistProbability[11];
-        for (int i = 0; i < 11; i++)
-        {
-            discreteResistProbability[i] = 0.5f - 2.5f * fabs(0.1f * i - averageResist);
-            if (discreteResistProbability[i] < 0.0f)
+            if (Player * modOwner = GetSpellModOwner())
             {
-                discreteResistProbability[i] = 0.0f;
+                ignoredResistance += (float) modOwner->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+                ignoredResistance -= (float) modOwner->GetBaseSpellPenetrationBonus();
             }
         }
+        float victimResistance = baseVictimResistance + ignoredResistance;
 
-        if (averageResist <= 0.1f)
+        if (victimResistance > 0.0f)
         {
-            discreteResistProbability[0] = 1.0f - 7.5f * averageResist;
-            discreteResistProbability[1] = 5.0f * averageResist;
-            discreteResistProbability[2] = 2.5f * averageResist;
-        }
+            uint32 BOSS_LEVEL = 83;
+            float BOSS_RESISTANCE_CONSTANT = 510.0;
+            uint32 level = getLevel();
+            float resistanceConstant = 0.0f;
 
-        float r = rand_norm();
-        int i = 0;
-        float probabilitySum = discreteResistProbability[0];
-        while (r >= probabilitySum && i < 10)
-        {
-            i++;
-            probabilitySum += discreteResistProbability[i];
-        }
-        uint32 damageResisted = damage * i / 10;
+            if (level == BOSS_LEVEL)
+            {
+                resistanceConstant = BOSS_RESISTANCE_CONSTANT;
+            }
+            else
+            {
+                resistanceConstant = level * 5.0f;
+            }
 
-        *resist += damageResisted;
+            float averageResist = victimResistance / (victimResistance + resistanceConstant);
+            float discreteResistProbability[11];
+            for (int i = 0; i < 11; i++)
+            {
+                discreteResistProbability[i] = 0.5f - 2.5f * fabs(0.1f * i - averageResist);
+                if (discreteResistProbability[i] < 0.0f)
+                {
+                    discreteResistProbability[i] = 0.0f;
+                }
+            }
 
-        AuraEffectList const &ResIgnoreAurasAb = GetAuraEffectsByType(SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST);
-        for (AuraEffectList::const_iterator j = ResIgnoreAurasAb.begin(); j != ResIgnoreAurasAb.end(); ++j)
-        {
-            if ((*j)->GetMiscValue() & schoolMask
-                && (*j)->IsAffectedOnSpell(spellInfo))
-                *resist= int32(float(*resist) * (float(100-(*j)->GetAmount())/100.0f));
-        }
+            if (averageResist <= 0.1f)
+            {
+                discreteResistProbability[0] = 1.0f - 7.5f * averageResist;
+                discreteResistProbability[1] = 5.0f * averageResist;
+                discreteResistProbability[2] = 2.5f * averageResist;
+            }
 
-        AuraEffectList const &ResIgnoreAuras = GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
-        for (AuraEffectList::const_iterator j = ResIgnoreAuras.begin(); j != ResIgnoreAuras.end(); ++j)
-        {
-            if ((*j)->GetMiscValue() & schoolMask)
-                *resist= int32(float(*resist) * (float(100-(*j)->GetAmount())/100.0f));
+            float r = rand_norm();
+            int i = 0;
+            float probabilitySum = discreteResistProbability[0];
+            while (r >= probabilitySum && i < 10)
+            {
+                i++;
+                probabilitySum += discreteResistProbability[i];
+            }
+            uint32 damageResisted = damage * i / 10;
+
+            *resist += damageResisted;
+
+            AuraEffectList const &ResIgnoreAurasAb = GetAuraEffectsByType(SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST);
+            for (AuraEffectList::const_iterator j = ResIgnoreAurasAb.begin(); j != ResIgnoreAurasAb.end(); ++j)
+            {
+                if ((*j)->GetMiscValue() & schoolMask
+                    && (*j)->IsAffectedOnSpell(spellInfo))
+                    *resist= int32(float(*resist) * (float(100-(*j)->GetAmount())/100.0f));
+            }
+
+            AuraEffectList const &ResIgnoreAuras = GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
+            for (AuraEffectList::const_iterator j = ResIgnoreAuras.begin(); j != ResIgnoreAuras.end(); ++j)
+            {
+                if ((*j)->GetMiscValue() & schoolMask)
+                    *resist= int32(float(*resist) * (float(100-(*j)->GetAmount())/100.0f));
+            }
         }
+        else
+            *resist = 0;
     }
     else
         *resist = 0;
