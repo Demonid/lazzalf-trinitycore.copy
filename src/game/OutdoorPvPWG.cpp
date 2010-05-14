@@ -1128,7 +1128,8 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                     if (itr != m_creEntryPair.end())
                         ResetCreatureEntry(creature, itr->second);
                     else
-                        creature->Respawn(true);
+                        if (!creature->isAlive())
+                            creature->Respawn(true);
                 }
                 else
                 {
@@ -1136,7 +1137,8 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                     if (itr != m_creEntryPair2.end())
                         ResetCreatureEntry(creature, itr->second);
                     else
-                        creature->Respawn(true);
+                        if (!creature->isAlive())
+                            creature->Respawn(true);
                 }
                 return false;
             }
