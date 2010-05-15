@@ -4371,7 +4371,7 @@ CREATE TABLE `quest_template` (
   `entry` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `Method` tinyint(3) unsigned NOT NULL DEFAULT '2',
   `ZoneOrSort` smallint(6) NOT NULL DEFAULT '0',
-  `SkillOrClass` smallint(6) NOT NULL DEFAULT '0',
+  `SkillOrClassMask` mediumint(8) NOT NULL DEFAULT '0',
   `MinLevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `MaxLevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `QuestLevel` smallint(3) NOT NULL DEFAULT '1',
@@ -5037,7 +5037,7 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (58798, 0.1, -1, -1, -1, 'Shaman - Frostbrand Attack Rank 8'),
 (58799, 0.1, -1, -1, -1, 'Shaman - Frostbrand Attack Rank 9'),
 (2645, 0, 0, 0, 0, 'Shaman - Glyph of Ghost Wolf'),
-(52042, -1, -1, -1, -1, 'Shaman - Healing Stream Totem Triggered Heal'),
+(52042, 0.0445, 0.0445, -1, -1, 'Shaman - Healing Stream Totem Triggered Heal'),
 (331, 1.6106, -1, -1, -1, 'Shaman - Healing Wave'),
 (51505, 0.5714, -1, -1, -1, 'Shaman - Lava Burst'),
 (8004, 0.8082, -1, -1, -1, 'Shaman - Lesser Healing Wave'),
@@ -7140,6 +7140,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 58375, 0x00,   4, 0x00000000, 0x00000200, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Blocking
 ( 58387, 0x00,   4, 0x00004000, 0x00000040, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Glyph of Sunder Armor
 ( 54925, 0x02,  10, 0x00000000, 0x00000208, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Seal of Command
+( 63320, 0x00,   5, 0x80040000, 0x00000000, 0x00008000, 0x00000400, 0x00000000,   0,   0,   0), -- Glyph of Life Tap
 ( 67356, 0x08,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Druid T9 Restoration Relic (Rejuvenation)
 ( 67771,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45), -- Item - Coliseum Melee Trinket 10men
 ( 67702,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45); -- Item - Coliseum Melee Trinket 25men
