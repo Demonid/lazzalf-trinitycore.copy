@@ -1827,6 +1827,11 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                         currentAbsorb = spellProto->EffectBasePoints[1];
                     break;
                 }
+                if (spellProto->Id == 64677) // Shield Generator
+                {
+                    currentAbsorb = 20000;
+                    continue;
+                }
                 break;
             }
             case SPELLFAMILY_DRUID:
