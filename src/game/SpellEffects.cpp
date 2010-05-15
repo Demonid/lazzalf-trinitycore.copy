@@ -1798,8 +1798,28 @@ void Spell::EffectDummy(uint32 i)
                     {
                         SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
 
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP || spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT))
-                            m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first,true);
+                        if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
+                        {
+                            if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP ||                      // Cold Blood, Shadowstep
+                                spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT                           // Vanish, Evasion, Sprint
+                               )
+                                m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first, true);
+                            else if (m_caster->HasAura(56819))                                                                    // Glyph of Preparation
+                            {
+                                if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE ||                         // Dismantle
+                                    spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_KICK ||                               // Kick
+                                    (
+                                      spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY &&                     // Blade Flurry
+                                      spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY
+                                    )
+                                   )
+                                    m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first, true);
+                                else
+                                    ++itr;
+                            }
+                            else
+                                ++itr;
+                        }
                         else
                             ++itr;
                     }
@@ -5000,25 +5020,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             aurEff->GetBase()->SetDuration(uint32(aurEff->GetBase()->GetDuration()+3000));
                             aurEff->GetBase()->SetMaxDuration(countMin+3000);
                         }
-                    }
-                    return;
-                }
-                // Glyph of Shred
-                case 63974:
-                {
-                    if (AuraEffect const * aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE,SPELLFAMILY_DRUID,0x00800000,0,0,m_caster->GetGUID()))
-                    {
-                        uint32 countMin = aurEff->GetBase()->GetMaxDuration();
-                        uint32 countMax = 20000;
-                        countMax += m_caster->HasAura(54818) ? 4000 : 0;
-                        countMax += m_caster->HasAura(60141) ? 4000 : 0;
-
-                        if (countMin < countMax)
-                        {
-                            aurEff->GetBase()->SetDuration(uint32(aurEff->GetBase()->GetDuration()+3000));
-                            aurEff->GetBase()->SetMaxDuration(countMin+2000);
-                        }
-
                     }
                     return;
                 }

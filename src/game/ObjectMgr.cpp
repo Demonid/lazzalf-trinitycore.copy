@@ -241,11 +241,11 @@ Guild * ObjectMgr::GetGuildById(uint32 GuildId) const
 Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
 {
     std::string search = guildname;
-    std::transform(search.begin(), search.end(), search.begin(), toupper);
+    std::transform(search.begin(), search.end(), search.begin(), ::toupper);
     for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
     {
         std::string gname = itr->second->GetName();
-        std::transform(gname.begin(), gname.end(), gname.begin(), toupper);
+        std::transform(gname.begin(), gname.end(), gname.begin(), ::toupper);
         if (search == gname)
             return itr->second;
     }
@@ -292,11 +292,11 @@ ArenaTeam* ObjectMgr::GetArenaTeamById(uint32 arenateamid) const
 ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname) const
 {
     std::string search = arenateamname;
-    std::transform(search.begin(), search.end(), search.begin(), toupper);
+    std::transform(search.begin(), search.end(), search.begin(), ::toupper);
     for (ArenaTeamMap::const_iterator itr = mArenaTeamMap.begin(); itr != mArenaTeamMap.end(); ++itr)
     {
         std::string teamname = itr->second->GetName();
-        std::transform(teamname.begin(), teamname.end(), teamname.begin(), toupper);
+        std::transform(teamname.begin(), teamname.end(), teamname.begin(), ::toupper);
         if (search == teamname)
             return itr->second;
     }
@@ -3562,8 +3562,8 @@ void ObjectMgr::LoadQuests()
 
     mExclusiveQuestGroups.clear();
 
-    //                                                       0      1       2           3             4         5         6           7     8              9
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, Method, ZoneOrSort, SkillOrClass, MinLevel, MaxLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
+    //                                                       0      1       2           3                 4         5         6           7     8              9
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, Method, ZoneOrSort, SkillOrClassMask, MinLevel, MaxLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
     //   10                   11                 12                    13                  14                     15                   16                     17                   18                19
         "RepObjectiveFaction, RepObjectiveValue, RepObjectiveFaction2, RepObjectiveValue2, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   20          21            22           23            24            25                  26           27          28              29                30       31         32            33
@@ -3691,41 +3691,41 @@ void ObjectMgr::LoadQuests()
             if (ClassByQuestSort(-int32(qinfo->ZoneOrSort)))
             {
                 // SkillOrClass should not have class case when class case already set in ZoneOrSort.
-                if (qinfo->SkillOrClass < 0)
+                if (qinfo->SkillOrClassMask < 0)
                 {
-                    sLog.outErrorDb("Quest %u has `ZoneOrSort` = %i (class sort case) and `SkillOrClass` = %i (class case), redundant.",
-                        qinfo->GetQuestId(),qinfo->ZoneOrSort,qinfo->SkillOrClass);
+                    sLog.outErrorDb("Quest %u has `ZoneOrSort` = %i (class sort case) and `SkillOrClassMask` = %i (class case), redundant.",
+                        qinfo->GetQuestId(),qinfo->ZoneOrSort,qinfo->SkillOrClassMask);
                 }
             }
             //check for proper SkillOrClass value (skill case)
             if (int32 skill_id =  SkillByQuestSort(-int32(qinfo->ZoneOrSort)))
             {
                 // skill is positive value in SkillOrClass
-                if (qinfo->SkillOrClass != skill_id)
+                if (qinfo->SkillOrClassMask != skill_id)
                 {
-                    sLog.outErrorDb("Quest %u has `ZoneOrSort` = %i (skill sort case) but `SkillOrClass` does not have a corresponding value (%i).",
+                    sLog.outErrorDb("Quest %u has `ZoneOrSort` = %i (skill sort case) but `SkillOrClassMask` does not have a corresponding value (%i).",
                         qinfo->GetQuestId(),qinfo->ZoneOrSort,skill_id);
                     //override, and force proper value here?
                 }
             }
         }
 
-        // SkillOrClass (class case)
-        if (qinfo->SkillOrClass < 0)
+        // SkillOrClassMask (class case)
+        if (qinfo->SkillOrClassMask < 0)
         {
-            if (!sChrClassesStore.LookupEntry(-int32(qinfo->SkillOrClass)))
+            if (!(-int32(qinfo->SkillOrClassMask) & CLASSMASK_ALL_PLAYABLE))
             {
-                sLog.outErrorDb("Quest %u has `SkillOrClass` = %i (class case) but class (%i) does not exist",
-                    qinfo->GetQuestId(),qinfo->SkillOrClass,-qinfo->SkillOrClass);
+                sLog.outErrorDb("Quest %u has `SkillOrClassMask` = %i (class case) but classmask does not have valid class",
+                    qinfo->GetQuestId(),qinfo->SkillOrClassMask);
             }
         }
-        // SkillOrClass (skill case)
-        if (qinfo->SkillOrClass > 0)
+        // SkillOrClassMask (skill case)
+        if (qinfo->SkillOrClassMask > 0)
         {
-            if (!sSkillLineStore.LookupEntry(qinfo->SkillOrClass))
+            if (!sSkillLineStore.LookupEntry(qinfo->SkillOrClassMask))
             {
                 sLog.outErrorDb("Quest %u has `SkillOrClass` = %u (skill case) but skill (%i) does not exist",
-                    qinfo->GetQuestId(),qinfo->SkillOrClass,qinfo->SkillOrClass);
+                    qinfo->GetQuestId(),qinfo->SkillOrClassMask,qinfo->SkillOrClassMask);
             }
         }
 
@@ -3738,10 +3738,10 @@ void ObjectMgr::LoadQuests()
                 // no changes, quest can't be done for this requirement
             }
 
-            if (qinfo->SkillOrClass <= 0)
+            if (qinfo->SkillOrClassMask <= 0)
             {
                 sLog.outErrorDb("Quest %u has `RequiredSkillValue` = %u but `SkillOrClass` = %i (class case), value ignored.",
-                    qinfo->GetQuestId(),qinfo->RequiredSkillValue,qinfo->SkillOrClass);
+                    qinfo->GetQuestId(),qinfo->RequiredSkillValue,qinfo->SkillOrClassMask);
                 // no changes, quest can't be done for this requirement (fail at wrong skill id)
             }
         }
