@@ -5274,12 +5274,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
         {
             switch (dummySpell->Id)
             {
-                // Glyph of Life Tap
-                case 63320:
-                {
-                    triggered_spell_id = 63321;
-                    break;
-                }
                 // Bloodworms Health Leech
                 case 50453:
                 {
