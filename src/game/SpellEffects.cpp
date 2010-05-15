@@ -2089,12 +2089,12 @@ void Spell::EffectDummy(uint32 i)
                 return;
             }
             // Scourge Strike
-            /*if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
+            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
             {
                 int32 bp = (m_damage * damage * unitTarget->GetDiseasesByCaster(m_caster->GetGUID())) / 100;
                 m_caster->CastCustomSpell(unitTarget, 70890, &bp, NULL, NULL, true);
                 return;
-            }*/
+            }
             // Death Coil
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
             {
