@@ -604,7 +604,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         // Scourge Strike
         if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
         {
-              int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
+              int32 shadowdmg = damage * (float(12 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
               if (shadowdmg > 0)
                   CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
         }
