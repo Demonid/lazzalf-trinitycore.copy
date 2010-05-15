@@ -601,6 +601,13 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
         }
+        // Scourge Strike
+        if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
+        {
+              int32 shadowdmg = damage * (float(25 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
+              if (shadowdmg > 0)
+                  CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
+        }
     }
 
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
