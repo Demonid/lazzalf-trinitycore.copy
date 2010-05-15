@@ -1829,7 +1829,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                 }
                 if (spellProto->Id == 64677) // Shield Generator
                 {
-                    currentAbsorb = 20000;
+                    currentAbsorb = 20000; //Hack, i don't know true value
                     continue;
                 }
                 break;
