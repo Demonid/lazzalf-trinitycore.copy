@@ -687,7 +687,7 @@ void Aura::RefreshDuration()
 {
     SetDuration(GetMaxDuration());
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_effects[i])
+        if(m_effects[i])
             m_effects[i]->ResetPeriodic();
 
     if (m_spellProto->manaPerSecond || m_spellProto->manaPerSecondPerLevel)
@@ -936,20 +936,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         // Arcane Potency
                         if (AuraEffect const * aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_MAGE, 2120, 0))
                         {
-                            if (roll_chance_i(aurEff->GetAmount()))
-                            {
-                                uint32 spellId = 0;
+                            uint32 spellId = 0;
 
-                                switch (aurEff->GetId())
-                                {
-                                    case 31571: spellId = 57529; break;
-                                    case 31572: spellId = 57531; break;
-                                    default:
-                                        sLog.outError("Aura::HandleAuraSpecificMods: Unknown rank of Arcane Potency (%d) found", aurEff->GetId());
-                                }
-                                if (spellId)
-                                    caster->CastSpell(caster, spellId, true);
+                            switch (aurEff->GetId())
+                            {
+                                case 31571: spellId = 57529; break;
+                                case 31572: spellId = 57531; break;
+                                default:
+                                    sLog.outError("Aura::HandleAuraSpecificMods: Unknown rank of Arcane Potency (%d) found", aurEff->GetId());
                             }
+                            if (spellId)
+                                caster->CastSpell(caster, spellId, true);
                         }
                         break;
                 }
@@ -976,7 +973,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     // Improved Devouring Plague
                     if (AuraEffect const * aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, 3790, 1))
                     {
-                        int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * GetEffect(0)->GetAmount() / 100;
+                        int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * caster->SpellDamageBonus(target, GetSpellProto(), GetEffect(0)->GetAmount(), DOT) / 100;
                         caster->CastCustomSpell(target, 63675, &basepoints0, NULL, NULL, true, NULL, GetEffect(0));
                     }
                 }
@@ -1092,6 +1089,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                 // Remove the immunity shield marker on Avenging Wrath removal if Forbearance is not present
                 if (GetId() == 61987 && target->HasAura(61988) && !target->HasAura(25771))
                     target->RemoveAura(61988);
+                // Hodir Flash Freeze immunity remove
+                if (GetId() == 61990 && removeMode == AURA_REMOVE_BY_DEATH)
+                    target->RemoveAura(7940);
                 break;
             case SPELLFAMILY_MAGE:
                 switch(GetId())
