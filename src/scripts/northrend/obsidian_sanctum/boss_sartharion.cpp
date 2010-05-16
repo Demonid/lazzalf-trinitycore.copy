@@ -663,12 +663,13 @@ CreatureAI* GetAI_npc_disciple_of_vesperon(Creature* pCreature)
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
 {
-    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
+    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature), lSummons(me)
     {
         pInstance = pCreature->GetInstanceData();
     }
 
     ScriptedInstance* pInstance;
+    SummonList lSummons;
 
     uint32 m_uiWaypointId;
     uint32 m_uiMoveNextTimer;
@@ -680,6 +681,7 @@ struct dummy_dragonAI : public ScriptedAI
         if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
+        lSummons.DespawnAll();
 
         m_uiWaypointId = 0;
         m_uiMoveNextTimer = 500;
@@ -782,9 +784,13 @@ struct dummy_dragonAI : public ScriptedAI
             case NPC_VESPERON:
             {
                 if (pInstance && !pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
-                    Creature* Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                    me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
                 else
-                    Creature* Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon2, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                    me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon2, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+
+                me->SummonCreature(NPC_DISCIPLE_OF_VESPERON, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+                if (Creature* pDisciple = pInstance->instance->GetCreature(pInstance->GetData64(DATA_DISCIPLE_OF_VESPERON)))
+                    pDisciple->AI()->DoAction(VESPERON_PORTAL_EVENT);
 
                 iTextId = WHISPER_OPEN_PORTAL;
                 break;
@@ -840,6 +846,11 @@ struct dummy_dragonAI : public ScriptedAI
                     pSartharion->CastSpell(pSartharion, SPELL_TWILIGHT_REVENGE, true);
             me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
+    }
+    
+    void JustSummoned(Creature *summon)
+    {        
+        lSummons.Summon(summon);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -1160,10 +1171,7 @@ struct mob_vesperonAI : public dummy_dragonAI
                 m_uiAcolyteVesperonTimer = 10000;
             else
             {
-                OpenPortal();
-                me->SummonCreature(NPC_DISCIPLE_OF_VESPERON, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
-                if (Creature* pDisciple = pInstance->instance->GetCreature(pInstance->GetData64(DATA_DISCIPLE_OF_VESPERON)))
-                    pDisciple->AI()->DoAction(VESPERON_PORTAL_EVENT);
+                OpenPortal();                
                 m_uiAcolyteVesperonTimer = urand(60000,70000);
             }
         }

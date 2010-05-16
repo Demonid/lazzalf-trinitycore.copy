@@ -91,6 +91,8 @@ enum Spells
     SPELL_IRONBRANCHS_ESSENCE                   = 62387,
     SPELL_BRIGHTLEAFS_ESSENCE                   = 62385,
     SPELL_DRAINED_OF_POWER                      = 62467,
+    RAID_10_SPELL_FREYA_CHEST                   = 62950,
+    RAID_25_SPELL_FREYA_CHEST                   = 62952,
     
     // Detonating Lasher
     RAID_10_SPELL_DETONATE                      = 62598,
@@ -192,6 +194,7 @@ enum Actions
     ACTION_LASHER                               = 0,
     ACTION_ELEMENTAL                            = 1,
     ACTION_ANCIENT                              = 2,
+    ACTION_ELEMENTAL_DEAD                       = 3
 };
 
 Unit* pRootTarget;
@@ -200,11 +203,16 @@ struct boss_freyaAI : public BossAI
 {
     boss_freyaAI(Creature* pCreature) : BossAI(pCreature, BOSS_FREYA)
     {
-    
+        pInstance = pCreature->GetInstanceData();
     }
     
+    ScriptedInstance* pInstance;
+
     uint8 spawnOrder[3];
     uint8 spawnedAdds;
+    int32 uiElemTimer;
+    Creature* Elemental[3];
+    bool checkElementalAlive;
     bool Phase2;
 
     void Reset()
@@ -224,6 +232,8 @@ struct boss_freyaAI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
         _JustDied();
+        
+        DoCast(RAID_MODE(RAID_10_SPELL_FREYA_CHEST, RAID_25_SPELL_FREYA_CHEST));
     }
 
     void EnterCombat(Unit* pWho)
@@ -241,10 +251,43 @@ struct boss_freyaAI : public BossAI
         events.ScheduleEvent(EVENT_NATURE_BOMB, 375000);
         events.ScheduleEvent(EVENT_BERSERK, 600000);
         Phase2 = false;
+        checkElementalAlive = true;
     }
 
     void UpdateAI(const uint32 diff)
-    {        
+    {
+        // Elementals must be killed within 12 seconds of each other, or they will all revive and heal
+        if (checkElementalAlive)
+            uiElemTimer = 0;
+        else
+        {
+            uiElemTimer += diff;
+            if (uiElemTimer > 12000)
+            {
+                for (uint32 i = 0; i < 3; i++)
+                {
+                    if (Elemental[i]->isAlive())
+                        Elemental[i]->SetHealth(Elemental[i]->GetMaxHealth());
+                    else
+                        Elemental[i]->Respawn();
+                }
+                checkElementalAlive = true;
+            }
+            else
+            {
+                if (Elemental[0]->isDead())
+                    if (Elemental[1]->isDead())
+                        if (Elemental[2]->isDead())
+                        {
+                            for (uint32 i = 0; i < 3; i++)
+                                Elemental[i]->ForcedDespawn(3000);
+                                
+                            if (Creature* Freya = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_FREYA) : 0))
+                                Freya->AI()->DoAction(ACTION_ELEMENTAL);
+                        }
+            }
+        }
+               
         if (!UpdateVictim())
             return;
             
@@ -255,6 +298,9 @@ struct boss_freyaAI : public BossAI
             
         if (!me->HasAura(SPELL_ATTUNED_TO_NATURE) && !Phase2)
             events.ScheduleEvent(EVENT_PHASE_2, 0);
+            
+        if (events.GetTimer() > 360000)
+            events.CancelEvent(EVENT_SUMMON_ALLIES);
             
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
@@ -287,9 +333,9 @@ struct boss_freyaAI : public BossAI
                     break;
                 case EVENT_PHASE_2:
                     Phase2 = true;
+                    me->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_TOUCH_OF_EONAR, RAID_25_SPELL_TOUCH_OF_EONAR));
                     events.ScheduleEvent(EVENT_NATURE_BOMB, urand(15000, 20000));
                     events.CancelEvent(EVENT_PHASE_2);
-                    events.CancelEvent(EVENT_SUMMON_ALLIES);
                     break;
                 case EVENT_BERSERK:
                     DoCast(me, SPELL_BERSERK, true);
@@ -359,13 +405,13 @@ struct boss_freyaAI : public BossAI
                 //Make sure that they don't spawn in a pile
                 int8 randomX = -25 + rand() % 50;
                 int8 randomY = -25 + rand() % 50;
-                me->SummonCreature(NPC_SNAPLASHER, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                Elemental[0] = me->SummonCreature(NPC_SNAPLASHER, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
                 randomX = -25 + rand() % 50;
                 randomY = -25 + rand() % 50;
-                me->SummonCreature(NPC_ANCIENT_WATER_SPIRIT, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                Elemental[1] = me->SummonCreature(NPC_ANCIENT_WATER_SPIRIT, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
                 randomX = -25 + rand() % 50;
                 randomY = -25 + rand() % 50;
-                me->SummonCreature(NPC_STORM_LASHER, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                Elemental[2] = me->SummonCreature(NPC_STORM_LASHER, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
                 break;
             }
             case 2: 
@@ -373,7 +419,7 @@ struct boss_freyaAI : public BossAI
                 DoScriptText(SAY_SUMMON_CONSERVATOR, me);
                 int8 randomX = -25 + rand() % 50;
                 int8 randomY = -25 + rand() % 50;
-                me->SummonCreature(NPC_ANCIENT_CONSERVATOR, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7000);
+                me->SummonCreature(NPC_ANCIENT_CONSERVATOR, me->GetPositionX() + randomX, me->GetPositionY() + randomY, me->GetPositionZ()+1, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 7000);
                 break;
             }
         }
@@ -388,12 +434,16 @@ struct boss_freyaAI : public BossAI
                     me->RemoveAuraFromStack(SPELL_ATTUNED_TO_NATURE, 0, AURA_REMOVE_BY_DEFAULT);
                 break;
             case ACTION_ELEMENTAL:
-                for (uint32 i = 0; i < 10; ++i)
+                checkElementalAlive = true;
+                for (uint32 i = 0; i < 30; ++i)
                     me->RemoveAuraFromStack(SPELL_ATTUNED_TO_NATURE, 0, AURA_REMOVE_BY_DEFAULT);
                 break;
             case ACTION_ANCIENT:
                 for (uint32 i = 0; i < 25; ++i)
                     me->RemoveAuraFromStack(SPELL_ATTUNED_TO_NATURE, 0, AURA_REMOVE_BY_DEFAULT);
+                break;
+            case ACTION_ELEMENTAL_DEAD:
+                checkElementalAlive = false;
                 break;
         }
     }
@@ -926,7 +976,7 @@ struct creature_storm_lasherAI : public ScriptedAI
     void JustDied(Unit* victim)
     {
         if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
-            Freya->AI()->DoAction(ACTION_ELEMENTAL);
+            Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
     }
 
     void UpdateAI(const uint32 diff)
@@ -973,7 +1023,7 @@ struct creature_snaplasherAI : public ScriptedAI
     void JustDied(Unit* victim)
     {
         if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
-            Freya->AI()->DoAction(ACTION_ELEMENTAL);
+            Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1008,7 +1058,7 @@ struct creature_ancient_water_spiritAI : public ScriptedAI
     void JustDied(Unit* victim)
     {
         if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
-            Freya->AI()->DoAction(ACTION_ELEMENTAL);
+            Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
     }
 
     void UpdateAI(const uint32 diff)
