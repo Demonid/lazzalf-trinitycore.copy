@@ -279,10 +279,9 @@ struct boss_paletressAI : public BossAI
 			 
 			if(pInstance)
 			{
-
 				GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
-			if(GO)
-				pInstance->HandleGameObject(GO->GetGUID(),true);
+			    if(GO)
+				    pInstance->HandleGameObject(GO->GetGUID(),true);
 				Creature* announcer=pMap->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
 				pInstance->SetData(DATA_ARGENT_SOLDIER_DEFEATED,0);
 				announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);

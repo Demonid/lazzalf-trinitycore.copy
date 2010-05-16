@@ -324,7 +324,6 @@ struct npc_announcer_toc5AI : public ScriptedAI
                     pInstance->HandleGameObject(pGO->GetGUID(),false);	
                 DoScriptText(SAY_START, me);			
                 DoSummonGrandChampion(uiFirstBoss);
-                
 				
 				NextStep(10000,false,1);
                 break;
