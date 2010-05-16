@@ -269,7 +269,7 @@ struct boss_flame_leviathanAI : public BossAI
                 DoCast(SPELL_SYSTEMS_SHUTDOWN);
                 me->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
                 me->MonsterTextEmote(EMOTE_REPAIR, 0, true);
-                events.RescheduleEvent(EVENT_SHUTDOWN, 120000);
+                events.RescheduleEvent(EVENT_SHUTDOWN, 90000);
                 break;
             default:
                 events.PopEvent();
