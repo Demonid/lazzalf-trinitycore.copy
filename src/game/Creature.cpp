@@ -802,9 +802,9 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 Entry, 
         {
             AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
         }
+        
+        LastUsedScriptID = m_creatureInfo->ScriptID;
     }
-
-    LastUsedScriptID = m_creatureInfo->ScriptID;
 
     return bResult;
 }
