@@ -584,6 +584,45 @@ CreatureAI* GetAI_mob_colossus(Creature* pCreature)
     return new mob_colossusAI(pCreature);
 }
 
+#define REPAIR_VEHICLE   200
+
+bool GoHello_ulduar_repair_station( Player *pPlayer, GameObject *pGO )
+{
+    InstanceData *data = pPlayer->GetInstanceData();
+    ScriptedInstance *pInstance = (ScriptedInstance *) pGO->GetInstanceData();
+    if(!pInstance | !data) return true;
+
+    pPlayer->ADD_GOSSIP_ITEM(0, "Repair Vehicle", GOSSIP_SENDER_MAIN, REPAIR_VEHICLE);
+    pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pGO->GetGUID());
+
+    return true;
+}
+
+bool GOSelect_ulduar_repair_station( Player *pPlayer, GameObject *pGO, uint32 sender, uint32 action )
+{
+    if(sender != GOSSIP_SENDER_MAIN) return true;
+    if(!pPlayer->getAttackers().empty()) return true;
+
+    switch(action)
+    {
+        case REPAIR_VEHICLE:
+            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
+            {
+                vehicle->SetHealth(vehicle->GetMaxHealth());
+            }
+            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_SIEGE, 20))
+            {
+                vehicle->SetHealth(vehicle->GetMaxHealth());
+            }
+            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_CHOPPER, 20))
+            {
+                vehicle->SetHealth(vehicle->GetMaxHealth());
+            }
+            pPlayer->CLOSE_GOSSIP_MENU(); break;
+    }
+    return true;
+}
+
 void AddSC_boss_flame_leviathan()
 {
     Script *newscript;
@@ -627,5 +666,11 @@ void AddSC_boss_flame_leviathan()
     newscript = new Script;
     newscript->Name = "mob_colossus";
     newscript->GetAI = &GetAI_mob_colossus;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "ulduar_repair_station";
+    newscript->pGOHello = &GoHello_ulduar_repair_station;
+    newscript->pGOSelect = &GOSelect_ulduar_repair_station;
     newscript->RegisterSelf();
 }
