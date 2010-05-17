@@ -512,16 +512,6 @@ const TeamPair OutdoorPvPWGCreEntryPair[] =
     {0,0} // Do not delete Used in LoadTeamPair
 };
 
-const TeamPair OutdoorPvPWGCreEntryPair2[] =
-{
-    {32308, 32307}, // Guards
-    {30740, 30739}, // Champions
-    {32294, 32296}, // Quartermaster
-    {39172, 39173}, // Quartermaster
-    {32626, 32615}, // Warbringer & Brigadier General
-    {0,0} // Do not delete Used in LoadTeamPair
-};
-
 // To be deleted soon!
 const TeamPair OutdoorPvPWGGODisplayPair[] =
 {
@@ -678,7 +668,7 @@ class OutdoorPvPWG : public OutdoorPvP
         // To be deleted soon!
         QuestGiverMap m_questgivers;
 
-        TeamPairMap m_creEntryPair, m_creEntryPair2, m_goDisplayPair;
+        TeamPairMap m_creEntryPair, m_goDisplayPair;
         // To be deleted soon!
         QuestGiverPositionMap m_qgPosMap;
 
@@ -728,7 +718,6 @@ class OutdoorPvPWG : public OutdoorPvP
         // To be enabled soon.
 //        Position SetQuestgiverPos(WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId team);
         void LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair);
-        void LoadTeam(TeamPairMap &pairMap, const TeamPair *pair);
         void SaveData();
 };
 
