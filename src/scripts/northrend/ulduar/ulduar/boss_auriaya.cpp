@@ -343,6 +343,9 @@ struct mob_feral_defenderAI : public ScriptedAI
     {
         if (!UpdateVictim())
             me->ForcedDespawn();
+            
+        if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
+            me->ForcedDespawn();
 
         if (PounceTimer <= uiDiff)
         {
@@ -421,13 +424,23 @@ struct seeping_triggerAI : public ScriptedAI
     seeping_triggerAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        pInstance = pCreature->GetInstanceData();
     }
+    
+    ScriptedInstance* pInstance;
     
     void Reset()
     {
         me->ForcedDespawn(600000);
         DoCast(me, SPELL_SEEPING_ESSENCE);
     }
+    
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
+            me->ForcedDespawn();
+    }
+
 };
 
 CreatureAI* GetAI_seeping_trigger(Creature* pCreature)

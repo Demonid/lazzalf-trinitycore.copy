@@ -169,6 +169,7 @@ struct boss_razorscaleAI : public BossAI
             Harpoon[0]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         if (Harpoon[1] = me->SummonCreature(NPC_FIRE_STATE, 571.947021, -136.011993, 391.516998, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
             Harpoon[1]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         me->SetSpeed(MOVE_RUN, 3.0f, true);
         me->SetSpeed(MOVE_FLIGHT, 3.0f, true);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
