@@ -1,4 +1,7 @@
-########### next target ###############
+# Enable precompiled headers when using the GCC compiler.
+IF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
+        INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+ENDIF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
 
 SET(game_STAT_SRCS
    AccountMgr.cpp
@@ -322,6 +325,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/shared/vmap
   ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/src/game
   ${MYSQL_INCLUDE_DIR}
 )
 
@@ -347,3 +351,8 @@ endif(NOT DO_SCRIPTS)
 
 add_library(game STATIC ${game_STAT_SRCS})
 ADD_DEPENDENCIES(game revision.h)
+
+# Generate precompiled header
+IF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
+        ADD_PRECOMPILED_HEADER(game ${CMAKE_SOURCE_DIR}/src/game/pchlinux.h)
+ENDIF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
