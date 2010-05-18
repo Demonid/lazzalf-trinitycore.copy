@@ -169,7 +169,7 @@ struct boss_flame_leviathanAI : public BossAI
         events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 2000);
         //events.ScheduleEvent(EVENT_SUMMON, 0);
-        events.ScheduleEvent(EVENT_SHUTDOWN, 120000);
+        events.ScheduleEvent(EVENT_SHUTDOWN, 90000);
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }
