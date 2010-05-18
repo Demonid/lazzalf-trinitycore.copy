@@ -64,6 +64,9 @@ struct instance_ulduar : public InstanceData
     uint64 uiRightArm;
     uint64 uiLeftArm;
     uint64 uiAuriaya;
+    uint64 uiBrightleaf;
+    uint64 uiIronbranch;
+    uint64 uiStonebark;
     uint64 uiFreya;
     uint64 uiKologarnBridge;
     
@@ -100,6 +103,9 @@ struct instance_ulduar : public InstanceData
             case 32934: uiRightArm = pCreature->GetGUID(); return;
             case 32933: uiLeftArm = pCreature->GetGUID(); return;
             case 33515: uiAuriaya = pCreature->GetGUID(); return;
+            case 32915: uiBrightleaf = pCreature->GetGUID(); return;
+            case 32913: uiIronbranch = pCreature->GetGUID(); return;
+            case 32914: uiStonebark = pCreature->GetGUID(); return;
             case 32906: uiFreya = pCreature->GetGUID(); return;
         }
 
@@ -136,6 +142,12 @@ struct instance_ulduar : public InstanceData
             return uiLeftArm;
         case DATA_AURIAYA:
             return uiAuriaya;
+        case DATA_BRIGHTLEAF:
+            return uiBrightleaf;
+        case DATA_IRONBRANCH:
+            return uiIronbranch;
+        case DATA_STONEBARK:
+            return uiStonebark;
         case DATA_FREYA:
             return uiFreya;
         }
@@ -587,7 +599,7 @@ struct devouring_flame : public ScriptedAI
 	
     void EnterCombat(Unit* who)
     {
-        me->CastSpell(me,SPELL_DEVOURINGFLAME,true);
+        m_creature->CastSpell(m_creature,SPELL_DEVOURINGFLAME,true);
     }
 	
     void Reset()
@@ -599,7 +611,7 @@ struct devouring_flame : public ScriptedAI
     {
         if (DevouringFlameTimer <= diff)
         {
-            me->setDeathState(JUST_DIED);
+            m_creature->setDeathState(JUST_DIED);
         }else DevouringFlameTimer -= diff;
     }
 };
