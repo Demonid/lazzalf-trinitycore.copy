@@ -15,6 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+ 
+  /* ScriptData
+SDName: Freya
+SDAuthor: PrinceCreed
+SD%Complete: 95
+SD%Comments: TODO: better Iron roots implementation
+EndScriptData */
 
 #include "ScriptedPch.h"
 #include "ulduar.h"
@@ -54,19 +61,10 @@ enum Yells
 #define EMOTE_GIFT         "A Lifebinder's Gift begins to grow!"
 #define EMOTE_ALLIES       "Allies of Nature have appeared!"
 
-enum
-{
-    // Con-speed-atory timed achievement.
-    // TODO Should be started when 1st trash is killed.
-    ACHIEV_CON_SPEED_ATORY_START_EVENT          = 21597,
-    SPELL_ACHIEVEMENT_CHECK                     = 65074,
-
-    // Lumberjacked timed achievement.
-    // TODO should be started when 1st elder is killed.
-    // Spell should be casted when 3rd elder is killed.
-    ACHIEV_LUMBERJACKED                         = 21686,
-    SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK        = 65296,
-};
+#define ACHIEVEMENT_KNOCK_ON_WOOD_1      RAID_MODE(3177, 3185)
+#define ACHIEVEMENT_KNOCK_ON_WOOD_2      RAID_MODE(3178, 3186)
+#define ACHIEVEMENT_KNOCK_ON_WOOD_3      RAID_MODE(3179, 3187)
+#define ACHIEVEMENT_BACK_TO_NATURE       RAID_MODE(2982, 2983)
 
 enum Spells
 {
@@ -76,6 +74,7 @@ enum Spells
     RAID_25_SPELL_TOUCH_OF_EONAR                = 62892,
     RAID_10_SPELL_SUNBEAM                       = 62623,
     RAID_25_SPELL_SUNBEAM                       = 62872,
+    SPELL_SUN_BEAM_SUMMON                       = 62450,
     SPELL_EONAR_GIFT                            = 62572,
     SPELL_NATURE_BOMB                           = 64604,
     SPELL_NATURE_BOMB_VISUAL                    = 64648,
@@ -93,6 +92,8 @@ enum Spells
     SPELL_DRAINED_OF_POWER                      = 62467,
     RAID_10_SPELL_FREYA_CHEST                   = 62950,
     RAID_25_SPELL_FREYA_CHEST                   = 62952,
+    HARD_10_SPELL_FREYA_CHEST                   = 62954,
+    HARD_25_SPELL_FREYA_CHEST                   = 62955,
     
     // Detonating Lasher
     RAID_10_SPELL_DETONATE                      = 62598,
@@ -160,7 +161,8 @@ enum Spells
     RAID_25_SPELL_SOLAR_FLARE                   = 62920,
     SPELL_PHOTOSYNTHESIS                        = 62209,
     SPELL_UNSTABLE_SUN_BEAM                     = 62211,
-    SPELL_UNSTABLE_SUN_BEAM_SUMMON              = 62450
+    SPELL_UNSTABLE_SUN_BEAM_SUMMON              = 62450,
+    SPELL_UNSTABLE_SUN_BEAM_VISUAL              = 62216
 };
 
 enum FreyaNpcs
@@ -185,6 +187,9 @@ enum Events
     EVENT_EONAR_GIFT,
     EVENT_SUMMON_ALLIES,
     EVENT_NATURE_BOMB,
+    EVENT_BRIGHTLEAF,
+    EVENT_IRONBRANCH,
+    EVENT_STONEBARK,
     EVENT_PHASE_2,
     EVENT_BERSERK
 };
@@ -210,6 +215,7 @@ struct boss_freyaAI : public BossAI
 
     uint8 spawnOrder[3];
     uint8 spawnedAdds;
+    uint8 EldersCount;
     int32 uiElemTimer;
     Creature* Elemental[3];
     bool checkElementalAlive;
@@ -220,6 +226,7 @@ struct boss_freyaAI : public BossAI
         _Reset();
         
         spawnedAdds = 0;
+        EldersCount = 0;
         checkElementalAlive = true;
         randomizeSpawnOrder();        
     }
@@ -234,12 +241,32 @@ struct boss_freyaAI : public BossAI
         DoScriptText(SAY_DEATH, me);
         _JustDied();
         
-        DoCast(RAID_MODE(RAID_10_SPELL_FREYA_CHEST, RAID_25_SPELL_FREYA_CHEST));
+        if (pInstance)
+        {
+            // Knock on Wood
+            if (EldersCount == 1)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_1);
+            // Knock, Knock on Wood 
+            if (EldersCount == 2)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_2);
+            // Knock, Knock, Knock on Wood
+            if (EldersCount == 3)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_3);
+            // Getting Back to Nature
+            if (me->HasAura(SPELL_ATTUNED_TO_NATURE))
+                if (me->GetAura(SPELL_ATTUNED_TO_NATURE, 0)->GetStackAmount() >= 25)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_BACK_TO_NATURE);
+        }
+        
+        // Hard mode chest
+        if (EldersCount == 3)
+            DoCast(RAID_MODE(HARD_10_SPELL_FREYA_CHEST, HARD_25_SPELL_FREYA_CHEST));
+        else
+            DoCast(RAID_MODE(RAID_10_SPELL_FREYA_CHEST, RAID_25_SPELL_FREYA_CHEST));
     }
 
     void EnterCombat(Unit* pWho)
     {
-        DoScriptText(SAY_AGGRO, me);
         _EnterCombat();
         
         DoCast(me, RAID_MODE(RAID_10_SPELL_TOUCH_OF_EONAR, RAID_25_SPELL_TOUCH_OF_EONAR));
@@ -252,6 +279,39 @@ struct boss_freyaAI : public BossAI
         events.ScheduleEvent(EVENT_NATURE_BOMB, 375000);
         events.ScheduleEvent(EVENT_BERSERK, 600000);
         Phase2 = false;
+        
+        // Freya hard mode can be triggered simply by letting the elders alive
+        if(Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
+            if(Brightleaf->isAlive())
+            {
+                EldersCount++;
+                DoCast(SPELL_BRIGHTLEAFS_ESSENCE);
+                me->AddAura(SPELL_BRIGHTLEAFS_ESSENCE, me);
+                events.ScheduleEvent(EVENT_BRIGHTLEAF, urand(15000, 30000));
+            }
+            
+        if(Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+            if(Ironbranch->isAlive())
+            {
+                EldersCount++;
+                DoCast(SPELL_IRONBRANCHS_ESSENCE);
+                me->AddAura(SPELL_IRONBRANCHS_ESSENCE, me);
+                events.ScheduleEvent(EVENT_IRONBRANCH, urand(45000, 60000));
+            }
+            
+        if(Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
+            if(Stonebark->isAlive())
+            {
+                EldersCount++;
+                DoCast(SPELL_STONEBARKS_ESSENCE);
+                me->AddAura(SPELL_STONEBARKS_ESSENCE, me);
+                events.ScheduleEvent(EVENT_STONEBARK, urand(35000, 45000));
+            }
+            
+        if (EldersCount == 0)
+            DoScriptText(SAY_AGGRO, me);
+        else
+            DoScriptText(SAY_AGGRO_WITH_ELDER, me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -330,6 +390,21 @@ struct boss_freyaAI : public BossAI
                     DoCastAOE(SPELL_NATURE_BOMB_VISUAL);
                     DoCastAOE(SPELL_NATURE_BOMB);
                     events.ScheduleEvent(EVENT_NATURE_BOMB, urand(15000, 20000));
+                    break;
+                case EVENT_BRIGHTLEAF:
+                    for (int8 n = 0; n < 3; n++)
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(pTarget, SPELL_SUN_BEAM_SUMMON);
+                    events.ScheduleEvent(EVENT_BRIGHTLEAF, urand(35000, 45000));
+                    break;
+                case EVENT_IRONBRANCH:
+                    if (pRootTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        pRootTarget->CastSpell(pRootTarget,RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS),true);
+                    events.ScheduleEvent(EVENT_IRONBRANCH, urand(45000, 60000));
+                    break;
+                case EVENT_STONEBARK:
+                    DoCastAOE(RAID_MODE(RAID_10_SPELL_FREYA_GROUND_TREMOR, RAID_25_SPELL_FREYA_GROUND_TREMOR));
+                    events.ScheduleEvent(EVENT_STONEBARK, urand(25000, 30000));
                     break;
                 case EVENT_PHASE_2:
                     Phase2 = true;
@@ -508,7 +583,7 @@ struct boss_elder_brightleafAI : public ScriptedAI
         {
             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                 if (pTarget->isAlive())
-                    DoCast(pTarget, SPELL_UNSTABLE_SUN_BEAM_SUMMON);
+                    me->SummonCreature(NPC_UNSTABLE_SUN_BEAM, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
             uiUnstableSunbeamTimer = 8000;
         }
         else uiUnstableSunbeamTimer -= diff;
@@ -551,7 +626,8 @@ struct creature_sun_beamAI : public Scripted_NoMovementAI
     creature_sun_beamAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = pCreature->GetInstanceData();
-        DoCast(SPELL_UNSTABLE_SUN_BEAM);
+        DoCast(RAID_MODE(RAID_10_SPELL_FREYA_UNSTABLE_ENERGY, RAID_25_SPELL_FREYA_UNSTABLE_ENERGY));
+        DoCast(SPELL_UNSTABLE_SUN_BEAM_VISUAL);
     }
 
     ScriptedInstance* m_pInstance;
@@ -560,6 +636,22 @@ struct creature_sun_beamAI : public Scripted_NoMovementAI
 CreatureAI* GetAI_creature_sun_beam(Creature* pCreature)
 {
     return new creature_sun_beamAI(pCreature);
+}
+
+struct creature_unstable_sun_beamAI : public Scripted_NoMovementAI
+{
+    creature_unstable_sun_beamAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        m_pInstance = pCreature->GetInstanceData();
+        DoCast(SPELL_UNSTABLE_SUN_BEAM);
+    }
+
+    ScriptedInstance* m_pInstance;
+};
+
+CreatureAI* GetAI_creature_unstable_sun_beam(Creature* pCreature)
+{
+    return new creature_unstable_sun_beamAI(pCreature);
 }
 
 struct boss_elder_ironbranchAI : public ScriptedAI
@@ -1096,6 +1188,11 @@ void AddSC_boss_freya()
     newscript->GetAI = &GetAI_boss_elder_brightleaf;
     newscript->RegisterSelf();
         
+    newscript = new Script;
+    newscript->Name = "creature_unstable_sun_beam";
+    newscript->GetAI = &GetAI_creature_unstable_sun_beam;
+    newscript->RegisterSelf();
+
     newscript = new Script;
     newscript->Name = "creature_sun_beam";
     newscript->GetAI = &GetAI_creature_sun_beam;
