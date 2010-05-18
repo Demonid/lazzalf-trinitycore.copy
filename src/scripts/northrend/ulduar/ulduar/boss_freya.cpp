@@ -220,6 +220,7 @@ struct boss_freyaAI : public BossAI
         _Reset();
         
         spawnedAdds = 0;
+        checkElementalAlive = true;
         randomizeSpawnOrder();        
     }
 
@@ -251,11 +252,13 @@ struct boss_freyaAI : public BossAI
         events.ScheduleEvent(EVENT_NATURE_BOMB, 375000);
         events.ScheduleEvent(EVENT_BERSERK, 600000);
         Phase2 = false;
-        checkElementalAlive = true;
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (!UpdateVictim())
+            return;
+
         // Elementals must be killed within 12 seconds of each other, or they will all revive and heal
         if (checkElementalAlive)
             uiElemTimer = 0;
@@ -287,10 +290,7 @@ struct boss_freyaAI : public BossAI
                         }
             }
         }
-               
-        if (!UpdateVictim())
-            return;
-            
+                           
         if (me->getVictim() && !me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself())
             me->Kill(me->getVictim());
             
