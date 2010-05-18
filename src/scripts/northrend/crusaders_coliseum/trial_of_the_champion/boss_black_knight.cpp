@@ -354,12 +354,13 @@ struct boss_black_knightAI : public BossAI
         _EnterCombat();
         DoScriptText(SAY_AGGRO_2, me);
         me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-        if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
-            pInstance->HandleGameObject(pGO->GetGUID(),false);
-        //me->SetHomePosition(746.843, 695.68, 412.339, 4.70776);
-
         if (pInstance)
+        {
+            if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))            
+                pInstance->HandleGameObject(pGO->GetGUID(),false);
+
             pInstance->SetData(DATA_AGGRO_DONE,DONE);
+        }
     }
 
 	void KilledUnit(Unit* pVictim)
