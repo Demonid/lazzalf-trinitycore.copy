@@ -530,7 +530,7 @@ void BattleGroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
         Source->CastSpell(Source, SpellId, true);
 }
 
-void BattleGroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
+void BattleGroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
 {
 
     BattleGroundScoreMap::iterator itr = m_PlayerScores.find(Source->GetGUID());
@@ -561,7 +561,7 @@ void BattleGroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value
             ((BattleGroundAVScore*)itr->second)->SecondaryObjectives += value;
             break;
         default:
-            BattleGround::UpdatePlayerScore(Source,type,value, doAddHonor);
+            BattleGround::UpdatePlayerScore(Source,type,value);
             break;
     }
 }
