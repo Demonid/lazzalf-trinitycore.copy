@@ -186,6 +186,8 @@ struct boss_xt002_AI : public BossAI
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_AGGRESSIVE);
 
+        me->ResetLootMode();
+
         //Makes XT-002 to cast a light bomb 10 seconds after aggro.
         uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
         uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
@@ -231,6 +233,8 @@ struct boss_xt002_AI : public BossAI
 
                     // Get his heartbreak buff
                     me->CastSpell(me, RAID_MODE(SPELL_HEARTBREAK_10, SPELL_HEARTBREAK_25), true);
+
+                    AddHardLootMode();
                 }
                 break;
             case ACTION_DISABLE_NERF_ACHI:
@@ -430,6 +434,11 @@ struct boss_xt002_AI : public BossAI
                 DoCast(me, SPELL_ENRAGE);
                 enraged = true;
             } else uiEnrageTimer -= diff;
+    }
+
+    void AddHardLootMode()
+    {
+        me->AddLootMode(LOOT_MODE_HARD_MODE_1);
     }
 
     void exposeHeart()
