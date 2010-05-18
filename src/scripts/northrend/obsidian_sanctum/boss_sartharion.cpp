@@ -1009,7 +1009,6 @@ struct mob_shadronAI : public dummy_dragonAI
     uint32 m_uiShadowBreathTimer;
     uint32 m_uiShadowFissureTimer;
     uint32 m_uiAcolyteShadronTimer;
-    uint32 m_uiShieldRemove;
     bool m_bHasPortalOpen;
 
     void Reset()
@@ -1017,7 +1016,6 @@ struct mob_shadronAI : public dummy_dragonAI
         m_uiShadowBreathTimer = 20000;
         m_uiShadowFissureTimer = 5000;
         m_uiAcolyteShadronTimer = 60000;
-        m_uiShieldRemove = 900000;
         m_bHasPortalOpen = false;
 
         if (me->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
@@ -1042,7 +1040,7 @@ struct mob_shadronAI : public dummy_dragonAI
             {
                 case SHIELD_ON_SHADRON:
                     if (Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON))) 
-                        pShadron->AddAura(SPELL_GIFT_OF_TWILIGTH_SHA, me);                   
+                        pShadron->AddAura(SPELL_GIFT_OF_TWILIGTH_SHA, me);                    
                     break;
                 case SHIELD_ON_SARTHARION:
                     if (Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))                        
@@ -1068,12 +1066,7 @@ struct mob_shadronAI : public dummy_dragonAI
 
         // shadow fissure
         if (m_uiShadowFissureTimer <= uiDiff)
-        {            
-            if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-            {
-                m_uiShieldRemove = 20000;
-            }
-
+        {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 DoCast(pTarget, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
@@ -1091,7 +1084,6 @@ struct mob_shadronAI : public dummy_dragonAI
             {
                 if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
                     return;
-
                 OpenPortal();
                 m_bHasPortalOpen = true;
                 m_uiAcolyteShadronTimer = urand(60000,65000);
@@ -1099,15 +1091,6 @@ struct mob_shadronAI : public dummy_dragonAI
         }
         else
             m_uiAcolyteShadronTimer -= uiDiff;
-
-        // Hack
-        if (m_uiShieldRemove <= uiDiff)
-        {
-            if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-                me->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
-        }
-        else
-            m_uiShieldRemove -= uiDiff;           
 
         // shadow breath
         if (m_uiShadowBreathTimer <= uiDiff)
