@@ -15676,6 +15676,8 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
 
     if (!player)
     {
+        if (this->GetEntry() == 33113 || this->GetEntry() == 34003) 
+            return;
         GetMotionMaster()->MoveKnockbackFrom(x, y, speedXY, speedZ);
     }
     else
