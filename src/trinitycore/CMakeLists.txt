@@ -59,7 +59,6 @@ trinityauth
 trinityconfig
 vmaps
 g3dlite
-jmalloc
 ${SCRIPT_LIB}
 ${READLINE_LIBRARY}
 ${TERMCAP_LIBRARY}

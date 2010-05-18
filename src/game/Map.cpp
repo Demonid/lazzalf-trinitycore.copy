@@ -39,6 +39,8 @@
 #include "WaypointManager.h"
 #include "DBCEnums.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
+#include "ScriptedCreature.h"
 #include "GossipDef.h"
 
 #include "MapInstanced.h"
@@ -2463,11 +2465,18 @@ bool InstanceMap::CanEnter(Player *player)
     // cannot enter while an encounter is in progress on raids
     /*Group *pGroup = player->GetGroup();
     if (!player->isGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())*/
-    if (IsRaid() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
+    if (/*IsRaid() && */ GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
     {
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
     }
+
+	// Vault of Archavon
+ 	if (GetId() == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(player))
+  	{
+ 	    player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAP_NOT_ALLOWED);
+  	    return false;
+  	}
 
     return Map::CanEnter(player);
 }
@@ -3509,7 +3518,21 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                Object* cmdTarget = step.script->datalong2 & 0x01 ? source : target;
+                Object* cmdTarget = NULL;
+                Object* cmdSource = NULL;
+                Unit* spellTarget = NULL;
+
+                if (step.script->datalong2 == 4)
+                {
+                    Unit* pTarget = (Unit*)target;
+                    if (Creature* victim = GetClosestCreatureWithEntry(pTarget,step.script->dataint,step.script->x))
+                        Unit* spellTarget = (Unit*)victim->GetGUID();
+                }
+                else
+                {
+                    Object* cmdTarget = step.script->datalong2 & 0x01 ? source : target;
+                    Unit* spellTarget = (Unit*)cmdTarget;
+                }
 
                 if (cmdTarget && !cmdTarget->isType(TYPEMASK_UNIT))
                 {
@@ -3517,9 +3540,10 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                Unit* spellTarget = (Unit*)cmdTarget;
-
-                Object* cmdSource = step.script->datalong2 & 0x02 ? target : source;
+                if (step.script->datalong2 == 4)
+                    Object* cmdSource = target;
+                else
+                    Object* cmdSource = step.script->datalong2 & 0x02 ? target : source;
 
                 if (!cmdSource)
                 {
@@ -3697,10 +3721,12 @@ void Map::ScriptsProcess()
                     sLog.outError("SCRIPT_COMMAND_ORIENTATION call for NULL creature.");
                     break;
                 }
-
-                source->ToCreature()->SetOrientation(step.script->o);
+                Unit* pPlayer = (Unit*)source;
+                if (step.script->datalong)
+                    source->ToCreature()->SetInFront(pPlayer);
+                else
+                    source->ToCreature()->SetOrientation(step.script->o);
                 source->ToCreature()->SendMovementFlagUpdate();
-
                 break;
             }
             case SCRIPT_COMMAND_EQUIP:
