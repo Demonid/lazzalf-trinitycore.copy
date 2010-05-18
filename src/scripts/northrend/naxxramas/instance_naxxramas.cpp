@@ -338,11 +338,11 @@ bool AreaTrigger_at_naxxramas_frostwyrm_wing(Player* pPlayer, const AreaTriggerE
     if (pPlayer->isGameMaster())
         return false;
 
-    InstanceData *data = pPlayer->GetInstanceData();
+    /*InstanceData *data = pPlayer->GetInstanceData();
     if (data)
         for (uint32 i = BOSS_ANUBREKHAN; i < BOSS_SAPPHIRON; ++i)
             if (data->GetBossState(i) != DONE)
-                return true;
+                return true;*/
 
     return false;
 }
