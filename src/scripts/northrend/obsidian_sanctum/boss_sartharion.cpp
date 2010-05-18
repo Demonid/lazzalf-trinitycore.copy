@@ -1044,7 +1044,7 @@ struct mob_shadronAI : public dummy_dragonAI
                     break;
                 case SHIELD_ON_SARTHARION:
                     if (Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))                        
-                        pSartharion->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, me);
+                        pSartharion->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, pSartharion);
                     break;
             }
         }
@@ -1250,20 +1250,16 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
                 }
             }
 
-            if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
-            {
-                //not solo fight, so main boss has deduff
-                pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
-                if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
-                    pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
-            }
-            else
-            {
-                //event not in progress, then solo fight and must remove debuff mini-boss
-                pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
-                if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-                    pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
-            }
+            //not solo fight, so main boss has deduff
+            pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
+            if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
+                pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
+        
+            //event not in progress, then solo fight and must remove debuff mini-boss
+            pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+            if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
+                pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
+            
         }
     }
 
@@ -1273,7 +1269,10 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         {
             Creature* pShadron = Unit::GetCreature(*me, pInstance->GetData64(DATA_SHADRON));
             if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
+            {
                 pShadron->AI()->DoAction(SHIELD_ON_SARTHARION);
+                pShadron->AI()->DoAction(SHIELD_ON_SHADRON);
+            }
             else            
                 pShadron->AI()->DoAction(SHIELD_ON_SHADRON);
                 
