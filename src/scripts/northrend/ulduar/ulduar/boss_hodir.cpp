@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
- /* ScriptData
+/* ScriptData
 SDName: Hodir
 SDAuthor: PrinceCreed
 SD%Complete: 90
@@ -254,10 +254,10 @@ struct boss_hodir_AI : public BossAI
         
         if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
         {
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                 if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
                     continue;
 

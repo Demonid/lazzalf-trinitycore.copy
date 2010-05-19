@@ -19,54 +19,84 @@
 #include "ScriptedPch.h"
 #include "ulduar.h"
 
-/*
-#define SAY_AGGRO -1
-#define SAY_SLAY -1
-*/
+enum Yells
+{
+    SAY_AGGRO_1                                 = -1603270,
+    SAY_AGGRO_2                                 = -1603271,
+    SAY_SPECIAL_1                               = -1603272,
+    SAY_SPECIAL_2                               = -1603273,
+    SAY_SPECIAL_3                               = -1603274,
+    SAY_JUMPDOWN                                = -1603275,
+    SAY_SLAY_1                                  = -1603276,
+    SAY_SLAY_2                                  = -1603277,
+    SAY_BERSERK                                 = -1603278,
+    SAY_WIPE                                    = -1603279,
+    SAY_DEATH                                   = -1603280,
+    SAY_END_NORMAL_1                            = -1603281,
+    SAY_END_NORMAL_2                            = -1603282,
+    SAY_END_NORMAL_3                            = -1603283,
+    SAY_END_HARD_1                              = -1603284,
+    SAY_END_HARD_2                              = -1603285,
+    SAY_END_HARD_3                              = -1603286,
+    SAY_YS_HELP                                 = -1603287,
+};
 
 struct boss_thorimAI : public BossAI
 {
     boss_thorimAI(Creature* pCreature) : BossAI(pCreature, BOSS_THORIM)
     {
-        m_pInstance = pCreature->GetInstanceData();
-        Reset();
+        pInstance = pCreature->GetInstanceData();
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+            if (pInstance)
+                pInstance->SetData(DATA_THORIM_GATE, GO_STATE_ACTIVE);
     }
-
-    ScriptedInstance* m_pInstance;
+    
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
+        _Reset();
     }
 
-    void KilledUnit(Unit * /*victim*/)
+    void EnterEvadeMode()
     {
+        DoScriptText(SAY_WIPE, me);
+        _EnterEvadeMode();
     }
 
-    void JustDied(Unit * /*victim*/)
+    void KilledUnit(Unit * victim)
     {
+        DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
+    }
+
+    void JustDied(Unit * victim)
+    {
+        DoScriptText(SAY_DEATH, me);
         _JustDied();
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
+        DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2), me);
         _EnterCombat();
-//        DoScriptText(SAY_AGGRO, me);
-        me->SetInCombatWithZone();
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
-//SPELLS TODO:
+            
+        events.Update(diff);
 
-//
+        if (me->hasUnitState(UNIT_STAT_CASTING))
+            return;
+                        
+        if (events.GetTimer() > 15000)
+            if (pInstance)
+                pInstance->SetData(DATA_THORIM_GATE, GO_STATE_ACTIVE);
+            
         DoMeleeAttackIfReady();
-
-        EnterEvadeIfOutOfCombatArea(diff);
-
     }
-
 };
 
 CreatureAI* GetAI_boss_thorim(Creature* pCreature)
