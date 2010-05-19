@@ -663,13 +663,12 @@ CreatureAI* GetAI_npc_disciple_of_vesperon(Creature* pCreature)
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
 {
-    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature), lSummons(me)
+    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
     }
 
     ScriptedInstance* pInstance;
-    SummonList lSummons;
 
     uint32 m_uiWaypointId;
     uint32 m_uiMoveNextTimer;
@@ -680,8 +679,6 @@ struct dummy_dragonAI : public ScriptedAI
     {
         if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-        lSummons.DespawnAll();
 
         m_uiWaypointId = 0;
         m_uiMoveNextTimer = 500;
@@ -847,11 +844,6 @@ struct dummy_dragonAI : public ScriptedAI
             me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
     }
-    
-    void JustSummoned(Creature *summon)
-    {        
-        lSummons.Summon(summon);
-    }
 
     void UpdateAI(const uint32 uiDiff)
     {
@@ -1004,12 +996,13 @@ CreatureAI* GetAI_mob_tenebron(Creature* pCreature)
 
 struct mob_shadronAI : public dummy_dragonAI
 {
-    mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature) {}
+    mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature), lSummons(me) {}
 
     uint32 m_uiShadowBreathTimer;
     uint32 m_uiShadowFissureTimer;
     uint32 m_uiAcolyteShadronTimer;
     bool m_bHasPortalOpen;
+    SummonList lSummons;
 
     void Reset()
     {
@@ -1017,6 +1010,7 @@ struct mob_shadronAI : public dummy_dragonAI
         m_uiShadowFissureTimer = 5000;
         m_uiAcolyteShadronTimer = 60000;
         m_bHasPortalOpen = false;
+        lSummons.DespawnAll();
 
         if (me->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
             me->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
@@ -1030,6 +1024,11 @@ struct mob_shadronAI : public dummy_dragonAI
         DoScriptText(SAY_SHADRON_AGGRO,me);
         DoZoneInCombat();
         DoCast(me, SPELL_POWER_OF_SHADRON);
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        lSummons.Summon(summon); 
     }
 
     void DoAction(const int32 action)
@@ -1117,19 +1116,21 @@ CreatureAI* GetAI_mob_shadron(Creature* pCreature)
 
 struct mob_vesperonAI : public dummy_dragonAI
 {
-    mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature) {}
+    mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature), lSummons(me) {}
 
     uint32 m_uiShadowBreathTimer;
     uint32 m_uiShadowFissureTimer;
     uint32 m_uiAcolyteVesperonTimer;
     bool m_bHasPortalOpen;
+    SummonList lSummons;
 
     void Reset()
     {
         m_uiShadowBreathTimer = 20000;
         m_uiShadowFissureTimer = 5000;
         m_uiAcolyteVesperonTimer = 60000;
-        m_bHasPortalOpen = false;        
+        m_bHasPortalOpen = false;   
+        lSummons.DespawnAll();
     }
 
     void Aggro(Unit* pWho)
@@ -1137,6 +1138,11 @@ struct mob_vesperonAI : public dummy_dragonAI
         DoScriptText(SAY_VESPERON_AGGRO,me);
         DoZoneInCombat();
         DoCast(me, SPELL_POWER_OF_VESPERON);
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        lSummons.Summon(summon); 
     }
 
     void KilledUnit(Unit* pVictim)
@@ -1351,9 +1357,11 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
                         i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
-                    }
-                    if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_TORMENT_VESP,0))
+                    
                         i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
+                        i->getSource()->RemoveAurasDueToSpell(57988);
+                        i->getSource()->RemoveAurasDueToSpell(57935);
+                    }
                 }
             }
 
