@@ -15,6 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+ 
+/* ScriptData
+SDName: Flame Leviathan
+SDAuthor: PrinceCreed
+SD%Complete: 65
+EndScriptData */
 
 #include "ScriptedPch.h"
 #include "ulduar.h"
@@ -142,13 +148,13 @@ struct boss_flame_leviathanAI : public BossAI
         pInstance = pCreature->GetInstanceData();
         ColossusCount = 0;
         
-        me->SetVisibility(VISIBILITY_OFF);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
         me->SetReactState(REACT_PASSIVE);
         
         // Summon Ulduar Colossus
-        for(uint32 i = 0; i < 2; ++i)
-            DoSummon(MOB_COLOSSUS, PosColossus[i], 7000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        if (me->isAlive())
+            for(uint32 i = 0; i < 2; ++i)
+                DoSummon(MOB_COLOSSUS, PosColossus[i], 7000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 	}
 
     ScriptedInstance* pInstance;
@@ -239,8 +245,9 @@ struct boss_flame_leviathanAI : public BossAI
                 DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
+                    DoResetThreat();
                     me->AddAura(SPELL_PURSUED, pTarget);
-                    AttackStart(pTarget);
+                    me->AddThreat(pTarget, 5000000.0f);
                     me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
                 }
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
@@ -276,8 +283,9 @@ struct boss_flame_leviathanAI : public BossAI
                 break;
             }
         }
-
-        DoSpellAttackIfReady(SPELL_BATTERING_RAM);
+        
+        if (me->IsWithinMeleeRange(me->getVictim()))
+            DoSpellAttackIfReady(SPELL_BATTERING_RAM);
     }
  
     void DoAction(const int32 action)
@@ -292,11 +300,14 @@ struct boss_flame_leviathanAI : public BossAI
         if (ColossusCount >= 2)
         {
             // Event starts
-            me->SetVisibility(VISIBILITY_ON);
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+            if (pInstance)
+                pInstance->SetData(DATA_LEVIATHAN_DOOR, GO_STATE_ACTIVE);
+                
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
             me->SetReactState(REACT_AGGRESSIVE);
-            me->SetHomePosition(318.74, -13.75, 409.803, 3.12723); // Home Position
+            me->SetHomePosition(318.74, -13.75, 409.803, 3.12723); // new Home Position
             me->GetMotionMaster()->MoveTargetedHome();
+            DoZoneInCombat();
         }
     }
 };

@@ -56,7 +56,14 @@ enum Data64
     DATA_BRIGHTLEAF,
     DATA_IRONBRANCH,
     DATA_STONEBARK,
-    DATA_FREYA
+    DATA_FREYA,
+    DATA_THORIM
+};
+
+enum Data
+{
+    DATA_LEVIATHAN_DOOR,
+    DATA_THORIM_GATE,
 };
 
 enum Npcs
@@ -68,61 +75,5 @@ enum Npcs
     NPC_IRON_CONSTRUCT          = 33121,
     NPC_FIRE_STATE              = 33184
 };
-
-/*enum eTypes
-{
-    MAX_ENCOUNTER               = 14,
-
-    TYPE_LEVIATHAN              = 0,
-    TYPE_IGNIS                  = 1,
-    TYPE_RAZORSCALE             = 2,
-    TYPE_XT002                  = 3,
-    TYPE_ASSEMBLY               = 4,
-    TYPE_KOLOGARN               = 5,
-    TYPE_AURIAYA                = 6,
-    TYPE_MIMIRON                = 7,
-    TYPE_HODIR                  = 8,
-    TYPE_THORIM                 = 9,
-    TYPE_FREYA                  = 10,
-    TYPE_VEZAX                  = 11,
-    TYPE_YOGGSARON              = 12,
-    TYPE_ALGALON                = 13,
-
-    DATA_STEELBREAKER           = 20,
-    DATA_MOLGEIM                = 21,
-    DATA_BRUNDIR                = 22,
-    DATA_RUNEMASTER_MOLGEIM     = 23,
-    DATA_STORMCALLER_BRUNDIR    = 24,
-
-    NPC_LEVIATHAN               = 33113,
-    NPC_IGNIS                   = 33118,
-    NPC_RAZORSCALE              = 33186,
-    NPC_XT002                   = 33293,
-    NPC_STEELBREAKER            = 32867,
-    NPC_MOLGEIM                 = 32927,
-    NPC_BRUNDIR                 = 32857,
-    NPC_KOLOGARN                = 32930,
-    NPC_AURIAYA                 = 33515,
-    NPC_MIMIRON                 = 33350,
-    NPC_HODIR                   = 32845,
-    NPC_THORIM                  = 32865,
-    NPC_FREYA                   = 32906,
-    NPC_VEZAX                   = 33271,
-    NPC_YOGGSARON               = 33288,
-    NPC_ALGALON                 = 32871,
-
-    NPC_COMMANDER               = 33210,
-    NPC_GTRAPPER                = 33259,
-    NPC_ENGINEER          		= 33287,
-    NPC_DEFENDER          		= 33816,
-    NPC_IRON_CONSTRUCT          = 33121,
-    NPC_FIRE_STATE              = 33184
-};
-
-enum Data
-{
-    DATA_NADA,
-    DATA_VAI
-};*/
 
 #endif
