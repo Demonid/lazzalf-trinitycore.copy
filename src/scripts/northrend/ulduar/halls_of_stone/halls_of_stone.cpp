@@ -645,6 +645,8 @@ struct npc_brann_hosAI : public npc_escortAI
                         pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_MARNAK),false);
                         pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_ABEDNEUM),false);
                         pInstance->HandleGameObject(pInstance->GetData64(DATA_GO_SKY_FLOOR),false);
+                        pInstance->HandleGameObject(pInstance->GetData64(GO_TRIBUNAL_CHEST),true);
+                        pInstance->HandleGameObject(pInstance->GetData64(GO_TRIBUNAL_CHEST_HERO),true);
                     }
                     Player* pPlayer = GetPlayerForEscort();
                     if (pPlayer)

@@ -145,6 +145,8 @@ struct boss_lokenAI : public ScriptedAI
                             if (m_fDist > 1.0f) // Further from 1 yard
                                 dmg *= m_fDist;
 
+                            dmg /= 2;
+
                             me->CastCustomSpell(i->getSource(), DUNGEON_MODE(52942, 59837), &dmg, 0, 0, false);
                         }
                 }

@@ -11,4 +11,6 @@
 #include "SharedDefines.h"
 #include "ObjectMgr.h"
 
+#include "OutdoorPvPMgr.h"
+
 #include "ScriptedPch.h"
