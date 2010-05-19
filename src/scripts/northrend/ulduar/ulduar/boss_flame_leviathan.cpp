@@ -196,6 +196,9 @@ struct boss_flame_leviathanAI : public BossAI
             {
                 Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
             
+                if (!pTarget)
+                    continue;
+
                 if (pTarget->GetTypeId() == TYPEID_PLAYER)
                     continue;
                 else me->Kill(pTarget, false);
