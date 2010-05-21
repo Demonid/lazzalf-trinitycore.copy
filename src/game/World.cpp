@@ -69,6 +69,7 @@
 #include "ProgressBar.h"
 #include "ScriptMgr.h"
 #include "AddonMgr.h"
+#include "LFGMgr.h"
 
 INSTANTIATE_SINGLETON_1(World);
 
@@ -1781,6 +1782,10 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading World States..."); // must be loaded before battleground and outdoor PvP
     LoadWorldStates();
+
+    ///- Initialize Looking For Group
+    sLog.outString("Starting Looking For Group System");
+    sLFGMgr.InitLFG();
 
     ///- Initialize Battlegrounds
     sLog.outString("Starting BattleGround System");

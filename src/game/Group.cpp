@@ -34,6 +34,7 @@
 #include "InstanceSaveMgr.h"
 #include "MapInstanced.h"
 #include "Util.h"
+#include "LFG.h"
 
 Group::Group()
 {
@@ -385,7 +386,7 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
     }
     // if group before remove <= 2 disband it
     else
-        Disband(true);
+        Disband();
 
     return m_memberSlots.size();
 }
@@ -426,6 +427,8 @@ void Group::Disband(bool hideDestroy)
                 player->SetOriginalGroup(NULL);
             else
                 player->SetGroup(NULL);
+            player->GetSession()->SendLfgUpdateParty(LFG_UPDATETYPE_GROUP_DISBAND);
+            player->GetSession()->SendLfgUpdateParty(LFG_UPDATETYPE_LEADER);
         }
 
         // quest related GO state dependent from raid membership
@@ -1261,6 +1264,7 @@ bool Group::_removeMember(const uint64 &guid)
                 player->SetOriginalGroup(NULL);
             else
                 player->SetGroup(NULL);
+            player->GetSession()->SendLfgUpdateParty(LFG_UPDATETYPE_LEADER);
         }
     }
 
