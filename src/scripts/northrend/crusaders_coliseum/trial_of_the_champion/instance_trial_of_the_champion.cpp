@@ -239,11 +239,8 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 
 	 bool SetBossState(uint32 id, EncounterState state)
     {
-        if (!InstanceData::SetBossState(id, state))
-            return false;
-	
          
-        if (id == NPC_BK && state == DONE)
+        if (id == NPC_BLACK_KNIGHT && state == DONE)
         {
 			if(instance) 
 			{

@@ -110,7 +110,9 @@ enum eGameObjects
     GO_EADRIC_LOOT_H		    = 195375,
 
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H	        = 195324
+    GO_PALETRESS_LOOT_H	        = 195324,
+	GO_BK_LOOT					= 320001,
+	GO_BK_LOOT_H				= 320002
 };
 
 enum eVehicles
