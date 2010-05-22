@@ -251,7 +251,8 @@ struct boss_flame_leviathanAI : public BossAI
                     DoResetThreat();
                     me->AddAura(SPELL_PURSUED, pTarget);
                     me->AddThreat(pTarget, 5000000.0f);
-                    me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
+                    if (me->getVictim())
+                        me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
                 }
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
                 break;
