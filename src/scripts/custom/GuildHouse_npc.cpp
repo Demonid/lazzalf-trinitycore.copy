@@ -514,6 +514,11 @@ struct guild_guardAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
+        if (who->isPet() && who->GetOwner())
+        {
+            me->Kill(who->GetOwner());
+            me->Attack(who->GetOwner(), true);
+        }
         me->MonsterYell(SAY_AGGRO, LANG_UNIVERSAL, 0);
     }
 
