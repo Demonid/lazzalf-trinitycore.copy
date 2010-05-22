@@ -184,7 +184,12 @@ struct boss_flame_leviathanAI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
                     
-        _JustDied();
+        events.Reset();
+        if (pInstance)
+        {
+            pInstance->SetBossState(BOSS_LEVIATHAN, DONE);
+            pInstance->SaveToDB();
+        }
     }
     
     void DamageTaken(Unit* pKiller, uint32 &damage)
