@@ -3886,7 +3886,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 3;
             count++;
             break;
-        case 53651:
+        case 53651:     // beacon of light
+        case 30708:     // totem of wrath debuff
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
             count++;
             break;
