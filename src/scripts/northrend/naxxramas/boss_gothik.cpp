@@ -144,7 +144,12 @@ struct NotOnSameSide : public std::unary_function<Unit *, bool> {
 
 struct boss_gothikAI : public BossAI
 {
-    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) {}
+    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) 
+    {    
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 waveCount;
     typedef std::vector<Creature*> TriggerVct;
@@ -163,8 +168,8 @@ struct boss_gothikAI : public BossAI
 
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         _Reset();
         mergedSides = false;
         phaseTwo = false;
@@ -193,8 +198,8 @@ struct boss_gothikAI : public BossAI
         events.ScheduleEvent(EVENT_SUMMON, 30000);
         DoTeleportTo(PosPlatform);
         DoScriptText(SAY_SPEECH, me);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
     }
 
     void JustSummoned(Creature *summon)
@@ -231,8 +236,8 @@ struct boss_gothikAI : public BossAI
         DeadTriggerGUID.clear();
         _JustDied();
         DoScriptText(SAY_DEATH, me);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
     }
 
     void DoGothikSummon(uint32 entry)
@@ -381,8 +386,8 @@ struct boss_gothikAI : public BossAI
         if (!thirtyPercentReached && HealthBelowPct(30) && phaseTwo)
         {
             thirtyPercentReached = true;
-            if (instance)
-                instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+            if (pInstance)
+                pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         }
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
@@ -407,8 +412,8 @@ struct boss_gothikAI : public BossAI
                         {
                             if (!CheckGroupSplitted())
                             {
-                                if (instance)
-                                    instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+                                if (pInstance)
+                                    pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
                                 summons.DoAction(0, 0);
                                 summons.DoZoneInCombat();
                                 mergedSides = true;

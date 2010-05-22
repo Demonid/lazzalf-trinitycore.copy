@@ -105,25 +105,6 @@ struct boss_heiganAI : public BossAI
         }
     }
 
-    void SendPhaseDance()
-    {
-        if (Map* pMap = me->GetMap())
-        {
-            if (pMap->IsDungeon())
-            {
-                Map::PlayerList const &PlayerList = pMap->GetPlayers();
-                if (!PlayerList.isEmpty())
-                {
-                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    {
-                        if (i->getSource() && i->getSource()->isAlive() && (i->getSource()->GetPositionX() > 2823))
-                            DoTeleportPlayer(i->getSource(), 2780, -3672, 274, i->getSource()->GetOrientation());
-                    }
-                }
-            }
-        }            
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() || !CheckInRoom())
@@ -145,12 +126,11 @@ struct boss_heiganAI : public BossAI
                     break;
                 case EVENT_PHASE:
                     // TODO : Add missing texts for both phase switches
-                    TeleportCheaters();
-                    SendPhaseDance(); 
                     EnterPhase(phase == PHASE_FIGHT ? PHASE_DANCE : PHASE_FIGHT);
                     break;
                 case EVENT_ERUPT:
                     instance->SetData(DATA_HEIGAN_ERUPT, eruptSection);
+                    TeleportCheaters();
 
                     if (eruptSection == 0)
                         eruptDirection = true;
