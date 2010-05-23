@@ -1,52 +1,53 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2008 - 2010 Trinity <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /* ScriptData
 SDName: Boss_Onyxia
-SD%Complete: 90
-SDComment: Spell Heated Ground is wrong, visual for area effect, Wing Buffet not ignoring armor
+SD%Complete: 95
+SDComment: <Known bugs> 
+               Ground visual for Deep Breath effect; 
+               Wing Buffet not ignoring armor; 
+               Not summoning whelps on phase 3 (lacks info) 
+           </Known bugs>
 SDCategory: Onyxia's Lair
 EndScriptData */
 
 #include "ScriptedPch.h"
 #include "onyxias_lair.h"
 
-enum Yells
+enum eYells
 {
     SAY_AGGRO                   = -1249000,
     SAY_KILL                    = -1249001,
     SAY_PHASE_2_TRANS           = -1249002,
     SAY_PHASE_3_TRANS           = -1249003,
-    EMOTE_BREATH                = -1249004
+    EMOTE_BREATH                = -1249004,
 };
 
-enum Spells
+enum eSpells
 {
-    SPELL_WINGBUFFET            = 18500,
-    SPELL_FLAMEBREATH           = 18435,
+    // Phase 1 spells
+    SPELL_WING_BUFFET           = 18500,
+    SPELL_FLAME_BREATH          = 18435,
     SPELL_CLEAVE                = 68868,
-    SPELL_TAILSWEEP             = 68867,
-    H_SPELL_WINGBUFFET          = 69293,
-    H_SPELL_FLAMEBREATH         = 68970,
-    H_SPELL_CLEAVE              = 68868,
-    H_SPELL_TAILSWEEP           = 69286,
+    SPELL_TAIL_SWEEP            = 68867,
 
-    SPELL_DEEPBREATH            = 23461,
+    // Phase 2 spells
+    SPELL_DEEP_BREATH           = 23461,
     SPELL_FIREBALL              = 18392,
-    H_SPELL_FIREBALL            = 68926,
 
     //Not much choise about these. We have to make own defintion on the direction/start-end point
     SPELL_BREATH_NORTH_TO_SOUTH = 17086,                    // 20x in "array"
@@ -62,13 +63,8 @@ enum Spells
 
     //SPELL_BREATH                = 21131,                  // 8x in "array", different initial cast than the other arrays
 
-    SPELL_BELLOWINGROAR         = 18431
-};
-
-enum Constants
-{
-    MAX_WHELP                   = 20,
-    H_MAX_WHELP                 = 40,
+    // Phase 3 spells
+    SPELL_BELLOWING_ROAR         = 18431,
 };
 
 struct sOnyxMove
@@ -93,7 +89,7 @@ static sOnyxMove aMoveData[]=
 
 const Position MiddleRoomLocation = {-23.6155, -215.357, -55.7344};
 
-static float afSpawnLocations[3][3]=
+static Position aSpawnLocations[3]=
 {
     //Whelps
     {-30.127, -254.463, -89.440},
@@ -106,11 +102,11 @@ struct boss_onyxiaAI : public ScriptedAI
 {
     boss_onyxiaAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me) 
     {
-        pInstance = pCreature->GetInstanceData();
+        m_pInstance = pCreature->GetInstanceData();
         Reset();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* m_pInstance;
     SummonList Summons;
 
     uint32 m_uiPhase;
@@ -133,8 +129,6 @@ struct boss_onyxiaAI : public ScriptedAI
 
     uint8 m_uiSummonWhelpCount;
     uint8 m_uiSummonLairGuardCount;
-    bool m_bIsSummoningWhelps;
-    bool m_bIsSummoningLairGuards;
     bool m_bIsMoving;
     
     void Reset()
@@ -163,14 +157,13 @@ struct boss_onyxiaAI : public ScriptedAI
         Summons.DespawnAll();
         m_uiSummonWhelpCount = 0;
         m_uiSummonLairGuardCount = 0;
-        m_bIsSummoningWhelps = false;
-        m_bIsSummoningLairGuards = false;
         m_bIsMoving = false;
         
-        if (pInstance)
+        if (m_pInstance)
         {
-            pInstance->SetData(TYPE_ONYXIA, NOT_STARTED);
-            pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
+            m_pInstance->SetData(DATA_ONYXIA, NOT_STARTED);
+            m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
+            m_pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT,  ACHIEV_TIMED_START_EVENT);
         }
     }
 
@@ -179,14 +172,18 @@ struct boss_onyxiaAI : public ScriptedAI
         DoScriptText(SAY_AGGRO, me);
         me->SetInCombatWithZone();
         
-        if (pInstance)
-            pInstance->SetData(TYPE_ONYXIA, IN_PROGRESS);
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(DATA_ONYXIA, IN_PROGRESS);
+            m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT,  ACHIEV_TIMED_START_EVENT);
+            sLog.outBasic("[Onyxia] DoStartTimedAchievement(%u,%u)",ACHIEVEMENT_TIMED_TYPE_EVENT,  ACHIEV_TIMED_START_EVENT);
+        }
     }
 
     void JustDied(Unit* killer)
     {
-        if (pInstance)
-            pInstance->SetData(TYPE_ONYXIA, DONE);
+        if (m_pInstance)
+            m_pInstance->SetData(DATA_ONYXIA, DONE);
 
         Summons.DespawnAll();
     }
@@ -197,11 +194,22 @@ struct boss_onyxiaAI : public ScriptedAI
         if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
             pSummoned->AI()->AttackStart(pTarget);
         
+        switch (pSummoned->GetEntry())
+        {
+            case NPC_WHELP:
+                ++m_uiSummonWhelpCount;
+                break;
+            case NPC_LAIRGUARD:
+                pSummoned->setActive(true);
+                ++m_uiSummonLairGuardCount;
+                break;
+        }
         Summons.Summon(pSummoned);
-        if (pSummoned->GetEntry() == NPC_WHELP)
-            ++m_uiSummonWhelpCount;
-        else if (pSummoned->GetEntry() == NPC_LAIRGUARD)
-            ++m_uiSummonLairGuardCount;
+    }
+
+    void SummonedCreatureDespawn(Creature *summon) 
+    {
+        Summons.Despawn(summon);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -247,8 +255,7 @@ struct boss_onyxiaAI : public ScriptedAI
                 default:
                     m_bIsMoving = false;
                     break;
-            }
-            
+            }            
         }
     }
     
@@ -268,9 +275,9 @@ struct boss_onyxiaAI : public ScriptedAI
             (pSpell->Id >= 22267 && pSpell->Id <= 22268)) &&
             (target->GetTypeId() == TYPEID_PLAYER))
         {
-            if (pInstance)
+            if (m_pInstance)
             {
-                pInstance->SetData(DATA_SHE_DEEP_BREATH_MORE, FAIL);
+                m_pInstance->SetData(DATA_SHE_DEEP_BREATH_MORE, FAIL);
             }
         }
     }
@@ -305,69 +312,20 @@ struct boss_onyxiaAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        //Common to PHASE_START && PHASE_END
         if (m_uiPhase == PHASE_START || m_uiPhase == PHASE_END)
         {
-            if (m_uiFlameBreathTimer <= uiDiff)
-            {
-                DoCast(me->getVictim(), RAID_MODE(SPELL_FLAMEBREATH,H_SPELL_FLAMEBREATH));
-                m_uiFlameBreathTimer = urand(10000, 20000);
-            }
-            else
-                m_uiFlameBreathTimer -= uiDiff;
-
-            if (m_uiTailSweepTimer <= uiDiff)
-            {
-                DoCastAOE(RAID_MODE(SPELL_TAILSWEEP,H_SPELL_TAILSWEEP));
-                m_uiTailSweepTimer = urand(15000, 20000);
-            }
-            else
-                m_uiTailSweepTimer -= uiDiff;
-
-            if (m_uiCleaveTimer <= uiDiff)
-            {
-                DoCast(me->getVictim(), RAID_MODE(SPELL_CLEAVE,H_SPELL_CLEAVE));
-                m_uiCleaveTimer = urand(2000, 5000);
-            }
-            else
-                m_uiCleaveTimer -= uiDiff;
-
-            if (m_uiWingBuffetTimer <= uiDiff)
-            {
-                DoCast(me->getVictim(), RAID_MODE(SPELL_WINGBUFFET,H_SPELL_WINGBUFFET));
-                m_uiWingBuffetTimer = urand(15000, 30000);
-            }
-            else
-                m_uiWingBuffetTimer -= uiDiff;
-
-            if (m_uiPhase == PHASE_END)
-            {
-                if (m_uiBellowingRoarTimer <= uiDiff)
-                {
-                    DoCast(me->getVictim(), SPELL_BELLOWINGROAR);
-
-                    // Eruption code
-                    GameObject* pFloor = NULL;
-                    Trinity::GameObjectInRangeCheck check(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15);
-                    Trinity::GameObjectLastSearcher<Trinity::GameObjectInRangeCheck> searcher(me, pFloor, check);
-                    me->VisitNearbyGridObject(999, searcher);
-                    if (pInstance && pFloor)
-                        pInstance->SetData64(DATA_FLOOR_ERUPTION, pFloor->GetGUID());
-                    m_uiBellowingRoarTimer = 30000;
-                }
-                else
-                    m_uiBellowingRoarTimer -= uiDiff;
-            }
-            else
+            //Specific to PHASE_START || PHASE_END
+            if (m_uiPhase == PHASE_START)
             {
                 if (me->GetHealth()*100 / me->GetMaxHealth() < 60)
                 {
                     m_uiPhase = PHASE_BREATH;
                     
-                    if (pInstance)
-                        pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
+                    if (m_pInstance)
+                        m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
 
                     SetCombatMovement(false);
-
                     me->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveIdle();
                     me->SetFlying(true);
@@ -381,6 +339,55 @@ struct boss_onyxiaAI : public ScriptedAI
                     return;
                 }
             }
+            else
+            {
+                if (m_uiBellowingRoarTimer <= uiDiff)
+                {
+                    DoCastVictim(SPELL_BELLOWING_ROAR);
+                    // Eruption
+                    GameObject* pFloor = NULL;
+                    Trinity::GameObjectInRangeCheck check(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15);
+                    Trinity::GameObjectLastSearcher<Trinity::GameObjectInRangeCheck> searcher(me, pFloor, check);
+                    me->VisitNearbyGridObject(30, searcher);
+                    if (m_pInstance && pFloor)
+                        m_pInstance->SetData64(DATA_FLOOR_ERUPTION_GUID, pFloor->GetGUID());
+                    m_uiBellowingRoarTimer = 30000;
+                }
+                else
+                    m_uiBellowingRoarTimer -= uiDiff;
+            }
+
+            if (m_uiFlameBreathTimer <= uiDiff)
+            {
+                DoCastVictim(SPELL_FLAME_BREATH);
+                m_uiFlameBreathTimer = urand(10000, 20000);
+            }
+            else
+                m_uiFlameBreathTimer -= uiDiff;
+
+            if (m_uiTailSweepTimer <= uiDiff)
+            {
+                DoCastAOE(SPELL_TAIL_SWEEP);
+                m_uiTailSweepTimer = urand(15000, 20000);
+            }
+            else
+                m_uiTailSweepTimer -= uiDiff;
+
+            if (m_uiCleaveTimer <= uiDiff)
+            {
+                DoCastVictim(SPELL_CLEAVE);
+                m_uiCleaveTimer = urand(2000, 5000);
+            }
+            else
+                m_uiCleaveTimer -= uiDiff;
+
+            if (m_uiWingBuffetTimer <= uiDiff)
+            {
+                DoCastVictim(SPELL_WING_BUFFET);
+                m_uiWingBuffetTimer = urand(15000, 30000);
+            }
+            else
+                m_uiWingBuffetTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -389,8 +396,8 @@ struct boss_onyxiaAI : public ScriptedAI
             if (me->GetHealth()*100 / me->GetMaxHealth() < 40)
             {
                 m_uiPhase = PHASE_END;
-                if (pInstance)
-                    pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
+                if (m_pInstance)
+                    m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
                 DoScriptText(SAY_PHASE_3_TRANS, me);
 
                 SetCombatMovement(true);
@@ -402,20 +409,23 @@ struct boss_onyxiaAI : public ScriptedAI
 
             if (m_uiDeepBreathTimer <= uiDiff)
             {
-                if (!m_bIsMoving) {
+                if (!m_bIsMoving) 
+                {
                     if (me->IsNonMeleeSpellCasted(false))
-                            me->InterruptNonMeleeSpells(false);
+                        me->InterruptNonMeleeSpells(false);
 
                     DoScriptText(EMOTE_BREATH, me);
                     DoCast(me, m_pPointData->uiSpellId);
                     m_uiDeepBreathTimer = 70000;
                 }
-            } else
+            }
+            else
                 m_uiDeepBreathTimer -= uiDiff;
 
             if (m_uiMovementTimer <= uiDiff)
             {
-                if (!m_bIsMoving) {
+                if (!m_bIsMoving) 
+                {
                     SetNextRandomPoint();
                     m_pPointData = GetMoveData();
 
@@ -426,7 +436,8 @@ struct boss_onyxiaAI : public ScriptedAI
                     m_bIsMoving = true;
                     m_uiMovementTimer = 25000;
                 }
-            } else
+            }
+            else
                 m_uiMovementTimer -= uiDiff;
 
             if (m_uiFireballTimer <= uiDiff)
@@ -434,7 +445,7 @@ struct boss_onyxiaAI : public ScriptedAI
                 if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
                 {
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCast(pTarget, RAID_MODE(SPELL_FIREBALL,H_SPELL_FIREBALL));
+                        DoCast(pTarget, SPELL_FIREBALL);
 
                     m_uiFireballTimer = 8000;
                 }
@@ -442,32 +453,31 @@ struct boss_onyxiaAI : public ScriptedAI
             else
                 m_uiFireballTimer -= uiDiff;
 
-            //Summons - Keep that code at the end of update!
             if (m_uiLairGuardTimer <= uiDiff)            
             {
-                me->SummonCreature(NPC_LAIRGUARD, afSpawnLocations[2][0], afSpawnLocations[2][1], afSpawnLocations[2][2], 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
-                m_uiLairGuardTimer = 2000;
+                me->SummonCreature(NPC_LAIRGUARD, aSpawnLocations[2].GetPositionX(), aSpawnLocations[2].GetPositionY(), aSpawnLocations[2].GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
                 if (m_uiSummonLairGuardCount >= RAID_MODE(1,2))
                 {
                     m_uiSummonLairGuardCount = 0;
                     m_uiLairGuardTimer = 30000;
                 }
-                return;
+                else
+                    m_uiLairGuardTimer = 2000;
             }
             else
                 m_uiLairGuardTimer -= uiDiff;
 
             if (m_uiWhelpTimer <= uiDiff)
             {
-                me->SummonCreature(NPC_WHELP, afSpawnLocations[0][0], afSpawnLocations[0][1], afSpawnLocations[0][2], 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
-                me->SummonCreature(NPC_WHELP, afSpawnLocations[1][0], afSpawnLocations[1][1], afSpawnLocations[1][2], 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
-                m_uiWhelpTimer = 500;
-                if (m_uiSummonWhelpCount >= RAID_MODE(MAX_WHELP,H_MAX_WHELP))
+                me->SummonCreature(NPC_WHELP, aSpawnLocations[0].GetPositionX(), aSpawnLocations[0].GetPositionY(), aSpawnLocations[0].GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
+                me->SummonCreature(NPC_WHELP, aSpawnLocations[1].GetPositionX(), aSpawnLocations[1].GetPositionY(), aSpawnLocations[1].GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
+                if (m_uiSummonWhelpCount >= RAID_MODE(20,40))
                 {
                     m_uiSummonWhelpCount = 0;
                     m_uiWhelpTimer = 90000;    
-                }
-                return;
+                } 
+                else
+                    m_uiWhelpTimer = 500;
             }
             else
                 m_uiWhelpTimer -= uiDiff;

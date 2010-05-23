@@ -46,9 +46,7 @@ struct boss_thorimAI : public BossAI
     boss_thorimAI(Creature* pCreature) : BossAI(pCreature, BOSS_THORIM)
     {
         pInstance = pCreature->GetInstanceData();
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-            if (pInstance)
-                pInstance->SetData(DATA_THORIM_GATE, GO_STATE_ACTIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);        
     }
     
     ScriptedInstance* pInstance;
