@@ -2126,7 +2126,7 @@ ArenaMod.ControllIp = 0
 #
 ###################################################################################################################
 
-Anticheat.Movement.Enable = 1
+Anticheat.Movement.Enable = 0
 Anticheat.Movement.Mistiming.Enable             = 1
 Anticheat.Movement.MistimingBlock.Enable        = 1
 Anticheat.Movement.AntiGravity.Enable           = 1
@@ -2139,8 +2139,6 @@ Anticheat.Movement.AntiMountainHack.Enable      = 1
 Anticheat.Movement.AntiMountainHackBlock.Enable = 1
 Anticheat.Movement.AntiFlyHack.Enable           = 1
 Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
-Anticheat.Movement.AntiMountainHack.Enable      = 1
-Anticheat.Movement.AntiMountainHackBlock.Enable = 1
 Anticheat.Movement.AntiWaterwalk.Enable         = 1
 Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
 Anticheat.Movement.TeleportToPlane.Enable       = 1

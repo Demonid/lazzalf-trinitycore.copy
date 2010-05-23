@@ -632,8 +632,6 @@ void World::LoadConfigSettings(bool reload)
     m_EnableAntiMountainHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
     m_EnableAntiFlyHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHack.Enable", true);
     m_EnableAntiFlyHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHackBlock.Enable", true);
-    m_EnableAntiMountainHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHack.Enable", true);
-    m_EnableAntiMountainHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
     m_EnableAntiWaterwalk = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalk.Enable", true);
     m_EnableAntiWaterwalkBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalkBlock.Enable", true);
     m_EnableTeleportToPlane = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlane.Enable", true);
