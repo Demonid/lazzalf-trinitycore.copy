@@ -338,11 +338,30 @@ InstanceData* GetInstanceData_instance_naxxramas(Map* pMap)
     return new instance_naxxramas(pMap);
 }
 
+bool AreaTrigger_at_naxxramas_frostwyrm_wing(Player* pPlayer, const AreaTriggerEntry *at)
+{
+    if (pPlayer->isGameMaster())
+        return false;
+
+    /*InstanceData *data = pPlayer->GetInstanceData();
+    if (data)
+        for (uint32 i = BOSS_ANUBREKHAN; i < BOSS_SAPPHIRON; ++i)
+            if (data->GetBossState(i) != DONE)
+                return true;*/
+
+    return false;
+}
+
 void AddSC_instance_naxxramas()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_naxxramas";
     newscript->GetInstanceData = &GetInstanceData_instance_naxxramas;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "at_naxxramas_frostwyrm_wing";
+    newscript->pAreaTrigger = &AreaTrigger_at_naxxramas_frostwyrm_wing;
     newscript->RegisterSelf();
 }
