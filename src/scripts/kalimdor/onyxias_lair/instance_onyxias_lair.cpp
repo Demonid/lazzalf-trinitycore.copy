@@ -1,33 +1,28 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2008 - 2010 Trinity <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /* ScriptData
 SDName: Instance_Onyxias_Lair
-SD%Complete: 
-SDComment:
-SDCategory: Onyxias Lair
+SD%Complete: 100
+SDComment: 
+SDCategory: Onyxia's Lair
 EndScriptData */
 
 #include "ScriptedPch.h"
 #include "onyxias_lair.h"
-
-#define MAX_ENCOUNTER 1
-
-/* Encounter 0 = Onyxia
- */
 
 struct instance_onyxias_lair : public ScriptedInstance
 {
@@ -39,26 +34,24 @@ struct instance_onyxias_lair : public ScriptedInstance
     std::queue<uint64> FloorEruptionGUIDQueue; 
     
     uint64 m_uiOnyxiasGUID;
-    uint32 uiOnyxiaKillTimer;
-    uint32 uiOnyxiaLiftoffTimer;
-    uint32 uiManyWhelpsCounter;
-    bool   bAchievManyWhelpsHandleIt;
-    bool   bAchievSheDeepBreathMore;
-    
+    uint32 m_uiOnyxiaLiftoffTimer;
+    uint32 m_uiManyWhelpsCounter;
     uint32 m_uiEruptTimer;
 
-    uint8 m_auiEncounter[MAX_ENCOUNTER];
+    uint8  m_auiEncounter[MAX_ENCOUNTER];
+
+    bool   m_bAchievManyWhelpsHandleIt;
+    bool   m_bAchievSheDeepBreathMore;
 
     void Initialize()
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
         m_uiOnyxiasGUID = 0;
-        uiOnyxiaKillTimer = 0;
-        uiOnyxiaLiftoffTimer = 0;
-        uiManyWhelpsCounter = 0;
-        bAchievManyWhelpsHandleIt = false;
-        bAchievSheDeepBreathMore = true;
+        m_uiOnyxiaLiftoffTimer = 0;
+        m_uiManyWhelpsCounter = 0;
+        m_bAchievManyWhelpsHandleIt = false;
+        m_bAchievSheDeepBreathMore = true;
 
         m_uiEruptTimer = 0;
     }
@@ -75,7 +68,6 @@ struct instance_onyxias_lair : public ScriptedInstance
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
-        //Selecting much more objects then needed =/
         if ((pGo->GetGOInfo()->displayId == 4392 || pGo->GetGOInfo()->displayId == 4472) && pGo->GetGOInfo()->trap.spellId == 17731)
         {
             if (add)
@@ -93,7 +85,7 @@ struct instance_onyxias_lair : public ScriptedInstance
                 if (Creature* pTemp = pGo->SummonCreature(NPC_WHELP,pGoPos,TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pTemp->SetInCombatWithZone();
-                    ++uiManyWhelpsCounter;
+                    ++m_uiManyWhelpsCounter;
                 }
                 break;
         }
@@ -122,7 +114,6 @@ struct instance_onyxias_lair : public ScriptedInstance
                     if (FloorEruptionGUID[1].find(nearFloorGUID) != FloorEruptionGUID[1].end() && (*FloorEruptionGUID[1].find(nearFloorGUID)).second == 0)
                     {
                         (*FloorEruptionGUID[1].find(nearFloorGUID)).second = (*FloorEruptionGUID[1].find(floorEruptedGUID)).second+1;
-                        (*FloorEruptionGUID[1].find(nearFloorGUID)).second = (*FloorEruptionGUID[1].find(floorEruptedGUID)).second+1;
                         FloorEruptionGUIDQueue.push(nearFloorGUID);
                     }
                 }
@@ -135,40 +126,40 @@ struct instance_onyxias_lair : public ScriptedInstance
     {
         switch(uiType)
         {
-            case TYPE_ONYXIA:
+            case DATA_ONYXIA:
                 m_auiEncounter[0] = uiData;
                 if (uiData == IN_PROGRESS)
-                {
-                    uiOnyxiaKillTimer = 5*MINUTE*IN_MILISECONDS;
                     SetData(DATA_SHE_DEEP_BREATH_MORE, IN_PROGRESS);
-                }
                 break;
             case DATA_ONYXIA_PHASE:
                 if (uiData == PHASE_BREATH) //Used to mark the liftoff phase
                 {
-                    bAchievManyWhelpsHandleIt = false;
-                    uiManyWhelpsCounter = 0;
-                    uiOnyxiaLiftoffTimer = 10*IN_MILISECONDS;
+                    m_bAchievManyWhelpsHandleIt = false;
+                    m_uiManyWhelpsCounter = 0;
+                    m_uiOnyxiaLiftoffTimer = 10*IN_MILISECONDS;
                 }
                 break;
             case DATA_SHE_DEEP_BREATH_MORE:
                 if (uiData == IN_PROGRESS)
                 {
-                    bAchievSheDeepBreathMore = true;
+                    m_bAchievSheDeepBreathMore = true;
                 }
                 else if (uiData == FAIL)
                 {
-                    bAchievSheDeepBreathMore = false;
+                    m_bAchievSheDeepBreathMore = false;
                 }
                 break;
         }
+
+        if (uiType < MAX_ENCOUNTER && uiData == DONE)
+            SaveToDB();
     }
 
     void SetData64(uint32 uiType, uint64 uiData)
     {
         switch(uiType)
         {
-            case DATA_FLOOR_ERUPTION:
+            case DATA_FLOOR_ERUPTION_GUID:
                 FloorEruptionGUID[1] = FloorEruptionGUID[0];
                 FloorEruptionGUIDQueue.push(uiData);
                 m_uiEruptTimer = 2500;
@@ -180,7 +171,7 @@ struct instance_onyxias_lair : public ScriptedInstance
     {
         switch(uiType)
         {
-            case TYPE_ONYXIA:
+            case DATA_ONYXIA:
                 return m_auiEncounter[0];
         }
 
@@ -191,59 +182,23 @@ struct instance_onyxias_lair : public ScriptedInstance
     {
         switch(uiData)
         {
-            case DATA_ONYXIA:
+            case DATA_ONYXIA_GUID:
                 return m_uiOnyxiasGUID;
         }
 
         return 0;
     }
 
-    bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* source, Unit const* target = NULL, uint32 miscvalue1 = 0)
-    {
-        switch(criteria_id)
-        {
-            case 12564:  // Criteria for achievement 4402: More Dots! (10 player) 5min kill
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL && (uiOnyxiaKillTimer > 0))
-                    return true;
-                return false;
-            case 12565:  // Criteria for achievement 4403: Many Whelps! Handle It! (10 player) Hatch 50 eggs in 10s
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL && (bAchievManyWhelpsHandleIt))
-                    return true;
-                return false;
-            case 12566:  // Criteria for achievement 4404: She Deep Breaths More (10 player) Everybody evade Deep Breath
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL && (bAchievSheDeepBreathMore))
-                    return true;
-                return false;
-            case 12567:  // Criteria for achievement 4405: More Dots! (25 player) 5min kill
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL && (uiOnyxiaKillTimer > 0))
-                    return true;
-                return false;
-            case 12568:  // Criteria for achievement 4406: Many Whelps! Handle It! (25 player) Hatch 50 eggs in 10s
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL && (bAchievManyWhelpsHandleIt))
-                    return true;
-                return false;
-            case 12569:  // Criteria for achievement 4407: She Deep Breaths More (25 player) Everybody evade Deep Breath
-                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL && (bAchievSheDeepBreathMore))
-                    return true;
-                return false;
-        }
-        return false;
-    }
-    
     void Update(uint32 uiDiff)
     {
-        if(GetData(TYPE_ONYXIA) == IN_PROGRESS)
+        if (GetData(DATA_ONYXIA) == IN_PROGRESS)
         {
-            if(uiOnyxiaKillTimer > uiDiff)
-                uiOnyxiaKillTimer -= uiDiff;
-            else 
-                uiOnyxiaKillTimer = 0;
-            if(uiOnyxiaLiftoffTimer != 0 && uiOnyxiaLiftoffTimer <= uiDiff)
+            if (m_uiOnyxiaLiftoffTimer && m_uiOnyxiaLiftoffTimer <= uiDiff)
             {
-                uiOnyxiaLiftoffTimer = 0;
-                if (uiManyWhelpsCounter >= 50)
-                    bAchievManyWhelpsHandleIt = true;
-            } else uiOnyxiaLiftoffTimer -= uiDiff;
+                m_uiOnyxiaLiftoffTimer = 0;
+                if (m_uiManyWhelpsCounter >= 50)
+                    m_bAchievManyWhelpsHandleIt = true;
+            } else m_uiOnyxiaLiftoffTimer -= uiDiff;
         }
 
         if (!FloorEruptionGUIDQueue.empty()) 
@@ -262,6 +217,20 @@ struct instance_onyxias_lair : public ScriptedInstance
             else
                 m_uiEruptTimer -= uiDiff;
         }
+    }
+
+    bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* source, Unit const* target = NULL, uint32 miscvalue1 = 0)
+    {
+        switch(criteria_id)
+        {
+            case ACHIEV_CRITERIA_MANY_WHELPS_10_PLAYER:  // Criteria for achievement 4403: Many Whelps! Handle It! (10 player) Hatch 50 eggs in 10s
+            case ACHIEV_CRITERIA_MANY_WHELPS_25_PLAYER:  // Criteria for achievement 4406: Many Whelps! Handle It! (25 player) Hatch 50 eggs in 10s
+                return m_bAchievManyWhelpsHandleIt;
+            case ACHIEV_CRITERIA_DEEP_BREATH_10_PLAYER:  // Criteria for achievement 4404: She Deep Breaths More (10 player) Everybody evade Deep Breath
+            case ACHIEV_CRITERIA_DEEP_BREATH_25_PLAYER:  // Criteria for achievement 4407: She Deep Breaths More (25 player) Everybody evade Deep Breath
+                return m_bAchievSheDeepBreathMore;
+        }
+        return false;
     }
 };
 
