@@ -393,7 +393,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
     if (plMover)
     {
-        if (World::GetEnableMvAnticheat() && !plMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
+        if (World::GetEnableMvAnticheat() &&
+            plMover->GetMapId() != 650 &&     // ToC
+            plMover->GetZoneId() != 4197 && // Wintergrasp
+            plMover->GetSession() && plMover->GetSession()->GetSecurity() < SEC_GAMEMASTER) //!plMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
         {
             // calc time deltas
             int32 cClientTimeDelta = 1500;
