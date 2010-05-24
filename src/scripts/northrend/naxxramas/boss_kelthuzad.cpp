@@ -616,7 +616,7 @@ struct boss_kelthuzadAI : public BossAI
                             DoCast(pTarget, SPELL_FROST_BLAST);
                         if (rand()%2)
                             DoScriptText(SAY_FROST_BLAST, me);
-                        events.RepeatEvent(urand(30000,90000));
+                        events.RepeatEvent(urand(45000,90000));
                         break;
                     default:
                         events.PopEvent();

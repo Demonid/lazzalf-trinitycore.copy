@@ -43,9 +43,13 @@ enum Yells
 
 struct boss_thorimAI : public BossAI
 {
-    boss_thorimAI(Creature* pCreature) : BossAI(pCreature, TYPE_THORIM)
+    boss_thorimAI(Creature* pCreature) : BossAI(pCreature, BOSS_THORIM)
     {
+        pInstance = pCreature->GetInstanceData();
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);        
     }
+    
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
@@ -58,18 +62,18 @@ struct boss_thorimAI : public BossAI
         _EnterEvadeMode();
     }
 
-    void KilledUnit(Unit * /*victim*/)
+    void KilledUnit(Unit * victim)
     {
         DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
     }
 
-    void JustDied(Unit * /*victim*/)
+    void JustDied(Unit * victim)
     {
         DoScriptText(SAY_DEATH, me);
         _JustDied();
     }
 
-    void EnterCombat(Unit* /*pWho*/)
+    void EnterCombat(Unit* pWho)
     {
         DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2), me);
         _EnterCombat();
@@ -79,12 +83,17 @@ struct boss_thorimAI : public BossAI
     {
         if (!UpdateVictim())
             return;
-//SPELLS TODO:
+            
+        events.Update(diff);
 
-//
+        if (me->hasUnitState(UNIT_STAT_CASTING))
+            return;
+                        
+        if (events.GetTimer() > 15000)
+            if (pInstance)
+                pInstance->SetData(DATA_THORIM_GATE, GO_STATE_ACTIVE);
+            
         DoMeleeAttackIfReady();
-
-        EnterEvadeIfOutOfCombatArea(diff);
     }
 };
 
@@ -100,4 +109,5 @@ void AddSC_boss_thorim()
     newscript->Name = "boss_thorim";
     newscript->GetAI = &GetAI_boss_thorim;
     newscript->RegisterSelf();
+
 }
