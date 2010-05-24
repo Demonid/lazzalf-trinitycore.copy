@@ -339,7 +339,7 @@ struct mob_stalaggAI : public ScriptedAI
             return;
 
         // Tesla distance check
-        if(me->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 25)
+        if(me->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 28)
         {
             me->MonsterTextEmote(EMOTE_TESLA, 0, true);
             DoCastAOE(SPELL_TESLA);
@@ -438,7 +438,7 @@ struct mob_feugenAI : public ScriptedAI
             return;
 
         // Tesla distance check
-        if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 25)
+        if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 28)
         {
             me->MonsterTextEmote(EMOTE_TESLA, 0, true);
             DoCastAOE(SPELL_TESLA);
