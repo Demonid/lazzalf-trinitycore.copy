@@ -4920,7 +4920,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }*/
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell || m_spellInfo->Id == 33395) // Water Elemental's Freeze should be checked even if it's a triggered spell
     {
         SpellCastResult castResult = CheckRange(strict);
         if (castResult != SPELL_CAST_OK)
