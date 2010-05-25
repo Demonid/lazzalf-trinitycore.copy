@@ -254,7 +254,10 @@ struct boss_ichoronAI : public ScriptedAI
                     if (!bIsWaterElementsAlive)
                         DoExplodeCompleted();
                     else if (uiForceBubble <= uiDiff)
+                    {                        
+                        DespawnWaterElements();
                         DoExplodeCompleted();
+                    }
                     else uiForceBubble -= uiDiff;
                 }
                 uiBubbleCheckerTimer = 1000;
