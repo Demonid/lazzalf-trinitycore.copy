@@ -608,9 +608,8 @@ CreatureAI* GetAI_mob_colossus(Creature* pCreature)
 
 bool GoHello_ulduar_repair_station( Player *pPlayer, GameObject *pGO )
 {
-    InstanceData *data = pPlayer->GetInstanceData();
     ScriptedInstance *pInstance = (ScriptedInstance *) pGO->GetInstanceData();
-    if(!pInstance | !data) return true;
+    if(!pInstance) return true;
 
     pPlayer->ADD_GOSSIP_ITEM(0, "Repair Vehicle", GOSSIP_SENDER_MAIN, REPAIR_VEHICLE);
     pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pGO->GetGUID());
