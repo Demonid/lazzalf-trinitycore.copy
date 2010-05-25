@@ -91,6 +91,7 @@ struct boss_ichoronAI : public ScriptedAI
 
     uint32 uiBubbleCheckerTimer;
     uint32 uiWaterBoltVolleyTimer;
+    uint32 uiForceBubble;
 
     ScriptedInstance* pInstance;
 
@@ -103,6 +104,7 @@ struct boss_ichoronAI : public ScriptedAI
         bAchievement = true;
         uiBubbleCheckerTimer = 1000;
         uiWaterBoltVolleyTimer = urand(10000, 15000);
+        uiForceBubble = 30000;
 
         me->SetVisibility(VISIBILITY_ON);
         DespawnWaterElements();
@@ -232,6 +234,7 @@ struct boss_ichoronAI : public ScriptedAI
                             int tmp = urand(0, MAX_SPAWN_LOC-1);
                             me->SummonCreature(NPC_ICHOR_GLOBULE, SpawnLoc[tmp], TEMPSUMMON_CORPSE_DESPAWN);
                         }
+                        uiForceBubble = 30000;
                     }
                 }
                 else
@@ -247,9 +250,12 @@ struct boss_ichoronAI : public ScriptedAI
                                     break;
                                 }
                     }
-
+                    
                     if (!bIsWaterElementsAlive)
                         DoExplodeCompleted();
+                    else if (uiForceBubble <= uiDiff)
+                        DoExplodeCompleted();
+                    else uiForceBubble -= uiDiff;
                 }
                 uiBubbleCheckerTimer = 1000;
             }
