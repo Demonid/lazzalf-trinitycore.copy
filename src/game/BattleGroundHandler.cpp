@@ -35,6 +35,11 @@
 #include "Object.h"
 #include "Opcodes.h"
 
+// Temporal fix to wintergrasp spirit guides till 3.2
+#include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
+// WG end
+
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recv_data)
 {
     uint64 guid;
@@ -583,9 +588,19 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket & recv_data)
         return;
 
     if (bg)
+    {
         sBattleGroundMgr.SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
+    }
+    else
+    {  // Wintergrasp Hack till 3.2 and it's implemented as BG
+        if (GetPlayer()->GetZoneId() == NORTHREND_WINTERGRASP)
+        {
+            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+            if (pvpWG && pvpWG->isWarTime())
+                pvpWG->SendAreaSpiritHealerQueryOpcode(_player, guid);
+        }
+    }
 }
-
 
 void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket & recv_data)
 {
@@ -604,9 +619,21 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket & recv_data)
         return;
 
     if (bg)
+    {
         bg->AddPlayerToResurrectQueue(guid, _player->GetGUID());
-}
+    }
+    else
+    {  // Wintergrasp Hack till 3.2 and it's implemented as BG
+        if (GetPlayer()->GetZoneId() == NORTHREND_WINTERGRASP)
+        {
+            OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+            if (pvpWG && pvpWG->isWarTime())
+                pvpWG->AddPlayerToResurrectQueue(guid, _player->GetGUID());
+        }
+    }
 
+
+}
 
 void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recv_data)
 {
@@ -786,7 +813,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recv_data)
         SendPacket(&data);
         sLog.outDebug("Battleground: player joined queue for arena, skirmish, bg queue type %u bg type %u: GUID %u, NAME %s",bgQueueTypeId,bgTypeId,_player->GetGUIDLow(), _player->GetName());
     }
-    sBattleGroundMgr.ScheduleQueueUpdate(arenaRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
+    sBattleGroundMgr.ScheduleQueueUpdate(arenaRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId(), ateamId);
 }
 
 void WorldSession::HandleReportPvPAFK(WorldPacket & recv_data)

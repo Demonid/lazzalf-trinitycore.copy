@@ -504,6 +504,7 @@ enum AtLoginFlags
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
+typedef std::map<uint32, TimedQuestStatusData> TimedQuestStatusMap;
 
 enum QuestSlotOffsets
 {
@@ -764,7 +765,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
     PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
+    PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS     = 6,
     PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
     PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
     PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
@@ -784,7 +785,6 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADTALENTS              = 23,
     PLAYER_LOGIN_QUERY_LOADACCOUNTDATA          = 24,
     PLAYER_LOGIN_QUERY_LOADSKILLS               = 25,
-    PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS     = 26,
     PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 27,
     MAX_PLAYER_LOGIN_QUERY                      = 28
 };
@@ -1266,17 +1266,14 @@ class Player : public Unit, public GridObject<Player>
         bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
         bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
         bool SatisfyQuestDay(Quest const* qInfo, bool msg);
-        bool SatisfyQuestWeek(Quest const* qInfo, bool msg);
         bool GiveQuestSourceItem(Quest const *pQuest);
         bool TakeQuestSourceItem(uint32 quest_id, bool msg);
         bool GetQuestRewardStatus(uint32 quest_id) const;
         QuestStatus GetQuestStatus(uint32 quest_id) const;
         void SetQuestStatus(uint32 quest_id, QuestStatus status);
 
-        void SetDailyQuestStatus(uint32 quest_id);
-        void SetWeeklyQuestStatus(uint32 quest_id);
+        void SetTimedQuestStatus(uint32 quest_id);
         void ResetDailyQuestStatus();
-        void ResetWeeklyQuestStatus();
 
         uint16 FindQuestSlot(uint32 quest_id) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
@@ -1409,7 +1406,8 @@ class Player : public Unit, public GridObject<Player>
         }
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
-
+        TimedQuestStatusMap& GetTimedQuestStatusMap() { return mTimedQuestStatus; };
+ 
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
@@ -1700,6 +1698,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
+        void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -1726,6 +1725,7 @@ class Player : public Unit, public GridObject<Player>
         float GetRatingCoefficient(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
+        uint32 GetBaseSpellPenetrationBonus() { return m_baseSpellPenetration; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
@@ -2084,6 +2084,23 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         uint32 EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+	    // Char datas...
+		bool m_jail_warning;
+		bool m_jail_amnestie;
+		bool m_jail_isjailed;           // Is this player jailed?
+		std::string m_jail_char;        // Name of jailed char
+		uint32 m_jail_guid;             // guid of the jailed char
+		uint32 m_jail_release;          // When is the player a free man/woman?
+		std::string m_jail_reason;      // Why was the char jailed?
+		uint32 m_jail_times;			// How often was the player jailed?
+  	    uint32 m_jail_amnestietime;
+		uint32 m_jail_gmacc;            // Used GM acc
+		std::string m_jail_gmchar;      // Used GM char
+		std::string m_jail_lasttime;    // Last jail time
+		uint32 m_jail_duration;         // Duration of the jail
+		// Load / save functions...
+		void _LoadJail(void);           // Loads the jail datas
+		void _SaveJail(void);           // Saves the jail datas
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2316,7 +2333,6 @@ class Player : public Unit, public GridObject<Player>
         //We allow only one timed quest active at the same time. Below can then be simple value instead of set.
         typedef std::set<uint32> QuestSet;
         QuestSet m_timedquests;
-        QuestSet m_weeklyquests;
 
         uint64 m_divider;
         uint32 m_ingametime;
@@ -2334,8 +2350,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
         void _LoadQuestStatus(QueryResult_AutoPtr result);
-        void _LoadDailyQuestStatus(QueryResult_AutoPtr result);
-        void _LoadWeeklyQuestStatus(QueryResult_AutoPtr result);
+        void _LoadTimedQuestStatus(QueryResult_AutoPtr result);
         void _LoadRandomBGStatus(QueryResult_AutoPtr result);
         void _LoadGroup(QueryResult_AutoPtr result);
         void _LoadSkills(QueryResult_AutoPtr result);
@@ -2359,8 +2374,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveInventory();
         void _SaveMail();
         void _SaveQuestStatus();
-        void _SaveDailyQuestStatus();
-        void _SaveWeeklyQuestStatus();
         void _SaveSkills();
         void _SaveSpells();
         void _SaveEquipmentSets();
@@ -2411,6 +2424,7 @@ class Player : public Unit, public GridObject<Player>
         int8 m_comboPoints;
 
         QuestStatusMap mQuestStatus;
+        TimedQuestStatusMap mTimedQuestStatus;
 
         SkillStatusMap mSkillStatus;
 
@@ -2435,6 +2449,7 @@ class Player : public Unit, public GridObject<Player>
         uint16 m_baseFeralAP;
         uint16 m_baseManaRegen;
         uint16 m_baseHealthRegen;
+        uint16 m_baseSpellPenetration;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
         //uint32 m_pad;
@@ -2463,10 +2478,7 @@ class Player : public Unit, public GridObject<Player>
         uint64 tradeItems[TRADE_SLOT_COUNT];
         uint32 tradeGold;
 
-        bool   m_DailyQuestChanged;
         bool   m_WeeklyQuestChanged;
-        time_t m_lastDailyQuestTime;
-
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;
@@ -2497,6 +2509,28 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
+
+        // movement anticheat
+        time_t m_anti_LastClientTime;           // last movement client time
+        time_t m_anti_LastServerTime;           // last movement server time
+        time_t m_anti_DeltaClientTime;          // client side session time
+        time_t m_anti_DeltaServerTime;          // server side session time
+        uint32 m_anti_MistimingCount;           // mistiming count
+        time_t m_logcheat_time;
+
+        time_t m_anti_LastSpeedChangeTime;      // last speed change time
+
+        float m_anti_Last_HSpeed;               // horizontal speed, default RUN speed
+        float m_anti_Last_VSpeed;               // vertical speed, default max jump height
+
+        uint32 m_anti_TeleToPlane_Count;        // Teleport To Plane alarm counter
+
+        uint64 m_anti_AlarmCount;               // alarm counter
+
+        uint16 m_anti_JumpCount;                // Jump already began, anti air jump check
+        float m_anti_JumpBaseZ;                 // Z coord before jump
+        // end movement anticheat
+
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;

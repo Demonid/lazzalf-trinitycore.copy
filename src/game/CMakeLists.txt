@@ -124,6 +124,8 @@ SET(game_STAT_SRCS
    GuardAI.h
    Guild.cpp
    Guild.h
+   GuildHouse.cpp
+   GuildHouse.h
    GuildHandler.cpp
    HomeMovementGenerator.cpp
    HomeMovementGenerator.h
@@ -203,6 +205,8 @@ SET(game_STAT_SRCS
    OutdoorPvPSI.h
    OutdoorPvPTF.cpp
    OutdoorPvPTF.h
+   OutdoorPvPWG.cpp
+   OutdoorPvPWG.h
    OutdoorPvPZM.cpp
    OutdoorPvPZM.h
    Path.h
@@ -238,6 +242,8 @@ SET(game_STAT_SRCS
    ScriptMgr.h
    ScriptSystem.cpp
    ScriptSystem.h
+   sc_npc_teleport.cpp
+   sc_npc_teleport.h
    SharedDefines.h
    SkillHandler.cpp
    SpellAuraDefines.h
@@ -353,4 +359,3 @@ ADD_DEPENDENCIES(game revision.h)
 IF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
         ADD_PRECOMPILED_HEADER(game ${CMAKE_SOURCE_DIR}/src/game/pchlinux.h)
 ENDIF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
-
