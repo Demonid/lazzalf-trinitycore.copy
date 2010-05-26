@@ -2898,8 +2898,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_WARLOCK:
         {
+            // Fear
+            if (GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
+                return DIMINISHING_FEAR_BLIND;
             // Death Coil
-            if (spellproto->SpellFamilyFlags[0] & 0x80000)
+            else if (spellproto->SpellFamilyFlags[0] & 0x80000)
                 return DIMINISHING_DEATHCOIL;
             // Curses/etc
             else if (spellproto->SpellFamilyFlags[0] & 0x80000000)
@@ -2943,8 +2946,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_PALADIN:
         {
+            // Psychic Scream
+            if (spellproto->SpellFamilyFlags[0] & 0x1000)
+                return DIMINISHING_FEAR_BLIND;
             // Repentance
-            if (spellproto->SpellFamilyFlags[0] & 0x4)
+            else if (spellproto->SpellFamilyFlags[0] & 0x4)
                 return DIMINISHING_POLYMORPH;
             break;
         }
