@@ -2899,7 +2899,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         case SPELLFAMILY_WARLOCK:
         {
             // Fear
-            if (GetSpellProto()->SpellFamilyFlags[1] & 0x00000400)
+            if (spellproto->SpellFamilyFlags[1] & 0x00000400)
                 return DIMINISHING_FEAR_BLIND;
             // Death Coil
             else if (spellproto->SpellFamilyFlags[0] & 0x80000)
