@@ -1641,10 +1641,8 @@ void Spell::EffectDummy(uint32 i)
             // Life Tap
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_WARLOCK_LIFETAP)
             {
-                // Health = [effectBasePoints1 + SPI * 1.5]
-                int32 damage = 1 + m_spellInfo->EffectBasePoints[0] + (m_caster->GetStat(STAT_SPIRIT) * 1.5);
-                // Mana = [effectBasePoints1 + SPS * 0.5]
-                int32 mana = 1 + m_spellInfo->EffectBasePoints[0] + (m_caster->ToPlayer()->GetBaseSpellPowerBonus() * 0.5);
+                int32 damage = m_spellInfo->EffectBasePoints[0] + (6 * m_spellInfo->baseLevel);
+                int32 mana = damage + (m_caster->ToPlayer()->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+SPELL_SCHOOL_SHADOW) / 2);
 
                 if (unitTarget && (int32(unitTarget->GetHealth()) > damage))
                 {
@@ -3814,12 +3812,13 @@ void Spell::EffectLearnSpell(uint32 i)
 }
 
 typedef std::list< std::pair<uint32, uint64> > DispelList;
+typedef std::list< std::pair<Aura *, uint8> > DispelChargesList;
 void Spell::EffectDispel(uint32 i)
 {
     if (!unitTarget)
         return;
 
-    Unit::AuraList dispel_list;
+    DispelChargesList dispel_list;
 
     // Create dispel mask by dispel type
     uint32 dispel_type = m_spellInfo->EffectMiscValue[i];
@@ -3844,10 +3843,13 @@ void Spell::EffectDispel(uint32 i)
                     continue;
             }
 
+            // The charges / stack amounts don't count towards the total number of auras that can be dispelled.
+            // Ie: A dispel on a target with 5 stacks of Winters Chill and a Polymorph has 1 / (1 + 1) -> 50% chance to dispell
+            // Polymorph instead of 1 / (5 + 1) -> 16%.
             bool dispel_charges = aura->GetSpellProto()->AttributesEx7 & SPELL_ATTR_EX7_DISPEL_CHARGES;
-
-            for (uint8 i = dispel_charges ? aura->GetCharges() : aura->GetStackAmount(); i; --i)
-                dispel_list.push_back(aura);
+            uint8 charges = dispel_charges ? aura->GetCharges() : aura->GetStackAmount();
+            if (charges > 0)
+                dispel_list.push_back(std::make_pair(aura, charges));
         }
     }
 
@@ -3859,28 +3861,41 @@ void Spell::EffectDispel(uint32 i)
     DispelList success_list;
     WorldPacket dataFail(SMSG_DISPEL_FAILED, 8+8+4+4+damage*4);
     // dispel N = damage buffs (or while exist buffs for dispel)
-    for (int32 count = 0; count < damage && !dispel_list.empty(); ++count)
+    for (int32 count = 0; count < damage && !dispel_list.empty();)
     {
         // Random select buff for dispel
-        Unit::AuraList::iterator itr = dispel_list.begin();
+        DispelChargesList::iterator itr = dispel_list.begin();
         std::advance(itr, urand(0, dispel_list.size() - 1));
 
-        if (GetDispelChance((*itr)->GetCaster(), (*itr)->GetId()))
+        bool success = false;
+        // 2.4.3 Patch Notes: "Dispel effects will no longer attempt to remove effects that have 100% dispel resistance."
+        if (GetDispelChance(itr->first->GetCaster(), unitTarget, itr->first->GetId(), !unitTarget->IsFriendlyTo(m_caster), &success) > 99)
         {
-            success_list.push_back(std::make_pair((*itr)->GetId(), (*itr)->GetCasterGUID()));
             dispel_list.erase(itr);
+            continue;
         }
         else
         {
-            if (!failCount)
+            if (success)
             {
-                // Failed to dispell
-                dataFail << uint64(m_caster->GetGUID());            // Caster GUID
-                dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
-                dataFail << uint32(m_spellInfo->Id);                // dispel spell id
+                success_list.push_back(std::make_pair(itr->first->GetId(), itr->first->GetCasterGUID()));
+                --itr->second;
+                if (itr->second <= 0)
+                    dispel_list.erase(itr);
             }
-            ++failCount;
-            dataFail << uint32((*itr)->GetId());                         // Spell Id
+            else
+            {
+                if (!failCount)
+                {
+                    // Failed to dispell
+                    dataFail << uint64(m_caster->GetGUID());            // Caster GUID
+                    dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
+                    dataFail << uint32(m_spellInfo->Id);                // dispel spell id
+                }
+                ++failCount;
+                dataFail << uint32(itr->first->GetId());                         // Spell Id
+            }
+            ++count;
         }
     }
 
@@ -7193,10 +7208,10 @@ void Spell::EffectDispelMechanic(uint32 i)
         Aura * aura = itr->second;
         if (!aura->GetApplicationOfTarget(unitTarget->GetGUID()))
             continue;
-        if ((GetAllSpellMechanicMask(aura->GetSpellProto()) & (1<<(mechanic))) && GetDispelChance(aura->GetCaster(), aura->GetId()))
-        {
+        bool success = false;
+        GetDispelChance(aura->GetCaster(), unitTarget, aura->GetId(), !unitTarget->IsFriendlyTo(m_caster), &success);
+        if((GetAllSpellMechanicMask(aura->GetSpellProto()) & (1<<(mechanic))) && success)
             dispel_list.push(std::make_pair(aura->GetId(), aura->GetCasterGUID()));
-        }
     }
 
     for (; dispel_list.size(); dispel_list.pop())
@@ -7586,7 +7601,8 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
     if (!unitTarget || unitTarget == m_caster)                 // can't steal from self
         return;
 
-    Unit::AuraList steal_list;
+    DispelChargesList steal_list;
+
     // Create dispel mask by dispel type
     uint32 dispelMask  = GetDispellMask(DispelType(m_spellInfo->EffectMiscValue[i]));
     Unit::AuraMap const& auras = unitTarget->GetOwnedAuras();
@@ -7603,43 +7619,81 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             if (!aurApp->IsPositive() || aura->IsPassive() || aura->GetSpellProto()->AttributesEx4 & SPELL_ATTR_EX4_NOT_STEALABLE)
                 continue;
 
+            // The charges / stack amounts don't count towards the total number of auras that can be dispelled.
+            // Ie: A dispel on a target with 5 stacks of Winters Chill and a Polymorph has 1 / (1 + 1) -> 50% chance to dispell
+            // Polymorph instead of 1 / (5 + 1) -> 16%.
             bool dispel_charges = aura->GetSpellProto()->AttributesEx7 & SPELL_ATTR_EX7_DISPEL_CHARGES;
-
-            for (uint8 i = dispel_charges ? aura->GetCharges() : aura->GetStackAmount(); i; --i)
-                steal_list.push_back(aura);
+            uint8 charges = dispel_charges ? aura->GetCharges() : aura->GetStackAmount();
+            if (charges > 0)
+                steal_list.push_back(std::make_pair(aura, charges));
         }
     }
+
+    if (steal_list.empty())
+        return;
+
     // Ok if exist some buffs for dispel try dispel it
-    if (uint32 list_size = steal_list.size())
+    uint32 failCount = 0;
+    DispelList success_list;
+    WorldPacket dataFail(SMSG_DISPEL_FAILED, 8+8+4+4+damage*4);
+    // dispel N = damage buffs (or while exist buffs for dispel)
+    for (int32 count = 0; count < damage && !steal_list.empty();)
     {
-        DispelList success_list;
+        // Random select buff for dispel
+        DispelChargesList::iterator itr = steal_list.begin();
+        std::advance(itr, urand(0, steal_list.size() - 1));
 
-        // dispel N = damage buffs (or while exist buffs for dispel)
-        for (int32 count=0; count < damage && list_size > 0; ++count, list_size = steal_list.size())
+        bool success = false;
+        // 2.4.3 Patch Notes: "Dispel effects will no longer attempt to remove effects that have 100% dispel resistance."
+        if (GetDispelChance(itr->first->GetCaster(), unitTarget, itr->first->GetId(), !unitTarget->IsFriendlyTo(m_caster), &success) > 99)
         {
-            // Random select buff for dispel
-            Unit::AuraList::iterator itr = steal_list.begin();
-            std::advance(itr, urand(0, list_size-1));
-            success_list.push_back(std::make_pair((*itr)->GetId(), (*itr)->GetCasterGUID()));
             steal_list.erase(itr);
+            continue;
         }
-        if (success_list.size())
+        else
         {
-            WorldPacket data(SMSG_SPELLSTEALLOG, 8+8+4+1+4+damage*5);
-            data.append(unitTarget->GetPackGUID());  // Victim GUID
-            data.append(m_caster->GetPackGUID());    // Caster GUID
-            data << uint32(m_spellInfo->Id);         // dispel spell id
-            data << uint8(0);                        // not used
-            data << uint32(success_list.size());     // count
-            for (DispelList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
+            if (success)
             {
-                data << uint32(itr->first);          // Spell Id
-                data << uint8(0);                    // 0 - steals !=0 transfers
-                unitTarget->RemoveAurasDueToSpellBySteal(itr->first, itr->second, m_caster);
+                success_list.push_back(std::make_pair(itr->first->GetId(), itr->first->GetCasterGUID()));
+                --itr->second;
+                if (itr->second <= 0)
+                    steal_list.erase(itr);
             }
-            m_caster->SendMessageToSet(&data, true);
+            else
+            {
+                if (!failCount)
+                {
+                    // Failed to dispell
+                    dataFail << uint64(m_caster->GetGUID());            // Caster GUID
+                    dataFail << uint64(unitTarget->GetGUID());          // Victim GUID
+                    dataFail << uint32(m_spellInfo->Id);                // dispel spell id
+                }
+                ++failCount;
+                dataFail << uint32(itr->first->GetId());                         // Spell Id
+            }
+            ++count;
         }
     }
+
+    if (failCount)
+        m_caster->SendMessageToSet(&dataFail, true);
+
+    if (success_list.empty())
+        return;
+
+    WorldPacket dataSuccess(SMSG_SPELLSTEALLOG, 8+8+4+1+4+damage*5);
+    dataSuccess.append(unitTarget->GetPackGUID());  // Victim GUID
+    dataSuccess.append(m_caster->GetPackGUID());    // Caster GUID
+    dataSuccess << uint32(m_spellInfo->Id);         // dispel spell id
+    dataSuccess << uint8(0);                        // not used
+    dataSuccess << uint32(success_list.size());     // count
+    for (DispelList::iterator itr = success_list.begin(); itr!=success_list.end(); ++itr)
+    {
+        dataSuccess << uint32(itr->first);          // Spell Id
+        dataSuccess << uint8(0);                    // 0 - steals !=0 transfers
+        unitTarget->RemoveAurasDueToSpellBySteal(itr->first, itr->second, m_caster);
+    }
+    m_caster->SendMessageToSet(&dataSuccess, true);
 }
 
 void Spell::EffectKillCreditPersonal(uint32 i)
