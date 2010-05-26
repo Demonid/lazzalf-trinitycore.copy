@@ -297,6 +297,7 @@ enum WorldConfigs
     CONFIG_MIN_LEVEL_STAT_SAVE,
     CONFIG_STATS_SAVE_ONLY_ON_LOGOUT,
     CONFIG_BG_XP_FOR_KILL,
+    CONFIG_RANDOM_BG_RESET_HOUR,
     CONFIG_VALUE_COUNT
 };
 
@@ -432,6 +433,12 @@ enum RealmZone
     REALM_ZONE_CN2_6_9       = 35,                          // basic-Latin at create, any at login
     REALM_ZONE_CN3_7         = 36,                          // basic-Latin at create, any at login
     REALM_ZONE_CN5_8         = 37                           // basic-Latin at create, any at login
+};
+
+enum WorldStates
+{
+    WS_WEEKLY_QUEST_RESET_TIME = 20002,                      // Next weekly reset time
+    WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
 };
 
 // Daily/Weekly quest last time entries within the worldstates table
@@ -588,6 +595,8 @@ class World
         time_t GetNextDailyQuestReset() const { return m_NextDailyQuestReset; }
         /// Next weekly quest reset time
         time_t GetNextWeeklyQuestReset() const { return m_NextWeeklyQuestReset; }
+        /// Next BG quest reset time
+        time_t GetNextRandomBGResetTime() const { return m_NextRandomBGReset; }
  
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
@@ -745,6 +754,8 @@ class World
 
         void InitTimedQuestResetTime();
         void ResetTimedQuests(bool daily);
+        void InitRandomBGResetTime();
+        void ResetRandomBG();
     private:
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
@@ -837,6 +848,8 @@ class World
          time_t m_NextDailyQuestReset;
         // Next weekly quest reset time
         time_t m_NextWeeklyQuestReset;
+        // Next random BG reset time
+        time_t m_NextRandomBGReset;
 
         //Player Queue
         Queue m_QueuedPlayer;

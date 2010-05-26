@@ -805,7 +805,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                     {
                         case 161:                           // AB, Overcome a 500 resource disadvantage
                         {
-                            if (bg->GetTypeID() != BATTLEGROUND_AB)
+                            if (bg->GetTypeID(true) != BATTLEGROUND_AB)
                                 continue;
                             if (!((BattleGroundAB*)bg)->IsTeamScores500Disadvantage(GetPlayer()->GetTeam()))
                                 continue;
@@ -1868,7 +1868,7 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
         return;
 
     // titles
-    if (uint32 titleId = reward->titleId[GetPlayer()->GetTeam() == HORDE ? 0 : 1])
+    if (uint32 titleId = reward->titleId[GetPlayer()->GetTeam() == ALLIANCE ? 0 : 1])
     {
         if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
             GetPlayer()->SetTitle(titleEntry);
