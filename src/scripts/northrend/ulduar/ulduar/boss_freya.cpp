@@ -219,7 +219,6 @@ struct boss_freyaAI : public BossAI
     int32 uiElemTimer;
     Creature* Elemental[3];
     bool checkElementalAlive;
-    bool Phase2;
 
     void Reset()
     {
@@ -278,7 +277,6 @@ struct boss_freyaAI : public BossAI
         events.ScheduleEvent(EVENT_SUMMON_ALLIES, 10000);
         events.ScheduleEvent(EVENT_NATURE_BOMB, 375000);
         events.ScheduleEvent(EVENT_BERSERK, 600000);
-        Phase2 = false;
         
         // Freya hard mode can be triggered simply by letting the elders alive
         if(Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
@@ -355,10 +353,7 @@ struct boss_freyaAI : public BossAI
             me->Kill(me->getVictim());
             
         events.Update(diff);
-            
-        if (!me->HasAura(SPELL_ATTUNED_TO_NATURE) && !Phase2)
-            events.ScheduleEvent(EVENT_PHASE_2, 0);
-            
+                        
         if (events.GetTimer() > 360000)
             events.CancelEvent(EVENT_SUMMON_ALLIES);
             
@@ -406,18 +401,11 @@ struct boss_freyaAI : public BossAI
                     DoCastAOE(RAID_MODE(RAID_10_SPELL_FREYA_GROUND_TREMOR, RAID_25_SPELL_FREYA_GROUND_TREMOR));
                     events.ScheduleEvent(EVENT_STONEBARK, urand(25000, 30000));
                     break;
-                case EVENT_PHASE_2:
-                    Phase2 = true;
-                    me->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_TOUCH_OF_EONAR, RAID_25_SPELL_TOUCH_OF_EONAR));
-                    events.ScheduleEvent(EVENT_NATURE_BOMB, urand(15000, 20000));
-                    events.CancelEvent(EVENT_PHASE_2);
-                    break;
                 case EVENT_BERSERK:
                     DoCast(me, SPELL_BERSERK, true);
                     DoScriptText(SAY_BERSERK, me);
                     events.CancelEvent(EVENT_BERSERK);
                     break;
-
             }
         }
 
