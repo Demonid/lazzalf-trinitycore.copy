@@ -1081,8 +1081,8 @@ struct mob_shadronAI : public dummy_dragonAI
                 m_uiAcolyteShadronTimer = 10000;
             else
             {
-                if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-                    return;
+                //if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
+                //    return;
                 OpenPortal();
                 m_bHasPortalOpen = true;
                 m_uiAcolyteShadronTimer = urand(60000,65000);
