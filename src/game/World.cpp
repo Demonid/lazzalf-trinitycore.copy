@@ -2674,6 +2674,33 @@ void World::InitTimedQuestResetTime()
     m_NextWeeklyQuestReset = m_NextWeeklyQuestReset < curTime ? nextWeekResetTime - WEEK : nextWeekResetTime;
 }
 
+void World::InitRandomBGResetTime()
+{
+    time_t bgtime = uint64(sWorld.getWorldState(WS_BG_DAILY_RESET_TIME));
+    if (!bgtime)
+        m_NextRandomBGReset = time_t(time(NULL));         // game time not yet init
+
+    // generate time by config
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    localTm.tm_hour = getConfig(CONFIG_RANDOM_BG_RESET_HOUR);
+    localTm.tm_min  = 0;
+    localTm.tm_sec  = 0;
+
+    // current day reset time
+    time_t nextDayResetTime = mktime(&localTm);
+
+    // next reset time before current moment
+    if (curTime >= nextDayResetTime)
+        nextDayResetTime += DAY;
+
+    // normalize reset time
+    m_NextRandomBGReset = m_NextRandomBGReset < curTime ? nextDayResetTime - DAY : nextDayResetTime;
+
+    if (!bgtime)
+        sWorld.setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
+}
+
 void World::ResetTimedQuests(bool daily)
 {
     if (daily)
@@ -2711,8 +2738,6 @@ void World::UpdateAllowedSecurity()
     }
 }
 
-}
-
 void World::ResetRandomBG()
 {
     sLog.outDetail("Random BG status reset for all characters.");
@@ -2723,6 +2748,9 @@ void World::ResetRandomBG()
 
     m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
     sWorld.setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
+
+}
+
 void World::SetPlayerLimit(int32 limit, bool /*needUpdate*/)
 {
     m_playerLimit = limit;
