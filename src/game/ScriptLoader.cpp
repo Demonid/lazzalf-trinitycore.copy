@@ -29,6 +29,12 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 
+//TeleNPC2
+void AddSC_npc_teleport();
+
+//Guild House
+void AddSC_guildhouse_npcs();
+
 //world
 void AddSC_areatrigger_scripts();
 void AddSC_boss_emeriss();
@@ -313,6 +319,16 @@ void AddSC_ungoro_crater();
 void AddSC_winterspring();
 
 //northrend
+void AddSC_boss_gormok();				// Trial of The crusader
+void AddSC_the_two_jormungar();
+void AddSC_boss_icehowl();
+void AddSC_boss_anub_arak_crusader();
+void AddSC_npc_toc6_announcer();
+void AddSC_instance_trial_of_the_crusader();
+void AddSC_boss_lord_jaraksus();
+void AddSC_boss_champions();
+void AddSC_boss_twin_fjola();
+
 void AddSC_boss_slad_ran();
 void AddSC_boss_moorabi();
 void AddSC_boss_drakkari_colossus();
@@ -378,6 +394,9 @@ void AddSC_boss_razorscale();
 void AddSC_boss_xt002();
 void AddSC_boss_kologarn();
 void AddSC_boss_assembly_of_iron();
+void AddSC_boss_hodir();
+void AddSC_boss_freya();
+void AddSC_boss_thorim();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -409,6 +428,8 @@ void AddSC_boss_xevozz();
 void AddSC_boss_zuramat();
 void AddSC_instance_violet_hold();
 void AddSC_violet_hold();
+void AddSC_instance_eye_of_eternity();   // Malygos
+void AddSC_boss_malygos(); 
 void AddSC_instance_forge_of_souls();   //Forge of Souls
 void AddSC_forge_of_souls();
 void AddSC_boss_bronjahm();
@@ -417,7 +438,7 @@ void AddSC_instance_pit_of_saron();     //Pit of Saron
 void AddSC_pit_of_saron();
 void AddSC_boss_garfrost();
 void AddSC_boss_ick();
-void AddSC_boss_tyrannus();
+void AddSC_boss_tyrannus();  
 void AddSC_instance_halls_of_reflection();   // Halls of Reflection
 void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
@@ -431,6 +452,7 @@ void AddSC_howling_fjord();
 void AddSC_icecrown();
 void AddSC_sholazar_basin();
 void AddSC_storm_peaks();
+void AddSC_wintergrasp();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 
@@ -530,6 +552,12 @@ void AddScripts()
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+	
+	//TeleNPC2
+    AddSC_npc_teleport();
+
+    //Guild House
+    AddSC_guildhouse_npcs();
 
     //world
     AddSC_areatrigger_scripts();
@@ -815,6 +843,16 @@ void AddScripts()
     AddSC_winterspring();
 
     //northrend
+    AddSC_boss_gormok();				// Trial of The crusader
+    AddSC_the_two_jormungar();
+    AddSC_boss_icehowl();
+    AddSC_boss_anub_arak_crusader();
+    AddSC_npc_toc6_announcer();
+    AddSC_instance_trial_of_the_crusader();
+    AddSC_boss_lord_jaraksus();
+    AddSC_boss_champions();
+    AddSC_boss_twin_fjola();
+
     AddSC_boss_slad_ran();               //Gundrak
     AddSC_boss_moorabi();
     AddSC_boss_drakkari_colossus();
@@ -880,6 +918,9 @@ void AddScripts()
     AddSC_boss_xt002();
     AddSC_boss_assembly_of_iron();
     AddSC_boss_kologarn();
+    AddSC_boss_hodir();
+    AddSC_boss_freya();
+    AddSC_boss_thorim();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
@@ -911,6 +952,8 @@ void AddScripts()
     AddSC_boss_zuramat();
     AddSC_instance_violet_hold();
     AddSC_violet_hold();
+    AddSC_instance_eye_of_eternity();   // Malygos
+    AddSC_boss_malygos();
     AddSC_instance_forge_of_souls();   //Forge of Souls
     AddSC_forge_of_souls();
     AddSC_boss_bronjahm();
@@ -933,6 +976,7 @@ void AddScripts()
     AddSC_icecrown();
     AddSC_sholazar_basin();
     AddSC_storm_peaks();
+    AddSC_wintergrasp();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
 
