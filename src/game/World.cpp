@@ -1100,6 +1100,13 @@ void World::LoadConfigSettings(bool reload)
     if (m_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] > MAX_LEVEL)
         m_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] = MAX_LEVEL;
 
+    m_configs[CONFIG_RANDOM_BG_RESET_HOUR] = sConfig.GetIntDefault("BattleGround.Random.ResetHour", 6);
+    if (m_configs[CONFIG_RANDOM_BG_RESET_HOUR] < 0 || m_configs[CONFIG_RANDOM_BG_RESET_HOUR] > 23)
+    {
+        sLog.outError("BattleGround.Random.ResetHour (%i) can't be load. Set to 6.", m_configs[CONFIG_RANDOM_BG_RESET_HOUR]);
+        m_configs[CONFIG_RANDOM_BG_RESET_HOUR] = 6;
+    }
+
     m_configs[CONFIG_DETECT_POS_COLLISION] = sConfig.GetBoolDefault("DetectPosCollision", true);
 
     m_configs[CONFIG_RESTRICTED_LFG_CHANNEL]      = sConfig.GetBoolDefault("Channel.RestrictedLfg", true);
@@ -1808,6 +1815,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculating next daily/weekly quest reset times...");
     InitTimedQuestResetTime();
 
+    sLog.outString("Calculate random battleground reset time..." );
+    InitRandomBGResetTime();
+
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();
 
@@ -1972,6 +1982,9 @@ void World::Update(uint32 diff)
     /// Handle weekly quest reset time
     if (m_gameTime >= m_NextWeeklyQuestReset)
         ResetTimedQuests(false);
+
+    if (m_gameTime > m_NextRandomBGReset)
+        ResetRandomBG();
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
@@ -2698,6 +2711,18 @@ void World::UpdateAllowedSecurity()
     }
 }
 
+}
+
+void World::ResetRandomBG()
+{
+    sLog.outDetail("Random BG status reset for all characters.");
+    CharacterDatabase.Execute("DELETE FROM character_battleground_random");
+    for(SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+        if (itr->second->GetPlayer())
+            itr->second->GetPlayer()->SetRandomWinner(false);
+
+    m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
+    sWorld.setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
 void World::SetPlayerLimit(int32 limit, bool /*needUpdate*/)
 {
     m_playerLimit = limit;
