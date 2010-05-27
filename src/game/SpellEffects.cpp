@@ -7782,13 +7782,8 @@ void Spell::EffectTitanGrip(uint32 /*eff_idx*/)
 
 void Spell::EffectRedirectThreat(uint32 /*i*/)
 {
-    if (unitTarget)
-    {
-        if (m_spellInfo->Id == 59665) // Vigilance
-            unitTarget->SetReducedThreatPercent((uint32)damage, m_caster->GetGUID());
-        else
-            m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());
-     } 
+    if(unitTarget)
+        m_caster->SetReducedThreatPercent((uint32)damage, unitTarget->GetGUID());  
 }
 
 void Spell::EffectWMODamage(uint32 /*i*/)
