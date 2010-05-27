@@ -382,6 +382,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
    /*----------------------*/
 
     // begin anti cheat
+    #define FROSTBROOD_VANQUISHER 28670
     bool check_passed = true;
     #ifdef ANTICHEAT_DEBUG
     sLog.outBasic("AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] opcode[%s] | transport (xyzo): %f, %f, %fo(%f)",
@@ -394,8 +395,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (plMover)
     {
         if (World::GetEnableMvAnticheat() &&
-            plMover->GetMapId() != 650 &&     // ToC
-            plMover->GetZoneId() != 4197 && // Wintergrasp
             plMover->GetSession() && plMover->GetSession()->GetSecurity() < SEC_GAMEMASTER) //!plMover->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster())
         {
             // calc time deltas
@@ -502,7 +501,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 else
                     move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
 
-                const float current_speed = mover->GetSpeed(move_type);
+                float current_speed = mover->GetSpeed(move_type);
+                // end current speed
+
+                uint32 vehicleEntry = 0;
+
+			    if (plMover->GetVehicle())
+			    {
+				    vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
+				    current_speed = plMover->GetVehicleBase()->GetSpeed(move_type);
+			    }
                 // end current speed
 
                 // movement distance
@@ -514,7 +522,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
                 const bool no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
-                    || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK));
+                    || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
+                    || ( plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER ));
                 const bool no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLY_MODE | MOVEMENTFLAG_FLYING)) == 0;
 
                 const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
@@ -630,24 +639,29 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 }
 
                 // speed and teleport hack checks
-                if (World::GetEnableAntiSpeedTele() && (real_delta > allowed_delta))
+                if ( plMover->GetMapId() != 650 &&     // ToC
+                     plMover->GetMapId() != 603 &&     // Ulduar
+                     plMover->GetZoneId() != 4197 ) // Wintergrasp
                 {
-                    #ifdef ANTICHEAT_EXCEPTION_INFO
-                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    if (World::GetEnableAntiSpeedTele() && (real_delta > allowed_delta))
                     {
-                        plMover->m_logcheat_time = cServerTime;
-                        if (real_delta < 4900.0f)
-                            sLog.outCheat("AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
-                        else
-                            sLog.outCheat("AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
-                    }
-                    #endif
-                    if (World::GetEnableAntiSpeedTeleBlock())
-                    {
-                        check_passed = false;
-                        if (vehMover)
-                            vehMover->Die();
-                        plMover->FallGround(2);
+                        #ifdef ANTICHEAT_EXCEPTION_INFO
+                        if( difftime_log > World::GetLogCheatDeltaTime() )
+                        {
+                            plMover->m_logcheat_time = cServerTime;
+                            if (real_delta < 4900.0f)
+                                sLog.outCheat("AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                            else
+                                sLog.outCheat("AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                        }
+                        #endif
+                        if (World::GetEnableAntiSpeedTeleBlock())
+                        {
+                            check_passed = false;
+                            if (vehMover)
+                                vehMover->Die();
+                            plMover->FallGround(2);
+                        }
                     }
                 }
 
@@ -670,39 +684,44 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 }
 
                 // Fly hack checks
-                if (World::GetEnableAntiFlyHack() && no_fly_auras && !no_fly_flags)
+                if ( plMover->GetMapId() != 650 &&     // ToC
+                     plMover->GetMapId() != 603 &&     // Ulduar
+                     plMover->GetZoneId() != 4197 ) // Wintergrasp
                 {
-                    #ifdef ANTICHEAT_EXCEPTION_INFO // Aura numbers: 201, 206, 207, 208, 209, 211
-                    if( difftime_log > World::GetLogCheatDeltaTime() )
+                    if (World::GetEnableAntiFlyHack() && no_fly_auras && !no_fly_flags)
                     {
-                        plMover->m_logcheat_time = cServerTime;
-                        sLog.outCheat("AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
-                            plMover->GetName(),
-                            plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-                            plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
-                            plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());
-                    }
-                    #endif
-                    if (World::GetEnableAntiFlyHackBlock())
-                    {
-                        check_passed = false;
-                        if (vehMover)
-                            vehMover->Die();
-                        // Tell the player "Sure, you can fly!"
+                        #ifdef ANTICHEAT_EXCEPTION_INFO // Aura numbers: 201, 206, 207, 208, 209, 211
+                        if( difftime_log > World::GetLogCheatDeltaTime() )
                         {
-                            WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
-                            data.append(plMover->GetPackGUID());
-                            data << uint32(0);
-                            SendPacket(&data);
+                            plMover->m_logcheat_time = cServerTime;
+                            sLog.outCheat("AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
+                                plMover->GetName(),
+                                plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
+                                plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
+                                plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());
                         }
-                        // Then tell the player "Wait, no, you can't."
+                        #endif
+                        if (World::GetEnableAntiFlyHackBlock())
                         {
-                            WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
-                            data.append(plMover->GetPackGUID());
-                            data << uint32(0);
-                            SendPacket(&data);
+                            check_passed = false;
+                            if (vehMover)
+                                vehMover->Die();
+                            // Tell the player "Sure, you can fly!"
+                            {
+                                WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
+                                data.append(plMover->GetPackGUID());
+                                data << uint32(0);
+                                SendPacket(&data);
+                            }
+                            // Then tell the player "Wait, no, you can't."
+                            {
+                                WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
+                                data.append(plMover->GetPackGUID());
+                                data << uint32(0);
+                                SendPacket(&data);
+                            }
+                            plMover->FallGround(2);
                         }
-                        plMover->FallGround(2);
                     }
                 }
 
