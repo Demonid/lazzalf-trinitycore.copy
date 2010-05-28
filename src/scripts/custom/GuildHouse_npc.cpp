@@ -715,6 +715,97 @@ bool GossipSelect_buffnpc(Player *player, Creature *_Creature, uint32 sender, ui
 return true;
 }
 
+bool GossipHello_portal_npc(Player *player, Creature *_Creature)
+{
+    // Main Menu for Alliance
+    if ( player->GetTeam() == ALLIANCE )
+    {
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Dalaran"              , GOSSIP_SENDER_MAIN, 1005);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Shattrath"            , GOSSIP_SENDER_MAIN, 1010);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Stormwind"            , GOSSIP_SENDER_MAIN, 1015);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Ironforge"            , GOSSIP_SENDER_MAIN, 1020);                     
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Darnassus"            , GOSSIP_SENDER_MAIN, 1025);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Exodar"               , GOSSIP_SENDER_MAIN, 1030);
+    }
+    else // Main Menu for Horde
+    {
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Dalaran"              , GOSSIP_SENDER_MAIN, 1005);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Shattrath"            , GOSSIP_SENDER_MAIN, 1010);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Orgrimmar"            , GOSSIP_SENDER_MAIN, 1035);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Undercity"            , GOSSIP_SENDER_MAIN, 1040);                     
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Thunder Bluff"        , GOSSIP_SENDER_MAIN, 1045);
+        player->ADD_GOSSIP_ITEM( 5, "Teleport Silvermoon"           , GOSSIP_SENDER_MAIN, 1050);
+    }
+
+    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
+
+    return true;
+}
+
+void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 action )
+{
+    // Not allow in combat
+    if(!player->getAttackers().empty())
+    {
+        player->CLOSE_GOSSIP_MENU();
+        _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, player->GetGUID());
+        return;
+    }
+
+    switch(action)
+    {
+        case 1005: //Dalaran
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(571, 5804.15, 624.77, 647.8, 1.64);
+            break;
+        case 1010: // Shattrath
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(530, -1838.16, 5301.79, -12.5, 5.95);
+            break;
+        case 1015: // Stormwind
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(0, -8833.38, 628.63, 94.1, 0);
+            break;
+        case 1020: // Ironforge
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(0, -4918.87, -940.4, 502, 0);
+            break;
+        case 1025: // Darnassus
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(1, 9949.59, 2284.21, 1341.4, 1.6);
+            break;
+        case 1030: // Exodar
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(530, -3965.7, -11653.6, -138.85, 0.85);
+            break;
+        case 1035: // Orgrimmar
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(1, 1629.36, -4373.4, 31.3, 3.54);
+            break;
+        case 1040: // Undercity
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(0, 1584.07, 242, -52.15, 0);
+            break;
+        case 1045: // Thunder Bluff
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(1, -1277.37, 124.8, 121.3, 5.22);
+            break;
+        case 1050: // Silvermoon
+            player->CLOSE_GOSSIP_MENU();
+            player->TeleportTo(530, 9532.9, -6828.78, 16.5, 3.27);
+            break;       
+    }
+}
+
+bool GossipSelect_portal_npc(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    // Main menu
+    if (sender == GOSSIP_SENDER_MAIN)
+        SendDefaultMenu_portal_npc( player, _Creature, action );
+
+    return true;
+}
+
 void AddSC_guildhouse_npcs()
 {
     Script *newscript;
@@ -734,5 +825,11 @@ void AddSC_guildhouse_npcs()
     newscript->Name="buffnpc";
     newscript->pGossipHello = &GossipHello_buffnpc;
     newscript->pGossipSelect = &GossipSelect_buffnpc;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="portal_npc";
+    newscript->pGossipHello = &GossipHello_portal_npc;
+    newscript->pGossipSelect = &GossipSelect_portal_npc;
     newscript->RegisterSelf();
 }

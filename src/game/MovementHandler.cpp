@@ -508,8 +508,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
 			    if (plMover->GetVehicle())
 			    {
-				    vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
-				    current_speed = plMover->GetVehicleBase()->GetSpeed(move_type);
+                    if (plMover->GetVehicleCreatureBase())
+				        vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
 			    }
                 // end current speed
 
