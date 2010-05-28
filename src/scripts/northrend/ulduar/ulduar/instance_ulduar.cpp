@@ -42,7 +42,6 @@ enum eGameObjects
     GO_Kologarn_BRIDGE      = 194232,
     GO_Hodir_CHEST_HERO     = 194308,
     GO_Hodir_CHEST          = 194307,
-    GO_Thorim_GATE          = 194560,
 };
 
 struct instance_ulduar : public InstanceData
@@ -73,7 +72,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiThorim;
     uint64 uiKologarnBridge;
     
-    GameObject* pLeviathanDoor, *KologarnChest, *pThorimGate, *HodirChest;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -86,12 +85,18 @@ struct instance_ulduar : public InstanceData
             case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
             case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
-            case GO_Thorim_GATE: pThorimGate = add ? pGo : NULL; break;
         }
     }
 
     void OnCreatureCreate(Creature* pCreature, bool add)
     {
+        Map::PlayerList const &players = instance->GetPlayers();
+        uint32 TeamInInstance = 0;
+
+        if (!players.isEmpty())
+            if (Player* pPlayer = players.begin()->getSource())
+                TeamInInstance = pPlayer->GetTeam();
+        
         switch(pCreature->GetEntry())
         {
             case 33113: uiLeviathan = pCreature->GetGUID(); return;
@@ -112,6 +117,32 @@ struct instance_ulduar : public InstanceData
             case 32914: uiStonebark = pCreature->GetGUID(); return;
             case 32906: uiFreya = pCreature->GetGUID(); return;
             case 32865: uiThorim = pCreature->GetGUID(); return;
+            
+            // Hodir: Alliance npcs are spawned by default
+            case 33325:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32941, HORDE); return;
+            case 32901:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(33333, HORDE); return;
+            case 33328:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(33332, HORDE); return;
+            case 32900:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32950, HORDE); return;
+            case 32893:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(33331, HORDE); return;
+            case 33327:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32946, HORDE); return;
+            case 32897:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32948, HORDE); return;
+            case 33326:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(33330, HORDE); return;
         }
 
         AddMinion(pCreature, add);
@@ -168,10 +199,6 @@ struct instance_ulduar : public InstanceData
             case DATA_LEVIATHAN_DOOR:
                 if (pLeviathanDoor)
                     pLeviathanDoor->SetGoState(GOState(value));
-                break;
-            case DATA_THORIM_GATE:
-                if (pThorimGate)
-                    pThorimGate->SetGoState(GOState(value));
                 break;
         }
     }

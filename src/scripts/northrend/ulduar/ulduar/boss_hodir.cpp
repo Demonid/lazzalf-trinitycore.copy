@@ -143,7 +143,7 @@ struct boss_hodir_AI : public BossAI
         
         me->SetReactState(REACT_PASSIVE);
         
-        // Spawn NPC Helpers - TODO HORDE version        
+        // Spawn NPC Helpers
         if (Helper[0] = me->SummonCreature(NPC_FIELD_MEDIC_PENNY, 1983.75, -243.36, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[0]->GetPositionX(), Helper[0]->GetPositionY(), Helper[0]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
             {
