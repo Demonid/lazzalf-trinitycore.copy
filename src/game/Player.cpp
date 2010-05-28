@@ -66,6 +66,7 @@
 #include "AchievementMgr.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "OutdoorPvPWG.h"
 
 #include <cmath>
 
@@ -4651,6 +4652,15 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
     if (!applySickness)
         return;
+
+    if (GetZoneId() == 4197) // Wintergrasp
+        if (OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))
+            if (pvpWG->isWarTime())
+            {
+                SetHealth(uint32(GetMaxHealth()));
+                SetPower(POWER_MANA, uint32(GetMaxPower(POWER_MANA)));
+                return;
+            }
 
     //Characters from level 1-10 are not affected by resurrection sickness.
     //Characters from level 11-19 will suffer from one minute of sickness

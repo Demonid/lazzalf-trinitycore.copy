@@ -1097,7 +1097,8 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
                 creature->SetVisibility(VISIBILITY_OFF);
             return false;
         case CREATURE_SPIRIT_HEALER:
-            creature->SetVisibility(isWarTime() ? VISIBILITY_OFF : VISIBILITY_ON);
+            creature->SetVisibility(VISIBILITY_ON);
+            //creature->SetVisibility(isWarTime() ? VISIBILITY_OFF : VISIBILITY_ON);
             return false;
         case CREATURE_ENGINEER:
             return false;
