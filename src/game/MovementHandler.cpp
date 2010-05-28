@@ -504,15 +504,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 float current_speed = mover->GetSpeed(move_type);
                 // end current speed
 
-                uint32 vehicleEntry = 0;
-
-			    if (plMover->GetVehicle())
-			    {
-				    vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
-				    current_speed = plMover->GetVehicleBase()->GetSpeed(move_type);
-			    }
-                // end current speed
-
                 // movement distance
                 const float delta_x = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionX() - movementInfo.x;
                 const float delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - movementInfo.y;
@@ -523,7 +514,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 const bool no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
-                    || ( plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER ));
+                    || ( plMover->GetVehicle() && plMover->GetVehicle()->GetEntry() == FROSTBROOD_VANQUISHER ));
                 const bool no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLY_MODE | MOVEMENTFLAG_FLYING)) == 0;
 
                 const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
