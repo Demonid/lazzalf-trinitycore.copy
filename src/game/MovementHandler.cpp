@@ -514,7 +514,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 const bool no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
-                    || ( plMover->GetVehicle() && plMover->GetVehicle()->GetEntry() == FROSTBROOD_VANQUISHER ));
+                    /*|| ( plMover->GetVehicle() && plMover->GetVehicle()->GetEntry() == FROSTBROOD_VANQUISHER )*/);
                 const bool no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLY_MODE | MOVEMENTFLAG_FLYING)) == 0;
 
                 const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
