@@ -166,6 +166,10 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (!entry->IsDungeon())
         return true;
 
+    // Not an areatrigger teleporting from world into an instance, if it is same map
+    if (mapid == player->GetMapId())
+       return true;
+
     const char *mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
 
     Group* pGroup = player->GetGroup();

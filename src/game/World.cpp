@@ -2748,7 +2748,6 @@ void World::ResetRandomBG()
 
     m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
     sWorld.setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
-
 }
 
 void World::SetPlayerLimit(int32 limit, bool /*needUpdate*/)
