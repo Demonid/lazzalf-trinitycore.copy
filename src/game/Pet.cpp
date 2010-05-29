@@ -935,12 +935,22 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBonusDamage(int32(val));
                     break;
                 }
-                case 1964: //force of nature
+				case 89: // Infernal
+                {
+                    //60% damage bonus of warlock's fire damage
+                    float val = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6;
+                    SetBonusDamage( int32(val));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((val) - petlevel));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((val) + petlevel));
+                    break;
+                }
+				case 1964: //force of nature
                 {
                     if (!pInfo)
                         SetCreateHealth(30 + 30*petlevel);
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 2.5f - (petlevel / 2)));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 2.5f + (petlevel / 2)));
+                    int32 bonus_dmg = m_owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) * 0.15f;
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 7.5f - (petlevel / 2)+bonus_dmg));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 7.5f + (petlevel / 2)+bonus_dmg));
                     break;
                 }
                 case 15352: //earth elemental 36213
@@ -1925,6 +1935,12 @@ void Pet::CastPetAuras(bool current)
             owner->RemovePetAura(pa);
         else
             CastPetAura(pa);
+    }
+
+    if (AuraEffect *avoidance = owner->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2718, 0)) 
+    {
+        int32 bp = (avoidance->GetAmount() / 1000);
+        CastCustomSpell(this, 62137, &bp, NULL, NULL, true);
     }
 }
 

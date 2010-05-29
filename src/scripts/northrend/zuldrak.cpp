@@ -820,11 +820,12 @@ struct npc_yggdrasAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
-        {
-            std::string sText = (std::string(pKiller->GetName()) + " has defeated Yg.. Yggg-really big worm!");
-            pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
-        }
+        if (me->ToTempSummon())
+            if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
+            {
+                std::string sText = (std::string(pKiller->GetName()) + " has defeated Yg.. Yggg-really big worm!");
+                pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
+            }
 
 
         if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
@@ -1101,8 +1102,9 @@ struct npc_elemental_lordAI : public ScriptedAI
 
         std::string sText = (std::string(pKiller->GetName()) + " is victorious once more!");
 
-        if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
-            pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
+        if (me->ToTempSummon())
+            if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
+                pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
     }
 };
 
