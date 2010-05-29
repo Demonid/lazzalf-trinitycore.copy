@@ -749,7 +749,7 @@ struct dummy_dragonAI : public ScriptedAI
 
         //using a grid search here seem to be more efficient than caching all four guids
         //in instance script and calculate range to each.
-        GameObject* pPortal = me->FindNearestGameObject(GO_TWILIGHT_PORTAL,50.0f);
+        GameObject* pPortal = me->FindNearestGameObject(GO_TWILIGHT_PORTAL,80.0f);
 
         switch(me->GetEntry())
         {
@@ -759,12 +759,12 @@ struct dummy_dragonAI : public ScriptedAI
                 if (pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 {
                     for(uint32 i = 0; i < 6; ++i)
-                        me->SummonCreature(NPC_SARTHARION_TWILIGHT_EGG, TwilightEggsSarth[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                        me->SummonCreature(NPC_SARTHARION_TWILIGHT_EGG, TwilightEggsSarth[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,5000);
                 }
                 else
                 {
                     for(uint32 i = 0; i < 6; ++i)
-                        me->SummonCreature(NPC_TWILIGHT_EGG, TwilightEggs[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                        me->SummonCreature(NPC_TWILIGHT_EGG, TwilightEggs[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,5000);
                 }
                 break;
             }
@@ -772,9 +772,9 @@ struct dummy_dragonAI : public ScriptedAI
             {
                 iTextId = WHISPER_OPEN_PORTAL;
                 if (pInstance && !pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
-                    me->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                    me->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron, TEMPSUMMON_CORPSE_TIMED_DESPAWN,5000);
                 else
-                    me->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron2, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);
+                    me->SummonCreature(NPC_ACOLYTE_OF_SHADRON, AcolyteofShadron2, TEMPSUMMON_CORPSE_TIMED_DESPAWN,5000);
 
                 break;
             }
