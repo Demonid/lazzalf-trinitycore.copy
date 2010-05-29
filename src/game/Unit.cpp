@@ -1532,6 +1532,10 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
            if (alreadyDone.find(*i) == alreadyDone.end())
            {
                alreadyDone.insert(*i);
+
+               if (pVictim == this) // non fare danno a se stesso
+                   continue;
+
                uint32 damage=(*i)->GetAmount();
                SpellEntry const *i_spellProto = (*i)->GetSpellProto();
                //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
