@@ -466,16 +466,24 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     break;
                 case 2:
                     engineer[0] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    engineer[0]->SetSpeed(MOVE_RUN, 0.5f);
-                    engineer[0]->SetHomePosition(Harpoon1);
-                    engineer[0]->GetMotionMaster()->MoveTargetedHome();
+                    if (engineer[0])
+                    { 
+                        engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        engineer[0]->SetSpeed(MOVE_RUN, 0.5f);
+                        engineer[0]->SetHomePosition(Harpoon1);
+                        engineer[0]->GetMotionMaster()->MoveTargetedHome();
+                    }
+                    
                     engineer[1] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    engineer[1]->SetSpeed(MOVE_RUN, 0.5f);
-                    engineer[1]->SetHomePosition(Harpoon2);
-                    engineer[1]->GetMotionMaster()->MoveTargetedHome();
-                    engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
+                    if (engineer[1])
+                    {
+                        engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        engineer[1]->SetSpeed(MOVE_RUN, 0.5f);
+                        engineer[1]->SetHomePosition(Harpoon2);
+                        engineer[1]->GetMotionMaster()->MoveTargetedHome();
+                    }
+                    if (engineer[0])
+                        engineer[0]->MonsterYell(SAY_AGGRO_1, LANG_UNIVERSAL, 0);
                     uiPhase = 3;
                     uiTimer = 14000;
                     break;
@@ -484,33 +492,51 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     break;
                 case 4:
                     defender[0] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    defender[0] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    defender[0] ->SetHomePosition(pos1);
-                    defender[0] ->GetMotionMaster()->MoveTargetedHome();
+                    if (defender[0])
+                    { 
+                        defender[0] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[0] ->SetHomePosition(pos1);
+                        defender[0] ->GetMotionMaster()->MoveTargetedHome();
+                    }
 
                     defender[1] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    defender[1] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    defender[1] ->SetHomePosition(pos2);
-                    defender[1] ->GetMotionMaster()->MoveTargetedHome();
+                    if (defender[1])
+                    { 
+                        defender[1] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[1] ->SetHomePosition(pos2);
+                        defender[1] ->GetMotionMaster()->MoveTargetedHome();
+                    }
                     
                     defender[2] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    defender[2] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    defender[2] ->SetHomePosition(pos3);
-                    defender[2] ->GetMotionMaster()->MoveTargetedHome();
-
+                    if (defender[3])
+                    { 
+                        defender[2] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[2] ->SetHomePosition(pos3);
+                        defender[2] ->GetMotionMaster()->MoveTargetedHome();
+                    }
+                    
                     defender[3] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    defender[3] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                    defender[3] ->SetHomePosition(pos4);
-                    defender[3] ->GetMotionMaster()->MoveTargetedHome();
+                    if (defender[3])
+                    {                    
+                        defender[3] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[3] ->SetHomePosition(pos4);
+                        defender[3] ->GetMotionMaster()->MoveTargetedHome();
+                    }
                     uiPhase = 5;
                     break;
                 case 5:
-                    engineer[0]->HandleEmoteCommand(EMOTE_STATE_USESTANDING);
-                    engineer[1]->HandleEmoteCommand(EMOTE_STATE_USESTANDING);
-                    defender[0]->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                    defender[1]->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                    defender[2]->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                    defender[3]->HandleEmoteCommand(EMOTE_STATE_READY2H);
+                    if (engineer[0])
+                        engineer[0]->HandleEmoteCommand(EMOTE_STATE_USESTANDING);
+                    if (engineer[1])
+                        engineer[1]->HandleEmoteCommand(EMOTE_STATE_USESTANDING);
+                    if (defender[0])
+                        defender[0]->HandleEmoteCommand(EMOTE_STATE_READY2H);
+                    if (defender[1])
+                        defender[1]->HandleEmoteCommand(EMOTE_STATE_READY2H);
+                    if (defender[2])
+                        defender[2]->HandleEmoteCommand(EMOTE_STATE_READY2H);
+                    if (defender[3])
+                        defender[3]->HandleEmoteCommand(EMOTE_STATE_READY2H);
                     me->MonsterYell(SAY_AGGRO_2, LANG_UNIVERSAL, 0);
                     uiTimer = 16000;
                     uiPhase = 6;
@@ -519,7 +545,8 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(DATA_RAZORSCALE)))
                         if (pRazorscale->AI())
                             pRazorscale->AI()->DoAction(ACTION_EVENT_START);
-                    engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
+                    if (engineer[0])
+                        engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
                     uiPhase =7;
                     break;
             }
