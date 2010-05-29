@@ -38,6 +38,7 @@
 #include "Guild.h"
 #include "ScriptMgr.h"
 #include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 
 void WorldSession::HandleTabardVendorActivateOpcode(WorldPacket & recv_data)
 {
