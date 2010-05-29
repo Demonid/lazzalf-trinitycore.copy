@@ -5708,7 +5708,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     }
                     break;
                 }
-                case 71562: // Deahtbringer's Will Heroic
+                case 71562: // Deathbringer's Will Heroic
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
                         return false;
@@ -5749,7 +5749,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     CastSpell(target,RandomSpells[rand_spell],true,castItem,triggeredByAura, originalCaster);
                     for (std::vector<uint32>::iterator itr = RandomSpells.begin(); itr != RandomSpells.end(); ++itr)
                     {
-                        ToPlayer()->AddSpellCooldown(*itr,0,time(NULL) + cooldown);
+                        if (!ToPlayer()->HasSpellCooldown(*itr))
+                            ToPlayer()->AddSpellCooldown(*itr,0,time(NULL) + cooldown);
                     }
                     break;
                 }
@@ -10088,18 +10089,22 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                         }
                 }
         break;
-        // Glyph of Shadow Word: Pain
         case SPELLFAMILY_PRIEST:
             if (spellProto->SpellFamilyFlags[0] & 0x800000)
             {
-                // Increase Mind Flay damage
+                // Glyph of Shadow Word: Pain
                 if (AuraEffect * aurEff = GetAuraEffect(55687, 0))
-                    // if Shadow Word: Pain present
+                    // Increase Mind Flay damage if Shadow Word: Pain present on target
+                    if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0,0, GetGUID()))
+                        DoneTotalMod *= (aurEff->GetAmount() + 100.0f) / 100.f;
+
+                // Twisted Faith - Mind Flay part
+                if (AuraEffect * aurEff = GetAuraEffect(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS, SPELLFAMILY_PRIEST, 2848, 1))
+                    // Increase Mind Flay damage if Shadow Word: Pain present on target
                     if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0,0, GetGUID()))
                         DoneTotalMod *= (aurEff->GetAmount() + 100.0f) / 100.f;
             }
         break;
-
         case SPELLFAMILY_PALADIN:
             // Judgement of Vengeance/Judgement of Corruption
             if ((spellProto->SpellFamilyFlags[1] & 0x400000) && spellProto->SpellIconID == 2292)
