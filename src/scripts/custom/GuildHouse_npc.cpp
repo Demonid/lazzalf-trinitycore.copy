@@ -764,35 +764,35 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
             break;
         case 1015: // Stormwind
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(0, -8833.38, 628.63, 94.1, 0);
+            player->TeleportTo(0, -8992.20, 848.46, 29.63, 0);
             break;
         case 1020: // Ironforge
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(0, -4918.87, -940.4, 502, 0);
+            player->TeleportTo(0, -4602.75, -906.53, 502.76, 0);
             break;
         case 1025: // Darnassus
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(1, 9949.59, 2284.21, 1341.4, 1.6);
+            player->TeleportTo(1, 966.80, 2513.63, 1331.66, 0);
             break;
         case 1030: // Exodar
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(530, -3965.7, -11653.6, -138.85, 0.85);
+            player->TeleportTo(530, -4021.21, -11561.82, -138.14, 0);
             break;
         case 1035: // Orgrimmar
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(1, 1629.36, -4373.4, 31.3, 3.54);
+            player->TeleportTo(1, 1469.64, -4221.07, 59.23, 0);
             break;
         case 1040: // Undercity
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(0, 1584.07, 242, -52.15, 0);
+            player->TeleportTo(0, 1769.64, 64.17, -46.33, 0);
             break;
         case 1045: // Thunder Bluff
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(1, -1277.37, 124.8, 121.3, 5.22);
+            player->TeleportTo(1, -970.36, 284.84, 111.41, 0);
             break;
         case 1050: // Silvermoon
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(530, 9532.9, -6828.78, 16.5, 3.27);
+            player->TeleportTo(530, 10000.25, -7112.02, 47.71, 0);
             break;       
     }
 }
