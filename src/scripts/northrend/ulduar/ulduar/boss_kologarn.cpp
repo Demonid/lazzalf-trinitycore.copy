@@ -30,6 +30,7 @@ EndScriptData */
 #define SPELL_ARM_DEAD_DAMAGE   RAID_MODE(63629,63979)
 #define SPELL_TWO_ARM_SMASH     RAID_MODE(63356,64003)
 #define SPELL_ONE_ARM_SMASH     RAID_MODE(63573,64006)
+#define CRUNCH_ARMOR            RAID_MODE(63355,64002)
 #define SPELL_STONE_SHOUT       RAID_MODE(63716,64005)
 #define SPELL_PETRIFY_BREATH    RAID_MODE(62030,63980)
 #define SPELL_SHOCKWAVE         RAID_MODE(63783,63982)
@@ -217,9 +218,15 @@ struct boss_kologarnAI : public BossAI
             case EVENT_NONE: break;
             case EVENT_SMASH:
                 if (left && right)
+                {
                     DoCastVictim(SPELL_TWO_ARM_SMASH, true);
+                    DoCastVictim(CRUNCH_ARMOR, true);
+                }
                 else if(left || right)
+                {
                     DoCastVictim(SPELL_ONE_ARM_SMASH, true);
+                    DoCastVictim(CRUNCH_ARMOR, true);
+                }
                 events.RepeatEvent(15000);
                 break;
             case EVENT_SWEEP:
