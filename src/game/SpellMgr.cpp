@@ -3697,6 +3697,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 64234: // Gravity Bomb Hero
         case 63018: // Searing Light Normal
         case 65121: // Searing Light Hero
+        case 62016: // Charge Orb
             spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
