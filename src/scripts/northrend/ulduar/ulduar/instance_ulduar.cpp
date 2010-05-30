@@ -31,6 +31,7 @@ const DoorData doorData[] =
     {194441,    BOSS_HODIR,     DOOR_TYPE_PASSAGE,  0},
     {194634,    BOSS_HODIR,     DOOR_TYPE_PASSAGE,  0},
     {194442,    BOSS_HODIR,     DOOR_TYPE_ROOM,     0},
+    {194559,    BOSS_THORIM,    DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
 
@@ -42,6 +43,8 @@ enum eGameObjects
     GO_Kologarn_BRIDGE      = 194232,
     GO_Hodir_CHEST_HERO     = 194308,
     GO_Hodir_CHEST          = 194307,
+    GO_Runic_DOOR           = 194557,
+    GO_Stone_DOOR           = 194558
 };
 
 struct instance_ulduar : public InstanceData
@@ -64,15 +67,17 @@ struct instance_ulduar : public InstanceData
     uint64 uiKologarn;
     uint64 uiRightArm;
     uint64 uiLeftArm;
+    uint64 uiKologarnBridge;
     uint64 uiAuriaya;
     uint64 uiBrightleaf;
     uint64 uiIronbranch;
     uint64 uiStonebark;
     uint64 uiFreya;
     uint64 uiThorim;
-    uint64 uiKologarnBridge;
+    uint64 uiRunicColossus;
+    uint64 uiRuneGiant;
     
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -85,6 +90,8 @@ struct instance_ulduar : public InstanceData
             case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
             case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
+            case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
+            case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
         }
     }
 
@@ -117,6 +124,8 @@ struct instance_ulduar : public InstanceData
             case 32914: uiStonebark = pCreature->GetGUID(); return;
             case 32906: uiFreya = pCreature->GetGUID(); return;
             case 32865: uiThorim = pCreature->GetGUID(); return;
+            case 32872: uiRunicColossus = pCreature->GetGUID(); return;
+            case 32873: uiRuneGiant = pCreature->GetGUID(); return;
             
             // Hodir: Alliance npcs are spawned by default
             case 33325:
@@ -188,6 +197,10 @@ struct instance_ulduar : public InstanceData
             return uiFreya;
         case DATA_THORIM:
             return uiThorim;
+        case DATA_RUNIC_COLOSSUS:
+            return uiRunicColossus;
+        case DATA_RUNE_GIANT:
+            return uiRuneGiant;
         }
         return 0;
     }
@@ -199,6 +212,14 @@ struct instance_ulduar : public InstanceData
             case DATA_LEVIATHAN_DOOR:
                 if (pLeviathanDoor)
                     pLeviathanDoor->SetGoState(GOState(value));
+                break;
+            case DATA_RUNIC_DOOR:
+                if (pRunicDoor)
+                    pRunicDoor->SetGoState(GOState(value));
+                break;
+            case DATA_STONE_DOOR:
+                if (pStoneDoor)
+                    pStoneDoor->SetGoState(GOState(value));
                 break;
         }
     }

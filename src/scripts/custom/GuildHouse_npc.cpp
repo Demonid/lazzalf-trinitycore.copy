@@ -79,7 +79,7 @@
 #define ICON_GOSSIP_TABARD       8
 #define ICON_GOSSIP_XSWORDS      9
 
-#define GOSSIP_COUNT_MAX         10
+#define GOSSIP_COUNT_MAX         7
 
 bool isPlayerGuildLeader(Player *player)
 {
