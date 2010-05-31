@@ -25,12 +25,13 @@ void OutdoorPvPWG::LoadTeamPair(TeamPairMap &pairMap, const TeamPair *pair)
 
 void OutdoorPvPWG::ResetCreatureEntry(Creature *cr, uint32 entry)
 {
-    if (!cr)
-        return;
-
-    cr->SetOriginalEntry(entry);
-    cr->Respawn(true);
-    cr->SetVisibility(VISIBILITY_ON);
+    if (cr)
+    {
+        cr->SetOriginalEntry(entry);
+        if (entry != cr->GetEntry() || !cr->isAlive())
+            cr->Respawn(true);
+        cr->SetVisibility(VISIBILITY_ON);
+    }
 }
 
 std::string OutdoorPvPWG::GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleConstant loc)
@@ -1138,7 +1139,8 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
     if (!creature)
         return false;
 
-    switch(GetCreatureType(creature->GetEntry()))
+    uint32 entry = creature->GetEntry();
+    switch(GetCreatureType(entry))
     {
         case CREATURE_TURRET:
             if (isWarTime())
@@ -1190,7 +1192,10 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
             {
                 TeamPairMap::const_iterator itr = m_creEntryPair.find(creature->GetCreatureData()->id);
                 if (itr != m_creEntryPair.end())
-                    ResetCreatureEntry(creature, getDefenderTeamId() == TEAM_ALLIANCE ? itr->second : itr->first);
+                {
+                    entry = getDefenderTeamId() == TEAM_ALLIANCE ? itr->second : itr->first;
+                    ResetCreatureEntry(creature, entry);
+                }
                 return false;
             }
         default:
@@ -1205,19 +1210,25 @@ bool OutdoorPvPWG::UpdateQuestGiverPosition(uint32 guid, Creature *creature)
     if (creature && creature->IsInWorld())
     {
         // if not questgiver or position is the same, do nothing
-        if (creature->GetPositionX() == pos.GetPositionX() && creature->GetPositionY() == pos.GetPositionY() && creature->GetPositionZ() == pos.GetPositionZ())
+        if (creature->GetPositionX() == pos.GetPositionX() && 
+            creature->GetPositionY() == pos.GetPositionY() && 
+            creature->GetPositionZ() == pos.GetPositionZ())
             return false;
+
+        if (creature->isAlive() && creature->isInCombat())
+        {
+            creature->CombatStop(true);
+            creature->getHostileRefManager().deleteReferences();
+        }
 
         creature->SetHomePosition(pos);
         creature->DestroyForNearbyPlayers();
 
         if (!creature->GetMap()->IsLoaded(pos.GetPositionX(), pos.GetPositionY()))
             creature->GetMap()->LoadGrid(pos.GetPositionX(), pos.GetPositionY());
-
         creature->GetMap()->CreatureRelocation(creature, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
-        creature->Respawn(true);
-        creature->CombatStop(true);
-        creature->getThreatManager().getThreatList().clear();
+        if (!creature->isAlive())
+            creature->Respawn(true);
     }
     else
         objmgr.MoveCreData(guid, 571, pos);
@@ -1353,7 +1364,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 
     if (isWarTime())
     {
-        if (plr->isInFlight() && !plr->HasAura(58730)) //Restricted Flight Area
+        if (plr->IsFlying()) //Restricted Flight Area
             plr->CastSpell(plr, 58730, true);
 
         if (plr->getLevel() > 69)
@@ -1387,6 +1398,9 @@ void OutdoorPvPWG::HandlePlayerResurrects(Player *plr, uint32 zone)
 
     if (isWarTime())
     {
+        if (plr->HasAura(58730))
+            plr->RemoveAura(58730);
+
         if (plr->getLevel() > 69)
         {
             // Tenacity
@@ -1765,10 +1779,16 @@ void OutdoorPvPWG::StartBattle()
 
     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
     {
+        if ((*itr)->IsFlying() && !(*itr)->HasAura(58730))
+            (*itr)->CastSpell((*itr), 58730, true);
+
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
     }
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
     {
+        if ((*itr)->IsFlying() && !(*itr)->HasAura(58730))
+            (*itr)->CastSpell((*itr), 58730, true);
+
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
     }
 
