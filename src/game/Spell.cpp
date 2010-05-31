@@ -2293,13 +2293,13 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
         std::list<Unit*> unitList;
 
-        switch (m_spellInfo->Id)
+        /*switch (m_spellInfo->Id)
         {
              case 62834: // Boom (Boombot)
              case 64320: // Rune of Power (Assembly of Iron)
                 targetType = SPELL_TARGETS_ANY;
                 break;
-        }
+        }*/
 
         if (targetType == SPELL_TARGETS_ENTRY)
         {
