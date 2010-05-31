@@ -613,11 +613,51 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     break;
                 case BUILDING_WALL:
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
+                    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }                    
                     break;
                 case BUILDING_TOWER:
                     ++m_towerDamagedCount[state->GetTeamId()];
                     msgStr = fmtstring(objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DAMAGED), msgStr.c_str());
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
+                    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
                     break;
             }
         }
@@ -648,6 +688,26 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     break;
                 case BUILDING_WALL:
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
+                    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
                     break;
                 case BUILDING_TOWER:
                     --m_towerDamagedCount[state->GetTeamId()];
@@ -682,6 +742,26 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
                     }
                     msgStr = fmtstring(objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DESTROYED), msgStr.c_str());
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_HORDE_CAPTAIN; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_ALLIANCE_CAPTAIN;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress under Siege
+                    }
+                    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+                    {
+                        if (getDefenderTeamId() == TEAM_ALLIANCE)
+                        {
+                            TeamIDsound = OutdoorPvP_WG_HORDE_CAPTAIN; //Allience Worn Sound
+                        }
+                        else 
+                            TeamIDsound = OutdoorPvP_WG_ALLIANCE_CAPTAIN;  //Horde Worn Sound
+                        (*itr)->PlayDirectSound(TeamIDsound) ; // Wintergrasp Fortress destroyed Siege
+                    }
                     break;
             }
             BroadcastStateChange(state);
@@ -1273,6 +1353,9 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 
     if (isWarTime())
     {
+        if (plr->isInFlight() && !plr->HasAura(58730)) //Restricted Flight Area
+            plr->CastSpell(plr, 58730, true);
+
         if (plr->getLevel() > 69)
         {
             if (!plr->HasAura(SPELL_RECRUIT) && !plr->HasAura(SPELL_CORPORAL) && !plr->HasAura(SPELL_LIEUTENANT))
@@ -1680,6 +1763,15 @@ void OutdoorPvPWG::StartBattle()
     m_wartime = true;
     m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILISECONDS;
 
+    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+    {
+        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
+    }
+    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+    {
+        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
+    }
+
     // destroyed all vehicles
     for (uint32 team = 0; team < 2; ++team)
     {
@@ -1737,6 +1829,23 @@ void OutdoorPvPWG::StartBattle()
 void OutdoorPvPWG::EndBattle()
 {
     m_wartime = false;
+
+    //Sound on End Battle
+    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
+    {
+	    if (getDefenderTeamId() == TEAM_ALLIANCE)
+	    {
+            TeamIDsound = OutdoorPvP_WG_SOUND_ALLIANCE_WINS; //Allience Win
+	    }
+        else 
+            TeamIDsound = OutdoorPvP_WG_SOUND_HORDE_WINS;  //Horde Win
+	    (*itr)->PlayDirectSound(TeamIDsound) ; // SoundOnEndWin
+    }
+    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
+    {
+       (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_NEAR_VICTORY) ; // SoundOnEndLoose
+    }
+
 
     for (uint32 team = 0; team < 2; ++team)
     {
