@@ -20,16 +20,6 @@ const uint32 ClockWorldState[2] = {3781,4354};
 
 const uint16 GameEventWintergraspDefender[2] = {50, 51};
 
-enum OutdoorPvP_WG_Sounds
-{
-    OutdoorPvP_WG_SOUND_KEEP_CLAIMED            = 8192,
-    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
-    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
-    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
-    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
-    OutdoorPvP_WG_SOUND_NEAR_VICTORY            = 8456
-};
-
 enum DataId
 {
     DATA_ENGINEER_DIE,
@@ -46,6 +36,22 @@ enum OutdoorPvP_WG_KeepStatus
     OutdoorPvP_WG_KEEP_STATUS_HORDE_OCCUPIED    = 4
 };
 */
+enum OutdoorPvP_WG_Sounds
+{
+    OutdoorPvP_WG_SOUND_KEEP_CLAIMED            = 8192,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
+    OutdoorPvP_WG_SOUND_NEAR_VICTORY            = 8456,
+    OutdoorPvP_WG_SOUND_HORDE_WINS              = 8454,
+    OutdoorPvP_WG_SOUND_ALLIANCE_WINS           = 8455,
+    OutdoorPvP_WG_SOUND_START_BATTLE            = 11803,
+    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205, // âðåìÿ óáèâàòü îðäà
+    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298, // ê îðóæèþ àëüÿíñ
+    OutdoorPvP_WG_HORDE_CAPTAIN                 = 8333,
+    OutdoorPvP_WG_ALLIANCE_CAPTAIN              = 8232
+};
 
 enum WG_STRING_LOCALE_INDEX
 {
@@ -595,6 +601,8 @@ class OutdoorPvPWG : public OutdoorPvP
     public:
         OutdoorPvPWG();
         bool SetupOutdoorPvP();
+
+        int TeamIDsound;
 
         std::string GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleConstant loc);
 
