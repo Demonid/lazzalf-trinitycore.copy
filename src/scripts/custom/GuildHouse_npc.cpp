@@ -167,7 +167,7 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     if (guild)
         guildsize = guild->GetMemberSize();
 
-    result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `minguildsize` DESC LIMIT %u",
+    result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `minguildsize` ASC LIMIT %u",
         (player->GetTeam() == HORDE)?1:0, showFromId, guildsize, GOSSIP_COUNT_MAX);
 
     if (result)
