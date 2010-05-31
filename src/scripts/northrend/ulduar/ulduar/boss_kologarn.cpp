@@ -220,12 +220,12 @@ struct boss_kologarnAI : public BossAI
                 if (left && right)
                 {
                     DoCastVictim(SPELL_TWO_ARM_SMASH, true);
-                    DoCastVictim(CRUNCH_ARMOR, true);
+                    //DoCastVictim(CRUNCH_ARMOR, true);
                 }
                 else if(left || right)
                 {
                     DoCastVictim(SPELL_ONE_ARM_SMASH, true);
-                    DoCastVictim(CRUNCH_ARMOR, true);
+                    //DoCastVictim(CRUNCH_ARMOR, true);
                 }
                 events.RepeatEvent(15000);
                 break;
