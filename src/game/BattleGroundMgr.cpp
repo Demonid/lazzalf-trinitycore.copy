@@ -47,6 +47,7 @@
 #include "GameEventMgr.h"
 #include "ProgressBar.h"
 #include "SharedDefines.h"
+#include "Config/ConfigEnv.h"
 #include "Formulas.h"
 
 INSTANTIATE_SINGLETON_1(BattleGroundMgr);
@@ -81,6 +82,158 @@ BattleGroundQueue::~BattleGroundQueue()
             m_QueuedGroups[i][j].clear();
         }
     }
+}
+
+bool BattleGroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
+{
+    if(TeamId1 && TeamId2 && (TeamId1 != TeamId2)) // teamId1 only != 0 if rated/arena
+    {
+        //get arenateams and configs
+        ArenaTeam *at1 = objmgr.GetArenaTeamById(TeamId1);
+        ArenaTeam *at2 = objmgr.GetArenaTeamById(TeamId2);
+
+        bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+        uint32 mode = sWorld.getConfig(CONFIG_ARENAMOD_MODE);
+        uint32 maxTeamWinsTeam = sWorld.getConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM);
+        uint32 maxPlayerWinsTeam = sWorld.getConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM);
+
+        //check if arenamod is enabled
+        if(enabled)
+        {
+            //get arenamod's mode
+            if(mode & 1)
+            {
+                if(at1 && at2)
+                {
+                    //iterate through arenateam1's members and check if they can fight
+                    for(ArenaTeam::MemberList::iterator itr = at1->m_membersBegin(); itr !=  at1->m_membersEnd(); ++itr)
+                    {
+                        if(itr->guid)
+                        {
+                            Player *plr = objmgr.GetPlayer(itr->guid);
+                            if(plr)
+                            {
+                                //check if player is really in the group joining the arena match
+                                if((plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_2v2) && at1->GetType() == ARENA_TEAM_2v2 && !at1->IsFighting()) ||
+                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_3v3) && at1->GetType() == ARENA_TEAM_3v3 && !at1->IsFighting()) ||
+                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_5v5) && at1->GetType() == ARENA_TEAM_5v5 && !at1->IsFighting()))
+                                {
+                                    //database query : get all wins of player against at2 and add them
+                                    // in order to be able to check if that amount is bigger
+                                    // than allowed, if so return false
+                                    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId2);
+
+                                    if(!result)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        uint32 allwins = 0;
+                                        do
+                                        {
+                                            Field *fields = result->Fetch();
+                                            uint32 wins = fields[0].GetUInt32();
+                                            
+                                            allwins += wins;
+                                        }while(result->NextRow());
+
+                                        if(allwins >= maxPlayerWinsTeam)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //iterate through arenateam2's members and check if they can fight
+                    for(ArenaTeam::MemberList::iterator itr = at2->m_membersBegin(); itr !=  at2->m_membersEnd(); ++itr)
+                    {
+                        if(itr->guid)
+                        {
+                            Player *plr = objmgr.GetPlayer(itr->guid);
+                            if(plr)
+                            {
+                                //check if player is really in the group joining the arena match
+                                if((plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_2v2) && at2->GetType() == ARENA_TEAM_2v2 && !at2->IsFighting()) ||
+                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_3v3) && at2->GetType() == ARENA_TEAM_3v3 && !at2->IsFighting()) ||
+                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_5v5) && at2->GetType() == ARENA_TEAM_5v5 && !at2->IsFighting()))
+                                {
+                                    //database query : get all wins of player against at2 and add them
+                                    // in order to be able to check if that amount is bigger
+                                    // than allowed, if so return false
+                                    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId1);
+
+                                    if(!result)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        uint32 allwins = 0;
+                                        do
+                                        {
+                                            Field *fields = result->Fetch();
+                                            uint32 wins = fields[0].GetUInt32();
+                                            
+                                            allwins += wins;
+                                        }while(result->NextRow());
+
+                                        if(allwins >= maxPlayerWinsTeam)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(mode & 2)
+            {
+                //database query : get all wins of team1 against team2
+                // in order to be able to check if that amount is bigger
+                // than allowed, if so return false
+                QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId1, TeamId2);
+
+                if(result)
+                {
+                    uint32 wins = 0;
+                    Field *fields = result->Fetch();
+                    wins = fields[0].GetUInt32();
+
+                    if(wins >= maxTeamWinsTeam)
+                    {
+                        return false;
+                    }
+                }
+
+                //database query : get all wins of team2 against team1
+                // in order to be able to check if that amount is bigger
+                // than allowed, if so return false
+                result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId2, TeamId1);
+
+                if(result)
+                {
+                    uint32 wins = 0;
+                    Field *fields = result->Fetch();
+                    wins = fields[0].GetUInt32();
+
+                    if(wins >= maxTeamWinsTeam)
+                    {
+                        return false;
+                    }
+                }
+
+            }
+        }
+    }
+
+    return true;
 }
 
 /*********************************************************/
@@ -755,7 +908,7 @@ this method is called when group is inserted, or player / group is removed from 
 it must be called after fully adding the members of a group to ensure group joining
 should be called from BattleGround::RemovePlayer function in some cases
 */
-void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint8 arenaType, bool isRated, uint32 arenaRating)
+void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint8 arenaType, bool isRated, uint32 arenaRating, uint32 ateamId)
 {
     //if no players in queue - do nothing
     if (m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].empty() &&
@@ -950,7 +1103,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             for (; itr_team[i] != m_QueuedGroups[bracket_id][i].end(); ++(itr_team[i]))
             {
                 // if group match conditions, then add it to pool
-                if (!(*itr_team[i])->IsInvitedToBGInstanceGUID
+                if (TeamsAreAllowedToFight(ateamId, (*itr_team[i])->ArenaTeamId) && !(*itr_team[i])->IsInvitedToBGInstanceGUID
                     && (((*itr_team[i])->ArenaTeamRating >= arenaMinRating && (*itr_team[i])->ArenaTeamRating <= arenaMaxRating)
                         || (*itr_team[i])->JoinTime < discardTime))
                 {
@@ -1128,7 +1281,7 @@ void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 /***            BATTLEGROUND MANAGER                   ***/
 /*********************************************************/
 
-BattleGroundMgr::BattleGroundMgr() : m_AutoDistributionTimeChecker(0), m_ArenaTesting(false)
+BattleGroundMgr::BattleGroundMgr() : m_AutoDistributionTimeChecker(0), m_ArenaModResetChecker(0), m_ArenaTesting(false)
 {
     for (uint32 i = BATTLEGROUND_TYPE_NONE; i < MAX_BATTLEGROUND_TYPE_ID; i++)
         m_BattleGrounds[i].clear();
@@ -1195,22 +1348,23 @@ void BattleGroundMgr::Update(uint32 diff)
     // update scheduled queues
     if (!m_QueueUpdateScheduler.empty())
     {
-        std::vector<uint64> scheduled;
+        std::vector<QueueUpdateInfo> scheduled;
         {
             //copy vector and clear the other
-            scheduled = std::vector<uint64>(m_QueueUpdateScheduler);
+            scheduled = std::vector<QueueUpdateInfo>(m_QueueUpdateScheduler);
             m_QueueUpdateScheduler.clear();
             //release lock
         }
 
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            uint32 arenaRating = scheduled[i] >> 32;
-            uint8 arenaType = scheduled[i] >> 24 & 255;
-            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i] >> 16 & 255);
-            BattleGroundTypeId bgTypeId = BattleGroundTypeId((scheduled[i] >> 8) & 255);
-            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i] & 255);
-            m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id, arenaType, arenaRating > 0, arenaRating);
+            uint32 arenaRating = scheduled[i].schedule_id >> 32;
+            uint8 arenaType = scheduled[i].schedule_id >> 24 & 255;
+            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i].schedule_id >> 16 & 255);
+            BattleGroundTypeId bgTypeId = BattleGroundTypeId((scheduled[i].schedule_id >> 8) & 255);
+            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i].schedule_id & 255);
+			uint32 ateamId = scheduled[i].ateamId;
+            m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id, arenaType, arenaRating > 0, arenaRating, ateamId);
         }
     }
 
@@ -1247,6 +1401,27 @@ void BattleGroundMgr::Update(uint32 diff)
         }
         else
             m_AutoDistributionTimeChecker -= diff;
+    }
+
+    bool ArenaModEnabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+
+    if(ArenaModEnabled)
+    {
+        if(m_ArenaModResetChecker < diff)
+        {
+            if(time(NULL)/*sWorld.GetGameTime()*/ > m_NextArenaModResetTime)
+            {
+                CharacterDatabase.PExecute("DELETE FROM arena_mod");
+                m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+                //CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaModReset = '"UI64FMTD"'", m_NextArenaModResetTime);
+                sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+            }
+            m_ArenaModResetChecker = 600000; // check 10 minutes
+        }
+        else
+        {
+            m_ArenaModResetChecker -= diff;
+        }
     }
 }
 
@@ -1837,6 +2012,29 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
     sLog.outDebug("Automatic Arena Point Distribution initialized.");
 }
 
+void BattleGroundMgr::InitAutomaticArenaModTimer()
+{
+    bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+    if(enabled)
+    {
+        sLog.outDebug("Initializing Automatic Arena Mod Timer");
+        uint64 m_NextArenaModResetTime_temp = sWorld.getWorldState(LAST_TIME_MOD_RESET);
+        //QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
+        if(!m_NextArenaModResetTime_temp)
+        {
+            sLog.outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");
+            m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+            //CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaModReset) VALUES ('"UI64FMTD"')", m_NextArenaModResetTime);
+            sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+        }
+        else
+        {
+            m_NextArenaModResetTime = time_t(m_NextArenaModResetTime_temp);
+        }
+        sLog.outDebug("Automatic Arena Mod Reset initialized.");
+    }
+}
+
 void BattleGroundMgr::DistributeArenaPoints()
 {
     // used to distribute arena points based on last week's stats
@@ -2101,22 +2299,24 @@ void BattleGroundMgr::SetHolidayWeekends(uint32 mask)
     }
 }
 
-void BattleGroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattleGroundQueueTypeId bgQueueTypeId, BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id)
+void BattleGroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattleGroundQueueTypeId bgQueueTypeId, BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint32 ateamId)
 {
     //This method must be atomic, TODO add mutex
     //we will use only 1 number created of bgTypeId and bracket_id
-    uint64 schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
-    bool found = false;
+    QueueUpdateInfo schedule;
+	schedule.schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
+	schedule.ateamId = ateamId;
+	bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {
-        if (m_QueueUpdateScheduler[i] == schedule_id)
+        if ((m_QueueUpdateScheduler[i].schedule_id == schedule.schedule_id) && (m_QueueUpdateScheduler[i].ateamId == schedule.ateamId)) //if ((m_QueueUpdateScheduler[i]) == (schedule))
         {
             found = true;
             break;
         }
     }
     if (!found)
-        m_QueueUpdateScheduler.push_back(schedule_id);
+        m_QueueUpdateScheduler.push_back(schedule);
 }
 
 uint32 BattleGroundMgr::GetMaxRatingDifference() const

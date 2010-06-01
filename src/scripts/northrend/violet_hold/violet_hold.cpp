@@ -223,7 +223,14 @@ struct npc_teleportation_portalAI : public ScriptedAI
                 {
                     uint32 entry = RAND(CREATURE_AZURE_CAPTAIN,CREATURE_AZURE_RAIDER,CREATURE_AZURE_STALKER,CREATURE_AZURE_SORCEROR);
                     if (Creature* pSummon = DoSummon(entry, me, 2.0f, 30000, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT))
-                        pSummon->GetMotionMaster()->MovePoint(0, DoorPosition);
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
+                        {
+                            pSummon->AI()->AttackStart(pTarget);
+                        } 
+                        else
+                        {
+                            pSummon->GetMotionMaster()->MovePoint(0, DoorPosition);
+                        }
                 }
             }
             else

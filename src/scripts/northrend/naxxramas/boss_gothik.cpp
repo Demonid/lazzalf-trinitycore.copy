@@ -74,14 +74,14 @@ const Waves waves[] =
     {MOB_LIVE_KNIGHT, 10000, 1},
     {MOB_LIVE_TRAINEE, 10000, 0},
     {MOB_LIVE_RIDER, 10000, 2},
+    {MOB_LIVE_TRAINEE, 5000, 2},
+    {MOB_LIVE_RIDER, 10000, 1},
     {MOB_LIVE_TRAINEE, 0, 2},
-    {MOB_LIVE_RIDER, 5000, 1},
-    {MOB_LIVE_TRAINEE, 0, 2},
-    {MOB_LIVE_KNIGHT, 5000, 1},
+    {MOB_LIVE_KNIGHT, 15000, 1},
     {MOB_LIVE_RIDER, 0, 2},
     {MOB_LIVE_TRAINEE, 20000, 1},
     {MOB_LIVE_RIDER, 0, 1},
-    {MOB_LIVE_KNIGHT, 0, 1},
+    {MOB_LIVE_KNIGHT, 5000, 1},
     {MOB_LIVE_TRAINEE, 25000, 2},
     {MOB_LIVE_TRAINEE, 15000, 0},
     {MOB_LIVE_TRAINEE, 25000, 0},
@@ -144,7 +144,12 @@ struct NotOnSameSide : public std::unary_function<Unit *, bool> {
 
 struct boss_gothikAI : public BossAI
 {
-    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) {}
+    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) 
+    {    
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 waveCount;
     typedef std::vector<Creature*> TriggerVct;
@@ -161,17 +166,17 @@ struct boss_gothikAI : public BossAI
         LiveTriggerGUID.clear();
         DeadTriggerGUID.clear();
 
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         _Reset();
         mergedSides = false;
         phaseTwo = false;
         thirtyPercentReached = false;
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         for (uint32 i = 0; i < POS_LIVE; ++i)
             if (Creature *trigger = DoSummon(WORLD_TRIGGER, PosSummonLive[i]))
@@ -188,13 +193,13 @@ struct boss_gothikAI : public BossAI
         }
 
         _EnterCombat();
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         waveCount = 0;
         events.ScheduleEvent(EVENT_SUMMON, 30000);
         DoTeleportTo(PosPlatform);
         DoScriptText(SAY_SPEECH, me);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
     }
 
     void JustSummoned(Creature *summon)
@@ -219,20 +224,20 @@ struct boss_gothikAI : public BossAI
         summons.Despawn(summon);
     }
 
-    void KilledUnit(Unit* /*victim*/)
+    void KilledUnit(Unit* victim)
     {
         if (!(rand()%5))
             DoScriptText(SAY_KILL, me);
     }
 
-    void JustDied(Unit* /*Killer*/)
+    void JustDied(Unit* Killer)
     {
         LiveTriggerGUID.clear();
         DeadTriggerGUID.clear();
         _JustDied();
         DoScriptText(SAY_DEATH, me);
-        if (instance)
-            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
     }
 
     void DoGothikSummon(uint32 entry)
@@ -334,7 +339,7 @@ struct boss_gothikAI : public BossAI
         return false;
     }
 
-    void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+    void SpellHit(Unit *caster, const SpellEntry *spell)
     {
         uint32 spellId = 0;
         switch(spell->Id)
@@ -381,8 +386,8 @@ struct boss_gothikAI : public BossAI
         if (!thirtyPercentReached && HealthBelowPct(30) && phaseTwo)
         {
             thirtyPercentReached = true;
-            if (instance)
-                instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+            if (pInstance)
+                pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         }
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
@@ -407,8 +412,8 @@ struct boss_gothikAI : public BossAI
                         {
                             if (!CheckGroupSplitted())
                             {
-                                if (instance)
-                                    instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+                                if (pInstance)
+                                    pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
                                 summons.DoAction(0, 0);
                                 summons.DoZoneInCombat();
                                 mergedSides = true;
@@ -432,7 +437,7 @@ struct boss_gothikAI : public BossAI
                         DoScriptText(SAY_TELEPORT, me);
                         DoTeleportTo(PosGroundLiveSide);
                         me->SetReactState(REACT_AGGRESSIVE);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         summons.DoAction(0, 0);
                         summons.DoZoneInCombat();
                         events.ScheduleEvent(EVENT_BOLT, 1000);
@@ -504,7 +509,7 @@ struct mob_gothik_minionAI : public CombatAI
             damage = 0;
     }
 
-    void JustDied(Unit * /*killer*/)
+    void JustDied(Unit *killer)
     {
         if (me->isSummon())
         {

@@ -29,6 +29,8 @@
 #include "BattleGroundMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
+#include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -756,6 +758,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case 34700:                                         // Allergic Reaction
         case 61987:                                         // Avenging Wrath Marker
         case 61988:                                         // Divine Shield exclude aura
+        case 61248:                                         // Power of Tenebron
+        case 61251:                                         // Power of Vesperon
+        case 58105:                                         // Power of Shadron
         case 50524:                                         // Runic Power Feed
             return false;
         case 12042:                                         // Arcane Power
@@ -2895,8 +2900,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_WARLOCK:
         {
+            // Fear
+            if (spellproto->SpellFamilyFlags[1] & 0x00000400)
+                return DIMINISHING_FEAR_BLIND;
             // Death Coil
-            if (spellproto->SpellFamilyFlags[0] & 0x80000)
+            else if (spellproto->SpellFamilyFlags[0] & 0x80000)
                 return DIMINISHING_DEATHCOIL;
             // Curses/etc
             else if (spellproto->SpellFamilyFlags[0] & 0x80000000)
@@ -2940,8 +2948,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_PALADIN:
         {
+            // Psychic Scream
+            if (spellproto->SpellFamilyFlags[0] & 0x1000)
+                return DIMINISHING_FEAR_BLIND;
             // Repentance
-            if (spellproto->SpellFamilyFlags[0] & 0x4)
+            else if (spellproto->SpellFamilyFlags[0] & 0x4)
                 return DIMINISHING_POLYMORPH;
             break;
         }
@@ -3138,12 +3149,31 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         if (!player || auraSpell > 0 && !player->HasAura(auraSpell) || auraSpell < 0 && player->HasAura(-auraSpell))
             return false;
 
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
     // Extra conditions -- leaving the possibility add extra conditions...
     switch(spellId)
     {
         case 58600: // No fly Zone - Dalaran (Krasus Landing exception)
-            if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
+            if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+                || player->HasAura(44795))
                 return false;
+            break;
+        case 58730: // No fly Zone - Wintergrasp
+            if ((pvpWG && pvpWG->isWarTime() == false) || !player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+               || player->HasAura(45472) || player->HasAura(44795))
+                return false;
+            break;
+        case SPELL_ESSENCE_OF_WINTERGRASP_WINNER:   // Essence of Wintergrasp - Wintergrasp
+        case SPELL_ESSENCE_OF_WINTERGRASP_WORLD:    // Essence of Wintergrasp - Northrend
+            if (sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+            {
+                if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                    return false;
+            }
+            else
+                return false;
+
             break;
     }
 
@@ -3673,6 +3703,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39365: // Thundering Storm
         case 41071: // Raise Dead (HACK)
         case 52124: // Sky Darkener Assault
+        case 63024: // Gravity Bomb Normal
+        case 64234: // Gravity Bomb Hero
+        case 63018: // Searing Light Normal
+        case 65121: // Searing Light Hero
+        case 62016: // Charge Orb
             spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
@@ -3771,6 +3806,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 37;
             count++;
             break;
+        case 47573:     // Twisted Faith
+        case 47577:
+        case 47578:
+        case 51166:
+        case 51167:
+            spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
+            break;
         // Master Shapeshifter: missing stance data for forms other than bear - bear version has correct data
         // To prevent aura staying on target after talent unlearned
         case 48420:
@@ -3834,6 +3876,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ALLY_SRC;
             count++;
             break;
+        case 74410:     // Arena - Dampening
+        case 74411:     // Battleground - Dampening
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+            spellInfo->EffectBasePoints[0] = -11; // 1 -11 = -10
+            count++;
+            break;
         case 31687: // Summon Water Elemental
             // 322-330 switch - effect changed to dummy, target entry not changed in client:(
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
@@ -3867,7 +3915,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 3;
             count++;
             break;
-        case 53651:
+        case 53651:     // beacon of light
+        case 30708:     // totem of wrath debuff
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
             count++;
             break;
