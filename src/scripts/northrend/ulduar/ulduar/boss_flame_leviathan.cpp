@@ -627,40 +627,40 @@ void SendDefaultMenu_ulduar_repair_npc(Player *player, Creature *_Creature, uint
     if(!player->getAttackers().empty())
     {
         player->CLOSE_GOSSIP_MENU();
-        _creature->MonsterSay("Sei in combat!", LANG_UNIVERSAL, 0);
+        _Creature->MonsterSay("Sei in combat!", LANG_UNIVERSAL, 0);
         return;
     }
 
     switch(action)
     {
         case 1005: //Chopper
-            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_CHOPPER, 20))
+            if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_CHOPPER, 20))
             {
                 vehicle->SetHealth(vehicle->GetMaxHealth());
-                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
             }
             else
-                _creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case 1010: //Siege
-            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_SIEGE, 20))
+            if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_SIEGE, 20))
             {
                 vehicle->SetHealth(vehicle->GetMaxHealth());
-                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
             }
             else
-                _creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
             player->CLOSE_GOSSIP_MENU();
             break; 
         case 1015: //Demolisher
-            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
+            if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
             {
                 vehicle->SetHealth(vehicle->GetMaxHealth());
-                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
             }
             else
-                _creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
+                _Creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
             player->CLOSE_GOSSIP_MENU();
             break; 
     }
@@ -670,7 +670,7 @@ bool GossipSelect_ulduar_repair_npc(Player *player, Creature *_Creature, uint32 
 {
     // Main menu
     if (sender == GOSSIP_SENDER_MAIN)
-        SendDefaultMenu_portal_npc( player, _Creature, action );
+        SendDefaultMenu_ulduar_repair_npc( player, _Creature, action );
 
     return true;
 }
