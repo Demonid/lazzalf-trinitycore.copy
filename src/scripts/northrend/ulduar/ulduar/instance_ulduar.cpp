@@ -44,7 +44,10 @@ enum eGameObjects
     GO_Hodir_CHEST_HERO     = 194308,
     GO_Hodir_CHEST          = 194307,
     GO_Runic_DOOR           = 194557,
-    GO_Stone_DOOR           = 194558
+    GO_Stone_DOOR           = 194558,
+    GO_Thorim_LEVER         = 194265,
+    GO_Thorim_CHEST_HERO    = 194315,
+    GO_Thorim_CHEST         = 194314
 };
 
 struct instance_ulduar : public InstanceData
@@ -77,7 +80,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiRunicColossus;
     uint64 uiRuneGiant;
     
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -92,6 +95,9 @@ struct instance_ulduar : public InstanceData
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
             case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
             case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
+            case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
+            case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
+            case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
         }
     }
 
@@ -152,6 +158,14 @@ struct instance_ulduar : public InstanceData
             case 33326:
                 if (TeamInInstance == HORDE)
                     pCreature->UpdateEntry(33330, HORDE); return;
+                    
+            // Thorim: Pre-Phase Adds
+            case 32908:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32907, HORDE); return;
+            case 32885:
+                if (TeamInInstance == HORDE)
+                    pCreature->UpdateEntry(32883, HORDE); return;
         }
 
         AddMinion(pCreature, add);
@@ -236,9 +250,14 @@ struct instance_ulduar : public InstanceData
         }
         
         if (id == BOSS_HODIR && state == DONE)
-        {
             HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
-        }
+        
+        // Thorim Lever activated only when boss encounter is in progress
+        if (id == BOSS_THORIM && state == IN_PROGRESS)
+            pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+            
+        if (id == BOSS_THORIM && state == DONE)
+            ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
 
         return true;
     }

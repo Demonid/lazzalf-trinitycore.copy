@@ -92,18 +92,20 @@ enum Yells
 enum PreAdds
 {
     BEHEMOTH,
-    MERCENARY_CAPTAIN,
-    MERCENARY_SOLDIER,
-    DARK_RUNE_ACOLYTE
+    MERCENARY_CAPTAIN_A,
+    MERCENARY_SOLDIER_A,
+    DARK_RUNE_ACOLYTE,
+    MERCENARY_CAPTAIN_H,
+    MERCENARY_SOLDIER_H
 };
 
-const uint32 PRE_PHASE_ADD[]          = {32882, 32908, 32885, 33110};
+const uint32 PRE_PHASE_ADD[]          = {32882, 32908, 32885, 33110, 32907, 32883};
 #define SPELL_PRE_PRIMARY(i)            RAID_MODE(SPELL_PRE_PRIMARY_N[i],SPELL_PRE_PRIMARY_H[i])
-const uint32 SPELL_PRE_PRIMARY_N[]    = {62315, 62317, 62318, 62333};
-const uint32 SPELL_PRE_PRIMARY_H[]    = {62415, 62317, 62318, 62441};
+const uint32 SPELL_PRE_PRIMARY_N[]    = {62315, 62317, 62318, 62333, 62317, 62318};
+const uint32 SPELL_PRE_PRIMARY_H[]    = {62415, 62317, 62318, 62441, 62317, 62318};
 #define SPELL_PRE_SECONDARY(i)          RAID_MODE(SPELL_PRE_SECONDARY_N[i],SPELL_PRE_SECONDARY_H[i])
-const uint32 SPELL_PRE_SECONDARY_N[]  = {62316, 62444, 16496, 62334};
-const uint32 SPELL_PRE_SECONDARY_H[]  = {62417, 62444, 16496, 62442};
+const uint32 SPELL_PRE_SECONDARY_N[]  = {62316, 62444, 16496, 62334, 62444, 62318};
+const uint32 SPELL_PRE_SECONDARY_H[]  = {62417, 62444, 16496, 62442, 62444, 62318};
 #define SPELL_HOLY_SMITE                RAID_MODE(62335, 62443)
 
 #define INCREASE_PREADDS_COUNT                     1
@@ -156,8 +158,19 @@ const Position Pos[7] =
 {2098.66, -240.79, 419.84, 5.715},
 {2113.37, -225.85, 419.84, 5.221},
 {2156.54, -225.99, 419.84, 4.441},
-{2171.80, -241.20, 419.84, 3.760},
-{2171.73, -285.07, 419.84, 2.761}
+{2155.10, -254.45, 419.84, 3.760},
+{2153.22, -273.43, 419.84, 2.761}
+};
+
+const Position PosOrbs[7] =
+{
+{2104.99, -233.484, 433.576, 5.49779},
+{2092.64, -262.594, 433.576, 6.26573},
+{2104.76, -292.719, 433.576, 0.78539},
+{2164.97, -293.375, 433.576, 2.35619},
+{2164.58, -233.333, 433.576, 3.90954},
+{2145.81, -222.196, 433.576, 4.45059},
+{2123.91, -222.443, 433.576, 4.97419}
 };
 
 const Position PosCharge[7] =
@@ -208,8 +221,8 @@ struct boss_thorimAI : public BossAI
         if (Creature* pRuneGiant = Unit::GetCreature(*me, pInstance->GetData64(DATA_RUNE_GIANT)))
             pRuneGiant->Respawn(true);
         
-        // Spawn Thorim Event Trigger
-        me->SummonCreature(33725, 2134.93, -339.696, 437.311, 0, TEMPSUMMON_MANUAL_DESPAWN);
+        // Spawn Thorim Phase Trigger
+        me->SummonCreature(32892, 2135.04, -310.787, 438.23, 0, TEMPSUMMON_MANUAL_DESPAWN);
                 
         // Spawn Pre-Phase Adds
         me->SummonCreature(PRE_PHASE_ADD[0], 2134.79, -263.03, 419.84, 5.377, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
@@ -235,6 +248,10 @@ struct boss_thorimAI : public BossAI
     {
         DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2), me);
         _EnterCombat();
+        
+        // Spawn Thunder Orbs
+        for(uint8 n = 0; n < 7; n++)
+            me->SummonCreature(33378, PosOrbs[n], TEMPSUMMON_CORPSE_DESPAWN);
         
         FirstTime = false;
         EncounterTime = 0;
@@ -266,7 +283,7 @@ struct boss_thorimAI : public BossAI
                 switch(eventId)
                 {
                     case EVENT_STORMHAMMER:
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
                             if (pTarget->isAlive())
                                 DoCast(pTarget, SPELL_STORMHAMMER);
                         events.ScheduleEvent(EVENT_STORMHAMMER, urand(15000, 20000), 0, PHASE_1);
@@ -277,7 +294,7 @@ struct boss_thorimAI : public BossAI
                         break;
                     case EVENT_SUMMON_ADDS:
                         spawnAdd();
-                        events.ScheduleEvent(EVENT_SUMMON_ADDS, 2500, 0, PHASE_1);
+                        events.ScheduleEvent(EVENT_SUMMON_ADDS, 10000, 0, PHASE_1);
                         break;
                     case EVENT_BERSERK:
                         DoCast(me, SPELL_BERSERK);
@@ -312,6 +329,11 @@ struct boss_thorimAI : public BossAI
                         DoCast(me, SPELL_LIGHTNING_CHARGE);
                         //DoCast(EnergySource, SPELL_LIGHTNING_RELEASE);
                         events.ScheduleEvent(EVENT_RELEASE_ENERGY, 20000, 0, PHASE_2);
+                        break;
+                    case EVENT_BERSERK:
+                        DoCast(me, SPELL_BERSERK);
+                        DoScriptText(SAY_BERSERK, me);
+                        events.CancelEvent(EVENT_BERSERK);
                         break;
                 }
             }
@@ -359,21 +381,17 @@ struct boss_thorimAI : public BossAI
         {
             case 0:
                 me->SummonCreature(ARENA_PHASE_ADD[0], Pos[rand()%7], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                break;
-            case 1:
                 me->SummonCreature(ARENA_PHASE_ADD[2], Pos[rand()%7], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                break;
-            case 2:
                 me->SummonCreature(ARENA_PHASE_ADD[3], Pos[rand()%7], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
-            case 3:
-                for(uint8 n = 0; n < 10; n++)
+            case 1:
+                for(uint8 n = 0; n < 7; n++)
                     me->SummonCreature(ARENA_PHASE_ADD[1], Pos[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
         }
 
         spawnedAdds++;
-        if(spawnedAdds > 3)
+        if(spawnedAdds > 1)
         {
             spawnedAdds = 0;
         }
@@ -392,7 +410,7 @@ struct mob_pre_phaseAI : public ScriptedAI
     {
         pInstance = pCreature->GetInstanceData();
         id = PreAdds(0);
-        for (uint8 i = 0; i < 4; ++i)
+        for (uint8 i = 0; i < 6; ++i)
             if (me->GetEntry() == PRE_PHASE_ADD[i])
                 id = PreAdds(i);
     }
@@ -696,10 +714,10 @@ CreatureAI* GetAI_mob_rune_giant(Creature* pCreature)
     return new mob_rune_giantAI(pCreature);
 }
 
-// Thorim Event Bunny
-struct thorim_trap_bunnyAI : public Scripted_NoMovementAI
+// Thorim Phase Trigger
+struct thorim_phase_triggerAI : public Scripted_NoMovementAI
 {
-    thorim_trap_bunnyAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    thorim_phase_triggerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
     }
@@ -709,7 +727,7 @@ struct thorim_trap_bunnyAI : public Scripted_NoMovementAI
     void MoveInLineOfSight(Unit *who)
     {
         if (pInstance && pInstance->GetBossState(BOSS_THORIM) == IN_PROGRESS)
-            if (me->IsWithinDistInMap(who, 20.0f) && who->GetTypeId() == TYPEID_PLAYER)
+            if (me->IsWithinDistInMap(who, 10.0f) && who->GetTypeId() == TYPEID_PLAYER)
             {
                 if (Creature* pThorim = Unit::GetCreature(*me, pInstance->GetData64(DATA_THORIM)))
                     if (pThorim->AI())
@@ -720,9 +738,9 @@ struct thorim_trap_bunnyAI : public Scripted_NoMovementAI
     }
 };
 
-CreatureAI* GetAI_thorim_trap_bunny(Creature* pCreature)
+CreatureAI* GetAI_thorim_phase_trigger(Creature* pCreature)
 {
-    return new thorim_trap_bunnyAI(pCreature);
+    return new thorim_phase_triggerAI(pCreature);
 }
 
 // Thorim Energy Source
@@ -790,8 +808,8 @@ void AddSC_boss_thorim()
     newscript->RegisterSelf();
     
     newscript = new Script;
-    newscript->Name = "thorim_trap_bunny";
-    newscript->GetAI = &GetAI_thorim_trap_bunny;
+    newscript->Name = "thorim_phase_trigger";
+    newscript->GetAI = &GetAI_thorim_phase_trigger;
     newscript->RegisterSelf();
     
     newscript = new Script;
