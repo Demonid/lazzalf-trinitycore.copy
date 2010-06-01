@@ -51,6 +51,8 @@
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL (1 * IN_MILISECONDS)
 
@@ -5466,8 +5468,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // allow always ghost flight spells
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
+                    
+	                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP); 
+
                     // 4197 = Wintergrasp || 4395 = Dalaran && 4564 = Krasus Landing
-                    if (m_originalCaster->GetZoneId() == 4197 || m_originalCaster->GetZoneId() == 4395 && m_originalCaster->GetAreaId() != 4564)
+                    if ((m_originalCaster->GetZoneId() == NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime()) || m_originalCaster->GetZoneId() == 4395 && m_originalCaster->GetAreaId() != 4564)
                         return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;
