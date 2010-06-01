@@ -3160,7 +3160,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return false;
             break;
         case 58730: // No fly Zone - Wintergrasp
-            if ((pvpWG && pvpWG->isWarTime() == false) || !player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+            if ((pvpWG && (pvpWG->isWarTime() == false)) || !player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
                || player->HasAura(45472) || player->HasAura(44795))
                 return false;
             break;

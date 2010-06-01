@@ -1770,6 +1770,8 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
 void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
 {
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
     switch (GetSpellProto()->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -1808,11 +1810,22 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 }
                 break;
             case 58730: // No Fly Zone - Wintergrasp
+                if (pvpWG && (pvpWG->isWarTime() == false))
+                    break;
+
+                if (GetTickNumber() == 10)
+                {
+                    target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                    target->RemoveAurasByType(SPELL_AURA_FLY);
+                    target->CastSpell(target, 61286, true);
+                }
+                break;
             case 58600: // No fly Zone - Dalaran
                 if (GetTickNumber() == 10)
                 {
                     target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                     target->RemoveAurasByType(SPELL_AURA_FLY);
+                    target->CastSpell(target, 61286, true);
                 }
                 break;
             case 62292: // Blaze (Pool of Tar)
@@ -5667,7 +5680,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                             break;
 		                case 58730: // Restricted Flight Area
 		                {
-		                    if (!target || (((target->GetAreaId() != NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime() == true)) && (target->GetAreaId() != 4585) &&
+		                    if (!target || ((target->GetAreaId() != NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime()) && (target->GetAreaId() != 4585) &&
 		                        (target->GetAreaId() != 4612) && (target->GetAreaId() != 4582) && (target->GetAreaId() != 4583) &&
 		                        (target->GetAreaId() != 4589) && (target->GetAreaId() != 4575) && (target->GetAreaId() != 4538) &&
 		                        (target->GetAreaId() != 4577)))
