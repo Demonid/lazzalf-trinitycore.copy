@@ -1720,7 +1720,7 @@ void BattleGround::SpawnBGObject(uint32 type, uint32 respawntime)
     }
 }
 
-Creature* BattleGround::AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 /*respawntime*/)
+Creature* BattleGround::AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime)
 {
     Map * map = GetBgMap();
     if (!map)
@@ -1748,6 +1748,9 @@ Creature* BattleGround::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
 
     map->Add(pCreature);
     m_BgCreatures[type] = pCreature->GetGUID();
+
+    if (respawntime)
+        pCreature->SetRespawnDelay(respawntime);
 
     return  pCreature;
 }
