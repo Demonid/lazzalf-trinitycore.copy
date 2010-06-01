@@ -459,6 +459,8 @@ struct npc_expedition_commanderAI : public ScriptedAI
         {
             switch(uiPhase)
             {
+                case 0:
+                    break;
                 case 1:
                     pInstance->SetBossState(BOSS_RAZORSCALE, IN_PROGRESS);
                     uiTimer = 1000;
