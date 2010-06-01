@@ -604,41 +604,74 @@ CreatureAI* GetAI_mob_colossus(Creature* pCreature)
     return new mob_colossusAI(pCreature);
 }
 
-#define REPAIR_VEHICLE   200
-
-bool GoHello_ulduar_repair_station( Player *pPlayer, GameObject *pGO )
+bool GossipHello_ulduar_repair_npc(Player *player, Creature *_Creature)
 {
-    ScriptedInstance *pInstance = (ScriptedInstance *) pGO->GetInstanceData();
-    if(!pInstance) return true;
+    if (!player)
+        return true;
 
-    pPlayer->ADD_GOSSIP_ITEM(0, "Repair Vehicle", GOSSIP_SENDER_MAIN, REPAIR_VEHICLE);
-    pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pGO->GetGUID());
+    player->ADD_GOSSIP_ITEM( 5, "Repair Chopper"         , GOSSIP_SENDER_MAIN, 1005);
+    player->ADD_GOSSIP_ITEM( 5, "Repair Siege"           , GOSSIP_SENDER_MAIN, 1010);
+    player->ADD_GOSSIP_ITEM( 5, "Repair Demolisher"      , GOSSIP_SENDER_MAIN, 1015);
+     
+    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
 
     return true;
 }
 
-bool GOSelect_ulduar_repair_station( Player *pPlayer, GameObject *pGO, uint32 sender, uint32 action )
+void SendDefaultMenu_ulduar_repair_npc(Player *player, Creature *_Creature, uint32 action )
 {
-    if(sender != GOSSIP_SENDER_MAIN) return true;
-    if(!pPlayer->getAttackers().empty()) return true;
+    if (!player)
+        return;
+
+    // Not allow in combat
+    if(!player->getAttackers().empty())
+    {
+        player->CLOSE_GOSSIP_MENU();
+        _creature->MonsterSay("Sei in combat!", LANG_UNIVERSAL, 0);
+        return;
+    }
 
     switch(action)
     {
-        case REPAIR_VEHICLE:
-            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
-            {
-                vehicle->SetHealth(vehicle->GetMaxHealth());
-            }
-            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_SIEGE, 20))
-            {
-                vehicle->SetHealth(vehicle->GetMaxHealth());
-            }
+        case 1005: //Chopper
             if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_CHOPPER, 20))
             {
                 vehicle->SetHealth(vehicle->GetMaxHealth());
+                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
             }
-            pPlayer->CLOSE_GOSSIP_MENU(); break;
+            else
+                _creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case 1010: //Siege
+            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_SIEGE, 20))
+            {
+                vehicle->SetHealth(vehicle->GetMaxHealth());
+                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
+            }
+            else
+                _creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
+            player->CLOSE_GOSSIP_MENU();
+            break; 
+        case 1015: //Demolisher
+            if (Creature* vehicle = pGO->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
+            {
+                vehicle->SetHealth(vehicle->GetMaxHealth());
+                _creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
+            }
+            else
+                _creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
+            player->CLOSE_GOSSIP_MENU();
+            break; 
     }
+}
+
+bool GossipSelect_ulduar_repair_npc(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    // Main menu
+    if (sender == GOSSIP_SENDER_MAIN)
+        SendDefaultMenu_portal_npc( player, _Creature, action );
+
     return true;
 }
 
@@ -688,8 +721,8 @@ void AddSC_boss_flame_leviathan()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "ulduar_repair_station";
-    newscript->pGOHello = &GoHello_ulduar_repair_station;
-    newscript->pGOSelect = &GOSelect_ulduar_repair_station;
+    newscript->Name="ulduar_repair_npc";
+    newscript->pGossipHello = &GossipHello_ulduar_repair_npc;
+    newscript->pGossipSelect = &GossipSelect_ulduar_repair_npc;
     newscript->RegisterSelf();
 }
