@@ -29,8 +29,8 @@
 #include "BattleGroundMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
-#include "OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
