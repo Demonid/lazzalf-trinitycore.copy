@@ -17,20 +17,7 @@
 6 - Zuramat
 7 - Cyanigosa */
 
-enum GameObjects
-{
-    GO_MAIN_DOOR                                    = 191723,
-    GO_XEVOZZ_DOOR                                  = 191556,
-    GO_LAVANTHOR_DOOR                               = 191566,
-    GO_ICHORON_DOOR                                 = 191722,
-    GO_ZURAMAT_DOOR                                 = 191565,
-    GO_EREKEM_DOOR                                  = 191564,
-    GO_EREKEM_GUARD_1_DOOR                          = 191563,
-    GO_EREKEM_GUARD_2_DOOR                          = 191562,
-    GO_MORAGG_DOOR                                  = 191606,
-    GO_INTRO_ACTIVATION_CRYSTAL                     = 193615,
-    GO_ACTIVATION_CRYSTAL                           = 193611
-};
+const Position CyanigosaSpawnLocation = {1884.324951,804.374390,38.368793,3.127143};
 
 const Position PortalLocation[] =
 {
@@ -66,7 +53,7 @@ struct instance_violet_hold : public ScriptedInstance
     uint64 uiZuramatCell;
     uint64 uiMainDoor;
 
-    uint64 uiActivationCrystal[3];
+    uint64 uiActivationCrystal[6];
 
     uint32 uiActivationTimer;
 
@@ -82,11 +69,23 @@ struct instance_violet_hold : public ScriptedInstance
 
     bool bActive;
     bool bWiped;
+    bool instance_failed;
+ 
+	uint8 shield_percent;
+	uint8 boss_encounter_phase;
+	uint8 last_boss;
+	uint64 m_uiIntroCrystalGUID;
 
     std::string str_data;
 
     void Initialize()
     {
+        shield_percent = 100;
+		boss_encounter_phase = 0;
+		last_boss = 0;
+		instance_failed = false;
+		uint64 m_uiIntroCrystalGUID = 0;
+
         uiMoragg = 0;
         uiErekem = 0;
         uiIchoron = 0;
@@ -174,7 +173,7 @@ struct instance_violet_hold : public ScriptedInstance
         }
     }
 
-    void OnGameObjectCreate(GameObject* pGo, bool /*add*/)
+    void OnGameObjectCreate(GameObject* pGo, bool add)
     {
         switch(pGo->GetEntry())
         {
@@ -206,9 +205,15 @@ struct instance_violet_hold : public ScriptedInstance
                 uiMainDoor = pGo->GetGUID();
                 break;
             case GO_ACTIVATION_CRYSTAL:
-                if (uiCountActivationCrystals < 3)
+                if (uiCountActivationCrystals < 6)
+                {
                     uiActivationCrystal[uiCountActivationCrystals++] = pGo->GetGUID();
+                    uiCountActivationCrystals++;
+                }
                 break;
+            case GO_INTRO_ACTIVATION_CRYSTAL:
+                m_uiIntroCrystalGUID = pGo->GetGUID();
+            break;
         }
     }
 
@@ -242,6 +247,29 @@ struct instance_violet_hold : public ScriptedInstance
             case DATA_REMOVE_NPC:
                 uiRemoveNpc = data;
                 break;
+            case DATA_DOOR:
+				if(data == SPECIAL){
+					shield_percent -= 1;
+					DoUpdateWorldState(WORLD_STATE_VH_PRISON_STATE, shield_percent);
+					if(shield_percent <= 0){
+						instance_failed =  true;
+						SaveToDB();
+						if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
+							pMainDoor->SetGoState(GO_STATE_ACTIVE);
+						//instance->RemoveAllPlayers();
+					}
+				}
+				break;
+			case DATA_BOSS_PHASE:
+				boss_encounter_phase = data;
+				AddWave();
+				break;
+			case DATA_LASTBOSS:
+				last_boss = data;				
+				break;
+			case DATA_INSTANCE_FAILED:
+				instance_failed = data;
+				break;
         }
     }
 
@@ -254,10 +282,28 @@ struct instance_violet_hold : public ScriptedInstance
             case DATA_CYANIGOSA_EVENT:          return m_auiEncounter[2];
             case DATA_WAVE_COUNT:               return uiWaveCount;
             case DATA_REMOVE_NPC:               return uiRemoveNpc;
+            case DATA_LASTBOSS:					return last_boss;
+			case DATA_INSTANCE_FAILED:			return instance_failed;
         }
 
         return 0;
     }
+
+    void ProcessActivationCrystal(Unit* pUser, bool bIsIntro)
+	{
+		if (Creature* pSummon = pUser->SummonCreature(NPC_DEFENSE_SYSTEM, fDefenseSystemLoc[0], fDefenseSystemLoc[1], fDefenseSystemLoc[2], fDefenseSystemLoc[3], TEMPSUMMON_TIMED_DESPAWN, 10000))
+		{
+			pSummon->CastSpell(pSummon, SPELL_DEFENSE_SYSTEM_VISUAL, true);
+
+			// TODO: figure out how the rest work
+			// NPC's NPC_DEFENSE_DUMMY_TARGET are probably channeling some spell to the defense system
+		}
+
+		if (bIsIntro)
+			DoUseDoorOrButton(m_uiIntroCrystalGUID);
+
+		// else, kill (and despawn?) certain trash mobs. Also boss affected, but not killed.
+	}
 
     void SpawnPortal()
     {
@@ -274,8 +320,7 @@ struct instance_violet_hold : public ScriptedInstance
         {
             case BOSS_MORAGG:
                 HandleGameObject(uiMoraggCell,bForceRespawn);
-                pBoss = instance->GetCreature(uiMoragg);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiMoragg))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case BOSS_EREKEM:
@@ -283,8 +328,7 @@ struct instance_violet_hold : public ScriptedInstance
                 HandleGameObject(uiErekemRightGuardCell, bForceRespawn);
                 HandleGameObject(uiErekemLeftGuardCell, bForceRespawn);
 
-                pBoss = instance->GetCreature(uiErekem);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiErekem))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
 
                 if (Creature* pGuard1 = instance->GetCreature(uiErekemGuard[0]))
@@ -305,26 +349,22 @@ struct instance_violet_hold : public ScriptedInstance
                 break;
             case BOSS_ICHORON:
                 HandleGameObject(uiIchoronCell,bForceRespawn);
-                pBoss = instance->GetCreature(uiIchoron);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiIchoron))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case BOSS_LAVANTHOR:
                 HandleGameObject(uiLavanthorCell,bForceRespawn);
-                pBoss = instance->GetCreature(uiLavanthor);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiLavanthor))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case BOSS_XEVOZZ:
                 HandleGameObject(uiXevozzCell,bForceRespawn);
-                pBoss = instance->GetCreature(uiXevozz);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiXevozz))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case BOSS_ZURAMAT:
                 HandleGameObject(uiZuramatCell,bForceRespawn);
-                pBoss = instance->GetCreature(uiZuramat);
-                if (pBoss)
+                if (pBoss = instance->GetCreature(uiZuramat))
                     pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_NON_ATTACKABLE);
                 break;
         }
@@ -347,14 +387,19 @@ struct instance_violet_hold : public ScriptedInstance
     {
         DoUpdateWorldState(WORLD_STATE_VH, 1);
         DoUpdateWorldState(WORLD_STATE_VH_WAVE_COUNT, uiWaveCount);
-        DoUpdateWorldState(WORLD_STATE_VH_PRISON_STATE, 100); // TODO
+        DoUpdateWorldState(WORLD_STATE_VH_PRISON_STATE, shield_percent);
+        last_boss = 0;
 
         switch(uiWaveCount)
         {
             case 6:
                 if (uiFirstBoss == 0)
                     uiFirstBoss = urand(1,6);
-                StartBossEncounter(uiFirstBoss);
+                last_boss = uiFirstBoss;
+                if(boss_encounter_phase == 0)
+					break;				
+				StartBossEncounter(uiFirstBoss);
+				boss_encounter_phase = 0;
                 break;
             case 12:
                 if (uiSecondBoss == 0)
@@ -362,13 +407,17 @@ struct instance_violet_hold : public ScriptedInstance
                     {
                         uiSecondBoss = urand(1,6);
                     } while (uiSecondBoss == uiFirstBoss);
+                last_boss = uiSecondBoss;
+				if(boss_encounter_phase == 0)
+					break;
                 StartBossEncounter(uiSecondBoss);
+                boss_encounter_phase = 0;
                 break;
             case 18:
             {
                 Creature *pSinclari = instance->GetCreature(uiSinclari);
                 if (pSinclari)
-                    pSinclari->SummonCreature(CREATURE_CYANIGOSA,PortalLocation[0],TEMPSUMMON_DEAD_DESPAWN);
+                    pSinclari->SummonCreature(CREATURE_CYANIGOSA,CyanigosaSpawnLocation,TEMPSUMMON_DEAD_DESPAWN);
                 break;
             }
             case 1:
@@ -480,7 +529,7 @@ struct instance_violet_hold : public ScriptedInstance
 
     void Update(uint32 diff)
     {
-        if (!instance->HavePlayers())
+        if (!instance->HavePlayers() || instance_failed)
             return;
 
         if (bActive)
