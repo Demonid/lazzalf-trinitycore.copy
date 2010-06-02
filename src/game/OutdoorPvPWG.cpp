@@ -1165,11 +1165,13 @@ bool OutdoorPvPWG::UpdateCreatureInfo(Creature *creature)
             {
                 creature->SetVisibility(VISIBILITY_OFF);
                 creature->setFaction(35);
+                creature->SetControlled(true, UNIT_STAT_STUNNED);
             }
             else
             {
                 creature->RestoreFaction();
                 creature->SetVisibility(VISIBILITY_ON);
+                creature->SetControlled(false, UNIT_STAT_STUNNED);
             }
             return false;
         case CREATURE_SPIRIT_GUIDE:
@@ -1364,7 +1366,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 
     if (isWarTime())
     {
-        if (plr->IsFlying()) //Restricted Flight Area
+        if (plr->HasAura(SPELL_AURA_FLY) || plr->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)) //Restricted Flight Area
             plr->CastSpell(plr, 58730, true);
 
         if (plr->getLevel() > 69)
@@ -1779,14 +1781,14 @@ void OutdoorPvPWG::StartBattle()
 
     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
     {
-        if ((*itr)->IsFlying() && !(*itr)->HasAura(58730))
+        if ((*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
             (*itr)->CastSpell((*itr), 58730, true);
 
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
     }
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
     {
-        if ((*itr)->IsFlying() && !(*itr)->HasAura(58730))
+        if ((*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
             (*itr)->CastSpell((*itr), 58730, true);
 
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
