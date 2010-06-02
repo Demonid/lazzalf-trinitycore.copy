@@ -1779,21 +1779,6 @@ void OutdoorPvPWG::StartBattle()
     m_wartime = true;
     m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILISECONDS;
 
-    for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
-    {
-        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
-        (*itr)->CastSpell((*itr), 58730, true);
-
-        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
-    }
-    for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
-    {
-        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
-        (*itr)->CastSpell((*itr), 58730, true);
-
-        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
-    }
-
     // destroyed all vehicles
     for (uint32 team = 0; team < 2; ++team)
     {
@@ -1814,6 +1799,11 @@ void OutdoorPvPWG::StartBattle()
     // Remove All Wintergrasp auras. Add Recruit rank and Tower Control
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
     {
+        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+        (*itr)->CastSpell((*itr), 58730, true);
+
+        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
+
         HandleEssenceOfWintergrasp((*itr), NORTHREND_WINTERGRASP);
 
         (*itr)->RemoveAurasDueToSpell(SPELL_RECRUIT);
@@ -1832,6 +1822,11 @@ void OutdoorPvPWG::StartBattle()
     // Remove All Wintergrasp auras. Add Recruit rank
     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
     {
+        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+        (*itr)->CastSpell((*itr), 58730, true);
+
+        (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
+
         HandleEssenceOfWintergrasp((*itr), NORTHREND_WINTERGRASP);
 
         (*itr)->RemoveAurasDueToSpell(SPELL_RECRUIT);
