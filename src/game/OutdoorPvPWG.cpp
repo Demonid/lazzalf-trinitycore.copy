@@ -1366,7 +1366,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 
     if (isWarTime())
     {
-        if (plr->HasAura(SPELL_AURA_FLY) || plr->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)) //Restricted Flight Area
+        if (plr->IsFlying() || plr->HasAura(SPELL_AURA_FLY) || plr->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)) //Restricted Flight Area
             plr->CastSpell(plr, 58730, true);
 
         if (plr->getLevel() > 69)
@@ -1781,15 +1781,15 @@ void OutdoorPvPWG::StartBattle()
 
     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
     {
-        if ((*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
-            (*itr)->CastSpell((*itr), 58730, true);
+        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+        (*itr)->CastSpell((*itr), 58730, true);
 
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
     }
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
     {
-        if ((*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
-            (*itr)->CastSpell((*itr), 58730, true);
+        //if ((*itr)->IsFlying() || (*itr)->HasAura(SPELL_AURA_FLY) || (*itr)->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+        (*itr)->CastSpell((*itr), 58730, true);
 
         (*itr)->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
     }
