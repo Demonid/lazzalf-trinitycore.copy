@@ -44,10 +44,62 @@ enum Drakes
     ITEM_AMBER_ESSENCE                            = 37859,
     ITEM_RUBY_ESSENCE                             = 37860,
 
-    NPC_VERDISA                                   = 27657,
-    NPC_BELGARISTRASZ                             = 27658,
-    NPC_ETERNOS                                   = 27659
+	//spells
+	SPELL_PARACHUTE								  = 61243
+
+    
 };
+
+struct mob_CentrifigeConstructAI : public ScriptedAI
+{
+    mob_CentrifigeConstructAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+
+	void DismountPlayers()
+	{
+		std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+		std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
+		for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
+		{
+			Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
+			if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
+			{
+				Vehicle* v = pUnit->GetVehicle();
+				if(v)
+				{
+					pUnit->ExitVehicle();
+					v->Dismiss();
+					DoCast(pUnit,SPELL_PARACHUTE);					
+				}
+			}
+		}
+	}
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!UpdateVictim())
+            return;
+		DismountPlayers();
+        DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT, pInstance->GetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT)+1);
+    }
+};
+
+CreatureAI* GetAI_mob_CentrifigeConstruct(Creature* pCreature)
+{
+    return new mob_CentrifigeConstructAI (pCreature);
+}
 
 bool GossipHello_npc_oculus_drake(Player* pPlayer, Creature* pCreature)
 {
@@ -63,7 +115,7 @@ bool GossipHello_npc_oculus_drake(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelect_npc_oculus_drake(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+bool GossipSelect_npc_oculus_drake(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
     switch(pCreature->GetEntry())
     {
@@ -170,5 +222,10 @@ void AddSC_oculus()
     newscript->Name = "npc_oculus_drake";
     newscript->pGossipHello = &GossipHello_npc_oculus_drake;
     newscript->pGossipSelect = &GossipSelect_npc_oculus_drake;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "mob_centrifige_construct";
+    newscript->GetAI = &GetAI_mob_CentrifigeConstruct;
     newscript->RegisterSelf();
 }
