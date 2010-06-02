@@ -496,33 +496,33 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     defender[0] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[0])
                     { 
-                        defender[0] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                        defender[0] ->SetHomePosition(pos1);
-                        defender[0] ->GetMotionMaster()->MoveTargetedHome();
+                        defender[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[0]->SetHomePosition(pos1);
+                        defender[0]->GetMotionMaster()->MoveTargetedHome();
                     }
 
                     defender[1] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[1])
                     { 
-                        defender[1] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                        defender[1] ->SetHomePosition(pos2);
-                        defender[1] ->GetMotionMaster()->MoveTargetedHome();
+                        defender[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[1]->SetHomePosition(pos2);
+                        defender[1]->GetMotionMaster()->MoveTargetedHome();
                     }
                     
                     defender[2] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[3])
                     { 
-                        defender[2] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                        defender[2] ->SetHomePosition(pos3);
-                        defender[2] ->GetMotionMaster()->MoveTargetedHome();
+                        defender[2]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[2]->SetHomePosition(pos3);
+                        defender[2]->GetMotionMaster()->MoveTargetedHome();
                     }
                     
                     defender[3] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[3])
                     {                    
-                        defender[3] ->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                        defender[3] ->SetHomePosition(pos4);
-                        defender[3] ->GetMotionMaster()->MoveTargetedHome();
+                        defender[3]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        defender[3]->SetHomePosition(pos4);
+                        defender[3]->GetMotionMaster()->MoveTargetedHome();
                     }
                     uiPhase = 5;
                     break;
