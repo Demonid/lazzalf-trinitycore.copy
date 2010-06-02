@@ -344,9 +344,29 @@ struct mob_scorch_groundAI : public ScriptedAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
 
+    uint32 heat_Timer;
+    std::list<Creature*> m_pCreatures;
+
     void Reset()
     {
         DoCast(me, RAID_MODE(SPELL_GROUND_10, SPELL_GROUND_25));
+        heat_Timer = 1000;
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (heat_Timer <= uiDiff)
+        {
+            m_pCreatures.clear();
+
+            me->GetCreatureListWithEntryInGrid(m_pCreatures, MOB_IRON_CONSTRUCT, 15.0f);
+
+            if (!m_pCreatures.empty())
+                for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                    me->CastSpell((*iter), SPELL_HEAT, true);
+
+            heat_Timer = 1000;           
+        } else heat_Timer -= uiDiff;       
     }
 };
 
