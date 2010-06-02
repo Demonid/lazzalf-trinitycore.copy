@@ -240,7 +240,7 @@ void BattleGroundSA::Update(uint32 diff)
             {
                 SignaledRoundTwo = true;
                 InitSecondRound = false;
-                SendMessageToAll(LANG_BG_SA_ROUND_TWO_ONE_MINUTE, CHAT_MSG_BG_SYSTEM_NEUTRAL);
+                //SendMessageToAll(LANG_BG_SA_ROUND_TWO_ONE_MINUTE, CHAT_MSG_BG_SYSTEM_NEUTRAL);
                 ResetObjs();
             }
         }else 
@@ -267,7 +267,7 @@ void BattleGroundSA::Update(uint32 diff)
     }
     else if (status == BG_SA_SECOND_WARMUP)
     {
-        if (TotalTime >= 60000)
+        if (TotalTime >= BG_SA_WARMUPLENGTH)
         {
             SendWarningToAll(LANG_BG_SA_HAS_BEGUN);
             TotalTime = 0;
@@ -275,7 +275,7 @@ void BattleGroundSA::Update(uint32 diff)
             DemolisherStartState(false);
             status = BG_SA_ROUND_TWO;
         }
-        if (TotalTime >= 30000)
+        if (TotalTime >= 90000)
         {
             if (!SignaledRoundTwoHalfMin)
             {
@@ -283,7 +283,8 @@ void BattleGroundSA::Update(uint32 diff)
                 SendMessageToAll(LANG_BG_SA_ROUND_TWO_START_HALF_MINUTE, CHAT_MSG_BG_SYSTEM_NEUTRAL);
             }
         }
-        StartShips();
+        if (TotalTime >= BG_SA_BOAT_START)
+            StartShips();
         return;
     }
     else if (GetStatus() == STATUS_IN_PROGRESS)
