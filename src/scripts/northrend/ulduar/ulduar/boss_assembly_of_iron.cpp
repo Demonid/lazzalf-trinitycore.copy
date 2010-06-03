@@ -179,6 +179,8 @@ struct boss_steelbreakerAI : public ScriptedAI
     boss_steelbreakerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()
@@ -309,6 +311,8 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
     boss_runemaster_molgeimAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()
@@ -468,6 +472,8 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     boss_stormcaller_brundirAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()

@@ -147,6 +147,9 @@ struct boss_flame_leviathanAI : public BossAI
         assert(vehicle);
         pInstance = pCreature->GetInstanceData();
         ColossusCount = 0;
+
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
         me->SetReactState(REACT_PASSIVE);
@@ -310,7 +313,7 @@ struct boss_flame_leviathanAI : public BossAI
         {
             // Event starts
             if (pInstance)
-                pInstance->SetData(DATA_LEVIATHAN_DOOR, GO_STATE_ACTIVE);
+                pInstance->SetData(DATA_LEVIATHAN_DOOR, GO_STATE_ACTIVE_ALTERNATIVE);
                 
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
             me->SetReactState(REACT_AGGRESSIVE);

@@ -263,7 +263,17 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
     }
 
     if (seat->second.seatInfo->m_flags && !(seat->second.seatInfo->m_flags & 0x400))
-        unit->addUnitState(UNIT_STAT_ONVEHICLE);
+    {
+        switch (GetVehicleInfo()->m_ID)
+        {
+            case 342: //Ignis
+            case 353: //XT-002 
+                break;
+            default: 
+                unit->addUnitState(UNIT_STAT_ONVEHICLE); 
+            break; 
+        }
+    }
 
     //SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
