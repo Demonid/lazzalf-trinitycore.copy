@@ -609,7 +609,7 @@ class OutdoorPvPWG : public OutdoorPvP
         void OnCreatureCreate(Creature *creature, bool add);
         void OnGameObjectCreate(GameObject *go, bool add);
 
-        void ProcessEvent(GameObject *obj, uint32 eventId);
+        void ProcessEvent(GameObject *obj, uint32 eventId, Player* = NULL);
 
         void HandlePlayerEnterZone(Player *plr, uint32 zone);
         void HandlePlayerLeaveZone(Player *plr, uint32 zone);

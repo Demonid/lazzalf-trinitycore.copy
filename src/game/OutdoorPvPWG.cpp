@@ -517,7 +517,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     return true;
 }
 
-void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
+void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
 {
     if (!obj)
         return;
@@ -528,6 +528,13 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId)
         {
             m_changeDefender = true;
             m_timer = 0;
+            /*if (player)
+            {
+               std::stringstream msg;
+               msg << player->GetName() << " porta alla vittoria il suo team!";
+               std::string msgStr = msg.str();
+               sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+            }*/
         }
     }
     else if (obj->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
