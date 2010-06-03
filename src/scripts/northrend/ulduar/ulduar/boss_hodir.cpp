@@ -128,6 +128,8 @@ struct boss_hodir_AI : public BossAI
     boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
     {
         pInstance = pCreature->GetInstanceData();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
     
     ScriptedInstance* pInstance;

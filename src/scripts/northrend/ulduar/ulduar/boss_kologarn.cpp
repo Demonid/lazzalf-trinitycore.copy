@@ -103,7 +103,10 @@ struct boss_kologarnAI : public BossAI
         pInstance = pCreature->GetInstanceData();
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-        me->ApplySpellImmune(0, IMMUNITY_ID, 64708, true);
+        me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        emerged = false;
     }
 
     ScriptedInstance* pInstance;
@@ -111,6 +114,7 @@ struct boss_kologarnAI : public BossAI
     Vehicle *vehicle;
     bool left, right;
     bool Gripped;
+    bool emerged;
     
     Creature* EyeBeam[2];
     Creature* RightArm;
@@ -123,6 +127,18 @@ struct boss_kologarnAI : public BossAI
     void AttackStart(Unit *who)
     {
         me->Attack(who, true);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        // Birth animation
+        if (!emerged && me->IsWithinDistInMap(who, 30.0f) && who->GetTypeId() == TYPEID_PLAYER)
+        {
+            me->SetStandState(UNIT_STAND_STATE_STAND);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
+            emerged = true;
+        }
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void JustDied(Unit *victim)

@@ -137,6 +137,8 @@ struct boss_razorscaleAI : public BossAI
     {
         // Do not let Razorscale be affected by Battle Shout buff
         me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(SPELL_BATTLE_SHOUT_10, SPELL_BATTLE_SHOUT_25), true);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         pInstance = pCreature->GetInstanceData();
         pMap = me->GetMap();
         PermaGround = false;
