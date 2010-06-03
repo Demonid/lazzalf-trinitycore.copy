@@ -1404,7 +1404,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
                 if (IsChanneledSpell(m_spellInfo))
                     m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
 
-                if ((duration == 0) && (m_spellAura->GetMaxDuration() > 0) &&(m_spellAura->GetId() != 66)) // Invisiblity (Mage)
+                if (duration == 0 && !positive)
                 {
                     m_spellAura->Remove();
                     return SPELL_MISS_IMMUNE;

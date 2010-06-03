@@ -4988,6 +4988,8 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (34914, -1, 0.4, -1, -1, 'Priest - Vampiric Touch'),
 (7001, -1, 0.3333, -1, -1, 'Priest - Lightwell Renew Rank 1'),
 (63675, 0, 0, 0, 0, 'Priest - Improved Devouring Plague'),
+(56131, 0, 0, 0, 0, 'Priest - Glyph of Dispel Magic'),
+(56160, 0, 0, 0, 0, 'Priest - Glyph of Power Word: Shield'),
 (2818, -1, -1, -1, 0.03, 'Rogue - Deadly Poison Rank 1($AP*0.12 / number of ticks)'),
 (2819, -1, -1, -1, 0.03, 'Rogue - Deadly Poison Rank 2($AP*0.12 / number of ticks)'),
 (11353, -1, -1, -1, 0.03, 'Rogue - Deadly Poison Rank 3($AP*0.12 / number of ticks)'),
@@ -5066,6 +5068,8 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (25530, 0.1667, -1, -1, -1, 'Shaman - Searing Totem Attack Rank 7'),
 (58700, 0.1667, -1, -1, -1, 'Shaman - Searing Totem Attack Rank 8'),
 (58701, 0.1667, -1, -1, -1, 'Shaman - Searing Totem Attack Rank 9'),
+(52752, 0, 0, 0, 0, 'Ancestral Awakening'),
+(55533, 0, 0, 0, 0, 'Shaman - Glyph of Healing Wave'),
 (50796, 0.7139, -1, -1, -1, 'Warlock - Chaos Bolt'),
 (17962, 0, 0, 0, 0, 'Warlock - Conflagrate'),
 (172, -1, 0.2, -1, -1, 'Warlock - Corruption'),
@@ -6973,6 +6977,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 56835, 0x00,  15, 0x00400000, 0x00010000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Reaping (Rank 3)
 ( 57345, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Darkmoon Card: Greatness
 ( 57352, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00051154, 0x00000000,   0,   0,  45), -- Darkmoon Card: Death
+( 57870, 0x00,   9, 0x00800000, 0x00000000, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Glyph of Mend Pet
 ( 57878, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010,   0,   0,   0), -- Natural Reaction (Rank 1)
 ( 57880, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010,   0,   0,   0), -- Natural Reaction (Rank 2)
 ( 57881, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000010,   0,   0,   0), -- Natural Reaction (Rank 3)
@@ -7164,8 +7169,13 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54925, 0x02,  10, 0x00000000, 0x00000208, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Seal of Command
 ( 63320, 0x00,   5, 0x80040000, 0x00000000, 0x00008000, 0x00000400, 0x00000000,   0,   0,   0), -- Glyph of Life Tap
 ( 67356, 0x08,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Druid T9 Restoration Relic (Rejuvenation)
-( 67771,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45), -- Item - Coliseum Melee Trinket 10men
-( 67702,    1,   0, 0x00000000, 0x00000000, 0x00000000,  0x0851154,       0x03,   0,  35,  45), -- Item - Coliseum Melee Trinket 25men
+( 67653, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00400028, 0x00000000,   0,   0,  45), -- Item - Coliseum Tank Trinket 5men
+( 67667, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00004000, 0x00000000,   0,   0,  45), -- Item - Coliseum Healer Trinket 5men
+( 67670, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00010000, 0x00000000,   0,   0,  45), -- Item - Coliseum Caster Trinket 5men
+( 67672, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00800154, 0x00000000,   0,   0,  45), -- Item - Coliseum Melee Trinket 5men
+( 67771, 0x01,   0, 0x00000000, 0x00000000, 0x00000000, 0x00851154, 0x00000003,   0,  35,  45), -- Item - Coliseum Melee Trinket 10men
+( 67702, 0x01,   0, 0x00000000, 0x00000000, 0x00000000, 0x00851154, 0x00000003,   0,  35,  45), -- Item - Coliseum Melee Trinket 25men
+( 70807, 0x00,  11, 0x00000000, 0x00000000, 0x00000010, 0x00000000, 0x00000000,   0, 100,   0), -- Item - Shaman T10 Restoration 2P Bonus
 ( 71519, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 105), -- Item - Deathbringer's Will Trinket Normal
 ( 71562, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 105); -- Item - Deathbringer's Will Trinket Heroic
 /*!40000 ALTER TABLE `spell_proc_event` ENABLE KEYS */;

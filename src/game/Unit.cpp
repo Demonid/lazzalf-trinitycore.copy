@@ -6627,6 +6627,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 }
                 break;
             }
+            // Glyph of Mend Pet
+            if(dummySpell->Id == 57870)
+            {
+                pVictim->CastSpell(pVictim, 57894, true, NULL, NULL, GetGUID());
+                return true;
+            }
             break;
         }
         case SPELLFAMILY_PALADIN:
@@ -8312,8 +8318,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         // Unyielding Knights (item exploit 29108\29109)
         case 38164:
         {
-            if (pVictim->GetEntry() != 19457)  // Proc only if you target is Grillok
-            return false;
+            if (!pVictim || pVictim->GetEntry() != 19457)  // Proc only if your target is Grillok
+                return false;
             break;
         }
         // Deflection
