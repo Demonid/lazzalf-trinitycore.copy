@@ -51,6 +51,8 @@
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL (1 * IN_MILISECONDS)
 
@@ -64,6 +66,55 @@ bool IsQuestTameSpell(uint32 spellId)
     return spellproto->Effect[0] == SPELL_EFFECT_THREAT
         && spellproto->Effect[1] == SPELL_EFFECT_APPLY_AURA && spellproto->EffectApplyAuraName[1] == SPELL_AURA_DUMMY;
 }
+
+class PrioritizeManaUnitWraper
+{
+    public:
+        explicit PrioritizeManaUnitWraper(Unit* unit) : i_unit(unit)
+        {
+            uint32 maxmana = unit->GetMaxPower(POWER_MANA);
+            i_percent = maxmana ? unit->GetPower(POWER_MANA) * 100 / maxmana : 101;
+        }
+        Unit* getUnit() const { return i_unit; }
+        uint32 getPercent() const { return i_percent; }
+    private:
+        Unit* i_unit;
+        uint32 i_percent;
+};
+
+struct PrioritizeMana
+{
+    int operator()(PrioritizeManaUnitWraper const& x, PrioritizeManaUnitWraper const& y) const
+    {
+        return x.getPercent() > y.getPercent();
+    }
+};
+
+typedef std::priority_queue<PrioritizeManaUnitWraper, std::vector<PrioritizeManaUnitWraper>, PrioritizeMana> PrioritizeManaUnitQueue;
+
+class PrioritizeHealthUnitWraper
+{
+public:
+    explicit PrioritizeHealthUnitWraper(Unit* unit) : i_unit(unit)
+    {
+        i_percent = unit->GetHealth() * 100 / unit->GetMaxHealth();
+    }
+    Unit* getUnit() const { return i_unit; }
+    uint32 getPercent() const { return i_percent; }
+private:
+    Unit* i_unit;
+    uint32 i_percent;
+};
+
+struct PrioritizeHealth
+{
+    int operator()(PrioritizeHealthUnitWraper const& x, PrioritizeHealthUnitWraper const& y) const
+    {
+        return x.getPercent() > y.getPercent();
+    }
+};
+
+typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> PrioritizeHealthUnitQueue;
 
 SpellCastTargets::SpellCastTargets() : m_elevation(0), m_speed(0)
 {
@@ -1222,6 +1273,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     // Recheck immune (only for delayed spells)
     if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
+    // Deterrence Hack for delayed spells
+    if (m_spellInfo->speed && unit->HasAura(19263))
+        return SPELL_MISS_DEFLECT;
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -1252,7 +1306,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
             // I do not think this is a correct way to fix it. Sanctuary effect should make all delayed spells invalid
             // for delayed spells ignore not visible explicit target
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
-                && (unit->m_invisibilityMask || m_caster->m_invisibilityMask)
+                && (unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH) 
+                || (unit->m_invisibilityMask || m_caster->m_invisibilityMask))
                 && !m_caster->canSeeOrDetect(unit, true))
             {
                 // that was causing CombatLog errors
@@ -1616,7 +1671,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         }
         else
         {
-            tempUnitMap.sort(Trinity::ObjectDistanceOrderPred(cur));
+            tempUnitMap.sort(TargetDistanceOrder(cur));
             next = tempUnitMap.begin();
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
@@ -2247,6 +2302,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
         radius *= m_spellValue->RadiusMod;
 
         std::list<Unit*> unitList;
+
         if (targetType == SPELL_TARGETS_ENTRY)
         {
             SpellScriptTargetBounds bounds = spellmgr.GetSpellScriptTargetBounds(m_spellInfo->Id);
@@ -2305,6 +2361,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                                 finish(false);
                             }
                         }
+                        break;
+ 	                case 62834: // Boom (Boombot)
+                    case 64320: // Rune of Power (Assembly of Iron)
+                        SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
                         break;
 
                     default:
@@ -2427,6 +2487,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 switch (m_spellInfo->Id)
                 {
                     case 27285: // Seed of Corruption proc spell
+                    case 49821: // Mind Sear proc spell Rank 1
+                    case 53022: // Mind Sear proc spell Rank 2
+                    case 63025: // Gravity Bomb Normal
+ 	                case 64233: // Gravity Bomb Hero
                         unitList.remove(m_targets.getUnitTarget());
                         break;
                     case 55789: // Improved Icy Talons
@@ -2435,26 +2499,84 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         break;
                     case 57669: //Replenishment (special target selection) 10 targets with lowest mana
                     {
-                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
+                        typedef std::priority_queue<PrioritizeManaUnitWraper, std::vector<PrioritizeManaUnitWraper>, PrioritizeMana> TopMana;
+                        TopMana manaUsers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
                         {
-                            if ((*itr)->getPowerType() != POWER_MANA)
-                                itr = unitList.erase(itr);
-                            else
-                                ++itr;
+                            if ((*itr)->getPowerType() == POWER_MANA)
+                            {
+                                PrioritizeManaUnitWraper  WTarget(*itr);
+                                manaUsers.push(WTarget);
+                            }
                         }
-                        if (unitList.size() > 10)
+
+                        unitList.clear();
+                        while (!manaUsers.empty() && unitList.size()<10)
                         {
-                            unitList.sort(Trinity::PowerPctOrderPred(POWER_MANA));
-                            unitList.resize(10);
+                            unitList.push_back(manaUsers.top().getUnit());
+                            manaUsers.pop();
+                        }
+                        break;
+                    }
+                    case 64844: // Divine Hymn               
+                    case 64843:
+                    {
+                        typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
+                        TopHealth healedMembers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->IsInRaidWith(m_targets.getUnitTarget()))
+                            {
+                                PrioritizeHealthUnitWraper  WTarget(*itr);
+                                healedMembers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!healedMembers.empty() && unitList.size()<3)
+                        {
+                            unitList.push_back(healedMembers.top().getUnit());
+                            healedMembers.pop();
+                        }
+                        break;
+                    } 
+                    case 64904: // Hymn of Hope
+                    case 64901:
+                    {
+                        typedef std::priority_queue<PrioritizeManaUnitWraper, std::vector<PrioritizeManaUnitWraper>, PrioritizeMana> TopMana;
+                        TopMana manaUsers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
+                        {
+                            if ((*itr)->getPowerType() == POWER_MANA)
+                            {
+                                PrioritizeManaUnitWraper  WTarget(*itr);
+                                manaUsers.push(WTarget);
+                            }
+                        }
+
+                        unitList.clear();
+                        while(!manaUsers.empty() && unitList.size()<3)
+                        {
+                            unitList.push_back(manaUsers.top().getUnit());
+                            manaUsers.pop();
                         }
                         break;
                     }
                     case 52759: // Ancestral Awakening
                     {
-                        if (unitList.size() > 1)
+                        typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
+                        TopHealth healedMembers;
+                        for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
                         {
-                            unitList.sort(Trinity::HealthPctOrderPred());
-                            unitList.resize(1);
+                            PrioritizeHealthUnitWraper  WTarget(*itr);
+                            healedMembers.push(WTarget);
+                        }
+
+                        unitList.clear();
+                        while (!healedMembers.empty() && unitList.size()<1)
+                        {
+                            unitList.push_back(healedMembers.top().getUnit());
+                            healedMembers.pop();
                         }
                         break;
                     }
@@ -2462,14 +2584,18 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_TARGET_ANY
                     && m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ALLY_DST)// Wild Growth, Circle of Healing, Glyph of holy light target special selection
                 {
-                    for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
+                    typedef std::priority_queue<PrioritizeHealthUnitWraper, std::vector<PrioritizeHealthUnitWraper>, PrioritizeHealth> TopHealth;
+                    TopHealth healedMembers;
+                    for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end(); ++itr)
                     {
-                        if (!(*itr)->IsInRaidWith(m_targets.getUnitTarget()))
-                            itr = unitList.erase(itr);
-                        else
-                            ++itr;
+                        if ((*itr)->IsInRaidWith(m_targets.getUnitTarget()))
+                        {
+                            PrioritizeHealthUnitWraper  WTarget(*itr);
+                            healedMembers.push(WTarget);
+                        }
                     }
-                    
+
+                    unitList.clear();
                     uint32 maxsize = 5;
 
                     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags[1] & 0x04000000) // Wild Growth
@@ -2477,11 +2603,11 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
                     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellFamilyFlags[0] & 0x10000000 && m_spellInfo->SpellIconID == 2214) // Circle of Healing
                         maxsize += m_caster->HasAura(55675) ? 1 : 0; // Glyph of Circle of Healing
-                                    
-                    if (unitList.size() > maxsize)
+
+                    while (!healedMembers.empty() && unitList.size()<maxsize)
                     {
-                        unitList.sort(Trinity::HealthPctOrderPred());
-                        unitList.resize(maxsize);
+                        unitList.push_back(healedMembers.top().getUnit());
+                        healedMembers.pop();
                     }
                 }
                 // Death Pact
@@ -4811,7 +4937,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }*/
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell || m_spellInfo->Id == 33395) // Water Elemental's Freeze should be checked even if it's a triggered spell
     {
         SpellCastResult castResult = CheckRange(strict);
         if (castResult != SPELL_CAST_OK)
@@ -5158,6 +5284,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(m_spellInfo->Id == 698) //ritual of summoning
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleGround())
+                            return SPELL_FAILED_NOT_HERE;
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -5279,6 +5415,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (target->GetCharmerGUID())
                         return SPELL_FAILED_CHARMED;
 
+                    if (target->IsMounted())
+                        return SPELL_FAILED_NOT_ON_MOUNTED;
+
                     int32 damage = CalculateDamage(i, target);
                     if (damage && int32(target->getLevel()) > damage)
                         return SPELL_FAILED_HIGHLEVEL;
@@ -5298,7 +5437,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattleGroundOrArena();
                 InstanceTemplate const *it = objmgr.GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount |= it->allowMount;
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
@@ -5329,13 +5468,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // allow always ghost flight spells
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
+                    
+	                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP); 
+
                     // 4197 = Wintergrasp || 4395 = Dalaran && 4564 = Krasus Landing
-                    if (m_originalCaster->GetZoneId() == 4197 || m_originalCaster->GetZoneId() == 4395 && m_originalCaster->GetAreaId() != 4564)
+                    if ((m_originalCaster->GetZoneId() == NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime()) || m_originalCaster->GetZoneId() == 4395 && m_originalCaster->GetAreaId() != 4564)
                         return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;
             }
-            case SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS:
+            /*case SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS:
             {
                 if (!m_targets.getUnitTarget() && m_targets.getUnitTarget()->GetTypeId() != TYPEID_UNIT)
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
@@ -5345,7 +5487,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_TARGET_FRIENDLY;
 
                 break;
-            }
+            }*/
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
                 if (!m_targets.getUnitTarget())
@@ -5442,6 +5584,10 @@ SpellCastResult Spell::CheckCasterAuras() const
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
             mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     }
+
+    // Caster with Cyclone can only use PvP trinket
+    if (m_caster->HasAura(33786) && mechanic_immune != IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK)
+        return SPELL_FAILED_STUNNED;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;
@@ -6659,7 +6805,10 @@ int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float *mul
             {
                 if (IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetA[i]] || IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetB[i]])
                 {
-                    if (int32 reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
+                    int32 reducedPct;
+                    if(reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
+                        m_damage = m_damage * (100 + reducedPct) / 100;
+                    if(reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE))
                         m_damage = m_damage * (100 + reducedPct) / 100;
 
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -6800,7 +6949,7 @@ void Spell::SelectTrajTargets()
     if (unitList.empty())
         return;
 
-    unitList.sort(Trinity::ObjectDistanceOrderPred(m_caster));
+    unitList.sort(TargetDistanceOrder(m_caster));
 
     float b = tangent(m_targets.m_elevation);
     float a = (dz - dist2d * b) / (dist2d * dist2d);
@@ -6903,5 +7052,83 @@ void Spell::SelectTrajTargets()
         }
 
         m_targets.setDst(x, y, z, m_caster->GetOrientation());
+    }
+}
+
+void Spell::FillRaidOrPartyTargets(UnitList &TagUnitMap, Unit* target, float radius, bool raid, bool withPets, bool withcaster)
+{
+    Player *pTarget = target->GetCharmerOrOwnerPlayerOrPlayerItself();
+    Group *pGroup = pTarget ? pTarget->GetGroup() : NULL;
+
+    if (pGroup)
+    {
+        uint8 subgroup = pTarget->GetSubGroup();
+
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player* Target = itr->getSource();
+
+            // IsHostileTo check duel and controlled by enemy
+            if (Target && (raid || subgroup == Target->GetSubGroup())
+                && !m_caster->IsHostileTo(Target))
+            {
+                if (Target == m_caster && withcaster ||
+                    Target != m_caster && m_caster->IsWithinDistInMap(Target, radius))
+                    TagUnitMap.push_back(Target);
+
+                if (withPets)
+                    if (Pet* pet = Target->GetPet())
+                        if (pet == m_caster && withcaster ||
+                            pet != m_caster && m_caster->IsWithinDistInMap(pet, radius))
+                            TagUnitMap.push_back(pet);
+            }
+        }
+    }
+    else
+    {
+        Unit* ownerOrSelf = pTarget ? pTarget : target->GetCharmerOrOwnerOrSelf();
+        if (ownerOrSelf == m_caster && withcaster ||
+            ownerOrSelf != m_caster && m_caster->IsWithinDistInMap(ownerOrSelf, radius))
+            TagUnitMap.push_back(ownerOrSelf);
+
+        if (withPets)
+            if (Guardian* pet = ownerOrSelf->GetGuardianPet())
+                if (pet == m_caster && withcaster ||
+                    pet != m_caster && m_caster->IsWithinDistInMap(pet, radius))
+                    TagUnitMap.push_back(pet);
+    }
+}
+
+void Spell::FillRaidOrPartyManaPriorityTargets(UnitList &TagUnitMap, Unit* target, float radius, uint32 count, bool raid, bool withPets, bool withCaster)
+{
+    FillRaidOrPartyTargets(TagUnitMap,target,radius,raid,withPets,withCaster);
+
+    PrioritizeManaUnitQueue manaUsers;
+    for (UnitList::const_iterator itr = TagUnitMap.begin(); itr != TagUnitMap.end() && manaUsers.size() < count; ++itr)
+        if ((*itr)->getPowerType() == POWER_MANA && !(*itr)->isDead())
+            manaUsers.push(PrioritizeManaUnitWraper(*itr));
+
+    TagUnitMap.clear();
+    while (!manaUsers.empty())
+    {
+        TagUnitMap.push_back(manaUsers.top().getUnit());
+        manaUsers.pop();
+    }
+}
+
+void Spell::FillRaidOrPartyHealthPriorityTargets(UnitList &TagUnitMap, Unit* target, float radius, uint32 count, bool raid, bool withPets, bool withCaster)
+{
+    FillRaidOrPartyTargets(TagUnitMap,target,radius,raid,withPets,withCaster);
+
+    PrioritizeHealthUnitQueue healthQueue;
+    for (UnitList::const_iterator itr = TagUnitMap.begin(); itr != TagUnitMap.end() && healthQueue.size() < count; ++itr)
+        if (!(*itr)->isDead())
+            healthQueue.push(PrioritizeHealthUnitWraper(*itr));
+
+    TagUnitMap.clear();
+    while (!healthQueue.empty())
+    {
+        TagUnitMap.push_back(healthQueue.top().getUnit());
+        healthQueue.pop();
     }
 }

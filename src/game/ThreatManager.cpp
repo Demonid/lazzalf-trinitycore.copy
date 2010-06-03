@@ -246,13 +246,21 @@ void ThreatContainer::modifyThreatPercent(Unit *pVictim, int32 iPercent)
 }
 
 //============================================================
+
+bool HostileReferenceSortPredicate(const HostileReference* lhs, const HostileReference* rhs)
+{
+    // std::list::sort ordering predicate must be: (Pred(x,y)&&Pred(y,x)) == false
+    return lhs->getThreat() > rhs->getThreat();             // reverse sorting
+}
+
+//============================================================
 // Check if the list is dirty and sort if necessary
 
 void ThreatContainer::update()
 {
     if (iDirty && iThreatList.size() >1)
-    {    
-        iThreatList.sort(Trinity::ThreatOrderPred());
+    {
+        iThreatList.sort(HostileReferenceSortPredicate);
     }
     iDirty = false;
 }
