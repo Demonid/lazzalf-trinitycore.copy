@@ -209,7 +209,7 @@ struct boss_freyaAI : public BossAI
     boss_freyaAI(Creature* pCreature) : BossAI(pCreature, BOSS_FREYA)
     {
         pInstance = pCreature->GetInstanceData();
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
  	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
     
