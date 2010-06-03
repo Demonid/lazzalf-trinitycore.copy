@@ -47,7 +47,8 @@ enum eGameObjects
     GO_Stone_DOOR           = 194558,
     GO_Thorim_LEVER         = 194265,
     GO_Thorim_CHEST_HERO    = 194315,
-    GO_Thorim_CHEST         = 194314
+    GO_Thorim_CHEST         = 194314,
+    GO_Mimiron_TRAM         = 194675
 };
 
 struct instance_ulduar : public InstanceData
@@ -80,7 +81,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiRunicColossus;
     uint64 uiRuneGiant;
     
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest, *MimironTram;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -98,6 +99,7 @@ struct instance_ulduar : public InstanceData
             case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
             case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
             case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
+            case GO_Mimiron_TRAM: MimironTram = add ? pGo : NULL; break;
         }
     }
 
@@ -235,6 +237,36 @@ struct instance_ulduar : public InstanceData
                 if (pStoneDoor)
                     pStoneDoor->SetGoState(GOState(value));
                 break;
+            case DATA_CALL_TRAM:
+                if (MimironTram && instance)
+                {
+                    // Load Mimiron Tram (unfortunally only server side)
+                    instance->LoadGrid(2307, 284.632);
+                
+                    if (value == 0)
+                        MimironTram->SetGoState(GO_STATE_READY);
+                    if (value == 1)
+                        MimironTram->SetGoState(GO_STATE_ACTIVE);
+                    
+                    // Send movement update to players
+                    if (Map* pMap = MimironTram->GetMap())
+                        if (pMap->IsDungeon())
+                        {
+                            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+
+                            if (!PlayerList.isEmpty())
+                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                    if (i->getSource())
+                                    {
+                                        UpdateData data;
+                                        WorldPacket pkt;
+                                        MimironTram->BuildValuesUpdateBlockForPlayer(&data, i->getSource());
+                                        data.BuildPacket(&pkt);
+                                        i->getSource()->GetSession()->SendPacket(&pkt);
+                                    }
+                        }
+                }
+                break;
         }
     }
 
@@ -268,11 +300,39 @@ InstanceData* GetInstanceData_instance_ulduar(Map* pMap)
     return new instance_ulduar(pMap);
 }
 
+// Mimiron Tram (need update packet support)
+bool GOHello_go_call_tram(Player* pPlayer, GameObject* pGo)
+{
+    ScriptedInstance* pInstance = pGo->GetInstanceData();
+
+    if (!pInstance)
+        return false;
+
+        switch(pGo->GetEntry())
+        {
+            case 194914:
+            case 194438:
+                pInstance->SetData(DATA_CALL_TRAM, 0);
+                break;
+            case 194912:
+            case 194437:
+                pInstance->SetData(DATA_CALL_TRAM, 1);
+                break;
+        }
+        
+    return true;
+}
+
 void AddSC_instance_ulduar()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_ulduar";
     newscript->GetInstanceData = &GetInstanceData_instance_ulduar;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_call_tram";
+    newscript->pGOHello = &GOHello_go_call_tram;
     newscript->RegisterSelf();
 }
