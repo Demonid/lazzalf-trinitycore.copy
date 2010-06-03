@@ -66,7 +66,8 @@ enum Data
 {
     DATA_LEVIATHAN_DOOR,
     DATA_RUNIC_DOOR,
-    DATA_STONE_DOOR
+    DATA_STONE_DOOR,
+    DATA_CALL_TRAM
 };
 
 enum Npcs
