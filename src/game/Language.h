@@ -754,6 +754,7 @@ enum TrinityStrings
     LANG_BG_WG_ENABLE                   = 770,
     LANG_BG_WG_RANK1                    = 771,
     LANG_BG_WG_RANK2                    = 772,
+    LANG_BG_WG_NOT_ENOUGH_PLAYERS       = 773,
 
     // Room for BG/ARENA                = 773-784, 788-799 not used
     LANG_ARENA_TESTING                  = 785,
