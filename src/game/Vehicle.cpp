@@ -271,7 +271,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
                 break;
             default: 
                 unit->addUnitState(UNIT_STAT_ONVEHICLE); 
-            break; 
+                break; 
         }
     }
 

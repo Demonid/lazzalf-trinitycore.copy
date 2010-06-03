@@ -128,7 +128,7 @@ struct boss_ignis_AI : public BossAI
     {
         assert(vehicle);
         pInstance = pCreature->GetInstanceData();
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
  	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
@@ -402,7 +402,7 @@ struct mob_scorch_groundAI : public ScriptedAI
 
             if (!m_pCreatures.empty())
                 for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
-                    me->CastSpell((*iter), SPELL_HEAT, true);
+                    (*iter)->CastSpell((*iter), SPELL_HEAT, true);
 
             heat_Timer = 1000;           
         } else heat_Timer -= uiDiff;       
