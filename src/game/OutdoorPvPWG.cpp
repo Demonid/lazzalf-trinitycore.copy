@@ -1730,8 +1730,17 @@ bool OutdoorPvPWG::Update(uint32 diff)
         {
             if (m_timer != 1) // 1 = forceStartBattle
                 sWorld.SendZoneText(NORTHREND_WINTERGRASP, objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_STARTS));
+ 	            
+            if (!m_players[getDefenderTeamId()].empty() && !m_players[getAttackerTeamId()].empty())
+                StartBattle();
+            else
+            {
+                m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILISECONDS;
+                sWorld.SendZoneText(NORTHREND_WINTERGRASP, objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
 
-            StartBattle();
+                if (m_players[getDefenderTeamId()].empty())
+                    forceChangeTeam();
+            }
         }
 
         UpdateAllWorldObject();
