@@ -402,7 +402,8 @@ struct mob_scorch_groundAI : public ScriptedAI
 
             if (!m_pCreatures.empty())
                 for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
-                    (*iter)->CastSpell((*iter), SPELL_HEAT, true);
+                    if ((*iter) && (*iter)->isAlive())
+                        me->CastSpell((*iter), SPELL_HEAT, true);
 
             heat_Timer = 1000;           
         } else heat_Timer -= uiDiff;       
