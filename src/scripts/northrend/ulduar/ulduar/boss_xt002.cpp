@@ -60,7 +60,7 @@ enum Timers
     TIMER_TYMPANIC_TANTRUM                      = 60000,
     TIMER_SEARING_LIGHT                         = 20000,
     TIMER_SPAWN_LIFE_SPARK                      = 9000,
-    TIMER_GRAVITY_BOMB                          = 20000,
+    TIMER_GRAVITY_BOMB                          = 12000,
     TIMER_SPAWN_GRAVITY_BOMB                    = 9000,
     TIMER_HEART_PHASE                           = 30000,
     TIMER_ENRAGE                                = 600000,
