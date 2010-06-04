@@ -465,6 +465,13 @@ struct spell_pool_of_tarAI : public TriggerAI
     }
 };
 
+#define SPELL_CANNON    62357
+//#define SPELL_FLAME_1   65045
+//#define SPELL_FLAME_2   65044
+#define SPELL_MORTAR    62635
+#define SPELL_BOULDER   62307
+
+
 struct keeper_norgannonAI : public ScriptedAI
 {
     keeper_norgannonAI(Creature *c) : ScriptedAI(c), summons(me)
@@ -487,11 +494,32 @@ struct keeper_norgannonAI : public ScriptedAI
             case ACTION_VEHICLE_RESPAWN:
                 summons.DespawnAll();
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_SIEGE, PosSiege[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                {
+                    if (Creature* summon = DoSummon(VEHICLE_SIEGE, PosSiege[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
+                    {
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CANNON, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MORTAR, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
+                    }
+                }
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_CHOPPER, PosChopper[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                {
+                    if (Creature* summon = DoSummon(VEHICLE_CHOPPER, PosChopper[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
+                    {
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CANNON, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MORTAR, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
+                    }
+                }
                 for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
-                    DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                {
+                    if (Creature* summon = DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
+                    {
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CANNON, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MORTAR, true);
+                        summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
+                    }
+                }
                 break;
         }
     }
