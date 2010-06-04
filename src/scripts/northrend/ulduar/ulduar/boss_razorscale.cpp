@@ -290,7 +290,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_DEVOURING:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-                            DoCast(pTarget, RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25));
+                            DoCast(pTarget, SPELL_DEVOURINGFLAME_10/*RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25)*/);
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_PERMAGROUND);
                         return;
                     case EVENT_BUFFET:
@@ -777,6 +777,10 @@ struct mole_machine_triggerAI : public ScriptedAI
             float z = me->GetPositionZ();
             me->SummonCreature(NPC_DARK_RUNE_WATCHER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
             me->SummonCreature(RAND(NPC_DARK_RUNE_GUARDIAN, NPC_DARK_RUNE_SENTINEL), x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            {
+                me->SummonCreature(RAND(NPC_DARK_RUNE_GUARDIAN, NPC_DARK_RUNE_SENTINEL), x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            }
             SummomTimer = 15000;
         } else SummomTimer -= uiDiff;
     }
