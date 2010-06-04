@@ -1839,7 +1839,8 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 51687:
             case 51688:
             case 51689:
-                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) {
+                if (target->getVictim() && (target->GetHealth() * 100 / target->GetMaxHealth() > target->getVictim()->GetHealth() * 100 / target->getVictim()->GetMaxHealth())) 
+                {
                     if (!target->HasAura(58670)) 
                     {
                         int32 basepoints = GetSpellProto()->EffectBasePoints[0];
