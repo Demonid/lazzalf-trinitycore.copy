@@ -56,16 +56,19 @@ enum Spells
     SPELL_BERSERK                 = 47008
 };
 
-const Position Harpoon1 = { 590.442322, -130.550278, 391.516998, 4.789456};
-const Position Harpoon2 = { 574.850159, -133.687439, 391.517151, 4.252456};
+const Position Harpoon1 = {594.317, -136.953, 391.516998, 4.544};
+const Position Harpoon2 = {577.449, -136.953, 391.517151, 4.877};
+
+const Position posEng1 = {590.442322, -130.550278, 391.516998, 4.789456};
+const Position posEng2 = {574.850159, -133.687439, 391.517151, 4.252456};
  
 const Position pos1 = {614.975403, -155.138214, 391.517090, 4.154516};
 const Position pos2 = {609.814331, -204.968185, 391.517090, 5.385465};
 const Position pos3 = {563.530884, -201.557312, 391.517090, 4.108194};
 const Position pos4 = {560.231260, -153.677198, 391.517090, 5.402720};
 
-const Position RazorFlight = {588.050293, -235.191223, 460.535980, 1.605303};
-const Position RazorGround = {582.101135, -175.312286, 390.516998, 1.691704};
+const Position RazorFlight = {588.050293, -235.191223, 460.535980, 1.605303};//const Position RazorFlight = {588.050293, -251.191223, 470.535980, 1.605303};
+const Position RazorGround = {586.966, -175.534, 390.516998, 1.691704};
 const Position WATCHER1 = {629.309, -197.959, 391.516, 1.691704};
 const Position WATCHER2 = {561.045, -214.221, 391.516, 1.691704};
 const Position WATCHER3 = {541.707, -166.307, 391.516, 1.691704};
@@ -76,7 +79,12 @@ enum Mobs
     NPC_DARK_RUNE_GUARDIAN        = 33388,
     NPC_DARK_RUNE_SENTINEL        = 33846,
     NPC_DARK_RUNE_WATCHER         = 33453,
-    MOLE_MACHINE_TRIGGER          = 33282,
+    MOLE_MACHINE_TRIGGER          = 33245,
+    NPC_COMMANDER                 = 33210,
+    NPC_ENGINEER                  = 33287,
+    NPC_DEFENDER                  = 33816,
+    NPC_HARPOON                   = 33184,
+    MOLE_MACHINE_GOB              = 194316
 };
 
 enum DarkRuneSpells
@@ -96,9 +104,6 @@ enum DarkRuneSpells
     SPELL_HEROIC_STRIKE           = 45026,
     SPELL_WHIRLWIND_10            = 63807,
     SPELL_WHIRLWIND_25            = 63808,
-    
-    // Dark Iron Mole Machine
-    SPELL_MOLE_MACHINE            = 43561
 };
 
 #define ACHIEVEMENT_QUICK_SHAVE     RAID_MODE(2919, 2921)
@@ -138,7 +143,7 @@ struct boss_razorscaleAI : public BossAI
         // Do not let Razorscale be affected by Battle Shout buff
         me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(SPELL_BATTLE_SHOUT_10, SPELL_BATTLE_SHOUT_25), true);
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         pInstance = pCreature->GetInstanceData();
         pMap = me->GetMap();
         PermaGround = false;
@@ -167,10 +172,8 @@ struct boss_razorscaleAI : public BossAI
     void EnterCombat(Unit* who)
     {
         _EnterCombat();
-        if (Harpoon[0] = me->SummonCreature(NPC_FIRE_STATE, 589.922974, -133.621994, 391.517090, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
-            Harpoon[0]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-        if (Harpoon[1] = me->SummonCreature(NPC_FIRE_STATE, 571.947021, -136.011993, 391.516998, 4.789456, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0))
-            Harpoon[1]->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        Harpoon[0] = me->SummonCreature(NPC_HARPOON, Harpoon1, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
+        Harpoon[1] = me->SummonCreature(NPC_HARPOON, Harpoon2, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
         me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         me->SetSpeed(MOVE_RUN, 3.0f, true);
         me->SetSpeed(MOVE_FLIGHT, 3.0f, true);
@@ -228,6 +231,7 @@ struct boss_razorscaleAI : public BossAI
                         me->SetReactState(REACT_PASSIVE);
                         me->AttackStop();
                         me->SendMovementFlagUpdate();
+                        me->RemoveAllAuras();
                         me->GetMotionMaster()->MovePoint(0,RazorFlight);
                         events.ScheduleEvent(EVENT_FIREBALL, 7000, 0, PHASE_FLIGHT);
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_FLIGHT);
@@ -290,7 +294,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_DEVOURING:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-                            DoCast(pTarget, SPELL_DEVOURINGFLAME_10/*RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25)*/);
+                            DoCast(pTarget, RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25));
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_PERMAGROUND);
                         return;
                     case EVENT_BUFFET:
@@ -369,13 +373,10 @@ struct boss_razorscaleAI : public BossAI
         uint8 random = urand(1,4);
         for (uint8 i = 0; i < random; ++i)
         {
-            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-            {
-                float x = std::max(500.0f, std::min(650.0f, pTarget->GetPositionX() + irand(-20,20)));   // Safe range is between 500 and 650
-                float y = std::max(-235.0f, std::min(-145.0f, pTarget->GetPositionY() + irand(-20,20))); // Safe range is between -235 and -145
-                float z = me->GetBaseMap()->GetHeight(x, y, MAX_HEIGHT);                         // Ground level
-                MoleTrigger = me->SummonCreature(MOLE_MACHINE_TRIGGER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
-            }
+            float x = irand(540.0f, 640.0f);   // Safe range is between 500 and 650
+            float y = irand(-230.0f, -195.0f); // Safe range is between -235 and -145
+            float z = 391.5f;                  // Ground level
+            MoleTrigger = me->SummonCreature(MOLE_MACHINE_TRIGGER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
         }
     }
     
@@ -402,13 +403,14 @@ CreatureAI* GetAI_boss_razorscale(Creature* pCreature)
 
 struct npc_expedition_commanderAI : public ScriptedAI
 {
-    npc_expedition_commanderAI(Creature* pCreature) : ScriptedAI(pCreature)
+    npc_expedition_commanderAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
     {
         pInstance = pCreature->GetInstanceData();
         greet = false;
     }
     
     ScriptedInstance* pInstance;
+    SummonList summons;
 
     uint32 uiTimer;
     bool greet;
@@ -454,6 +456,11 @@ struct npc_expedition_commanderAI : public ScriptedAI
             return;
     }
     
+    void JustSummoned(Creature *summon)
+    {
+        summons.Summon(summon);
+    }
+    
     void UpdateAI(const uint32 uiDiff)
     {
         ScriptedAI::UpdateAI(uiDiff);
@@ -465,25 +472,25 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     break;
                 case 1:
                     pInstance->SetBossState(BOSS_RAZORSCALE, IN_PROGRESS);
+                    summons.DespawnAll();
                     uiTimer = 1000;
                     uiPhase = 2;
                     break;
                 case 2:
-                    engineer[0] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    engineer[0] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (engineer[0])
-                    { 
+                    {
                         engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         engineer[0]->SetSpeed(MOVE_RUN, 0.5f);
-                        engineer[0]->SetHomePosition(Harpoon1);
+                        engineer[0]->SetHomePosition(posEng1);
                         engineer[0]->GetMotionMaster()->MoveTargetedHome();
                     }
-                    
-                    engineer[1] = me->SummonCreature(NPC_ENGINEER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    engineer[1] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (engineer[1])
                     {
                         engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         engineer[1]->SetSpeed(MOVE_RUN, 0.5f);
-                        engineer[1]->SetHomePosition(Harpoon2);
+                        engineer[1]->SetHomePosition(posEng2);
                         engineer[1]->GetMotionMaster()->MoveTargetedHome();
                     }
                     if (engineer[0])
@@ -495,33 +502,33 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 4;
                     break;
                 case 4:
-                    defender[0] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    defender[0] = me->SummonCreature(NPC_DEFENDER, 600.75, -104.85, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[0])
-                    { 
+                    {
                         defender[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         defender[0]->SetHomePosition(pos1);
                         defender[0]->GetMotionMaster()->MoveTargetedHome();
                     }
 
-                    defender[1] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    defender[1] = me->SummonCreature(NPC_DEFENDER, 596.38, -110.26, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[1])
-                    { 
+                    {
                         defender[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         defender[1]->SetHomePosition(pos2);
                         defender[1]->GetMotionMaster()->MoveTargetedHome();
                     }
                     
-                    defender[2] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                    if (defender[3])
-                    { 
+                    defender[2] = me->SummonCreature(NPC_DEFENDER, 566.47, -103.63, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    if (defender[2])
+                    {
                         defender[2]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         defender[2]->SetHomePosition(pos3);
                         defender[2]->GetMotionMaster()->MoveTargetedHome();
                     }
-                    
-                    defender[3] = me->SummonCreature(NPC_DEFENDER,591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+
+                    defender[3] = me->SummonCreature(NPC_DEFENDER, 570.41, -108.79, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (defender[3])
-                    {                    
+                    {
                         defender[3]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                         defender[3]->SetHomePosition(pos4);
                         defender[3]->GetMotionMaster()->MoveTargetedHome();
@@ -757,12 +764,15 @@ struct mole_machine_triggerAI : public ScriptedAI
     }
 
     ScriptedInstance* m_pInstance;
+    GameObject* MoleMachine;
     int32 SummomTimer;
 
     void Reset()
     {
-        DoCast(me, SPELL_MOLE_MACHINE);
-        SummomTimer = 8000;
+        MoleMachine = me->SummonGameObject(MOLE_MACHINE_GOB, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), urand(0,6), 0, 0, 0, 0, 300);
+        if (MoleMachine)
+            MoleMachine->SetGoState(GO_STATE_ACTIVE);
+        SummomTimer = 6000;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -775,14 +785,21 @@ struct mole_machine_triggerAI : public ScriptedAI
             float x = me->GetPositionX();
             float y = me->GetPositionY();
             float z = me->GetPositionZ();
-            me->SummonCreature(NPC_DARK_RUNE_WATCHER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-            me->SummonCreature(RAND(NPC_DARK_RUNE_GUARDIAN, NPC_DARK_RUNE_SENTINEL), x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            
+            // One mole can spawn a Dark Rune Watcher with 1-2 Guardians, or alone Sentinel
+            if (!(rand()%2))
             {
-                me->SummonCreature(RAND(NPC_DARK_RUNE_GUARDIAN, NPC_DARK_RUNE_SENTINEL), x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                me->SummonCreature(NPC_DARK_RUNE_WATCHER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+                uint8 random = urand(1,2);
+                for (uint8 i = 0; i < random; ++i)
+                    me->SummonCreature(NPC_DARK_RUNE_GUARDIAN, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
             }
+            else
+                me->SummonCreature(NPC_DARK_RUNE_SENTINEL, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+                
             SummomTimer = 15000;
-        } else SummomTimer -= uiDiff;
+        } 
+        else SummomTimer -= uiDiff;
     }
     
     void JustSummoned(Creature *summon)

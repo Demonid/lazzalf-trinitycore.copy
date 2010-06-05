@@ -70,14 +70,4 @@ enum Data
     DATA_CALL_TRAM
 };
 
-enum Npcs
-{
-    NPC_COMMANDER               = 33210,
-    NPC_GTRAPPER                = 33259,
-    NPC_ENGINEER                = 33287,
-    NPC_DEFENDER                = 33816,
-    NPC_IRON_CONSTRUCT          = 33121,
-    NPC_FIRE_STATE              = 33184
-};
-
 #endif
