@@ -30,7 +30,6 @@ EndScriptData */
 #define SPELL_ARM_DEAD_DAMAGE   RAID_MODE(63629,63979)
 #define SPELL_TWO_ARM_SMASH     RAID_MODE(63356,64003)
 #define SPELL_ONE_ARM_SMASH     RAID_MODE(63573,64006)
-#define CRUNCH_ARMOR            RAID_MODE(63355,64002)
 #define SPELL_STONE_SHOUT       RAID_MODE(63716,64005)
 #define SPELL_PETRIFY_BREATH    RAID_MODE(62030,63980)
 #define SPELL_SHOCKWAVE         RAID_MODE(63783,63982)
@@ -60,6 +59,7 @@ enum Actions
 {
     ACTION_RESPAWN_RIGHT                         = 0,
     ACTION_RESPAWN_LEFT                          = 1,
+    ACTION_GRIP                                  = 2
 };
 
 #define NPC_EYEBEAM_1                              33632
@@ -121,14 +121,12 @@ struct boss_kologarnAI : public BossAI
     Creature* LeftArm;
     
     uint32 RubbleCount;
-    uint64 uiGripTarget;
-    uint64 uiRightHealth;
 
     void AttackStart(Unit *who)
     {
         me->Attack(who, true);
     }
-
+    
     void MoveInLineOfSight(Unit *who)
     {
         // Birth animation
@@ -149,13 +147,6 @@ struct boss_kologarnAI : public BossAI
         // With Open Arms
         if (RubbleCount == 0)
             pInstance->DoCompleteAchievement(ACHIEVEMENT_WITH_OPEN_ARMS);
-            
-        if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
-        {
-            pGripTarget->RemoveAurasDueToSpell(RAID_MODE(64290, 64292));
-            pGripTarget->RemoveAurasDueToSpell(RAID_MODE(62056, 63985));
-            pGripTarget->RemoveAurasDueToSpell(64708);
-        }
                 
         DoScriptText(SAY_DEATH, me);
         _JustDied();
@@ -173,7 +164,7 @@ struct boss_kologarnAI : public BossAI
             else if(who->GetEntry() == 32934)
                 right = apply;
             who->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-            CAST_CRE(who)->SetReactState(REACT_PASSIVE);
+            CAST_CRE(who)->SetReactState(REACT_AGGRESSIVE);
         }
     }
 
@@ -183,6 +174,7 @@ struct boss_kologarnAI : public BossAI
         _EnterCombat();
         RubbleCount = 0;
         Gripped = false;
+        
         events.ScheduleEvent(EVENT_SMASH, 5000);
         events.ScheduleEvent(EVENT_SWEEP, 10000);
         events.ScheduleEvent(EVENT_EYEBEAM, 10000);
@@ -214,18 +206,6 @@ struct boss_kologarnAI : public BossAI
         if (events.GetTimer() > 15000 && !me->IsWithinMeleeRange(me->getVictim()))
             DoCastAOE(SPELL_PETRIFY_BREATH, true);
         
-        if (Gripped)   
-            if (RightArm->GetHealth() <= int32(uiRightHealth - RAID_MODE(100000, 480000)))
-            {
-                if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
-                {
-                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
-                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
-                    pGripTarget->RemoveAurasDueToSpell(64708);
-                    Gripped = false;
-                }
-            }
-        
         if (!left && !right)
             DoCast(me, SPELL_STONE_SHOUT, true);
 
@@ -234,15 +214,9 @@ struct boss_kologarnAI : public BossAI
             case EVENT_NONE: break;
             case EVENT_SMASH:
                 if (left && right)
-                {
                     DoCastVictim(SPELL_TWO_ARM_SMASH, true);
-                    //DoCastVictim(CRUNCH_ARMOR, true);
-                }
                 else if(left || right)
-                {
                     DoCastVictim(SPELL_ONE_ARM_SMASH, true);
-                    //DoCastVictim(CRUNCH_ARMOR, true);
-                }
                 events.RepeatEvent(15000);
                 break;
             case EVENT_SWEEP:
@@ -250,25 +224,16 @@ struct boss_kologarnAI : public BossAI
                     DoCastAOE(SPELL_ARM_SWEEP, true);
                 events.RepeatEvent(15000);
                 break;
-            case EVENT_GRIP: // Need better implementation
+            case EVENT_GRIP:
                 if (right)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true))
-                    {
-                        me->AddAura(SPELL_STONE_GRIP, pTarget);
-                        me->AddAura(SPELL_STONE_GRIP_STUN, pTarget); //It cause player's death after about 15 sec
-                        uiGripTarget = pTarget->GetGUID(); 
-                        pTarget->NearTeleportTo(1781.814, -3.716, 448.808, 4.211);
-                        me->MonsterTextEmote(EMOTE_STONE, 0, true);
-                        DoScriptText(SAY_GRAB_PLAYER, me);
-                        if (pInstance)
-                        {
-                            RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM));
-                            if (RightArm)
-                                uiRightHealth = int32(RightArm->GetHealth());
-                            Gripped = true;
-                        }
-                    }
+                    me->MonsterTextEmote(EMOTE_STONE, 0, true);
+                    DoScriptText(SAY_GRAB_PLAYER, me);
+                    
+                    if (pInstance)
+                        if (Creature* RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM)))
+                            if (RightArm->AI())
+                                RightArm->AI()->DoAction(ACTION_GRIP);
                 }
                 events.RepeatEvent(40000);
                 break;
@@ -285,9 +250,9 @@ struct boss_kologarnAI : public BossAI
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                 {
                     if (EyeBeam[0] = me->SummonCreature(NPC_EYEBEAM_1, pTarget->GetPositionX(), pTarget->GetPositionY() + 3, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
-                    EyeBeam[0]->GetMotionMaster()->MoveChase(pTarget, -0.5);
+                    EyeBeam[0]->AI()->AttackStart(pTarget);
                     if (EyeBeam[1] = me->SummonCreature(NPC_EYEBEAM_2, pTarget->GetPositionX(), pTarget->GetPositionY() - 3, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
-                    EyeBeam[1]->GetMotionMaster()->MoveChase(pTarget, -0.5);
+                    EyeBeam[1]->AI()->AttackStart(pTarget);
                 }
                 events.RepeatEvent(20000);
                 break;
@@ -329,12 +294,6 @@ struct boss_kologarnAI : public BossAI
                 DoScriptText(SAY_RIGHT_ARM_GONE, me);
                 me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15% for 30 sec
                 ++RubbleCount;
-                if (Unit *pGripTarget = me->GetUnit(*me, uiGripTarget))
-                {
-                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
-                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
-                    pGripTarget->RemoveAurasDueToSpell(64708);
-                }
                 events.ScheduleEvent(EVENT_RIGHT, 30000);
                 break;
             case ACTION_RESPAWN_LEFT:
@@ -356,6 +315,7 @@ struct mob_focused_eyebeamAI : public ScriptedAI
 {
     mob_focused_eyebeamAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
+        me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
     }
 
@@ -379,12 +339,20 @@ struct mob_right_armAI : public ScriptedAI
     }
 
     ScriptedInstance* m_pInstance;
+    
+    bool Gripped;
+    uint32 ArmDamage;
 
+    void Reset()
+    {
+        Gripped = false;
+        ArmDamage = 0;
+    }
+    
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
-
     }
     
     void JustDied(Unit *victim)
@@ -405,6 +373,46 @@ struct mob_right_armAI : public ScriptedAI
     {
         summon->AI()->DoAction(0);
         summon->AI()->DoZoneInCombat();
+    }
+    
+    void DoAction(const int32 action)
+    {
+        switch (action)
+        {
+            case ACTION_GRIP:
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                {
+                    pTarget->EnterVehicle(me, 0);
+                    pTarget->AddAura(SPELL_STONE_GRIP, pTarget);
+                    pTarget->AddAura(SPELL_STONE_GRIP_STUN, pTarget); //It cause player's death after about 15 sec
+                    Gripped = true;
+                }
+                break;
+        }
+    }
+    
+    void DamageTaken(Unit* pKiller, uint32 &damage)
+    {
+        if (Gripped)
+        {
+            ArmDamage += damage;
+            int dmg = RAID_MODE(80000, 380000);
+            
+            if (ArmDamage > dmg || damage >= me->GetHealth())
+            {
+                Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(0);
+                if (pGripTarget && pGripTarget->isAlive())
+                {
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                    pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
+                    pGripTarget->RemoveAurasDueToSpell(64708);
+                    pGripTarget->ExitVehicle();
+                    pGripTarget->GetMotionMaster()->MoveJump(1767.80, -18.38, 448.808, 10, 10);
+                }
+                pGripTarget = 0;
+                Gripped = false;
+            }
+        }
     }
 };
 
@@ -427,7 +435,6 @@ struct mob_left_armAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
-
     }
     
     void JustDied(Unit *victim)

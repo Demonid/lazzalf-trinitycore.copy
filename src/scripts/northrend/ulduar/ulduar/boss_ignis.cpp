@@ -135,7 +135,7 @@ struct boss_ignis_AI : public BossAI
     Vehicle *vehicle;
     ScriptedInstance *pInstance;
 
-    Unit* SlagPotTarget;
+    uint32 SlagPotGUID;
     
     uint32 EncounterTime;
     uint32 ConstructTimer;
@@ -160,6 +160,7 @@ struct boss_ignis_AI : public BossAI
         events.ScheduleEvent(EVENT_END_POT, 40000);
         events.ScheduleEvent(EVENT_BERSERK, 480000);
         EncounterTime = 0;
+        SlagPotGUID = 0;
         ConstructTimer = 0;
         Shattered = false;
     }
@@ -215,15 +216,15 @@ struct boss_ignis_AI : public BossAI
                     if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                     {
                         DoScriptText(SAY_SLAG_POT, me);
-                        SlagPotTarget = pTarget;
-                        DoCast(SlagPotTarget, SPELL_GRAB);
+                        SlagPotGUID = pTarget->GetGUID();
+                        DoCast(pTarget, SPELL_GRAB);
                         events.DelayEvents(3000);
                         events.ScheduleEvent(EVENT_GRAB_POT, 500);
                     }
                     events.ScheduleEvent(EVENT_SLAG_POT, RAID_MODE(30000, 15000));
                     break;
                 case EVENT_GRAB_POT:
-                    if (SlagPotTarget && SlagPotTarget->isAlive())
+                    if (Unit* SlagPotTarget = Unit::GetUnit(*me, SlagPotGUID))
                     {
                         SlagPotTarget->EnterVehicle(me, 0);
                         events.CancelEvent(EVENT_GRAB_POT);
@@ -231,7 +232,7 @@ struct boss_ignis_AI : public BossAI
                     }
                     break;
                 case EVENT_CHANGE_POT:
-                    if (SlagPotTarget && SlagPotTarget->isAlive())
+                    if (Unit* SlagPotTarget = Unit::GetUnit(*me, SlagPotGUID))
                     {
                         SlagPotTarget->AddAura(RAID_MODE(SPELL_SLAG_POT_10, SPELL_SLAG_POT_25), SlagPotTarget);
                         SlagPotTarget->EnterVehicle(me, 1);
@@ -240,11 +241,10 @@ struct boss_ignis_AI : public BossAI
                     }
                     break;
                 case EVENT_END_POT:
-                    if (SlagPotTarget && SlagPotTarget->isAlive())
+                    if (Unit* SlagPotTarget = Unit::GetUnit(*me, SlagPotGUID))
                     {
                         SlagPotTarget->ExitVehicle();
                         SlagPotTarget->CastSpell(SlagPotTarget, RAID_MODE(SPELL_SLAG_IMBUED_10, SPELL_SLAG_IMBUED_25), true);
-                        SlagPotTarget = 0;
                         events.CancelEvent(EVENT_END_POT);
                     }
                     break;
