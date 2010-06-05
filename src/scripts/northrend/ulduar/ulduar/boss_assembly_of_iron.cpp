@@ -505,6 +505,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         if(pInstance)
             pInstance->SetBossState(BOSS_ASSEMBLY, NOT_STARTED);
         me->RemoveAllAuras();
+        me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_WALK_MODE);
         events.Reset();
         phase = 0;
         
@@ -535,7 +536,6 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         DoZoneInCombat();
         CallBosses(pInstance, DATA_BRUNDIR, who);
         phase = 1;
-        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         events.ScheduleEvent(EVENT_MOVE_POS, 1000);
         events.ScheduleEvent(EVENT_ENRAGE, 900000);
         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 2000);
@@ -613,7 +613,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                 break;
                 case EVENT_FLIGHT:
-                    events.ScheduleEvent(EVENT_MOVE_POS, 0);
+                    events.RescheduleEvent(EVENT_MOVE_POS, 0);
                     events.CancelEvent(EVENT_FLIGHT);
                     events.ScheduleEvent(EVENT_LAND, 22000);
                 break;
