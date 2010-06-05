@@ -76,6 +76,7 @@ enum eEnums
     EVENT_FLIGHT,
     EVENT_GROUND,
     EVENT_LAND,
+    EVENT_MOVE_POS,
     //rune of power
     EVENT_AURA,
 
@@ -158,6 +159,28 @@ bool IsEncounterComplete(ScriptedInstance* pInstance, Creature* me)
 // Avoid killing bosses one to one
 void CallBosses(ScriptedInstance *pInstance, uint32 caller, Unit *who) {
     
+    // Respawn if dead
+    if(Creature* Steelbreaker = Unit::GetCreature(*who, pInstance ? pInstance->GetData64(DATA_STEELBREAKER) : 0))
+        if(Steelbreaker->isDead())
+        {            
+            Steelbreaker->Respawn(true);
+            Steelbreaker->GetMotionMaster()->MoveTargetedHome();
+        }
+            
+    if(Creature* Brundir = Unit::GetCreature(*who, pInstance ? pInstance->GetData64(DATA_BRUNDIR) : 0))
+        if(Brundir->isDead())
+        {
+            Brundir->Respawn(true);
+            Brundir->GetMotionMaster()->MoveTargetedHome();
+        }
+
+    if(Creature* Molgeim = Unit::GetCreature(*who, pInstance ? pInstance->GetData64(DATA_MOLGEIM) : 0))
+        if(Molgeim->isDead())
+        {
+            Molgeim->Respawn(true);
+            Molgeim->GetMotionMaster()->MoveTargetedHome();
+        }
+    
     for (uint8 i = 0; i < 3; ++i)
     {
         if (caller == DATA_STEELBREAKER+i) continue;
@@ -180,7 +203,7 @@ struct boss_steelbreakerAI : public ScriptedAI
     {
         pInstance = c->GetInstanceData();
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()
@@ -312,7 +335,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
     {
         pInstance = c->GetInstanceData();
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()
@@ -472,8 +495,9 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     boss_stormcaller_brundirAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
+        me->SetReactState(REACT_PASSIVE);
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     void Reset()
@@ -503,6 +527,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
     EventMap events;
     ScriptedInstance* pInstance;
     uint32 phase;
+    uint32 Position;
 
     void EnterCombat(Unit* who)
     {
@@ -510,6 +535,8 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         DoZoneInCombat();
         CallBosses(pInstance, DATA_BRUNDIR, who);
         phase = 1;
+        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        events.ScheduleEvent(EVENT_MOVE_POS, 1000);
         events.ScheduleEvent(EVENT_ENRAGE, 900000);
         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 2000);
         events.ScheduleEvent(EVENT_OVERLOAD, urand(60000, 120000));
@@ -540,68 +567,69 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         if (!UpdateVictim())
             return;
             
+        events.Update(diff);
+        
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
-
-        events.Update(diff);
 
         while (uint32 eventId = events.ExecuteEvent())
         {
             switch(eventId)
             {
+                case EVENT_MOVE_POS:
+                    MovePos();
+                    events.RescheduleEvent(EVENT_MOVE_POS, 10000);
+                break;            
                 case EVENT_ENRAGE:
                     DoScriptText(SAY_BRUNDIR_BERSERK, me);
                     DoCast(SPELL_BERSERK);
                 break;
                 case EVENT_CHAIN_LIGHTNING:
-                {
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(6000, 12000));
-                }
+                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(4000, 6000));
                 break;
                 case EVENT_OVERLOAD:
                     me->MonsterTextEmote(EMOTE_OVERLOAD, 0, true);
                     DoScriptText(SAY_BRUNDIR_SPECIAL, me);
+                    me->GetMotionMaster()->Clear(true);
                     DoCast(SPELL_OVERLOAD);
                     events.ScheduleEvent(EVENT_OVERLOAD, urand(60000, 120000));
                 break;
                 case EVENT_LIGHTNING_WHIRL:
+                    me->GetMotionMaster()->Clear(true);
                     DoCast(SPELL_LIGHTNING_WHIRL);
                     events.ScheduleEvent(EVENT_LIGHTNING_WHIRL, urand(15000, 20000));
                 break;
                 case EVENT_LIGHTNING_TENDRILS:
                     DoScriptText(SAY_BRUNDIR_FLIGHT, me);
+                    events.DelayEvents(27000);
                     DoCast(SPELL_LIGHTNING_TENDRILS);
-                    me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
-                    DoResetThreat();
                     me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
-                    me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 12);
+                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 440);
                     events.ScheduleEvent(EVENT_FLIGHT, 2500);
                     events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                 break;
                 case EVENT_FLIGHT:
-                    me->GetMotionMaster()->MoveConfused();
+                    events.ScheduleEvent(EVENT_MOVE_POS, 0);
                     events.CancelEvent(EVENT_FLIGHT);
                     events.ScheduleEvent(EVENT_LAND, 22000);
                 break;
                 case EVENT_LAND:
                     me->GetMotionMaster()->Clear(true);
-                    me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() - 12);
+                    me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28);
                     events.CancelEvent(EVENT_LAND);
                     events.ScheduleEvent(EVENT_GROUND, 2500);
                 break;
                 case EVENT_GROUND:
                     me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
-                    me->SetReactState(REACT_AGGRESSIVE);
                     me->RemoveAurasDueToSpell(SPELL_LIGHTNING_TENDRILS);
                     events.CancelEvent(EVENT_GROUND);
                 break;
             }
         }
-
-        DoMeleeAttackIfReady();
     }
     
     void KilledUnit(Unit *who)
@@ -628,6 +656,31 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     events.RescheduleEvent(EVENT_LIGHTNING_TENDRILS, 60000);
                 }
                 break;
+        }
+    }
+    
+    void MovePos()
+    {
+        switch(Position)
+        {
+            case 0:
+                me->GetMotionMaster()->MovePoint(0, 1587.28, 97.030, me->GetPositionZ());
+                break;
+            case 1:
+                me->GetMotionMaster()->MovePoint(0, 1587.18, 121.03, me->GetPositionZ());
+                break;
+            case 2:
+                me->GetMotionMaster()->MovePoint(0, 1587.34, 142.58, me->GetPositionZ());
+                break;
+            case 3:
+                me->GetMotionMaster()->MovePoint(0, 1587.18, 121.03, me->GetPositionZ());
+                break;
+        }
+
+        Position++;
+        if(Position > 3)
+        {
+            Position = 0;
         }
     }
 };
