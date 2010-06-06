@@ -1,12 +1,13 @@
 #include "ScriptedPch.h"
 #include "eye_of_eternity.h"
 #include "WorldPacket.h"
- 
+
 #define DISABLED_ENTER_MESSAGE "You cannot enter Eye of Eternity now"
 #define EXIT_MAP 571
 #define EXIT_X 3864
 #define EXIT_Z 6987
 #define EXIT_Y 152
+ 
  
 struct instance_eye_of_eternity : public ScriptedInstance
 {
@@ -64,7 +65,7 @@ struct instance_eye_of_eternity : public ScriptedInstance
         {
             case 193070: m_uiMalygosPlatformGUID = pGo->GetGUID(); break;
             case 193958: //normal, hero 
-            case GO_SPHERE: m_uiFocusingIrisGUID = pGo->GetGUID(); break;
+            case 193960: m_uiFocusingIrisGUID = pGo->GetGUID(); break;
             case 193908: m_uiExitPortalGUID = pGo->GetGUID(); break;
             default:
                 break;
@@ -184,8 +185,6 @@ struct instance_eye_of_eternity : public ScriptedInstance
         {
             case NPC_MALYGOS:
                 return m_uiMalygosGUID;
-			case GO_SPHERE:
-				return m_uiFocusingIrisGUID;
             default:
                 return 0;
         }
@@ -219,7 +218,7 @@ struct instance_eye_of_eternity : public ScriptedInstance
             break;
         }
     }
-
+ 
     bool isFlying(uint64 GUID)
     {
         if(m_flyingPlayers.empty())
@@ -271,7 +270,7 @@ InstanceData* GetInstanceData_instance_eye_of_eternity(Map* pMap)
 {
     return new instance_eye_of_eternity(pMap);
 }
- 
+
 void AddSC_instance_eye_of_eternity()
 {
     Script *newscript;
