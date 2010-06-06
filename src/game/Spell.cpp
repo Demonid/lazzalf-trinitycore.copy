@@ -2488,7 +2488,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
                         {
                             if (((*itr)->getPowerType() != POWER_MANA) ||
-                                !(*itr)->IsInRaidWith(m_targets.getUnitTarget())
+                                !(*itr)->IsInRaidWith(m_targets.getUnitTarget()))
                                 itr = unitList.erase(itr);
                             else
                                 ++itr;

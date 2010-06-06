@@ -1,6 +1,6 @@
 #ifndef DEF_EYE_OF_ETERNITY_H
 #define DEF_EYE_OF_ETERNITY_H
- 
+
 enum
 {
     MAX_ENCOUNTER                = 1,
@@ -16,7 +16,5 @@ enum
     
     NPC_WYRMREST_SKYTALON        = 30161, // Dragon Vehicle in Third Phase
     NPC_MALYGOS                  = 28859,
-	GO_SPHERE					 = 193960
 };
-
 #endif

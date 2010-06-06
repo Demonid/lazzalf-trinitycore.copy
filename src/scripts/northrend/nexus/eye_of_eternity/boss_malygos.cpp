@@ -15,7 +15,7 @@ Phase2:
 
 Phase 3:
   visual effect for destroying platform by malygos
-  after malygos destroy platform, raid fall into drakes, drake stats are modified based player's stats [hp = drakeHP + (PlayerHP*2)]
+  after malygos destroy platform, raid fall into drakes, drake stats are modified based player's stats [hp = drakeHP  (PlayerHP*2)]
   Static Field   - implemented
   Surge of Power  - implemented for normal, hero
   
@@ -87,7 +87,7 @@ enum
     // ******************************** NPCs & GObjects ******************************** //
     ITEM_KEY_TO_FOCUSING_IRIS      = 44582,
     ITEM_KEY_TO_FOCUSING_IRIS_H    = 44581,
-    GO_FOCUSING_IRIS               = 193960,
+    GO_FOCUSING_IRIS               = 193958,
     GO_EXIT_PORTAL                 = 193908,
     //////////////// PHASE 1 ////////////////
     NPC_AOE_TRIGGER                = 22517,
@@ -247,16 +247,13 @@ struct boss_malygosAI : public ScriptedAI
     boss_malygosAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-		pInstance = pCreature->GetInstanceData();
         me->setActive(true);
-		
         Reset();
         m_uiIs10Man = RAID_MODE(true, false);
     }
  
     ScriptedInstance* m_pInstance;
-	ScriptedInstance* pInstance;
-    //GameObject* GO;
+    
     uint64 m_AlexstraszaGUID;
     
     uint8 m_uiPhase; //Fight Phase
@@ -290,7 +287,6 @@ struct boss_malygosAI : public ScriptedAI
     
     void Reset()
     {
-		me->setFaction(35);
         if(m_pInstance)
             m_pInstance->SetData(TYPE_MALYGOS, NOT_STARTED);
         else
@@ -364,26 +360,16 @@ struct boss_malygosAI : public ScriptedAI
  
         //Summon focusing iris
         if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_FOCUSING_IRIS, 200.0f))
-		{
-			pGo->setActive(false);
-			pGo->SetGoState(GO_STATE_READY);
-			
-		}
-		else
-		{
-            GameObject* pG=me->SummonGameObject(GO_FOCUSING_IRIS, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
-			//pG->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
-		
-		}
+            pGo->Respawn();
+        else
+            me->SummonGameObject(GO_FOCUSING_IRIS, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
+ 
         //Summon exit portal
         if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_EXIT_PORTAL, 200.0f))
-		{}
+            pGo->Respawn();
         else
-		{
-			GameObject* pG=me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
-            //pG->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
-		
-		}
+            me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
+ 
         //Despawn all summoned creatures	 
         DespawnCreatures(NPC_POWER_SPARK, 300.0f);
         DespawnCreatures(NPC_ARCANE_OVERLOAD, 300.0f);
@@ -486,7 +472,7 @@ struct boss_malygosAI : public ScriptedAI
         {
             if(pVictim->GetEntry() == NPC_WYRMREST_SKYTALON)
             {
-                for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); ++iter)
+                for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); iter)
                 {
                     if(pVictim->GetGUID() == (*iter).first)
                     {
@@ -833,536 +819,533 @@ struct boss_malygosAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-		//Yell(SAY_INTRO1,LANG_UNIVERSAL,pInstance->GetData64(GO_SPHERE));
-		if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(GO_SPHERE)))
-			if(pGO && m_uiPhase == PHASE_NOSTART && pGO->isActiveObject())
-				{
-					//TODO: This is wrong, the event starts when players klick on Focusing Iris! This is just the event begin
-					if(!m_uiIsDown && m_uiIsDownTimer <= uiDiff)
-					{
-					   m_uiSubPhase = SUBPHASE_FLY_DOWN1;
-					   m_uiIsDown = true;
-					}else m_uiIsDownTimer -= uiDiff;
-					if(m_uiSubPhase == SUBPHASE_FLY_DOWN1)
-					{
-						me->InterruptNonMeleeSpells(false);
-						me->RemoveAurasDueToSpell(SPELL_PORTAL_BEAM);
-						me->GetMotionMaster()->Clear(false);
-						me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5);
-						m_uiSubPhase = SUBPHASE_FLY_DOWN2;
-						m_uiTimer = 3500;
-					}
-					else if(m_uiSubPhase == SUBPHASE_FLY_DOWN2)
-					{
-						if(m_uiTimer <= uiDiff)
-						{
-							me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-							m_uiSubPhase = 0;
-							m_uiPhase = PHASE_FLOOR;
-							me->setFaction(14);
-							//me->SetFlying(false);
-							//me->RemoveUnitMovementFlag(MOVEMENTFLAG_SPLINE);
-							me->SetInCombatWithZone();
-							return;
-						}else m_uiTimer -= uiDiff;
-					}  
-					else
-					{
-						//Speech
-						if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
-						{
-							DoScriptText(SAY_INTRO1-m_uiSpeechCount, me);
-							m_uiSpeechCount++;
-							if(m_uiSpeechCount == 5)
-							{
-								m_uiSpeechCount = 0;
-								m_uiSpeechTimer[0] = 15000;
-								m_uiSpeechTimer[1] = 18000;
-								m_uiSpeechTimer[2] = 19000;
-								m_uiSpeechTimer[3] = 21000;
-								m_uiSpeechTimer[4] = 18000;
-								m_uiSpeechTimer[5] = 17000;
-							}
-						}else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
-						//Random movement over platform
-						if(m_uiTimer <= uiDiff)
-						{
-							uint8 tmp = urand(0,3);
-							me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
-							m_uiTimer = 25000;
-						}else m_uiTimer -= uiDiff;
-					}
-				}
-				if (!UpdateVictim())
-					return;
+        if(m_uiPhase == PHASE_NOSTART)
+        {
+            //TODO: This is wrong, the event starts when players klick on Focusing Iris! This is just the event begin
+            if(!m_uiIsDown && m_uiIsDownTimer <= uiDiff)
+            {
+               m_uiSubPhase = SUBPHASE_FLY_DOWN1;
+               m_uiIsDown = true;
+            }else m_uiIsDownTimer -= uiDiff;
+            if(m_uiSubPhase == SUBPHASE_FLY_DOWN1)
+            {
+                me->InterruptNonMeleeSpells(false);
+                me->RemoveAurasDueToSpell(SPELL_PORTAL_BEAM);
+                me->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5);
+                m_uiSubPhase = SUBPHASE_FLY_DOWN2;
+                m_uiTimer = 3500;
+            }
+            else if(m_uiSubPhase == SUBPHASE_FLY_DOWN2)
+            {
+                if(m_uiTimer <= uiDiff)
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    m_uiSubPhase = 0;
+                    m_uiPhase = PHASE_FLOOR;
+                    me->SetFlying(false);
+                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_SPLINE);
+                    me->SetInCombatWithZone();
+                    return;
+                }else m_uiTimer -= uiDiff;
+            }  
+            else
+            {
+                //Speech
+                if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
+                {
+                    DoScriptText(SAY_INTRO1-m_uiSpeechCount, me);
+                    m_uiSpeechCount++;
+                    if(m_uiSpeechCount == 5)
+                    {
+                        m_uiSpeechCount = 0;
+                        m_uiSpeechTimer[0] = 15000;
+                        m_uiSpeechTimer[1] = 18000;
+                        m_uiSpeechTimer[2] = 19000;
+                        m_uiSpeechTimer[3] = 21000;
+                        m_uiSpeechTimer[4] = 18000;
+                        m_uiSpeechTimer[5] = 17000;
+                    }
+                }else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
+                //Random movement over platform
+                if(m_uiTimer <= uiDiff)
+                {
+                    uint8 tmp = urand(0,3);
+                    me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
+                    m_uiTimer = 25000;
+                }else m_uiTimer -= uiDiff;
+            }
+        }
+        if (!UpdateVictim())
+            return;
 
-				if(m_uiPhase == PHASE_DRAGONS)
-				{
-					if(m_uiWipeCheckTimer < uiDiff)
-					{
-						if(m_pInstance)
-						{
-							Map* pMap = me->GetMap();
-							if(!pMap)
-								return;
+        if(m_uiPhase == PHASE_DRAGONS)
+        {
+            if(m_uiWipeCheckTimer < uiDiff)
+            {
+                if(m_pInstance)
+                {
+                    Map* pMap = me->GetMap();
+                    if(!pMap)
+                        return;
 
-							bool player_found = false;
-							Map::PlayerList const &lPlayers = pMap->GetPlayers();
-							for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-							{
-								player_found = true;
-								break;
-							}
+                    bool player_found = false;
+                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
+                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+                    {
+                        player_found = true;
+                        break;
+                    }
 
-							if(!player_found)
-							{
-								Creature* pTrigger = GetClosestCreatureWithEntry(me, 30494, 100.0f);
-								if(pTrigger)
-								{
-									pTrigger->ForcedDespawn();
-								}
-								me->AI()->EnterEvadeMode();
-							}
-						}
-						m_uiWipeCheckTimer = 2500;
-					}else m_uiWipeCheckTimer -= uiDiff;
-				}
+                    if(!player_found)
+                    {
+                        Creature* pTrigger = GetClosestCreatureWithEntry(me, 30494, 100.0f);
+                        if(pTrigger)
+                        {
+                            pTrigger->ForcedDespawn();
+                        }
+                        me->AI()->EnterEvadeMode();
+                    }
+                }
+                m_uiWipeCheckTimer = 2500;
+            }else m_uiWipeCheckTimer -= uiDiff;
+        }
 
-				if(m_uiPhase == PHASE_ADDS)
-				{
-					if(m_uiCheckDisksTimer < uiDiff)
-					{
-						if(m_pInstance)
-						{
-							Map* pMap = me->GetMap();
-							if(!pMap)
-								return;
+        if(m_uiPhase == PHASE_ADDS)
+        {
+            if(m_uiCheckDisksTimer < uiDiff)
+            {
+                if(m_pInstance)
+                {
+                    Map* pMap = me->GetMap();
+                    if(!pMap)
+                        return;
 
-							Map::PlayerList const &lPlayers = pMap->GetPlayers();
-							for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-							{
-								if(Creature* pDisk = (Creature*)itr->getSource()->GetVehicleBase())
-								{
-									itr->getSource()->ExitVehicle();
-									m_pInstance->SetData64(TYPE_PLAYER_HOVER, itr->getSource()->GetGUID());
-									pDisk->ForcedDespawn();
-								}
-							}
-						}
-						m_uiCheckDisksTimer = 2000;
-					}else m_uiCheckDisksTimer -= uiDiff;
-				}
-		 
-				//Enrage timer.....
-				if(m_uiEnrageTimer <= uiDiff)
-				{
-					DoCast(me, SPELL_BERSERK);
-					m_uiEnrageTimer = 600000;
-					me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
-					me->SetSpeed(MOVE_RUN, 3.5f, true);
-					me->SetSpeed(MOVE_WALK, 3.5f, true);
-					me->GetMotionMaster()->MoveChase(me->getVictim());
-				}else m_uiEnrageTimer -= uiDiff;
-		 
-				if(m_uiPhase == PHASE_FLOOR)
-				{
-					if(m_uiSubPhase == SUBPHASE_VORTEX)
-					{
-						if(m_uiTimer <= uiDiff)
-						{
-							DoVortex(m_uiVortexPhase);
-		                    
-							if(m_uiVortexPhase == 1 || m_uiVortexPhase == 11)
-							{
-								if(m_uiVortexPhase == 1)
-									DoCast(me, SPELL_VORTEX_DUMMY);
-								m_uiTimer = 300;
-							}else
-								m_uiTimer = 500;
-		 
-							if(m_uiVortexPhase >= MAX_VORTEX && m_uiVortexPhase < 29)
-							{
-								m_uiVortexPhase = 30;
-								DoVortex(m_uiVortexPhase);
-								//PowerSpark(2);
-								if(m_pInstance)
-									m_pInstance->SetData(TYPE_VORTEX, 0);
+                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
+                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+                    {
+                        if(Creature* pDisk = (Creature*)itr->getSource()->GetVehicleBase())
+                        {
+                            itr->getSource()->ExitVehicle();
+                            m_pInstance->SetData64(TYPE_PLAYER_HOVER, itr->getSource()->GetGUID());
+                            pDisk->ForcedDespawn();
+                        }
+                    }
+                }
+                m_uiCheckDisksTimer = 2000;
+            }else m_uiCheckDisksTimer -= uiDiff;
+        }
+ 
+        //Enrage timer.....
+        if(m_uiEnrageTimer <= uiDiff)
+        {
+            DoCast(me, SPELL_BERSERK);
+            m_uiEnrageTimer = 600000;
+            me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+            me->SetSpeed(MOVE_RUN, 3.5f, true);
+            me->SetSpeed(MOVE_WALK, 3.5f, true);
+            me->GetMotionMaster()->MoveChase(me->getVictim());
+        }else m_uiEnrageTimer -= uiDiff;
+ 
+        if(m_uiPhase == PHASE_FLOOR)
+        {
+            if(m_uiSubPhase == SUBPHASE_VORTEX)
+            {
+                if(m_uiTimer <= uiDiff)
+                {
+                    DoVortex(m_uiVortexPhase);
+                    
+                    if(m_uiVortexPhase == 1 || m_uiVortexPhase == 11)
+                    {
+                        if(m_uiVortexPhase == 1)
+                            DoCast(me, SPELL_VORTEX_DUMMY);
+                        m_uiTimer = 300;
+                    }else
+                        m_uiTimer = 500;
+ 
+                    if(m_uiVortexPhase >= MAX_VORTEX && m_uiVortexPhase < 29)
+                    {
+                        m_uiVortexPhase = 30;
+                        DoVortex(m_uiVortexPhase);
+                        //PowerSpark(2);
+                        if(m_pInstance)
+                            m_pInstance->SetData(TYPE_VORTEX, 0);
 
-								m_uiTimer = 1000;
-								return;
-							}
-							m_uiVortexPhase++;
-						}else m_uiTimer -= uiDiff;
-						return;
-					}
-		 
-					//Vortex
-					if(m_uiVortexTimer <= uiDiff)
-					{
-						//PowerSpark(3);
-						if(m_pInstance)
-							m_pInstance->SetData(TYPE_VORTEX, 1);
+                        m_uiTimer = 1000;
+                        return;
+                    }
+                    m_uiVortexPhase++;
+                }else m_uiTimer -= uiDiff;
+                return;
+            }
+ 
+            //Vortex
+            if(m_uiVortexTimer <= uiDiff)
+            {
+                //PowerSpark(3);
+                if(m_pInstance)
+                    m_pInstance->SetData(TYPE_VORTEX, 1);
 
-						me->SetFlying(true);
-						me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
-						this->DespawnCreatures(NPC_VORTEX, 200.0f);
-						DoVortex(0);
-						m_uiVortexPhase = 1;
-						m_uiSubPhase = SUBPHASE_VORTEX;
-						m_uiVortexTimer = 56000;
-						m_uiTimer = 6000;
-						DoScriptText(SAY_VORTEX, me);
-						return;
-					}else m_uiVortexTimer -= uiDiff;
-		 
-					//Arcane Breath
-					if(m_uiArcaneBreathTimer <= uiDiff)
-					{
-						DoCast(me, m_uiIs10Man ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
-						m_uiArcaneBreathTimer = 10000 + urand(2000, 8000);
-					}else m_uiArcaneBreathTimer -= uiDiff;
-		 
-					//PowerSpark
-					if(m_uiPowerSparkTimer<= uiDiff)
-					{
-						PowerSpark(1);
-						DoScriptText(SAY_POWER_SPARK, me);
-						m_uiPowerSparkTimer = 30000;
-					}else m_uiPowerSparkTimer -= uiDiff;
-		 
-					//Health check
-					if(m_uiTimer<= uiDiff)
-					{
-						uint8 health = me->GetHealth()*100 / me->GetMaxHealth();                    
-						if(health <= 50)
-						{
-							me->SetFlying(true);
-							me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
-							me->InterruptNonMeleeSpells(true);
-							SetCombatMovement(false);
-							me->GetMotionMaster()->Clear(false);
-							DoScriptText(SAY_END_PHASE1, me);
-							me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+40);
-							//Despawn power sparks
-							DespawnCreatures(NPC_POWER_SPARK, 180.0f);
-							m_uiPhase = PHASE_ADDS;
-							m_uiSubPhase = SUBPHASE_TALK;
-							m_uiTimer = 23000;
-							return;
-						}
-						m_uiTimer = 1500;
-					}else m_uiTimer -= uiDiff;  
-		 
-					DoMeleeAttackIfReady();
-				}else if(m_uiPhase == PHASE_ADDS)
-				{
-					if(m_uiSubPhase == SUBPHASE_TALK)
-					{
-						if(m_uiTimer <= uiDiff)
-						{
-							DoScriptText(SAY_AGGRO2, me);
-							me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-							DoSpawnAdds();
-							DoSpawnShell();
-							m_uiShellTimer = 20000;
-							m_uiSubPhase = 0;
-							m_uiTimer = 15000;
-						}else m_uiTimer -= uiDiff;
-						return;
-					}
-		            
-					//Arcane overload (bubble)
-					if(m_uiShellTimer <= uiDiff)
-					{
-						DoSpawnShell();
-						DoScriptText(SAY_ARCANE_OVERLOAD, me);
-						m_uiShellTimer = 20000;
-					}else m_uiShellTimer -= uiDiff;
-		 
-					// Deep breath
-					if(m_uiDeepBreathTimer <= uiDiff)
-					{
-						DoScriptText(SAY_ARCANE_PULSE, me);
-						DoScriptText(SAY_ARCANE_PULSE_WARN, me);
-						SendDeepBreathCast();
-						//CastSpellToTrigger(SPELL_SURGE_OF_POWER_BREATH, true, true);
-						CastSurgeOfPower();
-						m_uiSurgeVisual = 3200;
-						m_uiDeepBreathTimer = 60000;
-					}else m_uiDeepBreathTimer -= uiDiff;
+                me->SetFlying(true);
+                me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
+                this->DespawnCreatures(NPC_VORTEX, 200.0f);
+                DoVortex(0);
+                m_uiVortexPhase = 1;
+                m_uiSubPhase = SUBPHASE_VORTEX;
+                m_uiVortexTimer = 56000;
+                m_uiTimer = 6000;
+                DoScriptText(SAY_VORTEX, me);
+                return;
+            }else m_uiVortexTimer -= uiDiff;
+ 
+            //Arcane Breath
+            if(m_uiArcaneBreathTimer <= uiDiff)
+            {
+                DoCast(me, m_uiIs10Man ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
+                m_uiArcaneBreathTimer = 10000 + urand(2000, 8000);
+            }else m_uiArcaneBreathTimer -= uiDiff;
+ 
+            //PowerSpark
+            if(m_uiPowerSparkTimer<= uiDiff)
+            {
+                PowerSpark(1);
+                DoScriptText(SAY_POWER_SPARK, me);
+                m_uiPowerSparkTimer = 30000;
+            }else m_uiPowerSparkTimer -= uiDiff;
+ 
+            //Health check
+            if(m_uiTimer<= uiDiff)
+            {
+                uint8 health = me->GetHealth()*100 / me->GetMaxHealth();                    
+                if(health <= 50)
+                {
+                    me->SetFlying(true);
+                    me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
+                    me->InterruptNonMeleeSpells(true);
+                    SetCombatMovement(false);
+                    me->GetMotionMaster()->Clear(false);
+                    DoScriptText(SAY_END_PHASE1, me);
+                    me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+40);
+                    //Despawn power sparks
+                    DespawnCreatures(NPC_POWER_SPARK, 180.0f);
+                    m_uiPhase = PHASE_ADDS;
+                    m_uiSubPhase = SUBPHASE_TALK;
+                    m_uiTimer = 23000;
+                    return;
+                }
+                m_uiTimer = 1500;
+            }else m_uiTimer -= uiDiff;  
+ 
+            DoMeleeAttackIfReady();
+        }else if(m_uiPhase == PHASE_ADDS)
+        {
+            if(m_uiSubPhase == SUBPHASE_TALK)
+            {
+                if(m_uiTimer <= uiDiff)
+                {
+                    DoScriptText(SAY_AGGRO2, me);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    DoSpawnAdds();
+                    DoSpawnShell();
+                    m_uiShellTimer = 20000;
+                    m_uiSubPhase = 0;
+                    m_uiTimer = 15000;
+                }else m_uiTimer -= uiDiff;
+                return;
+            }
+            
+            //Arcane overload (bubble)
+            if(m_uiShellTimer <= uiDiff)
+            {
+                DoSpawnShell();
+                DoScriptText(SAY_ARCANE_OVERLOAD, me);
+                m_uiShellTimer = 20000;
+            }else m_uiShellTimer -= uiDiff;
+ 
+            // Deep breath
+            if(m_uiDeepBreathTimer <= uiDiff)
+            {
+                DoScriptText(SAY_ARCANE_PULSE, me);
+                DoScriptText(SAY_ARCANE_PULSE_WARN, me);
+                SendDeepBreathCast();
+                //CastSpellToTrigger(SPELL_SURGE_OF_POWER_BREATH, true, true);
+                CastSurgeOfPower();
+                m_uiSurgeVisual = 3200;
+                m_uiDeepBreathTimer = 60000;
+            }else m_uiDeepBreathTimer -= uiDiff;
 
-					if(m_uiSurgeVisual)
-					{
-						if(m_uiSurgeVisual <= uiDiff)
-						{
-							Creature* pSurge = GetClosestCreatureWithEntry(me, NPC_SURGE_OF_POWER, 100.0f);
-							if(pSurge)
-							{
-								pSurge->SetSpeed(MOVE_FLIGHT, 10.0f);
-								pSurge->SetSpeed(MOVE_RUN, 10.0f);
-								pSurge->SetSpeed(MOVE_WALK, 10.0f);
-								pSurge->GetMotionMaster()->MovePoint(1, 754.29, 1301.18, 266.17);
-							}
-							m_uiSurgeVisual = 0;
-						}else m_uiSurgeVisual -= uiDiff;
-					}
-		 
-					// Arcane Storm
-					if(m_uiArcaneStormTimer <= uiDiff)
-					{
-						DoCast(me,  m_uiIs10Man ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
-						m_uiArcaneStormTimer = 20000;
-					}else m_uiArcaneStormTimer -= uiDiff;
-		 
-					if(m_uiTimer <= uiDiff)
-					{
-						if(!IsThereAnyAdd())
-						{
-							if(m_pInstance)
-								m_pInstance->SetData(TYPE_PLAYER_HOVER, DATA_DROP_PLAYERS);
-							DespawnCreatures(NPC_HOVER_DISC, 200.0f, true);
-							m_uiPhase = PHASE_DRAGONS;
-							m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM1;
-							DoScriptText(SAY_END_PHASE2, me);
-							CastSpellToTrigger(SPELL_DESTROY_PLATFORM_PRE, false);
-							m_uiTimer = 6500;
-							return;
-						}
-						m_uiTimer = 5000;
-					}else m_uiTimer -= uiDiff;  
-		 
-					if(me->HasAura(SPELL_BERSERK))
-						DoMeleeAttackIfReady(); // this is there just for case of enrage
-				}
-				else if(m_uiPhase == PHASE_DRAGONS)
-				{
-					if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM1)
-					{
-						if(m_uiTimer<= uiDiff)
-						{
-							//Destroy Platform
-							CastSpellToTrigger(SPELL_DESTROY_PLATFROM_BOOM, false);
-							//Despawn bubbles and discs
-							DespawnCreatures(NPC_ARCANE_OVERLOAD, 70.0f);
-							DespawnCreatures(NPC_HOVER_DISC, 70.0f, true);
-		 
-							m_uiTimer = 2000;
-							m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM2;
-						}else m_uiTimer -= uiDiff;
-						return;
-					}
-					else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM2)
-					{
-						if(m_uiTimer <= uiDiff)
-						{
-							m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);   
-							me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
-							if (Creature* m_uiSafeZone = me->SummonCreature(30494, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 360000)) //safe zone.. raid do not leave combat while mounting
-							{
-								m_uiSafeZone->AI()->AttackStart(me);
-								m_uiSafeZone->SetDisplayId(11686);
-							}
-							//Prepare Mounts
-							PrepareMounts();
-							me->GetMotionMaster()->MovePoint(0, OtherLoc[0].x, OtherLoc[0].y, OtherLoc[0].z+30);
-							DoScriptText(SAY_INTRO_PHASE3, me);                    
-							m_uiTimer = 14900;
-							m_uiFallToMountTimer = 1000;
-						}else 
-							m_uiTimer -= uiDiff;
+            if(m_uiSurgeVisual)
+            {
+                if(m_uiSurgeVisual <= uiDiff)
+                {
+                    Creature* pSurge = GetClosestCreatureWithEntry(me, NPC_SURGE_OF_POWER, 100.0f);
+                    if(pSurge)
+                    {
+                        pSurge->SetSpeed(MOVE_FLIGHT, 10.0f);
+                        pSurge->SetSpeed(MOVE_RUN, 10.0f);
+                        pSurge->SetSpeed(MOVE_WALK, 10.0f);
+                        pSurge->GetMotionMaster()->MovePoint(1, 754.29, 1301.18, 266.17);
+                    }
+                    m_uiSurgeVisual = 0;
+                }else m_uiSurgeVisual -= uiDiff;
+            }
+ 
+            // Arcane Storm
+            if(m_uiArcaneStormTimer <= uiDiff)
+            {
+                DoCast(me,  m_uiIs10Man ? SPELL_ARCANE_STORM : SPELL_ARCANE_STORM_H);
+                m_uiArcaneStormTimer = 20000;
+            }else m_uiArcaneStormTimer -= uiDiff;
+ 
+            if(m_uiTimer <= uiDiff)
+            {
+                if(!IsThereAnyAdd())
+                {
+                    if(m_pInstance)
+                        m_pInstance->SetData(TYPE_PLAYER_HOVER, DATA_DROP_PLAYERS);
+                    DespawnCreatures(NPC_HOVER_DISC, 200.0f, true);
+                    m_uiPhase = PHASE_DRAGONS;
+                    m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM1;
+                    DoScriptText(SAY_END_PHASE2, me);
+                    CastSpellToTrigger(SPELL_DESTROY_PLATFORM_PRE, false);
+                    m_uiTimer = 6500;
+                    return;
+                }
+                m_uiTimer = 5000;
+            }else m_uiTimer -= uiDiff;  
+ 
+            if(me->HasAura(SPELL_BERSERK))
+                DoMeleeAttackIfReady(); // this is there just for case of enrage
+        }
+        else if(m_uiPhase == PHASE_DRAGONS)
+        {
+            if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM1)
+            {
+                if(m_uiTimer<= uiDiff)
+                {
+                    //Destroy Platform
+                    CastSpellToTrigger(SPELL_DESTROY_PLATFROM_BOOM, false);
+                    //Despawn bubbles and discs
+                    DespawnCreatures(NPC_ARCANE_OVERLOAD, 70.0f);
+                    DespawnCreatures(NPC_HOVER_DISC, 70.0f, true);
+ 
+                    m_uiTimer = 2000;
+                    m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM2;
+                }else m_uiTimer -= uiDiff;
+                return;
+            }
+            else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM2)
+            {
+                if(m_uiTimer <= uiDiff)
+                {
+                    m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);   
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
+                    if (Creature* m_uiSafeZone = me->SummonCreature(30494, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 360000)) //safe zone.. raid do not leave combat while mounting
+                    {
+                        m_uiSafeZone->AI()->AttackStart(me);
+                        m_uiSafeZone->SetDisplayId(11686);
+                    }
+                    //Prepare Mounts
+                    PrepareMounts();
+                    me->GetMotionMaster()->MovePoint(0, OtherLoc[0].x, OtherLoc[0].y, OtherLoc[0].z+30);
+                    DoScriptText(SAY_INTRO_PHASE3, me);                    
+                    m_uiTimer = 14900;
+                    m_uiFallToMountTimer = 1000;
+                }else 
+                    m_uiTimer -= uiDiff;
 
-						if(!m_uiIsMounted && m_uiFallToMountTimer <= uiDiff)
-						{
-							MountPlayers();
-							m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM3;
-							m_uiIsMounted = true;
-						}else 
-							m_uiFallToMountTimer -= uiDiff;
-						return;
+                if(!m_uiIsMounted && m_uiFallToMountTimer <= uiDiff)
+                {
+                    MountPlayers();
+                    m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM3;
+                    m_uiIsMounted = true;
+                }else 
+                    m_uiFallToMountTimer -= uiDiff;
+                return;
 
-					}else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM3)
-					{
-						if(m_uiTimer<= uiDiff)
-						{
-							m_uiSubPhase = 0;
-							me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-							SetCombatMovement(false);
-							me->GetMotionMaster()->Clear(false);        // No moving!
-							me->GetMotionMaster()->MoveIdle();
-							if(Unit *pVehicle = ((Unit*)Unit::GetUnit(*me, me->getVictim()->GetGUID())))
-							{
-								float victim_threat = me->getThreatManager().getThreat(me->getVictim());
-								DoResetThreat();
-								me->AI()->AttackStart(pVehicle);
-								me->AddThreat(pVehicle, victim_threat);
-							}
-							DoScriptText(SAY_AGGRO3, me);
-						}else m_uiTimer -= uiDiff;
-						return;
-					}
-					//Arcane Pulse
-					if(m_uiArcanePulseTimer <= uiDiff)
-					{
-						DoCast(me, SPELL_ARCANE_PULSE);
-						m_uiArcanePulseTimer = 1000;
-					}else m_uiArcanePulseTimer -= uiDiff;
-		 
-					//Static field
-					if(m_uiStaticFieldTimer <= uiDiff)
-					{
-						if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-							if(Creature *pField = me->SummonCreature(NPC_STATIC_FIELD, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 25000))
-							{
-								pField->SetMaxHealth(1000000);
-								pField->SetFlying(true);
-								pField->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
+            }else if(m_uiSubPhase == SUBPHASE_DESTROY_PLATFORM3)
+            {
+                if(m_uiTimer<= uiDiff)
+                {
+                    m_uiSubPhase = 0;
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    SetCombatMovement(false);
+                    me->GetMotionMaster()->Clear(false);        // No moving!
+                    me->GetMotionMaster()->MoveIdle();
+                    if(Unit *pVehicle = ((Unit*)Unit::GetUnit(*me, me->getVictim()->GetGUID())))
+                    {
+                        float victim_threat = me->getThreatManager().getThreat(me->getVictim());
+                        DoResetThreat();
+                        me->AI()->AttackStart(pVehicle);
+                        me->AddThreat(pVehicle, victim_threat);
+                    }
+                    DoScriptText(SAY_AGGRO3, me);
+                }else m_uiTimer -= uiDiff;
+                return;
+            }
+            //Arcane Pulse
+            if(m_uiArcanePulseTimer <= uiDiff)
+            {
+                DoCast(me, SPELL_ARCANE_PULSE);
+                m_uiArcanePulseTimer = 1000;
+            }else m_uiArcanePulseTimer -= uiDiff;
+ 
+            //Static field
+            if(m_uiStaticFieldTimer <= uiDiff)
+            {
+                if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if(Creature *pField = me->SummonCreature(NPC_STATIC_FIELD, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 25000))
+                    {
+                        pField->SetMaxHealth(1000000);
+                        pField->SetFlying(true);
+                        pField->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
 
-								pField->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-								pField->SetDisplayId(11686);
-								pField->Attack(pTarget, false);
-								pField->CastSpell(pField, SPELL_STATIC_FIELD, true);
-								pField->CastSpell(pField, 42716, true);
-							}
-						DoScriptText(SAY_CAST_SPELL1-urand(0,2), me);
-						m_uiStaticFieldTimer = 10000+rand()%10000;
-					}else m_uiStaticFieldTimer -= uiDiff;
-		 
-					//Surge of power
-					if(m_uiSurgeOfPowerTimer <= uiDiff)
-					{
-						for(int i = 0; i < 1; ++i)
-						{
-							// Use previously stored list of mount GUIDs
-							if(m_uiMounts.empty())
-								continue;
+                        pField->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                        pField->SetDisplayId(11686);
+                        pField->Attack(pTarget, false);
+                        pField->CastSpell(pField, SPELL_STATIC_FIELD, true);
+                        pField->CastSpell(pField, 42716, true);
+                    }
+                DoScriptText(SAY_CAST_SPELL1-urand(0,2), me);
+                m_uiStaticFieldTimer = 10000+rand()%10000;
+            }else m_uiStaticFieldTimer -= uiDiff;
+ 
+            //Surge of power
+            if(m_uiSurgeOfPowerTimer <= uiDiff)
+            {
+                for(int i = 0; i < 1; ++i)
+                {
+                    // Use previously stored list of mount GUIDs
+                    if(m_uiMounts.empty())
+                        continue;
 
-							std::list<std::pair<uint64, uint64> >::iterator itr = m_uiMounts.begin();
-							int random = rand() % m_uiMounts.size();
+                    std::list<std::pair<uint64, uint64> >::iterator itr = m_uiMounts.begin();
+                    int random = rand() % m_uiMounts.size();
 
-							for(int j = 0; j < random; ++j)
-								++itr;
-		                    
-							Creature *pTarget = (Creature*)Unit::GetUnit(*me, (*itr).first);
-							Player *pPlayer = (Player*)Unit::GetUnit(*me, (*itr).second);
+                    for(int j = 0; j < random; ++j)
+                        ++itr;
+                    
+                    Creature *pTarget = (Creature*)Unit::GetUnit(*me, (*itr).first);
+                    Player *pPlayer = (Player*)Unit::GetUnit(*me, (*itr).second);
 
-							if(!pTarget || pTarget->GetEntry() != NPC_WYRMREST_SKYTALON)
-								continue;
+                    if(!pTarget || pTarget->GetEntry() != NPC_WYRMREST_SKYTALON)
+                        continue;
 
-							if(!pPlayer)
-								continue;
-		     
-							if(i == 0)
-							{
-								DoCast(pTarget, /*m_uiIs10Man ?*/ SPELL_SURGE_OF_POWER /*: SPELL_SURGE_OF_POWER_H*/);
-								DoScriptText(SAY_SURGE_OF_POWER, me);
-								me->MonsterWhisper("Malygos fixes his eyes on you!", pPlayer->GetGUID(), true);
-							}
-							// Hit 3 targets on heroic
-							//else
-							//{
-							//    if(Creature* pSurge = DoSpawnCreature(NPC_SURGE_OF_POWER, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
-							//    {
-							//        pSurge->SetFlying(true);
-							//        pSurge->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE);
-							//        pSurge->Attack(pTarget, true);
-							//        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-							//        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-							//        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-							//        pSurge->CastSpell(pTarget, SPELL_SURGE_OF_POWER_H, false);
-							//        pSurge->GetMotionMaster()->MovePoint(1, pSurge->GetPositionX(), pSurge->GetPositionY(), pSurge->GetPositionZ() + 1);
-							//        me->MonsterWhisper("Malygos fixes his eyes on you!", pPlayer->GetGUID(), true);
-							//    }
-							//}
-						}
+                    if(!pPlayer)
+                        continue;
+     
+                    if(i == 0)
+                    {
+                        DoCast(pTarget, /*m_uiIs10Man ?*/ SPELL_SURGE_OF_POWER /*: SPELL_SURGE_OF_POWER_H*/);
+                        DoScriptText(SAY_SURGE_OF_POWER, me);
+                        me->MonsterWhisper("Malygos fixes his eyes on you!", pPlayer->GetGUID(), true);
+                    }
+                    // Hit 3 targets on heroic
+                    //else
+                    //{
+                    //    if(Creature* pSurge = DoSpawnCreature(NPC_SURGE_OF_POWER, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                    //    {
+                    //        pSurge->SetFlying(true);
+                    //        pSurge->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE);
+                    //        pSurge->Attack(pTarget, true);
+                    //        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    //        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    //        pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    //        pSurge->CastSpell(pTarget, SPELL_SURGE_OF_POWER_H, false);
+                    //        pSurge->GetMotionMaster()->MovePoint(1, pSurge->GetPositionX(), pSurge->GetPositionY(), pSurge->GetPositionZ() + 1);
+                    //        me->MonsterWhisper("Malygos fixes his eyes on you!", pPlayer->GetGUID(), true);
+                    //    }
+                    //}
+                }
 
-						m_uiSurgeOfPowerTimer = 9000+rand()%6000;
-					}else m_uiSurgeOfPowerTimer -= uiDiff;	
-		 
-					if(me->HasAura(SPELL_BERSERK))
-						DoMeleeAttackIfReady();
-				}
-				//Outro!
-				else if(m_uiPhase == PHASE_OUTRO)
-				{
-					if(m_uiSubPhase == SUBPHASE_STOP_COMBAT)
-					{
-						m_pInstance->SetData(TYPE_OUTRO_CHECK, 1);
-		 
-						if (me->IsNonMeleeSpellCasted(false))
-							me->InterruptNonMeleeSpells(false);
-		 
-						me->RemoveAllAuras();
-						SetCombatMovement(false);
-		 
-						if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
-						   me->GetMotionMaster()->MovementExpired();
-		 
-						DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
-		            
-						me->SetHealth(1);
-						//me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-						me->GetMotionMaster()->Clear(false);        // No moving!
-						me->GetMotionMaster()->MoveIdle();
-						m_uiSpeechCount = 0;
-						m_uiSpeechTimer[0] = 2000;
-						m_uiSpeechTimer[1] = 8500;
-						m_uiSpeechTimer[2] = 5000;
-						m_uiSpeechTimer[3] = 3000;
-						m_uiSpeechTimer[4] = 22000;
-		 
-						if(Creature *pTemp = me->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
-						{
-							pTemp->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
-							pTemp->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
-							pTemp->SetFlying(true);
-							pTemp->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE);
-							pTemp->SetFacingToObject(me);
-							pTemp->SetVisibility(VISIBILITY_OFF);
-							m_AlexstraszaGUID = pTemp->GetGUID();
-						}
-						m_uiSubPhase = 0;
-						return;
-					}
-					if(m_uiSpeechCount >= 5 || m_uiSubPhase == SUBPHASE_DIE)
-						return;
-		 
-					if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
-					{
-						Creature* pAlexstrasza = (Creature*)Unit::GetUnit(*me, m_AlexstraszaGUID);
-		 
-						if(m_uiSpeechCount || pAlexstrasza)
-							DoScriptText(SAY_OUTRO1-m_uiSpeechCount, ( m_uiSpeechCount == 0 ) ? me : pAlexstrasza);
-		 
-						switch(m_uiSpeechCount)
-						{
-							case 1:
-								//me->SetVisibility(VISIBILITY_OFF);
-								pAlexstrasza->SetVisibility(VISIBILITY_ON);
-								pAlexstrasza->SetFacingToObject(me->getVictim());
-								break;
-							case 4:
-								m_uiSubPhase = SUBPHASE_DIE;
-								//Summon exit portal, platform and loot
-								me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
-								//me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
-								if(GameObject *pGift = pAlexstrasza->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0, 0, 0, 0, 0))
-									pAlexstrasza->SetFacingToObject(pGift);
+                m_uiSurgeOfPowerTimer = 9000+rand()%6000;
+            }else m_uiSurgeOfPowerTimer -= uiDiff;	
+ 
+            if(me->HasAura(SPELL_BERSERK))
+                DoMeleeAttackIfReady();
+        }
+        //Outro!
+        else if(m_uiPhase == PHASE_OUTRO)
+        {
+            if(m_uiSubPhase == SUBPHASE_STOP_COMBAT)
+            {
+                m_pInstance->SetData(TYPE_OUTRO_CHECK, 1);
+ 
+                if (me->IsNonMeleeSpellCasted(false))
+                    me->InterruptNonMeleeSpells(false);
+ 
+                me->RemoveAllAuras();
+                SetCombatMovement(false);
+ 
+                if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+                   me->GetMotionMaster()->MovementExpired();
+ 
+                DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
+            
+                me->SetHealth(1);
+                //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->GetMotionMaster()->Clear(false);        // No moving!
+                me->GetMotionMaster()->MoveIdle();
+                m_uiSpeechCount = 0;
+                m_uiSpeechTimer[0] = 2000;
+                m_uiSpeechTimer[1] = 8500;
+                m_uiSpeechTimer[2] = 5000;
+                m_uiSpeechTimer[3] = 3000;
+                m_uiSpeechTimer[4] = 22000;
+ 
+                if(Creature *pTemp = me->SummonCreature(NPC_ALEXSTRASZA, OtherLoc[3].x, OtherLoc[3].y, OtherLoc[3].z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                {
+                    pTemp->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
+                    pTemp->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
+                    pTemp->SetFlying(true);
+                    pTemp->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE);
+                    pTemp->SetFacingToObject(me);
+                    pTemp->SetVisibility(VISIBILITY_OFF);
+                    m_AlexstraszaGUID = pTemp->GetGUID();
+                }
+                m_uiSubPhase = 0;
+                return;
+            }
+            if(m_uiSpeechCount >= 5 || m_uiSubPhase == SUBPHASE_DIE)
+                return;
+ 
+            if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
+            {
+                Creature* pAlexstrasza = (Creature*)Unit::GetUnit(*me, m_AlexstraszaGUID);
+ 
+                if(m_uiSpeechCount || pAlexstrasza)
+                    DoScriptText(SAY_OUTRO1-m_uiSpeechCount, ( m_uiSpeechCount == 0 ) ? me : pAlexstrasza);
+ 
+                switch(m_uiSpeechCount)
+                {
+                    case 1:
+                        //me->SetVisibility(VISIBILITY_OFF);
+                        pAlexstrasza->SetVisibility(VISIBILITY_ON);
+                        pAlexstrasza->SetFacingToObject(me->getVictim());
+                        break;
+                    case 4:
+                        m_uiSubPhase = SUBPHASE_DIE;
+                        //Summon exit portal, platform and loot
+                        me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
+                        //me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
+                        if(GameObject *pGift = pAlexstrasza->SummonGameObject( m_uiIs10Man ? GO_ALEXSTRASZAS_GIFT : GO_ALEXSTRASZAS_GIFT_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z+4, GOPositions[2].o, 0, 0, 0, 0, 0))
+                            pAlexstrasza->SetFacingToObject(pGift);
 
-								//Summon platform for the looters to stay on...
-								me->SummonGameObject( 190023 , 757.001, 1297.4, 267.09, 2.26684, 0, 0, 0.905866, 0.423563, 600000);
+                        //Summon platform for the looters to stay on...
+                        me->SummonGameObject( 190023 , 757.001, 1297.4, 267.09, 2.26684, 0, 0, 0.905866, 0.423563, 600000);
 
-								Player* pPlayer = GetPlayerAtMinimumRange(1.0f);
-								if(pPlayer)
-									pPlayer->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-								else
-									me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-								break;
-						}
-						m_uiSpeechCount++;
-					}else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
-		            
-				}
-	}
+                        Player* pPlayer = GetPlayerAtMinimumRange(1.0f);
+                        if(pPlayer)
+                            pPlayer->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        else
+                            me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        break;
+                }
+                m_uiSpeechCount++;
+            }else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
+            
+        }
+    }
 };
 /*######
 ## mob_power_spark
@@ -1593,7 +1576,6 @@ struct mob_scion_of_eternityAI : public ScriptedAI
             DoNextMovement();
         }else m_uiMoveTimer -= uiDiff;
     }
-	
 }; 
 /*######
 ## npc_arcane_overload
@@ -1740,19 +1722,7 @@ struct mob_nexus_lordAI : public ScriptedAI
         if(!attackNow)
             DoMeleeAttackIfReady();
     }  
-	
 };
-
-bool GO_sphere(Player * pPlayer, GameObject *pGO)
-{
-       // pGO->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
-	    pGO->SetGoState(GO_STATE_ACTIVE);
-		pGO->setActive(true);
-		pGO->Yell(SAY_INTRO1,LANG_UNIVERSAL,pGO->GetGUID());
-        return true;
-}
-
-
 
 CreatureAI* GetAI_npc_arcane_overload(Creature* pCreature)
 {
@@ -1802,22 +1772,9 @@ void AddSC_boss_malygos()
     newscript->GetAI = &GetAI_mob_nexus_lord;
     newscript->RegisterSelf(); 
     
-	newscript = new Script;
-    newscript->Name = "malygos_sphere";
-    newscript->pGOHello = &GO_sphere;
-    newscript->RegisterSelf();
-
     newscript = new Script;
     newscript->Name = "npc_arcane_overload";
     newscript->GetAI = &GetAI_npc_arcane_overload;
     newscript->RegisterSelf(); 
 
 }
-/*
-UPDATE gameobject_template SET flags = 4, data0 = 43 WHERE gameobject_template.entry in (193967, 193905);
-UPDATE creature_template SET ScriptName = 'boss_malygos' WHERE entry = 28859;
-UPDATE creature_template SET ScriptName = 'mob_nexus_lord' WHERE entry = 30245;
-UPDATE creature_template SET ScriptName = 'mob_scion_of_eternity' WHERE entry = 30249;
-UPDATE creature_template SET ScriptName = 'mob_power_spark' WHERE entry = 30084;
-UPDATE creature_template SET ScriptName = 'npc_arcane_overload' WHERE entry = 30282;
-*/
