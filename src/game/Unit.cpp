@@ -4046,7 +4046,10 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit
                 RemoveAuraFromStack(iter, AURA_REMOVE_BY_ENEMY_SPELL);
 
             // Unstable Affliction (crash if before removeaura?)
-            if (aura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aura->GetSpellProto()->SpellFamilyFlags[1] & 0x0100))
+            if (aura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && 
+                aura->GetSpellProto()->SpellFamilyFlags[0] == 0 &&
+                aura->GetSpellProto()->SpellFamilyFlags[1] == 0x0100 &&
+                aura->GetSpellProto()->SpellFamilyFlags[2] == 0 ) //it's better to check all the flags parts and not only [1]
             {
                 if (AuraEffect const * aurEff = aura->GetEffect(0))
                 {
