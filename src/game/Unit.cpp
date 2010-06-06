@@ -15534,6 +15534,9 @@ bool Unit::IsInPartyWith(Unit const *unit) const
 
 bool Unit::IsInRaidWith(Unit const *unit) const
 {
+    if (!unit)
+        return false;
+
     if (this == unit)
         return true;
 
