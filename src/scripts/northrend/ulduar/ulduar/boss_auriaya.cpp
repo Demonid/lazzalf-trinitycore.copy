@@ -89,7 +89,7 @@ struct boss_auriaya_AI : public BossAI
     {
         pInstance = pCreature->GetInstanceData();
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
     
     ScriptedInstance* pInstance;
@@ -270,11 +270,13 @@ struct mob_sanctum_sentryAI : public ScriptedAI
     ScriptedInstance* pInstance;
     int32 RipTimer;
     int32 PounceTimer;
+    int32 CheckTimer;
 
     void Reset()
     {
         RipTimer = urand(4000, 8000);
         PounceTimer = urand(20000, 30000);
+        CheckTimer = 1000;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -298,6 +300,30 @@ struct mob_sanctum_sentryAI : public ScriptedAI
             }
             PounceTimer = urand(20000, 30000);
         } else PounceTimer -= uiDiff;
+        
+        // Increases the damage of all Sanctum Sentries within 10 yards by 30%
+        int aura=-1;
+        if (CheckTimer < uiDiff)
+        {
+            std::list<Creature*> Sanctum;
+            GetCreatureListWithEntryInGrid(Sanctum, me, SANCTUM_SENTRY, 100.0f);
+            for(std::list<Creature*>::iterator itr = Sanctum.begin(); itr != Sanctum.end(); ++itr)
+            {
+                if(Creature *c = *itr)
+                {
+                    if (c->isAlive())
+                        if (c->IsWithinDistInMap(me, 10))
+                            aura++;
+                }
+            }
+            me->RemoveAurasDueToSpell(SPELL_STRENGHT_PACK);
+            while(aura !=0)
+            {
+                me->AddAura(SPELL_STRENGHT_PACK, me);
+                aura=aura-1;
+            }
+            CheckTimer = 2000;
+        } else CheckTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }

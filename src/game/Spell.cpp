@@ -2480,6 +2480,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             unitList.resize(3);
                         }                                      
                         break; 
+
                     } 
                     case 64904: // Hymn of Hope
                     case 64901:
