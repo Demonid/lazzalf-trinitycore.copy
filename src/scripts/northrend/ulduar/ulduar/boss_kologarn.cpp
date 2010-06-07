@@ -385,6 +385,7 @@ struct mob_right_armAI : public ScriptedAI
                     pTarget->EnterVehicle(me, 0);
                     pTarget->AddAura(SPELL_STONE_GRIP, pTarget);
                     pTarget->AddAura(SPELL_STONE_GRIP_STUN, pTarget); //It cause player's death after about 15 sec
+                    ArmDamage = 0;
                     Gripped = true;
                 }
                 break;
