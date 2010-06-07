@@ -1940,10 +1940,25 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this check not dependent from map instance copy and same for all instance copies of selected map
         if (!MapManager::Instance().CanPlayerEnter(mapid, this, false))
             return false;
+ 
+        // Get the instance id if exists
+        InstancePlayerBind *pBind = this->GetBoundInstance(mapid, this->GetDifficulty(mEntry->IsRaid()));
+        InstanceSave *pSave = pBind ? pBind->save : NULL;
+        // the player's permanent player bind is taken into consideration first
+        // then the player's group bind and finally the solo bind.
+        if (!pBind || !pBind->perm)
+        {
+            InstanceGroupBind *groupBind = NULL;
+            Group *group = this->GetGroup();
+            // use the player's difficulty setting (it may not be the same as the group's)
+            if (group && (groupBind = group->GetBoundInstance(this)))
+                pSave = groupBind->save;
+        }
+        uint32 instanceId = pSave ? pSave->GetInstanceId() : 0;
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = MapManager::Instance().FindMap(mapid);
+        Map *map = MapManager::Instance().FindMap(mapid, instanceId);
         if (!map ||  map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
