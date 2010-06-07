@@ -128,8 +128,8 @@ struct boss_hodir_AI : public BossAI
     boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
     {
         pInstance = pCreature->GetInstanceData();
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
     
     ScriptedInstance* pInstance;
@@ -241,25 +241,24 @@ struct boss_hodir_AI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() || !CheckInRoom())
+        if (!UpdateVictim())
             return;
             
         if (me->getVictim() && !me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself())
             me->Kill(me->getVictim());
 
         events.Update(diff);
+        EncounterTime += diff;
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
-            
-        EncounterTime += diff;
-        
+                    
         if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
         {
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                 if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
                     continue;
 

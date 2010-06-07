@@ -32,6 +32,9 @@ const DoorData doorData[] =
     {194634,    BOSS_HODIR,     DOOR_TYPE_PASSAGE,  0},
     {194442,    BOSS_HODIR,     DOOR_TYPE_ROOM,     0},
     {194559,    BOSS_THORIM,    DOOR_TYPE_ROOM,     0},
+    {194774,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
+    {194775,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
+    {194776,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
 
@@ -80,6 +83,8 @@ struct instance_ulduar : public InstanceData
     uint64 uiThorim;
     uint64 uiRunicColossus;
     uint64 uiRuneGiant;
+    uint64 uiMimiron;
+    uint64 uiLeviathanMKII;
     
     GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest, *MimironTram;
 
@@ -134,6 +139,8 @@ struct instance_ulduar : public InstanceData
             case 32865: uiThorim = pCreature->GetGUID(); return;
             case 32872: uiRunicColossus = pCreature->GetGUID(); return;
             case 32873: uiRuneGiant = pCreature->GetGUID(); return;
+            case 33350: uiMimiron = pCreature->GetGUID(); return;
+            case 33432: uiLeviathanMKII = pCreature->GetGUID(); return;
             
             // Hodir: Alliance npcs are spawned by default
             case 33325:
@@ -217,6 +224,10 @@ struct instance_ulduar : public InstanceData
             return uiRunicColossus;
         case DATA_RUNE_GIANT:
             return uiRuneGiant;
+        case DATA_MIMIRON:
+            return uiMimiron;
+        case DATA_LEVIATHAN_MK_II:
+            return uiLeviathanMKII;
         }
         return 0;
     }

@@ -19,8 +19,8 @@
 /* ScriptData
 SDName: Thorim
 SDAuthor: PrinceCreed
-SD%Complete: 85
-SDComments: Lightning Charge not works, TODO: Achievements and Hard Mode
+SD%Complete: 90
+SDComments: Lightning Charge not works.
 EndScriptData */
 
 #include "ScriptedPch.h"
@@ -110,6 +110,11 @@ const uint32 SPELL_PRE_SECONDARY_H[]  = {62417, 62444, 16496, 62442, 62444, 6231
 
 #define INCREASE_PREADDS_COUNT                     1
 #define ACTION_CHANGE_PHASE                        2
+#define MAX_HARD_MODE_TIME                         180000 // 3 Minutes
+
+// Achievements
+#define ACHIEVEMENT_SIFFED              RAID_MODE(2977, 2978)
+#define ACHIEVEMENT_LOSE_ILLUSION       RAID_MODE(3176, 3183)
 
 // Thorim Arena Phase Adds
 enum ArenaAdds
@@ -151,15 +156,26 @@ enum AncientSpells
     SPELL_STOMP_25                              = 62413
 };
 
+// Sif Spells
+enum SifSpells
+{
+    SPELL_FROSTBOLT_VOLLEY_10                   = 62580,
+    SPELL_FROSTBOLT_VOLLEY_25                   = 62604,
+    SPELL_FROSTNOVA_10                          = 62597,
+    SPELL_FROSTNOVA_25                          = 62605,
+    SPELL_BLIZZARD_10                           = 62577,
+    SPELL_BLIZZARD_25                           = 62603
+};
+
 const Position Pos[7] =
 {
+{2099.34, -286.61, 419.84, 0.564},
 {2095.53, -279.48, 419.84, 0.504},
+{2093.00, -271.36, 419.84, 0.210},
 {2092.93, -252.96, 419.84, 6.024},
+{2095.21, -246.78, 419.84, 5.925},
 {2098.66, -240.79, 419.84, 5.715},
-{2113.37, -225.85, 419.84, 5.221},
-{2156.54, -225.99, 419.84, 4.441},
-{2155.10, -254.45, 419.84, 3.760},
-{2153.22, -273.43, 419.84, 2.761}
+{2113.37, -225.85, 419.84, 5.221}
 };
 
 const Position PosOrbs[7] =
@@ -192,7 +208,7 @@ struct boss_thorimAI : public BossAI
     {
         pInstance = pCreature->GetInstanceData();
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         FirstTime = true;
     }
     
@@ -202,6 +218,7 @@ struct boss_thorimAI : public BossAI
     uint8 spawnedAdds;
     uint32 EncounterTime;
     bool FirstTime;
+    bool HardMode;
     Creature *EnergySource;
 
     void Reset()
@@ -214,6 +231,7 @@ struct boss_thorimAI : public BossAI
         me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
         FirstTime = true;
+        HardMode = false;
         PreAddsCount = 0;
         spawnedAdds = 0;
         
@@ -244,6 +262,14 @@ struct boss_thorimAI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
         _JustDied();
+        
+        // Achievements
+        if (pInstance)
+        {
+            // Lose Your Illusion
+            if (HardMode)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_LOSE_ILLUSION);
+        }
     }
 
     void EnterCombat(Unit* pWho)
@@ -356,8 +382,6 @@ struct boss_thorimAI : public BossAI
                 phase = PHASE_2;
                 events.SetPhase(PHASE_2);
                 me->RemoveAurasDueToSpell(SPELL_SHEAT_OF_LIGHTNING);
-                if (EncounterTime >= 180000)
-                    me->AddAura(SPELL_TOUCH_OF_DOMINION, me);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->GetMotionMaster()->MoveJump(2134.79, -263.03, 419.84, 10.0f, 20.0f);
@@ -366,6 +390,17 @@ struct boss_thorimAI : public BossAI
                 //events.ScheduleEvent(EVENT_TRANSFER_ENERGY, 20000, 0, PHASE_2);
                 events.ScheduleEvent(EVENT_RELEASE_ENERGY, 25000, 0, PHASE_2);
                 events.ScheduleEvent(EVENT_BERSERK, 300000, 0, PHASE_2);
+                // Hard Mode
+                if (EncounterTime <= MAX_HARD_MODE_TIME)
+                {
+                    HardMode = true;
+                    // Summon Sif
+                    me->SummonCreature(33196, 2149.27, -260.55, 419.69, 2.527, TEMPSUMMON_CORPSE_DESPAWN);
+                    // Achievement Siffed
+                    if (pInstance)
+                        pInstance->DoCompleteAchievement(ACHIEVEMENT_SIFFED);
+                }
+                else me->AddAura(SPELL_TOUCH_OF_DOMINION, me);
                 break;
         }
         
@@ -728,14 +763,18 @@ struct thorim_phase_triggerAI : public Scripted_NoMovementAI
     
     void MoveInLineOfSight(Unit *who)
     {
-        if (pInstance && pInstance->GetBossState(BOSS_THORIM) == IN_PROGRESS)
-            if (me->IsWithinDistInMap(who, 10.0f) && who->GetTypeId() == TYPEID_PLAYER)
-            {
-                if (Creature* pThorim = Unit::GetCreature(*me, pInstance->GetData64(DATA_THORIM)))
-                    if (pThorim->AI())
-                        pThorim->AI()->DoAction(ACTION_CHANGE_PHASE);
-                me->ForcedDespawn();
-            }
+        if (Creature* pRunicColossus = Unit::GetCreature(*me, pInstance->GetData64(DATA_RUNIC_COLOSSUS)))
+            if (pRunicColossus->isDead())
+                if (Creature* pRuneGiant = Unit::GetCreature(*me, pInstance->GetData64(DATA_RUNE_GIANT)))
+                    if (pRuneGiant->isDead())
+                        if (pInstance && pInstance->GetBossState(BOSS_THORIM) == IN_PROGRESS)
+                            if (me->IsWithinDistInMap(who, 10.0f) && who->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                if (Creature* pThorim = Unit::GetCreature(*me, pInstance->GetData64(DATA_THORIM)))
+                                if (pThorim->AI())
+                                pThorim->AI()->DoAction(ACTION_CHANGE_PHASE);
+                                me->ForcedDespawn();
+                            }
         ScriptedAI::MoveInLineOfSight(who);
     }
 };
@@ -781,6 +820,69 @@ CreatureAI* GetAI_thorim_energy_source(Creature* pCreature)
     return new thorim_energy_sourceAI(pCreature);
 }
 
+// Sif (only in Hard-Mode)
+struct npc_sifAI : public ScriptedAI
+{
+    npc_sifAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        pInstance = pCreature->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    int32 VolleyTimer;
+    int32 BlizzardTimer;
+    int32 NovaTimer;
+
+    void Reset()
+    {
+        VolleyTimer = 15000;
+        BlizzardTimer = 30000;
+        NovaTimer = urand(20000, 25000);
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
+            return;
+            
+        if (me->hasUnitState(UNIT_STAT_CASTING))
+            return;
+            
+        if (VolleyTimer <= uiDiff)
+        {
+            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
+            {
+                DoResetThreat();
+                me->AddThreat(pTarget, 5000000.0f);
+                DoCast(pTarget, RAID_MODE(SPELL_FROSTBOLT_VOLLEY_10, SPELL_FROSTBOLT_VOLLEY_25));
+            }
+            VolleyTimer = urand(15000, 20000);
+        }
+        else VolleyTimer -= uiDiff;
+        
+        if (BlizzardTimer <= uiDiff)
+        {
+            DoCast(me, RAID_MODE(SPELL_BLIZZARD_10, SPELL_BLIZZARD_25));
+            BlizzardTimer = 45000;
+        }
+        else BlizzardTimer -= uiDiff;
+        
+        if (NovaTimer <= uiDiff)
+        {
+            DoCastAOE(RAID_MODE(SPELL_FROSTNOVA_10, SPELL_FROSTNOVA_25));
+            NovaTimer = urand(20000, 25000);
+        }
+        else NovaTimer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_sif(Creature* pCreature)
+{
+    return new npc_sifAI(pCreature);
+}
+
 void AddSC_boss_thorim()
 {
     Script *newscript;
@@ -817,6 +919,11 @@ void AddSC_boss_thorim()
     newscript = new Script;
     newscript->Name = "thorim_energy_source";
     newscript->GetAI = &GetAI_thorim_energy_source;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_sif";
+    newscript->GetAI = &GetAI_npc_sif;
     newscript->RegisterSelf();
 
 }
