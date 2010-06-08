@@ -43,6 +43,7 @@
 #define MSG_GOSSIP_SELL          "Vendi sede di gilda"
 #define MSG_GOSSIP_ADD           "Compra aggiunte per la sede di Gilda"
 #define MSG_GOSSIP_NEXTPAGE      "Successivo -->"
+#define MSG_GOSSIP_CLOSE         "Chiudi"
 #define MSG_INCOMBAT             "Sei in combat!"
 #define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
 #define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate oppure non hai abbastanza membri per acquistarne una di quelle libere."
@@ -72,6 +73,7 @@
 #define ACTION_SHOW_BUYLIST       1002
 #define ACTION_SELL_GUILDHOUSE    1003
 #define ACTION_SHOW_BUYADD_LIST   1004
+#define ACTION_CLOSE              1005
 #define ACTION_NEGATE_BUY         1011
 #define ACTION_NEGATE_BUY_ADD     1021
 
@@ -173,6 +175,9 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     if (guild)
         guildsize = guild->GetMemberSize();
 
+    if (player->isGameMaster())
+        guildsize = 20000;
+
     result = WorldDatabase.PQuery("SELECT `id`, `comment`, `price` FROM `guildhouses` WHERE `guildId` = 0 AND (`faction` = 3 OR `faction` = %u) AND `id` > %u AND `minguildsize` <= %u ORDER BY `id` ASC LIMIT %u",
         (player->GetTeam() == HORDE)?1:0, showFromId, guildsize, GOSSIP_COUNT_MAX);
 
@@ -205,7 +210,9 @@ bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
             //add link to next GOSSIP_COUNT_MAX items
             player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_GOSSIP_NEXTPAGE, GOSSIP_SENDER_MAIN, 
                 guildhouseId + OFFSET_SHOWBUY_FROM);
-        }       
+        }
+        player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_GOSSIP_CLOSE, GOSSIP_SENDER_MAIN, 
+            ACTION_CLOSE);
 
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
 
@@ -243,6 +250,9 @@ bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
     Guild *guild = objmgr.GetGuildById(player->GetGuildId());
     if (guild)
         guildsize = guild->GetMemberSize();
+
+    if (player->isGameMaster())
+        guildsize = 20000;
     
     result = WorldDatabase.PQuery("SELECT `add_type`, `comment`, `price` FROM `guildhouses_addtype` WHERE `minguildsize` <= %u AND `add_type` > %u ORDER BY `add_type` ASC LIMIT %u",
         guildsize, showFromId, GOSSIP_COUNT_MAX);
@@ -478,6 +488,9 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
         case ACTION_SHOW_BUYADD_LIST:
             //show list of GHs add
             showBuyAddList(player, _creature);
+            break;
+        case ACTION_CLOSE:
+            player->CLOSE_GOSSIP_MENU();
             break;
         case ACTION_NEGATE_BUY:
             player->CLOSE_GOSSIP_MENU();

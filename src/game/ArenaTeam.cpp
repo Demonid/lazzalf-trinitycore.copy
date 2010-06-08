@@ -612,11 +612,11 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
     // called when the team has lost
     //'chance' calculation - to loose to the opponent
     float chance = GetChanceAgainst(m_stats.rating, againstRating);
-    if (m_stats.rating < 1000)
+    /*if (m_stats.rating < 1000)
     {
         FinishGame(0);
         return 0;
-    }
+    }*/
 
     float K = 32.0f;
     int32 mod = (int32)ceil(K * (0.0f - chance));
