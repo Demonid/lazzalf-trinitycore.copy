@@ -45,7 +45,7 @@
 #define MSG_GOSSIP_NEXTPAGE      "Successivo -->"
 #define MSG_INCOMBAT             "Sei in combat!"
 #define MSG_NOGUILDHOUSE         "La tua gilda non possiede una casa!"
-#define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate."
+#define MSG_NOFREEGH             "Purtroppo tutte le case sono occupate oppure non hai abbastanza membri per acquistarne una di quelle libere."
 #define MSG_NOADDGH              "Non hai altre GHAdd da comprare"
 #define MSG_ALREADYHAVEGH        "La tua gilda possiede già una sede. (%s)."
 #define MSG_ALREADYHAVEGHADD     "La tua gilda possiede già questo GHAdd."
@@ -55,19 +55,25 @@
 #define MSG_CONGRATULATIONS      "Congratulazioni! La sede è stata creata."
 #define MSG_SOLD                 "La gilda è stata venduta. ??? ???? %u ??????."
 #define MSG_NOTINGUILD           "Non sei in nessuna gilda."
+#define MSG_CONFIRM_BUY          "Conferma l'acquisto"
+#define MSG_NEGATE_BUY           "Nega l'acquisto"
 
 #define CODE_SELL                "SELL"
 #define MSG_CODEBOX_SELL         "Scrivi \"" CODE_SELL "\" in maiuscolo per vendere la casa, dopo premi accept."
 
-#define OFFSET_GH_ID_TO_ACTION       1500
-#define OFFSET_SHOWBUY_FROM          10000
-#define OFFSET_GH_ADD_ID_TO_ACTION   11500
-#define OFFSET_SHOWBUY_FROM_ADD      20000
+#define OFFSET_CONFIRM_BUY_ID_TO_ACTION       2000
+#define OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION   5000
+#define OFFSET_GH_ID_TO_ACTION                7000
+#define OFFSET_SHOWBUY_FROM                   12000
+#define OFFSET_GH_ADD_ID_TO_ACTION            17000
+#define OFFSET_SHOWBUY_FROM_ADD               20000
 
 #define ACTION_TELE               1001
 #define ACTION_SHOW_BUYLIST       1002
 #define ACTION_SELL_GUILDHOUSE    1003
 #define ACTION_SHOW_BUYADD_LIST   1004
+#define ACTION_NEGATE_BUY         1011
+#define ACTION_NEGATE_BUY_ADD     1021
 
 #define ICON_GOSSIP_BALOON       0
 #define ICON_GOSSIP_WING         2
@@ -136,7 +142,7 @@ void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     if (!player->getAttackers().empty())
     {
         //if player in combat
-        _creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, player->GetGUID());
+        _creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, 0);
         return;
     }
 
@@ -298,6 +304,24 @@ bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
     return false;
 }
 
+
+void confirmBuy(Player *player, Creature *_creature, uint32 guildhouseId)
+{
+    if (!player)
+        return;
+
+    if (isPlayerHasGuildhouse(player, _creature, true))
+    {
+        //player already have GH
+        return;
+    }
+
+    player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_CONFIRM_BUY, GOSSIP_SENDER_MAIN,
+        guildhouseId + OFFSET_CONFIRM_BUY_ID_TO_ACTION);
+    player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_NEGATE_BUY, GOSSIP_SENDER_MAIN, 
+                ACTION_NEGATE_BUY);
+}
+
 void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
 {
     if (!player)
@@ -334,7 +358,24 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
     GHobj.ChangeGuildHouse(player->GetGuildId(), guildhouseId);
 
     player->ModifyMoney(-(price*10000));
-    _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, player->GetGUID());    
+    _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, 0);    
+}
+
+void confirmBuyAdd(Player *player, Creature *_creature, uint32 gh_Add)
+{
+    if (!player)
+        return;
+
+    if (isPlayerHasGuildhouseAdd(player, _creature, gh_Add, true))
+    {
+        //player already have GHAdd
+        return;
+    } 
+
+    player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_CONFIRM_BUY, GOSSIP_SENDER_MAIN,
+        gh_Add + OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION);
+    player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_NEGATE_BUY, GOSSIP_SENDER_MAIN, 
+                ACTION_NEGATE_BUY_ADD);
 }
 
 void buyGuildhouseAdd(Player *player, Creature *_creature, uint32 gh_Add)
@@ -438,7 +479,13 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             //show list of GHs add
             showBuyAddList(player, _creature);
             break;
-        default:            
+        case ACTION_NEGATE_BUY:
+            player->CLOSE_GOSSIP_MENU();
+            break;
+         case ACTION_NEGATE_BUY_ADD:
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        default:     
             if (action > OFFSET_SHOWBUY_FROM_ADD)
             {
                 showBuyAddList(player, _creature, action - OFFSET_SHOWBUY_FROM_ADD);
@@ -447,9 +494,9 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             {
                 //player clicked on buy list
                 player->CLOSE_GOSSIP_MENU();
-                //get guildhouseId from action
-                //guildhouseId = action - OFFSET_GH_ID_TO_ACTION
-                buyGuildhouseAdd(player, _creature, action - OFFSET_GH_ADD_ID_TO_ACTION);
+                //get guildhouseAddId from action
+                //guildhouseAddId = action - OFFSET_GH_ADD_ID_TO_ACTION
+                confirmBuyAdd(player, _creature, action - OFFSET_GH_ADD_ID_TO_ACTION);
             }
             else if (action > OFFSET_SHOWBUY_FROM)
             {
@@ -461,7 +508,23 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
                 player->CLOSE_GOSSIP_MENU();
                 //get guildhouseId from action
                 //guildhouseId = action - OFFSET_GH_ID_TO_ACTION
-                buyGuildhouse(player, _creature, action - OFFSET_GH_ID_TO_ACTION);
+                confirmBuy(player, _creature, action - OFFSET_GH_ID_TO_ACTION);
+            }
+            else if (action > OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION)
+            {
+                //player clicked on buy list
+                player->CLOSE_GOSSIP_MENU();
+                //get guildhouseAddId from action
+                //guildhouseAddId = action - OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION
+                buyGuildhouseAdd(player, _creature, action - OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION);
+            }
+            else if (action > OFFSET_CONFIRM_BUY_ID_TO_ACTION)
+            {
+                //player clicked on buy list
+                player->CLOSE_GOSSIP_MENU();
+                //get guildhouseId from action
+                //guildhouseId = action - OFFSET_CONFIRM_BUY_ID_TO_ACTION
+                buyGuildhouse(player, _creature, action - OFFSET_CONFIRM_BUY_ID_TO_ACTION);
             }
             break;
     }
@@ -621,7 +684,7 @@ void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action 
     if(!player->getAttackers().empty())
     {
         player->CLOSE_GOSSIP_MENU();
-        _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, player->GetGUID());
+        _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, 0);
         return;
     }
 
@@ -748,7 +811,7 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
     if(!player->getAttackers().empty())
     {
         player->CLOSE_GOSSIP_MENU();
-        _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, player->GetGUID());
+        _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, 0);
         return;
     }
 
