@@ -92,6 +92,10 @@ SET(game_STAT_SRCS
    Combat/UnitEvents.h
    Conditions/ConditionMgr.cpp
    Conditions/ConditionMgr.h
+   Custom/GuildHouse.cpp
+   Custom/GuildHouse.h
+   Custom/sc_npc_teleport.cpp
+   Custom/sc_npc_teleport.h
    DataStores/DBCEnums.h
    DataStores/DBCStores.cpp
    DataStores/DBCStores.h
