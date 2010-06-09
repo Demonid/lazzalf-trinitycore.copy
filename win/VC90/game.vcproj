@@ -105,6 +105,87 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
+			IntermediateDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP /Zm200"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\externals;..\..\externals\ace;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_SECURE_SCL=0"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="1"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PrecompiledHeaders\WinCorePCH.h"
+				PrecompiledHeaderFile=".\game__$(PlatformName)_$(ConfigurationName)\game.pch"
+				AssemblerListingLocation=".\game__$(PlatformName)_$(ConfigurationName)\"
+				ObjectFile=".\game__$(PlatformName)_$(ConfigurationName)\"
+				ProgramDataBaseFileName=".\game__$(PlatformName)_$(ConfigurationName)\"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				CallingConvention="0"
+				CompileAs="0"
+				ForcedIncludeFiles="PrecompiledHeaders\WinCorePCH.h"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG;_SECURE_SCL=0"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\game__$(PlatformName)_$(ConfigurationName)\game.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="Debug|x64"
 			OutputDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
 			IntermediateDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
@@ -169,87 +250,6 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies=".\shared__$(PlatformName)_$(ConfigurationName)\shared.lib"
-				OutputFile=".\game__$(PlatformName)_$(ConfigurationName)\game.lib"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
-			IntermediateDirectory=".\game__$(PlatformName)_$(ConfigurationName)"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /Zm200"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\externals;..\..\externals\ace;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_SECURE_SCL=0"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				RuntimeTypeInfo="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="PrecompiledHeaders\WinCorePCH.h"
-				PrecompiledHeaderFile=".\game__$(PlatformName)_$(ConfigurationName)\game.pch"
-				AssemblerListingLocation=".\game__$(PlatformName)_$(ConfigurationName)\"
-				ObjectFile=".\game__$(PlatformName)_$(ConfigurationName)\"
-				ProgramDataBaseFileName=".\game__$(PlatformName)_$(ConfigurationName)\"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
-				CallingConvention="0"
-				CompileAs="0"
-				ForcedIncludeFiles="PrecompiledHeaders\WinCorePCH.h"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG;_SECURE_SCL=0"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
 				OutputFile=".\game__$(PlatformName)_$(ConfigurationName)\game.lib"
 				SuppressStartupBanner="true"
 			/>
@@ -545,30 +545,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Groups"
-			>
-			<File
-				RelativePath="..\..\src\server\game\Groups\Group.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Groups\Group.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Groups\GroupReference.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Groups\GroupReference.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Groups\GroupRefManager.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Guilds"
 			>
 			<File
@@ -579,6 +555,30 @@
 				RelativePath="..\..\src\server\game\Guilds\Guild.h"
 				>
 			</File>
+			<Filter
+				Name="Groups"
+				>
+				<File
+					RelativePath="..\..\src\server\game\Groups\Group.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Groups\Group.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Groups\GroupReference.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Groups\GroupReference.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Groups\GroupRefManager.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="OutdoorPvP"
@@ -647,6 +647,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPWG.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPWG.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPZM.cpp"
 					>
 				</File>
@@ -691,7 +699,15 @@
 				Name="Custom"
 				>
 				<File
+					RelativePath="..\..\src\server\scripts\Custom\GuildHouse_npc.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\scripts\Custom\npc_acherus_taxi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\scripts\Custom\npc_teleport.cpp"
 					>
 				</File>
 				<File
@@ -2140,6 +2156,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\server\scripts\Northrend\storm_peaks.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\scripts\Northrend\wintergrasp.cpp"
 					>
 				</File>
 				<File
@@ -4529,6 +4549,26 @@
 			</File>
 			<File
 				RelativePath="..\..\src\server\game\Miscellaneous\SharedDefines.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Custom"
+			>
+			<File
+				RelativePath="..\..\src\server\game\Custom\GuildHouse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\GuildHouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_npc_teleport.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_npc_teleport.h"
 				>
 			</File>
 		</Filter>

@@ -11,8 +11,8 @@
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
 #include "SingletonImp.h"
-#include "sc_npc_teleport.h"
-#include "GuildHouse.h"
+#include "Custom/sc_npc_teleport.h"
+#include "Custom/GuildHouse.h"
 
 INSTANTIATE_SINGLETON_1(ScriptMgr);
 

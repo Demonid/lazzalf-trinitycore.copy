@@ -47,7 +47,7 @@
 #include "GameEventMgr.h"
 #include "ProgressBar.h"
 #include "SharedDefines.h"
-#include "Config/ConfigEnv.h"
+#include "Configuration/ConfigEnv.h"
 #include "Formulas.h"
 
 INSTANTIATE_SINGLETON_1(BattleGroundMgr);

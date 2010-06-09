@@ -31,7 +31,7 @@
 #include "Language.h"
 #include "World.h"
 #include "ConfigEnv.h"
-#include "GuildHouse.h"
+#include "Custom/GuildHouse.h"
 
 Guild::Guild()
 {
