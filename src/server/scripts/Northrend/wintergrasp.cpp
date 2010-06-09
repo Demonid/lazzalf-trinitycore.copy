@@ -1,4 +1,4 @@
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "World.h"

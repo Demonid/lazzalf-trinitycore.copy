@@ -11,7 +11,7 @@
  **/
 
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "sc_npc_teleport.h"
 #include "ProgressBar.h"
 
