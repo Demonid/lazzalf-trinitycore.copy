@@ -434,6 +434,8 @@ INSERT INTO `command` VALUES
 ('instance savedata',3,'Syntax: .instance savedata\r\n  Save the InstanceData for the current player''s map to the DB.'),
 ('instance stats',3,'Syntax: .instance stats\r\n  Shows statistics about instances.'),
 ('instance unbind',3,'Syntax: .instance unbind all\r\n  All of the selected player''s binds will be cleared.'),
+('instance open', 3, 'Syntax: .instance open mapid [normal|heroic|10normal|10heroic|25normal|25heroic]'),
+('instance close', 3, 'Syntax: .instance close mapid [normal|heroic|10normal|10heroic|25normal|25heroic]'),
 ('itemmove',2,'Syntax: .itemmove #sourceslotid #destinationslotid\r\n\r\nMove an item from slots #sourceslotid to #destinationslotid in your inventory\r\n\r\nNot yet implemented'),
 ('kick',2,'Syntax: .kick [$charactername] [$reason]\r\n\r\nKick the given character name from the world with or without reason. If no character name is provided then the selected player (except for yourself) will be kicked. If no reason is provided, default is \"No Reason\".'),
 ('learn',3,'Syntax: .learn #spell [all]\r\n\r\nSelected character learn a spell of id #spell. If ''all'' provided then all ranks learned.'),
@@ -701,6 +703,33 @@ INSERT INTO `command` VALUES
 ('wp show',2,'Syntax: .wp show $option\nOptions:\non $pathid (or selected creature with loaded path) - Show path\noff - Hide path\ninfo $slected_waypoint - Show info for selected waypoint.'),
 ('wp unload',2,'Syntax: .wp unload\nUnload path for selected creature.');
 /*!40000 ALTER TABLE `command` ENABLE KEYS */;
+UNLOCK TABLES;
+
+-- 
+-- Table structure for `conditions`
+-- 
+
+CREATE TABLE `conditions` (
+  `SourceTypeOrReferenceId` mediumint(8) NOT NULL DEFAULT '0',
+  `SourceGroup` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `SourceEntry` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ElseGroup` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ConditionTypeOrReference` mediumint(8) NOT NULL DEFAULT '0',
+  `ConditionValue1` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ConditionValue2` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ConditionValue3` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ErrorTextId` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `Comment` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ElseGroup`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`ConditionValue3`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Condition System';
+
+--
+-- Dumping data for table `creature`
+--
+
+LOCK TABLES `conditions` WRITE;
+/*!40000 ALTER TABLE `conditions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `conditions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
