@@ -21,8 +21,8 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "Database/DatabaseEnv.h"
-#include "Policies/SingletonImp.h"
+#include "DatabaseEnv.h"
+#include "SingletonImp.h"
 
 #include "AchievementMgr.h"
 #include "ArenaTeam.h"

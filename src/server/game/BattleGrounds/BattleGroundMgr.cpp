@@ -22,7 +22,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 
 #include "ArenaTeam.h"
 #include "BattleGroundMgr.h"

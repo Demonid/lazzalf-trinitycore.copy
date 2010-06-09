@@ -31,7 +31,7 @@
 #include "HostileRefManager.h"
 #include "FollowerReference.h"
 #include "FollowerRefManager.h"
-#include "Utilities/EventProcessor.h"
+#include "EventProcessor.h"
 #include "MotionMaster.h"
 #include "DBCStructure.h"
 #include <list>

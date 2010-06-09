@@ -54,7 +54,7 @@
 #include "Traveller.h"
 #include "TemporarySummon.h"
 #include "Vehicle.h"
-#include "Transports.h"
+#include "Transport.h"
 
 #include <math.h>
 
@@ -4359,16 +4359,14 @@ void Unit::RemoveAreaAurasDueToLeaveWorld()
 
 void Unit::RemoveAllAuras()
 {
-    while (!m_appliedAuras.empty() || !m_ownedAuras.empty())
-    {
-        AuraApplicationMap::iterator aurAppIter = m_appliedAuras.begin();
-        while (!m_appliedAuras.empty())
-            _UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+    AuraApplicationMap::iterator aurAppIter;
+    for (aurAppIter = m_appliedAuras.begin(); aurAppIter != m_appliedAuras.end();)
+        _UnapplyAura(aurAppIter, AURA_REMOVE_BY_DEFAULT);
+    
+    AuraMap::iterator aurIter;
+    for (aurIter = m_ownedAuras.begin(); aurIter != m_ownedAuras.end();)
+        RemoveOwnedAura(aurIter);
 
-        AuraMap::iterator aurIter = m_ownedAuras.begin();
-        while (!m_ownedAuras.empty())
-            RemoveOwnedAura(aurIter);
-    }
 }
 
 void Unit::RemoveArenaAuras(bool onleave)
@@ -7791,12 +7789,35 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit *pVictim, uint32 /*damage*/, Aur
 
 // Used in case when access to whole aura is needed
 // All procs should be handled like this...
-bool Unit::HandleAuraProc(Unit * /*pVictim*/, uint32 damage, Aura * triggeredByAura, SpellEntry const * procSpell, uint32 /*procFlag*/, uint32 procEx, uint32 /*cooldown*/, bool * handled)
+bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura, SpellEntry const * procSpell, uint32 /*procFlag*/, uint32 procEx, uint32 /*cooldown*/, bool * handled)
 {
     SpellEntry const *dummySpell = triggeredByAura->GetSpellProto();
 
     switch(dummySpell->SpellFamilyName)
     {
+        case SPELLFAMILY_PALADIN:
+        {
+            // Infusion of Light
+            if (dummySpell->SpellIconID == 3021)
+            {
+                // Flash of Light HoT on Flash of Light when Sacred Shield active
+                if (procSpell->SpellFamilyFlags[0] & 0x40000000 && procSpell->SpellIconID == 242)
+                {
+                    *handled = true;
+                    if (pVictim->HasAura(53601))
+                    {
+                        int32 bp0 = (damage/12) * dummySpell->CalculateSimpleValue(2)/100;
+                        CastCustomSpell(pVictim, 66922, &bp0, NULL, NULL, true);
+                        return true;
+                    }   
+                }
+                // but should not proc on non-critical Holy Shocks
+                else if ((procSpell->SpellFamilyFlags[0] & 0x200000 || procSpell->SpellFamilyFlags[1] & 0x10000) && !(procEx & PROC_EX_CRITICAL_HIT))
+                    *handled = true;
+                break;
+            }
+            break;
+        }
         case SPELLFAMILY_MAGE:
         {
             // Combustion

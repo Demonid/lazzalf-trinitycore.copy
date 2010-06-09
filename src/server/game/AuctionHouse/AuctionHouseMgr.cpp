@@ -22,16 +22,16 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/SQLStorage.h"
-#include "Policies/SingletonImp.h"
+#include "DatabaseEnv.h"
+#include "SQLStorage.h"
+#include "SingletonImp.h"
 #include "DBCStores.h"
 
 #include "AccountMgr.h"
 #include "AuctionHouseMgr.h"
 #include "Item.h"
 #include "Language.h"
-#include "Log.h"
+#include "Logging/Log.h"
 #include "ProgressBar.h"
 #include <vector>
 

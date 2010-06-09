@@ -21,7 +21,7 @@
 #ifndef _AUCTION_HOUSE_MGR_H
 #define _AUCTION_HOUSE_MGR_H
 
-#include "Policies/Singleton.h"
+#include "Singleton.h"
 
 #include "SharedDefines.h"
 

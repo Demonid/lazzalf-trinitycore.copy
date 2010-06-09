@@ -23,7 +23,7 @@ SD%Complete: 90
 SDComments: TODO: Achievements and Hardmode Chest spawn
 EndScriptData */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 
 enum Spells

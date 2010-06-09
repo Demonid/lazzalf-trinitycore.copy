@@ -6,9 +6,9 @@
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
-#include "Database/SQLStorage.h"
+#include "SQLStorage.h"
 #include "Opcodes.h"
 #include "SharedDefines.h"
 #include "ObjectMgr.h"
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"

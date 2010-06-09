@@ -19,7 +19,7 @@
  */
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ObjectMgr.h"
 #include "Player.h"

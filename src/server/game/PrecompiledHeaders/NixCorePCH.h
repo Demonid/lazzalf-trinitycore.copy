@@ -3,10 +3,10 @@
 #include "Common.h"
 
 #include "MapManager.h"
-#include "Log.h"
+#include "Logging/Log.h"
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
-#include "Database/SQLStorage.h"
+#include "SQLStorage.h"
 #include "Opcodes.h"
 #include "SharedDefines.h"
 #include "ObjectMgr.h"

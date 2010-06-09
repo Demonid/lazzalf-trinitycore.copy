@@ -23,7 +23,7 @@ SD%Complete: 95
 SD%Comments: TODO: EyeBeam Visual Effect
 EndScriptData */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 #include "Vehicle.h"
 

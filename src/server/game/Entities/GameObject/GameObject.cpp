@@ -29,7 +29,7 @@
 #include "Opcodes.h"
 #include "WorldPacket.h"
 #include "World.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "LootMgr.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"

@@ -19,7 +19,7 @@
  */
 
 
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"

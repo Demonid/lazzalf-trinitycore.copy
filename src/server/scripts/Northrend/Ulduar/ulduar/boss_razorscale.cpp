@@ -22,7 +22,7 @@ SDAuthor: PrinceCreed
 SD%Complete: 100
 EndScriptData */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 
 #define SAY_GREET             -1603260

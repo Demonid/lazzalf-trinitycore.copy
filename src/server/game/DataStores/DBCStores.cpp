@@ -19,8 +19,8 @@
  */
 
 #include "DBCStores.h"
-#include "Policies/SingletonImp.h"
-#include "Log.h"
+#include "SingletonImp.h"
+#include "Logging/Log.h"
 #include "ProgressBar.h"
 #include "SharedDefines.h"
 #include "SpellMgr.h"

@@ -19,7 +19,7 @@
 */
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "World.h"
@@ -45,7 +45,7 @@
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
 #include "SystemConfig.h"
-#include "Config/ConfigEnv.h"
+#include "ConfigEnv.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
 #include "BattleGroundMgr.h"
@@ -753,6 +753,14 @@ bool ChatHandler::HandleReloadCommandCommand(const char*)
 {
     load_command_table = true;
     SendGlobalGMSysMessage("DB table `command` will be reloaded at next chat command use.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadOnKillReputationCommand(const char*)
+{
+    sLog.outString("Re-Loading creature award reputation definitions...");
+    objmgr.LoadReputationOnKill();
+    SendGlobalGMSysMessage("DB table `creature_onkill_reputation` reloaded.");
     return true;
 }
 

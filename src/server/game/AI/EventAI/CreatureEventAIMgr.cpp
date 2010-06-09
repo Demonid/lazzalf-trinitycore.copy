@@ -17,13 +17,13 @@
  */
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/SQLStorage.h"
+#include "DatabaseEnv.h"
+#include "SQLStorage.h"
 #include "CreatureEventAI.h"
 #include "CreatureEventAIMgr.h"
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
 #include "ConditionMgr.h"

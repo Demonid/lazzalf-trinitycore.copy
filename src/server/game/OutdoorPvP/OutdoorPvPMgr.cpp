@@ -26,7 +26,7 @@
 #include "OutdoorPvPWG.h"
 #include "ObjectMgr.h"
 #include "Player.h"
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 
 INSTANTIATE_SINGLETON_1(OutdoorPvPMgr);
 

@@ -23,7 +23,7 @@
 
 #include "Common.h"
 #include "SharedDefines.h"
-#include "Utilities/LinkedReference/Reference.h"
+#include "LinkedReference/Reference.h"
 #include "UnitEvents.h"
 
 #include <list>

@@ -23,9 +23,9 @@
 */
 
 #include "Log.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/DatabaseImpl.h"
-#include "Platform/Define.h"
+#include "DatabaseEnv.h"
+#include "DatabaseImpl.h"
+#include "Define.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "GlobalEvents.h"

@@ -23,7 +23,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 
 #include "AccountMgr.h"
 #include "CellImpl.h"
@@ -461,6 +461,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "creature_involvedrelation",   SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCreatureQuestInvRelationsCommand,"",NULL },
         { "creature_linked_respawn",     SEC_GAMEMASTER, true,  &ChatHandler::HandleReloadCreatureLinkedRespawnCommand,   "", NULL },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "", NULL },
+        { "creature_onkill_reputation",  SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadOnKillReputationCommand,        "", NULL },
         { "creature_questrelation",      SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCreatureQuestRelationsCommand,  "", NULL },
         { "creature_template",           SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCreatureTemplateCommand,        "", NULL },
         //{ "db_script_string",            SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadDbScriptStringCommand,          "", NULL },

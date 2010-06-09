@@ -2,15 +2,15 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#include "ScriptedPch.h"
-#include "Config/Config.h"
-#include "Database/DatabaseEnv.h"
+#include "ScriptPCH.h"
+#include "Config.h"
+#include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 #include "sc_npc_teleport.h"
 #include "GuildHouse.h"
 

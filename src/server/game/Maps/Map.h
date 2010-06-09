@@ -21,8 +21,8 @@
 #ifndef TRINITY_MAP_H
 #define TRINITY_MAP_H
 
-#include "Platform/Define.h"
-#include "Policies/ThreadingModel.h"
+#include "Define.h"
+#include "ThreadingModel.h"
 #include "ace/RW_Thread_Mutex.h"
 #include "ace/Thread_Mutex.h"
 
@@ -31,9 +31,9 @@
 #include "Cell.h"
 #include "Timer.h"
 #include "SharedDefines.h"
-#include "GameSystem/GridRefManager.h"
+#include "GridRefManager.h"
 #include "MapRefManager.h"
-#include "mersennetwister/MersenneTwister.h"
+#include "MersenneTwister.h"
 
 #include <bitset>
 #include <list>

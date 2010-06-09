@@ -19,7 +19,7 @@
  */
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "WorldPacket.h"
 #include "World.h"
 #include "ObjectMgr.h"
@@ -49,7 +49,7 @@
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
 // apply implementation of the singletons
-#include "Policies/SingletonImp.h"
+#include "SingletonImp.h"
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {

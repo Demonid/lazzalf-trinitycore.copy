@@ -19,10 +19,10 @@
  */
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/SQLStorage.h"
-#include "Database/SQLStorageImpl.h"
-#include "Policies/SingletonImp.h"
+#include "DatabaseEnv.h"
+#include "SQLStorage.h"
+#include "SQLStorageImpl.h"
+#include "SingletonImp.h"
 
 #include "Log.h"
 #include "MapManager.h"
@@ -33,7 +33,7 @@
 #include "Group.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
-#include "Transports.h"
+#include "Transport.h"
 #include "ProgressBar.h"
 #include "Language.h"
 #include "GameEventMgr.h"
@@ -6791,6 +6791,9 @@ void ObjectMgr::LoadCorpses()
 
 void ObjectMgr::LoadReputationOnKill()
 {
+    // For reload case
+    mRepOnKill.clear();
+
     uint32 count = 0;
 
     //                                                0            1                     2
@@ -6832,7 +6835,7 @@ void ObjectMgr::LoadReputationOnKill()
 
         if (!GetCreatureTemplate(creature_id))
         {
-            sLog.outErrorDb("Table `creature_onkill_reputation` have data for not existed creature entry (%u), skipped",creature_id);
+            sLog.outErrorDb("Table `creature_onkill_reputation` have data for not existed creature entry (%u), skipped", creature_id);
             continue;
         }
 
@@ -6841,7 +6844,7 @@ void ObjectMgr::LoadReputationOnKill()
             FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(repOnKill.repfaction1);
             if (!factionEntry1)
             {
-                sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `creature_onkill_reputation`",repOnKill.repfaction1);
+                sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `creature_onkill_reputation`", repOnKill.repfaction1);
                 continue;
             }
         }
@@ -6851,7 +6854,7 @@ void ObjectMgr::LoadReputationOnKill()
             FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(repOnKill.repfaction2);
             if (!factionEntry2)
             {
-                sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `creature_onkill_reputation`",repOnKill.repfaction2);
+                sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `creature_onkill_reputation`", repOnKill.repfaction2);
                 continue;
             }
         }

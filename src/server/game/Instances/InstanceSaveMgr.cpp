@@ -20,7 +20,7 @@
  */
 
 #include "Common.h"
-#include "Database/SQLStorage.h"
+#include "SQLStorage.h"
 
 #include "Player.h"
 #include "GridNotifiers.h"
@@ -33,15 +33,15 @@
 #include "InstanceSaveMgr.h"
 #include "Timer.h"
 #include "GridNotifiersImpl.h"
-#include "Config/ConfigEnv.h"
-#include "Transports.h"
+#include "ConfigEnv.h"
+#include "Transport.h"
 #include "ObjectMgr.h"
 #include "World.h"
 #include "Group.h"
 #include "InstanceData.h"
 #include "ProgressBar.h"
-#include "Policies/Singleton.h"
-#include "Policies/SingletonImp.h"
+#include "Singleton.h"
+#include "SingletonImp.h"
 
 INSTANTIATE_SINGLETON_1(InstanceSaveManager);
 

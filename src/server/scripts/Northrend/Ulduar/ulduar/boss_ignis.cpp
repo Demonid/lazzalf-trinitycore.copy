@@ -22,7 +22,7 @@ SDAuthor: PrinceCreed
 SD%Complete: 100
 EndScriptData */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 
 enum Yells
