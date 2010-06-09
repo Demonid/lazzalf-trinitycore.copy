@@ -11,8 +11,8 @@
  **/
 
 
-#include "ScriptedPch.h"
-#include "sc_npc_teleport.h"
+#include "ScriptPCH.h"
+#include "Custom/sc_npc_teleport.h"
 #include <sstream>
 
 

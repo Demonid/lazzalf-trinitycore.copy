@@ -23,7 +23,7 @@ SD%Complete: 95%
 SDComment: TODO: Savage Pounce not works properly
 EndScriptData */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 
 // Auriaya

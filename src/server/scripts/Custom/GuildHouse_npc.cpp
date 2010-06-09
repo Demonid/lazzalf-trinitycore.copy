@@ -29,12 +29,12 @@
  *
  **/
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
 #include "Guild.h"
-#include "GuildHouse.h"
+#include "Custom/GuildHouse.h"
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 

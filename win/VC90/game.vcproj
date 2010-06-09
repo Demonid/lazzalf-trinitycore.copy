@@ -699,7 +699,15 @@
 				Name="Custom"
 				>
 				<File
+					RelativePath="..\..\src\server\scripts\Custom\GuildHouse_npc.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\scripts\Custom\npc_acherus_taxi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\scripts\Custom\npc_teleport.cpp"
 					>
 				</File>
 				<File
@@ -4299,6 +4307,54 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="Spells"
+				>
+				<File
+					RelativePath="..\..\src\server\game\Spells\Spell.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Spells\Spell.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Spells\SpellMgr.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\Spells\SpellMgr.h"
+					>
+				</File>
+				<Filter
+					Name="Auras"
+					>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraDefines.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraEffects.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraEffects.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellAuras.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellAuras.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\game\Spells\Auras\SpellEffects.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Pools"
@@ -4375,54 +4431,6 @@
 				RelativePath="..\..\src\server\game\Skills\SkillExtraItems.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Spells"
-			>
-			<File
-				RelativePath="..\..\src\server\game\Spells\Spell.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Spells\Spell.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Spells\SpellMgr.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\server\game\Spells\SpellMgr.h"
-				>
-			</File>
-			<Filter
-				Name="Auras"
-				>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraDefines.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraEffects.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuraEffects.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuras.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuras.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellEffects.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Tools"
