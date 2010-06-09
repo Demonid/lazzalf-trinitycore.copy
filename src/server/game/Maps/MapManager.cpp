@@ -166,6 +166,10 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (!entry->IsDungeon())
         return true;
 
+    // Not an areatrigger teleporting from world into an instance, if it is same map
+    if (mapid == player->GetMapId())
+       return true;
+
     const char *mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
 
     Group* pGroup = player->GetGroup();
@@ -248,7 +252,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
                 }
 
                 // Encounters in progress
-                if (!loginCheck && entry->IsRaid() && ((InstanceMap*)boundedMap)->GetInstanceData() && ((InstanceMap*)boundedMap)->GetInstanceData()->IsEncounterInProgress())
+                if (!loginCheck /*&& entry->IsRaid()*/ && ((InstanceMap*)boundedMap)->GetInstanceData() && ((InstanceMap*)boundedMap)->GetInstanceData()->IsEncounterInProgress())
                 {
                     sLog.outDebug("MAP: Player '%s' cannot enter instance '%s' while an encounter is in progress.", player->GetName(), mapName);
                     player->SendTransferAborted(mapid, TRANSFER_ABORT_ZONE_IN_COMBAT);
