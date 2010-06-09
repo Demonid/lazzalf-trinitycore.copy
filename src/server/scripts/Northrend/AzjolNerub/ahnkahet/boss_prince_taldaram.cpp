@@ -30,6 +30,8 @@ enum Spells
     SPELL_FLAME_SPHERE_VISUAL                     = 55928,
     SPELL_FLAME_SPHERE_PERIODIC                   = 55926,
     H_SPELL_FLAME_SPHERE_PERIODIC                 = 59508,
+    SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED         = 59509,
+    H_SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED       = 59508,
     SPELL_FLAME_SPHERE_DEATH_EFFECT               = 55947,
     SPELL_BEAM_VISUAL                             = 60342,
     SPELL_EMBRACE_OF_THE_VAMPYR                   = 55959,
@@ -328,6 +330,7 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
     }
 
     uint32 uiDespawnTimer;
+    uint32 uiSpellFlameSphere;
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -338,8 +341,9 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
         me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
         DoCast(me, SPELL_FLAME_SPHERE_VISUAL);
         DoCast(me, SPELL_FLAME_SPHERE_SPAWN_EFFECT);
-        DoCast(me, SPELL_FLAME_SPHERE_PERIODIC);
+        //DoCast(me, SPELL_FLAME_SPHERE_PERIODIC);
         uiDespawnTimer = 10*IN_MILISECONDS;
+        uiSpellFlameSphere = 1*IN_MILISECONDS;
     }
 
     void EnterCombat(Unit * /*who*/) {}
@@ -352,6 +356,12 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        /*if (uiSpellFlameSphere <= diff)
+        {
+            DoCast(me, DUNGEON_MODE(SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED, H_SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED));
+            uiSpellFlameSphere = 5*IN_MILISECONDS;
+        } else uiSpellFlameSphere -= diff;
+        */
         if (uiDespawnTimer <= diff)
             me->DisappearAndDie();
         else
