@@ -546,6 +546,13 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char *args)
 }
 
 //reload commands
+bool ChatHandler::HandleJailReloadCommand(const char* arg)
+{
+    objmgr.LoadJailConf();
+    SendSysMessage(LANG_JAIL_RELOAD);
+    return true;
+}
+
 bool ChatHandler::HandleReloadAllCommand(const char*)
 {
     HandleReloadSkillFishingBaseLevelCommand("");
@@ -7062,62 +7069,20 @@ bool ChatHandler::HandleInstanceOpenCloseCommand(const char *args,bool open)
     uint8 status = objmgr.GetAccessRequirement(instance->access_id)->status;
     uint8 flag = 0;
 
-    const MapEntry *entry = sMapStore.LookupEntry(mapid);
-    if (!entry)
-        return false;
-
-    if (entry->IsDungeon())
-    {
-        if (strcmp(instanceModeStr,"normal"))
-            flag = DUNGEON_STATUSFLAG_NORMAL;
-        else if (strcmp(instanceModeStr,"heroic"))
-            flag = DUNGEON_STATUSFLAG_HEROIC;
-        else if (strcmp(instanceModeStr,"all"))
-            flag = DUNGEON_STATUSFLAG_NORMAL & DUNGEON_STATUSFLAG_HEROIC;
-        else
-        {
-            PSendSysMessage("Unrecognized difficulty string");
-            SetSentErrorMessage(true);
-            return false;
-        }
-    }
-
-    else if (entry->IsRaid())
-    {
-        if (strcmp(instanceModeStr,"normal"))
-            flag = RAID_STATUSFLAG_10MAN_NORMAL & RAID_STATUSFLAG_25MAN_NORMAL;
-        else if (strcmp(instanceModeStr,"heroic"))
-            flag = RAID_STATUSFLAG_10MAN_HEROIC & RAID_STATUSFLAG_25MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"10man"))    
-            flag = RAID_STATUSFLAG_10MAN_NORMAL & RAID_STATUSFLAG_10MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"25man"))
-            flag = RAID_STATUSFLAG_25MAN_NORMAL & RAID_STATUSFLAG_25MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"heroic"))
-            flag = RAID_STATUSFLAG_10MAN_HEROIC & RAID_STATUSFLAG_25MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"10normal"))
-            flag = DUNGEON_STATUSFLAG_NORMAL;
-        else if (strcmp(instanceModeStr,"25normal"))
-            flag = DUNGEON_STATUSFLAG_HEROIC;
-        else if (strcmp(instanceModeStr,"10heroic"))
-            flag = RAID_STATUSFLAG_10MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"25heroic"))
-            flag = RAID_STATUSFLAG_25MAN_HEROIC;
-        else if (strcmp(instanceModeStr,"all"))
-            flag = RAID_STATUSFLAG_10MAN_NORMAL & RAID_STATUSFLAG_10MAN_HEROIC & RAID_STATUSFLAG_25MAN_NORMAL & RAID_STATUSFLAG_25MAN_HEROIC;
-        else
-        {
-            PSendSysMessage("Unrecognized difficulty string");
-            SetSentErrorMessage(true);
-            return false;
-        }
-    }
+    if (strcmp(instanceModeStr,"normal") || strcmp(instanceModeStr,"10normal"))
+        flag = DUNGEON_STATUSFLAG_NORMAL;
+    else if (strcmp(instanceModeStr,"heroic") || strcmp(instanceModeStr,"25normal"))
+        flag = DUNGEON_STATUSFLAG_HEROIC;
+    else if (strcmp(instanceModeStr,"10heroic"))
+        flag = RAID_STATUSFLAG_10MAN_HEROIC;
+    else if (strcmp(instanceModeStr,"25heroic"))
+        flag = RAID_STATUSFLAG_25MAN_HEROIC;
     else
     {
-        PSendSysMessage("Map is not a dungeon/raid");
+        PSendSysMessage("Unrecognized difficulty string");
         SetSentErrorMessage(true);
         return false;
     }
-    
     if (open)
         status |= flag;
     else
