@@ -11,6 +11,8 @@
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
 #include "SingletonImp.h"
+#include "Custom/sc_npc_teleport.h"
+#include "Custom/GuildHouse.h"
 
 INSTANTIATE_SINGLETON_1(ScriptMgr);
 
@@ -56,6 +58,10 @@ void ScriptMgr::ScriptsInit()
 
     //Load database (must be called after SD2Config.SetSource).
     LoadDatabase();
+	// Load TeleNPC2 - maybe not the best place to load it ...
+    LoadNpcTele();
+    //GuildHouse System
+    LoadGuildHouseSystem();
 
     outstring_log("Loading C++ scripts");
     barGoLink bar(1);

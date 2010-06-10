@@ -30,6 +30,8 @@ SET(scripts_STAT_SRCS
    ../game/AI/ScriptedAI/ScriptedInstance.h
    ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
    ../game/AI/ScriptedAI/ScriptedSimpleAI.h
+   Custom/GuildHouse_npc.cpp
+   Custom/npc_teleport.cpp
    Custom/on_events.cpp
    EasternKingdoms/AlteracValley/alterac_valley.cpp
    EasternKingdoms/AlteracValley/boss_balinda.cpp
@@ -348,6 +350,16 @@ SET(scripts_STAT_SRCS
    Northrend/CrusadersColiseum/TrialOfTheChampion/instance_trial_of_the_champion.cpp
    Northrend/CrusadersColiseum/TrialOfTheChampion/trial_of_the_champion.cpp
    Northrend/CrusadersColiseum/TrialOfTheChampion/trial_of_the_champion.h
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_anubarak_toc.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_champions.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_dreadscale.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_fjola.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_gormok.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_icehowl.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_lord_jaraksus.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/def.h
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/instance_trial_of_the_crusader.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/trial_of_the_crusader.cpp
    Northrend/DraktharonKeep/instance_drak_tharon_keep.cpp
    Northrend/DraktharonKeep/boss_trollgore.cpp
    Northrend/DraktharonKeep/boss_novos.cpp
