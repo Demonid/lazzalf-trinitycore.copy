@@ -315,21 +315,25 @@ bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
 }
 
 
-void confirmBuy(Player *player, Creature *_creature, uint32 guildhouseId)
+bool confirmBuy(Player *player, Creature *_creature, uint32 guildhouseId)
 {
     if (!player)
-        return;
+        return false;
 
     if (isPlayerHasGuildhouse(player, _creature, true))
     {
         //player already have GH
-        return;
+        return false;
     }
 
     player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_CONFIRM_BUY, GOSSIP_SENDER_MAIN,
         guildhouseId + OFFSET_CONFIRM_BUY_ID_TO_ACTION);
     player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_NEGATE_BUY, GOSSIP_SENDER_MAIN, 
                 ACTION_NEGATE_BUY);
+
+    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
+
+    return true;
 }
 
 void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
@@ -371,21 +375,19 @@ void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
     _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, 0);    
 }
 
-void confirmBuyAdd(Player *player, Creature *_creature, uint32 gh_Add)
+bool confirmBuyAdd(Player *player, Creature *_creature, uint32 gh_Add)
 {
     if (!player)
-        return;
-
-    if (isPlayerHasGuildhouseAdd(player, _creature, gh_Add, true))
-    {
-        //player already have GHAdd
-        return;
-    } 
+        return false;
 
     player->ADD_GOSSIP_ITEM(ICON_GOSSIP_GOLD, MSG_CONFIRM_BUY, GOSSIP_SENDER_MAIN,
         gh_Add + OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION);
     player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOONDOTS, MSG_NEGATE_BUY, GOSSIP_SENDER_MAIN, 
                 ACTION_NEGATE_BUY_ADD);
+
+    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
+
+    return true;
 }
 
 void buyGuildhouseAdd(Player *player, Creature *_creature, uint32 gh_Add)
@@ -505,10 +507,6 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             } 
             else if (action > OFFSET_GH_ADD_ID_TO_ACTION)
             {
-                //player clicked on buy list
-                player->CLOSE_GOSSIP_MENU();
-                //get guildhouseAddId from action
-                //guildhouseAddId = action - OFFSET_GH_ADD_ID_TO_ACTION
                 confirmBuyAdd(player, _creature, action - OFFSET_GH_ADD_ID_TO_ACTION);
             }
             else if (action > OFFSET_SHOWBUY_FROM)
@@ -517,10 +515,6 @@ bool GossipSelect_guildmaster(Player *player, Creature *_creature, uint32 sender
             } 
             else if (action > OFFSET_GH_ID_TO_ACTION)
             {
-                //player clicked on buy list
-                player->CLOSE_GOSSIP_MENU();
-                //get guildhouseId from action
-                //guildhouseId = action - OFFSET_GH_ID_TO_ACTION
                 confirmBuy(player, _creature, action - OFFSET_GH_ID_TO_ACTION);
             }
             else if (action > OFFSET_CONFIRM_BUY_ADD_ID_TO_ACTION)
