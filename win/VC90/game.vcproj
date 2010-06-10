@@ -545,6 +545,30 @@
 			</File>
 		</Filter>
 		<Filter
+			Name="Groups"
+			>
+			<File
+				RelativePath="..\..\src\server\game\Groups\Group.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Groups\Group.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Groups\GroupReference.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Groups\GroupReference.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Groups\GroupRefManager.h"
+				>
+			</File>
+		</Filter>
+		<Filter
 			Name="Guilds"
 			>
 			<File
@@ -555,30 +579,6 @@
 				RelativePath="..\..\src\server\game\Guilds\Guild.h"
 				>
 			</File>
-			<Filter
-				Name="Groups"
-				>
-				<File
-					RelativePath="..\..\src\server\game\Groups\Group.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Groups\Group.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Groups\GroupReference.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Groups\GroupReference.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Groups\GroupRefManager.h"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="OutdoorPvP"
