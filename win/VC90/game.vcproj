@@ -647,6 +647,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPWG.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPWG.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\game\OutdoorPvP\Zones\OutdoorPvPZM.cpp"
 					>
 				</File>
@@ -691,7 +699,15 @@
 				Name="Custom"
 				>
 				<File
+					RelativePath="..\..\src\server\scripts\Custom\GuildHouse_npc.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\scripts\Custom\npc_acherus_taxi.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\scripts\Custom\npc_teleport.cpp"
 					>
 				</File>
 				<File
@@ -2140,6 +2156,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\server\scripts\Northrend\storm_peaks.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\server\scripts\Northrend\wintergrasp.cpp"
 					>
 				</File>
 				<File
@@ -4569,6 +4589,26 @@
 			</File>
 			<File
 				RelativePath="..\..\src\server\game\Miscellaneous\SharedDefines.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Custom"
+			>
+			<File
+				RelativePath="..\..\src\server\game\Custom\GuildHouse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\GuildHouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_npc_teleport.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_npc_teleport.h"
 				>
 			</File>
 		</Filter>

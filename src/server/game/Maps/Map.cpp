@@ -39,6 +39,7 @@
 #include "WaypointManager.h"
 #include "DBCEnums.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
 #include "ScriptedCreature.h"
 #include "GossipDef.h"
 
@@ -2392,11 +2393,18 @@ bool InstanceMap::CanEnter(Player *player)
     // cannot enter while an encounter is in progress on raids
     /*Group *pGroup = player->GetGroup();
     if (!player->isGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())*/
-    if (IsRaid() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
+    if (/*IsRaid() && */ GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
     {
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
     }
+
+	// Vault of Archavon
+ 	if (GetId() == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(player))
+  	{
+ 	    player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAP_NOT_ALLOWED);
+  	    return false;
+  	}
 
     return Map::CanEnter(player);
 }
