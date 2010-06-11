@@ -2834,6 +2834,50 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="Trial of the Crusader"
+					>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_anubarak_toc.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_champions.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_dreadscale.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_fjola.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_gormok.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_icehowl.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_lord_jaraksus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\def.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\instance_trial_of_the_crusader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\trial_of_the_crusader.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Outland"

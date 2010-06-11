@@ -3,7 +3,7 @@
  * EEMU is personaly developed for Vendeta High Rate.
  */
 
-#include "ScriptedPch.h"
+#include "ScriptPCH.h"
 #include "def.h"
 
 #define ENCOUNTERS 6
