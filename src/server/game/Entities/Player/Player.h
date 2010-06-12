@@ -1273,7 +1273,7 @@ class Player : public Unit, public GridObject<Player>
         void SetQuestStatus(uint32 quest_id, QuestStatus status);
 
         void SetTimedQuestStatus(uint32 quest_id);
-        void ResetDailyQuestStatus();
+        void ResetTimedQuestStatus(bool daily, time_t time);
 
         uint16 FindQuestSlot(uint32 quest_id) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
@@ -2376,6 +2376,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveInventory();
         void _SaveMail();
         void _SaveQuestStatus();
+        void _SaveTimedQuestStatus();
         void _SaveSkills();
         void _SaveSpells();
         void _SaveEquipmentSets();
@@ -2480,7 +2481,8 @@ class Player : public Unit, public GridObject<Player>
         uint64 tradeItems[TRADE_SLOT_COUNT];
         uint32 tradeGold;
 
-        bool   m_WeeklyQuestChanged;
+        bool   m_TimedQuestChanged;
+
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;
