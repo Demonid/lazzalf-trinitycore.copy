@@ -18223,23 +18223,6 @@ void Player::_SaveQuestStatus()
     }
 }
 
-void Player::_SaveDailyQuestStatus()
-{
-    if (!m_DailyQuestChanged)
-        return;
-
-    m_DailyQuestChanged = false;
-
-    // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
-
-    // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
-                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
-}
-
 void Player::_SaveTimedQuestStatus()
 {
     if (!m_TimedQuestChanged)
