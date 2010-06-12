@@ -378,6 +378,8 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     PlayerTalkClass = new PlayerMenu(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
+    m_TimedQuestChanged = false;
+
     for (uint8 i=0; i<MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
 
@@ -17280,6 +17282,8 @@ void Player::_LoadTimedQuestStatus(QueryResult_AutoPtr result)
         }
         while (result->NextRow());
     }
+
+    m_TimedQuestChanged = false;
 }
 
 
@@ -17937,6 +17941,7 @@ void Player::SaveToDB()
     _SaveBGData();
     _SaveInventory();
     _SaveQuestStatus();
+    _SaveTimedQuestStatus();
     _SaveTalents();
     _SaveSpells();
     _SaveSpellCooldowns();
@@ -18216,6 +18221,42 @@ void Player::_SaveQuestStatus()
         };
         i->second.uState = QUEST_UNCHANGED;
     }
+}
+
+void Player::_SaveDailyQuestStatus()
+{
+    if (!m_DailyQuestChanged)
+        return;
+
+    m_DailyQuestChanged = false;
+
+    // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
+
+    // we don't need transactions here.
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
+            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
+                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
+}
+
+void Player::_SaveTimedQuestStatus()
+{
+    if (!m_TimedQuestChanged)
+        return;
+
+    // we don't need transactions here.
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
+    CharacterDatabase.PExecute("DELETE FROM character_questtimed_weekly WHERE guid = '%u'", GetGUIDLow());
+
+    // Check the players quest cool downs...
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
+    {
+        CharacterDatabase.PExecute("INSERT INTO character_queststatus_timed (guid,quest,daily,time) VALUES ('%u', '%u','" UI64FMTD "')",
+            GetGUIDLow(),(*itr).first, ((*itr).second.daily)?1:0, (*itr).second.ltime);
+    }
+
+    m_TimedQuestChanged = false;
 }
 
 void Player::_SaveSkills()
@@ -21419,23 +21460,35 @@ void Player::SetTimedQuestStatus(uint32 quest_id)
                 if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx))
                 {
                     SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
-                    CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
+                    //CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
                     break;
                 }
         }
         // Weekly
-        else
-            CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
+        //else
+            //CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
 
+        m_TimedQuestChanged = true;
         mTimedQuestStatus[quest_id].daily = quest->IsDaily();
         mTimedQuestStatus[quest_id].ltime = now;
     }
 }
 
-void Player::ResetDailyQuestStatus()
+void Player::ResetTimedQuestStatus(bool daily, time_t time)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
+    if (daily)
+        for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
+
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
+    {
+        if (((*itr).second.daily == daily) && 
+            (*itr).second.ltime < time)
+            mTimedQuestStatus.erase((*itr).first);
+    }
+
+    // DB data deleted in caller
+    m_TimedQuestChanged = false;
 }
 
 BattleGround* Player::GetBattleGround() const
