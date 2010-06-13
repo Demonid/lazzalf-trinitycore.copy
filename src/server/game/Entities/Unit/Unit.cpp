@@ -6708,28 +6708,18 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             {
                 if (procFlag & PROC_FLAG_TAKEN_POSITIVE_MAGIC_SPELL)
                 {
-                    if (procSpell->SpellFamilyName == SPELLFAMILY_PALADIN &&
-                        (procSpell->SpellFamilyFlags[0] & 0x40000000))
+                    if (procSpell->SpellFamilyName == SPELLFAMILY_PALADIN
+                        && (procSpell->SpellFamilyFlags[0] & 0x40000000))
                     {
-                        AuraEffectList const& auras =
-                        pVictim->GetAuraEffectsByType(SPELL_AURA_PROC_TRIGGER_SPELL);
-                        for(AuraEffectList::const_iterator iter = auras.begin();
-                        iter!=auras.end(); ++iter)
-                        {
-                            if((*iter)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && 
-                               (*iter)->GetSpellProto()->SpellIconID == 3021)
-                            {
-                                basepoints0 = int32(float(damage)/12.0f);
-
-                                CastCustomSpell(this,66922,&basepoints0,NULL,NULL,true,0,triggeredByAura,
-                                pVictim->GetGUID());
-                                return true;
-                            }
-                        }
+                        basepoints0 = int32(float(damage)/12.0f);
+                        CastCustomSpell(this,66922,&basepoints0,NULL,NULL,true,0,triggeredByAura, pVictim->GetGUID());
+                        return true;
                     }
-                    return false;
-                }                     
-                triggered_spell_id = 58597;
+                    else
+                        return false;
+                }
+                else
+                    triggered_spell_id = 58597;
                 target = this;
                 break;
             }
