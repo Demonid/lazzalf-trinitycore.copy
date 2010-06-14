@@ -263,7 +263,6 @@ struct boss_kologarnAI : public BossAI
                     RightArm->EnterVehicle(vehicle, 1);
                     DoCast(me, SPELL_ARM_RESPAWN, true);
                     me->MonsterTextEmote(EMOTE_RIGHT, 0, true);
-                    me->ModifyHealth(ARM_DEAD_DAMAGE);
                 }
                 events.CancelEvent(EVENT_RIGHT);
                 break;
@@ -274,7 +273,6 @@ struct boss_kologarnAI : public BossAI
                     LeftArm->EnterVehicle(vehicle, 0);
                     DoCast(me, SPELL_ARM_RESPAWN, true);
                     me->MonsterTextEmote(EMOTE_LEFT, 0, true);
-                    me->ModifyHealth(ARM_DEAD_DAMAGE);
                 }
                 events.CancelEvent(EVENT_LEFT);
                 break;                
@@ -292,13 +290,13 @@ struct boss_kologarnAI : public BossAI
         {
             case ACTION_RESPAWN_RIGHT:
                 DoScriptText(SAY_RIGHT_ARM_GONE, me);
-                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15% for 30 sec
+                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15%
                 ++RubbleCount;
                 events.ScheduleEvent(EVENT_RIGHT, 30000);
                 break;
             case ACTION_RESPAWN_LEFT:
                 DoScriptText(SAY_LEFT_ARM_GONE, me);
-                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15% for 30 sec
+                me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15%
                 ++RubbleCount;
                 events.ScheduleEvent(EVENT_LEFT, 30000);
                 break;

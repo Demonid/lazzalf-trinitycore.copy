@@ -847,7 +847,7 @@ void AddScripts()
     //northrend
     AddSC_boss_gormok();				// Trial of The crusader
     AddSC_the_two_jormungar();
-    AddSC_boss_icehowl();
+    AddSC_boss_icehowl(); 
     AddSC_boss_anub_arak_crusader();
     AddSC_npc_toc6_announcer();
     AddSC_instance_trial_of_the_crusader();

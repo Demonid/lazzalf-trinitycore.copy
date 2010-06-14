@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
- /* ScriptData
+/* ScriptData
 SDName: Auriaya
 Author: PrinceCreed
 SD%Complete: 95%
@@ -123,8 +123,8 @@ struct boss_auriaya_AI : public BossAI
         SentryDead = false;
         LivesCount = 0;
         events.ScheduleEvent(EVENT_SCREECH, 60000);
-        events.ScheduleEvent(EVENT_BLAST, 50000);
-        events.ScheduleEvent(EVENT_TERRIFYING, 40000);
+        events.ScheduleEvent(EVENT_BLAST, 35500);
+        events.ScheduleEvent(EVENT_TERRIFYING, 35000);
         events.ScheduleEvent(EVENT_DEFENDER, 65000);
         events.ScheduleEvent(EVENT_SUMMON, 120000);
         events.ScheduleEvent(EVENT_BERSERK, 600000);
@@ -153,7 +153,7 @@ struct boss_auriaya_AI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() || !CheckInRoom())
+        if (!UpdateVictim())
             return;
 
         events.Update(diff);
@@ -167,16 +167,16 @@ struct boss_auriaya_AI : public BossAI
             {
                 case EVENT_SCREECH:
                     DoCast(SPELL_SONIC_SCREECH);
-                    events.ScheduleEvent(EVENT_SCREECH, urand(25000, 30000));
+                    events.ScheduleEvent(EVENT_SCREECH, 25000);
                     break;
                 case EVENT_TERRIFYING:
                     me->MonsterTextEmote(EMOTE_FEAR, 0, true);
                     DoCast(SPELL_TERRIFYING_SCREECH);
-                    events.ScheduleEvent(EVENT_TERRIFYING, 40000);
+                    events.ScheduleEvent(EVENT_TERRIFYING, 35000);
                     break;
                 case EVENT_BLAST:
                     DoCastAOE(SPELL_SETINEL_BLAST);
-                    events.ScheduleEvent(EVENT_BLAST, 40000);
+                    events.ScheduleEvent(EVENT_BLAST, 35000);
                     break;
                 case EVENT_DEFENDER:
                     me->MonsterTextEmote(EMOTE_DEFENDER, 0, true);
@@ -302,7 +302,7 @@ struct mob_sanctum_sentryAI : public ScriptedAI
         } else PounceTimer -= uiDiff;
         
         // Increases the damage of all Sanctum Sentries within 10 yards by 30%
-        int aura=-1;
+        uint8 aura = 0;
         if (CheckTimer < uiDiff)
         {
             std::list<Creature*> Sanctum;
@@ -316,12 +316,7 @@ struct mob_sanctum_sentryAI : public ScriptedAI
                             aura++;
                 }
             }
-            me->RemoveAurasDueToSpell(SPELL_STRENGHT_PACK);
-            while(aura !=0)
-            {
-                me->AddAura(SPELL_STRENGHT_PACK, me);
-                aura=aura-1;
-            }
+            me->SetAuraStack(SPELL_STRENGHT_PACK, me, aura);
             CheckTimer = 2000;
         } else CheckTimer -= uiDiff;
 
@@ -330,9 +325,10 @@ struct mob_sanctum_sentryAI : public ScriptedAI
     
     void JustDied(Unit* victim)
     {
- 	    if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
-            if (pAuriaya->AI())
-                pAuriaya->AI()->DoAction(ACTION_CRAZY_CAT_LADY);
+        if (pInstance)
+            if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
+                if (pAuriaya->AI())
+                    pAuriaya->AI()->DoAction(ACTION_CRAZY_CAT_LADY);
     }
 };
 
