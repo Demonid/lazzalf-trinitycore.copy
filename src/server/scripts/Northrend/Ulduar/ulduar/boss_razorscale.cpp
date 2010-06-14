@@ -159,6 +159,7 @@ struct boss_razorscaleAI : public BossAI
     Creature* Harpoon[2];
     Creature* MoleTrigger;
     bool PermaGround;
+    bool Enraged;
 
     void Reset()
     {
@@ -183,6 +184,7 @@ struct boss_razorscaleAI : public BossAI
         events.SetPhase(PHASE_GROUND);
         FlyCount = 0;
         EnrageTimer = 15*60*1000; // Enrage in 15 min
+        Enraged = false;
         events.ScheduleEvent(EVENT_FLIGHT, 0, 0, PHASE_GROUND);
         DoZoneInCombat();
     }
@@ -213,8 +215,11 @@ struct boss_razorscaleAI : public BossAI
         if (HealthBelowPct(50) && !PermaGround)
             EnterPermaGround();
         
-        if (EnrageTimer<= diff)
+        if (EnrageTimer<= diff && !Enraged)
+        {
             DoCast(me, SPELL_BERSERK);
+            Enraged = true;
+        }
         else EnrageTimer -= diff;
 
         if (phase == PHASE_GROUND)
@@ -294,7 +299,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_DEVOURING:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-                            DoCast(pTarget, RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25));
+                            DoCast(pTarget, SPELL_DEVOURINGFLAME_10/*RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25)*/);
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_PERMAGROUND);
                         return;
                     case EVENT_BUFFET:
@@ -331,7 +336,7 @@ struct boss_razorscaleAI : public BossAI
                         return;
                     case EVENT_DEVOURING:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
-                            DoCast(pTarget, RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25));
+                            DoCast(pTarget, SPELL_DEVOURINGFLAME_10/*RAID_MODE(SPELL_DEVOURINGFLAME_10, SPELL_DEVOURINGFLAME_25)*/);
                         events.ScheduleEvent(EVENT_DEVOURING, 10000, 0, PHASE_FLIGHT);
                         return;
                     case EVENT_SUMMON:
