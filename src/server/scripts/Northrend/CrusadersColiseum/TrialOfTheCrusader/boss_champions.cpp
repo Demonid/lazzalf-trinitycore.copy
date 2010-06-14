@@ -1,1919 +1,1086 @@
-/* Copyright (C) 2010 EmeraldEmu <wow.4vendeta.com>
- * Emerald Emu is based on Trinity Core and MaNGOS. 
- * EEMU is personaly developed for Vendeta High Rate.
- */
+/* ScriptData
+SDName: faction_champions
+SD%Complete: 60%
+SDComment: Scripts by Selector, modified by /dev/rsa
+SDCategory: Crusader Coliseum
+EndScriptData */
 
 #include "ScriptPCH.h"
 #include "def.h"
 
-enum
+#define AI_MELEE    0
+#define AI_RANGED   1
+#define AI_HEALER   2
+
+#define SPELL_ANTI_AOE     68595
+#define SPELL_PVP_TRINKET  65547
+
+struct boss_faction_championsAI : public ScriptedAI
 {
-	//yells
+    boss_faction_championsAI(Creature* pCreature, uint32 aitype) : ScriptedAI(pCreature) 
+    {
+        m_pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
+        mAIType = aitype;
+        bsw = new BossSpellWorker(this);
+        Init();
+    }
 
-	//dark knight
-	SPELL_FROST_STRIKE          = 67937,
-	SPELL_CHAINS_OF_ICE         = 66020,
-	SPELL_DEATH_COIL            = 67930,
-	SPELL_ICEBOUND_FORTITUDE    = 66023,
-	SPELL_STRANGULATE           = 66018,
-	SPELL_DEATH_GRIP            = 68755,
-	//all boses
-	SPELL_PVP_TRINKET           = 65547,
+    ScriptedInstance* m_pInstance;
+    BossSpellWorker* bsw;
 
-	//warrior
-	SPELL_MORTAL_STRIKE			= 68783,
-	SPELL_MORTAL_STRIKE_H		= 68784,
-	SPELL_BLADESTORM			= 63784,
-	SPELL_INTERCEPT				= 67540,
-	SPELL_ROLLING_THROW			= 47115, //need core support for spell 67546, using 47115 instead
-	//mage
-	SPELL_FIREBALL				= 66042,
-	SPELL_FIREBALL_H			= 68310,
-	SPELL_BLAST_WAVE			= 66044,
-	SPELL_BLAST_WAVE_H			= 68312,
-	SPELL_HASTE					= 66045,
-	SPELL_POLYMORPH				= 66043,
-	SPELL_POLYMORPH_H			= 68311,
-	//shaman
-	SPELL_CHAIN_LIGHTNING		= 67529,
-	SPELL_CHAIN_LIGHTNING_H		= 68319,
-	SPELL_EARTH_SHIELD			= 67530,
-	SPELL_HEALING_WAVE			= 67528,
-	SPELL_HEALING_WAVE_H		= 68318,
-	SPELL_HEX_OF_MENDING		= 67534,
-	//hunter
-	SPELL_DISENGAGE				= 68340,
-	SPELL_LIGHTNING_ARROWS		= 66083,
-	SPELL_MULTI_SHOT			= 66081,
-	SPELL_SHOOT					= 66079,
-	//rogue
-	SPELL_EVISCERATE			= 67709,
-	SPELL_EVISCERATE_H			= 68317,
-	SPELL_FAN_OF_KNIVES			= 67706,
-	SPELL_POISON_BOTTLE			= 67701,
+    uint32 mAIType;
+    uint32 ThreatTimer;
+    uint32 CCTimer;
 
-	//paladin retro 
-	SPELL_AVENGING_WRATH        = 66011,
-	SPELL_CRUSUADER_STRIKE      = 66003,
-	SPELL_DIVINE_SHIELD         = 66010,
-	SPELL_DIVINE_STORM          = 66006,
-	SPELL_HUMMER_OF_JUSTICE     = 66007,
-	SPELL_HAND_OF_PROTECTION    = 66009,
-	SPELL_JUNDGEMENT_OF_COMMAND  = 68019,
-	SPELL_REPENTANCE             = 66008,
-	SPELL_SEAL_OF_COMMAND        = 68021,
+    void Init()
+    {
+        CCTimer = rand()%10000;
+        ThreatTimer = 5000;
+        bsw->resetTimers();
+        me->SetInCombatWithZone();
+        me->SetRespawnDelay(DAY);
+    }
 
-	//paladin holy
-	SPELL_CLEANCE                = 68623,
-	SPELL_FLASH_OF_LIGHT         = 68010,
-	SPELL_HAND_OF_FREEDOM        = 68758,
-	SPELL_HOLY_LIGHT             = 68012,
-	SPELL_HOLY_SHOCK             = 68016,
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_CRUSADERS, FAIL);
+        me->ForcedDespawn();
+    }
 
-	//druid balans
-	SPELL_BARKSKIN              = 65860,
-	SPELL_CYCLONE               = 65859,
-	SPELL_ENTANGLING_ROOTS      = 65857,
-	SPELL_FAERIE_FIRE           = 65863,
-	SPELL_FORCE_OF_NATURE       = 65861,
-	SPELL_INSECT_SWARM          = 67943,
-	SPELL_MOONFIRE              = 67946,
-	SPELL_STARFIRE              = 67949,
-	SPELL_WRATH                 = 67952,
+    float CalculateThreat(float distance, float armor, uint32 health)
+    {
+        float dist_mod = (mAIType == AI_MELEE) ? 15.0f/(15.0f + distance) : 1.0f;
+        float armor_mod = (mAIType == AI_MELEE) ? armor / 16635.0f : 0.0f;
+        float eh = (health+1) * (1.0f + armor_mod);
+        return dist_mod * 30000.0f / eh;
+    }
 
-    //druid restor
-	SPELL_LIFEBLOOM             = 67959,
-	SPELL_NATURE_GRASP          = 66071,
-	SPELL_NOURISH               = 67967,
-	SPELL_REGROWTH              = 67970,
-	SPELL_REJUVENATION          = 67973,
-	SPELL_THORNS                = 66068,
-	SPELL_TRANQUILITY           = 67976,
+    void UpdateThreat()
+    {
+        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
+        std::list<HostileReference*>::const_iterator itr;
+        bool empty = true;
+        for(itr = tList.begin(); itr!=tList.end(); ++itr)
+        {
+            Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+            if (pUnit && me->getThreatManager().getThreat(pUnit))
+            {
+                if(pUnit->GetTypeId()==TYPEID_PLAYER)
+                {
+                    float threat = CalculateThreat(me->GetDistance2d(pUnit), (float)pUnit->GetArmor(), pUnit->GetHealth());
+                    me->getThreatManager().modifyThreatPercent(pUnit, -100);
+                    me->AddThreat(pUnit, 1000000.0f * threat);
+                    empty = false;
+                }
+            }
+        }
+    }
 
-	//shaman restor
-	SPELL_CLEANSE_SPIRIT       = 68629,
-	SPELL_EARTH_SHIRLD         = 66063,
-	SPELL_EARTH_SHOCK          = 68102,
-	SPELL_HEROISM              = 65983,
-	SPELL_HEX                  = 66054,
-	SPELL_LESSER_HEALING_WAVE  = 68116,
-	SPELL_RIPTIDE              = 68120,
+    void UpdatePower()
+    {
+        if(me->getPowerType() == POWER_MANA)
+            me->ModifyPower(POWER_MANA, me->GetMaxPower(POWER_MANA) / 3);
+        //else if(me->getPowerType() == POWER_ENERGY)
+        //    me->ModifyPower(POWER_ENERGY, 100);
+    }
 
-	//priest disc
-	SPELL_DISPELL_MAGIC        = 68626,
-	SPELL_FLASH_HEAL           = 68024,
-	SPELL_MANA_BURN            = 68028,
-	SPELL_PENANCE              = 68030,
-	SPELL_POWER_WORLD_SHIELD   = 68034,
-    SPELL_RSYCHIC_SCREAM       = 65543,
-	SPELL_RENEW                = 68037,
+    void RemoveCC()
+    {
+        me->RemoveAurasByType(SPELL_AURA_MOD_STUN);
+        me->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
+        me->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
+        me->RemoveAurasByType(SPELL_AURA_MOD_PACIFY);
+        me->RemoveAurasByType(SPELL_AURA_MOD_CONFUSE);
+        //DoCast(me, SPELL_PVP_TRINKET);
+    }
+
+    void JustDied(Unit *killer)
+    {
+        if(m_pInstance)
+            m_pInstance->SetData(TYPE_CRUSADERS_COUNT, 0);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        DoCast(me, SPELL_ANTI_AOE, true);
+        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS, IN_PROGRESS);
+    }
+
+    void Reset()
+    {
+        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS, NOT_STARTED);
+    }
+
+    Creature* SelectRandomFriendlyMissingBuff(uint32 spell)
+    {
+        std::list<Creature *> lst = DoFindFriendlyMissingBuff(40.0f, spell);
+        std::list<Creature *>::const_iterator itr = lst.begin();
+        if(lst.empty()) 
+            return NULL;
+        advance(itr, rand()%lst.size());
+        return (*itr);
+    }
+
+    Unit* SelectEnemyCaster(bool casting)
+    {
+        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
+        std::list<HostileReference*>::const_iterator iter;
+        for(iter = tList.begin(); iter!=tList.end(); ++iter)
+        {
+            Unit *target;
+            if(target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
+                if(target->getPowerType() == POWER_MANA)
+                    return target;
+        }
+        return NULL;
+    }
+
+    uint32 EnemiesInRange(float distance)
+    {
+        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
+        std::list<HostileReference*>::const_iterator iter;
+        uint32 count = 0;
+        for(iter = tList.begin(); iter!=tList.end(); ++iter)
+        {
+            Unit *target;
+            if(target = Unit::GetUnit((*me),(*iter)->getUnitGuid()))
+                if(me->GetDistance2d(target) < distance)
+                    ++count;
+        }
+        return count;
+    }
+
+    void AttackStart(Unit* pWho)
+    {
+        if (!pWho) return;
+
+        if (me->Attack(pWho, true))
+        {
+            me->AddThreat(pWho, 10.0f);
+            me->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(me);
+
+            if(mAIType==AI_MELEE)
+                DoStartMovement(pWho);
+            else
+                DoStartMovement(pWho, 20.0f);
+            SetCombatMovement(true);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(ThreatTimer < diff)
+        {
+            UpdatePower();
+            UpdateThreat();
+            ThreatTimer = 4000;
+        }
+        else ThreatTimer -= diff;
+
+        if(CCTimer < diff)
+        {
+            RemoveCC();
+            CCTimer = 8000+rand()%2000;
+        }
+        else CCTimer -= diff;
+
+        if(mAIType == AI_MELEE) DoMeleeAttackIfReady();
+    }
+};
+
+/********************************************************************
+                            HEALERS
+********************************************************************/
+
+#define SPELL_LIFEBLOOM        66093
+#define SPELL_NOURISH          66066
+#define SPELL_REGROWTH         66067
+#define SPELL_REJUVENATION     66065
+#define SPELL_TRANQUILITY      66086
+#define SPELL_BARKSKIN         65860 //1 min cd
+#define SPELL_THORNS           66068
+#define SPELL_NATURE_GRASP     66071 //1 min cd, self buff
+
+struct mob_toc_druidAI : public boss_faction_championsAI
+{
+    mob_toc_druidAI(Creature* pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
     
-	//priest shadow
-	SPELL_DISPERSION           = 65544,
-	SPELL_MIND_BLAST           = 68040,
-	SPELL_MIND_FLAY            = 68044,
-	SPELL_PSYCHIC_HORROR       = 65545,
-	SPELL_SHADOW_WORLD_PAIN    = 68089,
-	SPELL_SILENCE              = 65542,
-	SPELL_VAMPIRIC_TOUCH       = 68092,
-
-	//warlock
-	SPELL_CORRUPTION           = 68135,
-	SPELL_CURSE_OF_AGONY       = 68138,
-	SPELL_CURSE_OF_EXHAUSTION  = 65815,
-	SPELL_DEATH_COIL_W           = 68139,
-	SPELL_FEAR                 = 65809,
-	SPELL_HELLFIRE             = 68147,
-	SPELL_SEARING_PAIN         = 68150,
-	SPELL_SHADOW_BOLT          = 68152,
-	SPELL_UNSTABLE_AFFLICTION  = 68155
-
-};
-
-// Warrior
-struct  npc_warriorAI : public ScriptedAI
-{
-    npc_warriorAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Mortal_Strike_Timer;
-	uint32 Bladestorm_Timer;
-	uint32 Rolling_Throw_Timer;
-	uint32 Intercept_Cooldown;
-	uint32 intercept_check;
-
-    void Reset()
+    void Init()
     {
-		me->SetRespawnDelay(999999999);
-		Mortal_Strike_Timer = 6000;
-		Bladestorm_Timer = 20000;
-		Rolling_Throw_Timer = 30000;
-		Intercept_Cooldown = 0;
-		intercept_check = 1000;
+         SetEquipmentSlots(false, 51799, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
     }
 
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
+    void UpdateAI(const uint32 diff)
     {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
+        if (!UpdateVictim()) return;
+
+          bsw->timedCast(SPELL_NATURE_GRASP, diff);
+
+          bsw->timedCast(SPELL_TRANQUILITY, diff);
+
+          if(bsw->timedQuery(SPELL_BARKSKIN, diff))
+                if(me->GetHealthPercent() < 50.0f)
+                    bsw->doCast(SPELL_BARKSKIN);
+
+        if(bsw->timedQuery(SPELL_LIFEBLOOM, diff))
+            switch(urand(0,4))
+            {
+                case 0:
+                        bsw->doCast(SPELL_LIFEBLOOM);
+                    break;
+                case 1:
+                        bsw->doCast(SPELL_NOURISH);
+                    break;
+                case 2:
+                        bsw->doCast(SPELL_REGROWTH);
+                    break;
+                case 3:
+                        bsw->doCast(SPELL_REJUVENATION);
+                    break;
+                case 4:
+                    if(Creature* target = SelectRandomFriendlyMissingBuff(SPELL_THORNS))
+                        bsw->doCast(SPELL_THORNS, target);
+                    break;
+            }
+
+        boss_faction_championsAI::UpdateAI(diff);
     }
-
-	void JustDied(Unit* pKiller)
-    {
-	    if (!m_pInstance)
-		return;
-
-		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
-		            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Mortal_Strike_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_MORTAL_STRIKE_H);
-            Mortal_Strike_Timer = 6000;
-        }else Mortal_Strike_Timer -= diff;  
-
-		if (Rolling_Throw_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_ROLLING_THROW);
-            Rolling_Throw_Timer = 30000;
-        }else Rolling_Throw_Timer -= diff;
-
-		if (Bladestorm_Timer < diff)
-        {
-			DoCast(me, SPELL_BLADESTORM);
-            Bladestorm_Timer = 90000;
-        }else Bladestorm_Timer -= diff;
-
-		if (intercept_check < diff)
-		{
-			if (!me->IsWithinDistInMap(me->getVictim(), 8) && me->IsWithinDistInMap(me->getVictim(), 25) && Intercept_Cooldown < diff)
-			{
-				DoCast(me->getVictim(), SPELL_INTERCEPT);
-				Intercept_Cooldown = 15000;
-			}
-			intercept_check = 1000;
-		}
-		else 
-		{
-			intercept_check -= diff;
-			Intercept_Cooldown -= diff;
-		}
-		
-		DoMeleeAttackIfReady();
-	}
 };
 
-CreatureAI* GetAI_npc_warrior(Creature* pCreature)
+#define SPELL_HEALING_WAVE         66055
+#define SPELL_RIPTIDE              66053
+#define SPELL_SPIRIT_CLEANSE       66056 //friendly only
+#define SPELL_HEROISM              65983
+#define SPELL_BLOODLUST            65980
+#define SPELL_HEX                  66054
+#define SPELL_EARTH_SHIELD         66063
+#define SPELL_EARTH_SHOCK          65973
+
+struct mob_toc_shamanAI : public boss_faction_championsAI
 {
-    return new npc_warriorAI(pCreature);
+    mob_toc_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
+    
+    void Init()
+    {
+         SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_HEROISM, diff);
+
+            bsw->timedCast(SPELL_HEX, diff);
+
+        if(bsw->timedQuery(SPELL_HEALING_WAVE, diff))
+        {
+            switch(urand(0,5))
+            {
+                case 0: case 1:
+                        bsw->doCast(SPELL_HEALING_WAVE);
+                    break;
+                case 2:
+                        bsw->doCast(SPELL_RIPTIDE);
+                    break;
+                case 3:
+                        bsw->doCast(SPELL_EARTH_SHOCK);
+                    break;
+                case 4:
+                        bsw->doCast(SPELL_SPIRIT_CLEANSE);
+                    break;
+                case 5:
+                    if(Unit *target = SelectRandomFriendlyMissingBuff(SPELL_EARTH_SHIELD))
+                        bsw->doCast(target, SPELL_EARTH_SHIELD);
+                    break;
+            }
+        }
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_HAND_OF_FREEDOM    68757 //25 sec cd
+#define SPELL_BUBBLE             66010 //5 min cd
+#define SPELL_CLEANSE            66116
+#define SPELL_FLASH_OF_LIGHT     66113
+#define SPELL_HOLY_LIGHT         66112
+#define SPELL_HOLY_SHOCK         66114
+#define SPELL_HAND_OF_PROTECTION 66009
+#define SPELL_HAMMER_OF_JUSTICE  66613
+
+struct mob_toc_paladinAI : public boss_faction_championsAI
+{
+    mob_toc_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 50771, 47079, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+        //cast bubble at 20% hp
+        if(me->GetHealthPercent() < 20.0f)
+             bsw->timedCast(SPELL_BUBBLE, diff);
+
+            if(Unit *target = DoSelectLowestHpFriendly(40.0f))
+                if(target->GetHealthPercent() < 15.0f)
+                    bsw->timedCast(SPELL_HAND_OF_PROTECTION, diff);
+
+            bsw->timedCast(SPELL_HOLY_SHOCK, diff);
+
+            if(Unit *target = SelectRandomFriendlyMissingBuff(SPELL_HAND_OF_FREEDOM))
+                bsw->timedCast(SPELL_HAND_OF_FREEDOM, diff, target);
+
+            bsw->timedCast(SPELL_HAMMER_OF_JUSTICE, diff);
+
+        if(bsw->timedQuery(SPELL_FLASH_OF_LIGHT, diff))
+        {
+            switch(urand(0,4))
+            {
+                case 0: case 1:
+                        bsw->doCast(SPELL_FLASH_OF_LIGHT);
+                    break;
+                case 2: case 3:
+                        bsw->doCast(SPELL_HOLY_LIGHT);
+                    break;
+                case 4:
+                        bsw->doCast(SPELL_CLEANSE);
+                    break;
+            }
+        }
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_RENEW            66177
+#define SPELL_SHIELD           66099
+#define SPELL_FLASH_HEAL       66104
+#define SPELL_DISPEL           65546
+#define SPELL_PSYCHIC_SCREAM   65543
+#define SPELL_MANA_BURN        66100
+
+struct mob_toc_priestAI : public boss_faction_championsAI
+{
+    mob_toc_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
+    
+    void Init()
+    {
+         SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            if(EnemiesInRange(10.0f) > 2)
+                bsw->timedCast(SPELL_PSYCHIC_SCREAM, diff);
+
+        if(bsw->timedQuery(SPELL_RENEW, diff))
+        {
+            switch(urand(0,5))
+            {
+                case 0:
+                        bsw->doCast(SPELL_RENEW);
+                    break;
+                case 1:
+                        bsw->doCast(SPELL_SHIELD);
+                    break;
+                case 2: case 3:
+                        bsw->doCast(SPELL_FLASH_HEAL);
+                    break;
+                case 4:
+                    if(Unit *target = urand(0,1) ? SelectUnit(SELECT_TARGET_RANDOM,0) : DoSelectLowestHpFriendly(40.0f))
+                        bsw->doCast(target, SPELL_DISPEL);
+                    break;
+                case 5:
+                        bsw->doCast(SPELL_MANA_BURN);
+                    break;
+            }
+        }
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+/********************************************************************
+                            RANGED
+********************************************************************/
+
+#define SPELL_SILENCE          65542
+#define SPELL_VAMPIRIC_TOUCH   65490
+#define SPELL_SW_PAIN          65541
+#define SPELL_MIND_FLAY        65488
+#define SPELL_MIND_BLAST       65492
+#define SPELL_HORROR           65545
+#define SPELL_DISPERSION       65544
+#define SPELL_SHADOWFORM       16592
+
+struct mob_toc_shadow_priestAI : public boss_faction_championsAI
+{
+    mob_toc_shadow_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
+
+    void Init()
+    {
+         SetEquipmentSlots(false, 50040, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        boss_faction_championsAI::EnterCombat(who);
+        bsw->doCast(SPELL_SHADOWFORM);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            if(EnemiesInRange(10.0f) > 2)
+                bsw->timedCast(SPELL_PSYCHIC_SCREAM, diff);
+
+            if(me->GetHealthPercent() < 20.0f)
+                bsw->timedCast(SPELL_DISPERSION, diff);
+
+            if(Unit *target = SelectEnemyCaster(false))
+                bsw->timedCast(SPELL_SILENCE, diff, target);
+
+            bsw->timedCast(SPELL_MIND_BLAST, diff);
+
+        if(bsw->timedQuery(SPELL_MIND_FLAY, diff))
+        {
+            switch(urand(0,4))
+            {
+                case 0: case 1:
+                    bsw->doCast(SPELL_MIND_FLAY);
+                    break;
+                case 2:
+                    bsw->doCast(SPELL_VAMPIRIC_TOUCH);
+                    break;
+               case 3:
+                    bsw->doCast(SPELL_SW_PAIN);
+                    break;
+               case 4:
+                    bsw->doCast(SPELL_DISPEL);
+                    break;
+            }
+        }
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_HELLFIRE             65816
+#define SPELL_CORRUPTION           65810
+#define SPELL_Curse_of_Agony       65814
+#define SPELL_Curse_of_Exhaustion  65815
+#define SPELL_Fear                 65809 //8s
+#define SPELL_Searing_Pain         65819
+#define SPELL_Shadow_Bolt          65821
+#define SPELL_Unstable_Affliction  65812
+#define H_SPELL_Unstable_Affliction 68155 //15s
+
+struct mob_toc_warlockAI : public boss_faction_championsAI
+{
+    mob_toc_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_Fear, diff);
+
+            if(EnemiesInRange(10.0f) > 2)
+                bsw->timedCast(SPELL_HELLFIRE, diff);
+
+            bsw->timedCast(SPELL_Unstable_Affliction, diff);
+
+        if(bsw->timedQuery(SPELL_Shadow_Bolt, diff))
+        {
+            switch(urand(0,5))
+            {
+                case 0:
+                    bsw->doCast(SPELL_Searing_Pain);
+                    break;
+                case 1: case 2:
+                    bsw->doCast(SPELL_Shadow_Bolt);
+                    break;
+                case 3:
+                    bsw->doCast(SPELL_CORRUPTION);
+                    break;
+                case 4:
+                    bsw->doCast(SPELL_Curse_of_Agony);
+                    break;
+                case 5:
+                    bsw->doCast(SPELL_Curse_of_Exhaustion);
+                    break;
+             }
+         }
+       boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_Arcane_Barrage   65799 //3s
+#define SPELL_Arcane_Blast     65791
+#define SPELL_Arcane_Explosion 65800
+#define SPELL_Blink            65793 //15s
+#define SPELL_Counterspell     65790 //24s
+#define SPELL_Frost_Nova       65792 //25s
+#define SPELL_Frostbolt        65807
+#define SPELL_Ice_Block        65802 //5min
+#define SPELL_Polymorph        65801 //15s
+
+struct mob_toc_mageAI : public boss_faction_championsAI
+{
+    mob_toc_mageAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47524, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            if(Unit *target = SelectEnemyCaster(false))
+                bsw->timedCast(SPELL_Counterspell, diff, target);
+
+            if(me->GetHealthPercent() < 50.0f 
+            && EnemiesInRange(10.0f)>3 )
+            {
+                bsw->timedCast(SPELL_Frost_Nova, diff);
+                bsw->timedCast(SPELL_Blink, diff);
+            }
+
+            if(me->GetHealthPercent() < 20.0f)
+                   bsw->timedCast(SPELL_Ice_Block, diff);
+
+            bsw->timedCast(SPELL_Polymorph, diff);
+
+        if(bsw->timedQuery(SPELL_Arcane_Barrage, diff))
+        {
+            switch(urand(0,2))
+            {
+                case 0:
+                    bsw->doCast(SPELL_Arcane_Barrage);
+                    break;
+                case 1:
+                    bsw->doCast(SPELL_Arcane_Blast);
+                    break;
+                case 2:
+                    bsw->doCast(SPELL_Frostbolt);
+                    break;
+            }
+        }
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+
+#define SPELL_AIMED_SHOT       65883
+#define SPELL_Deterrence       65871 //90s
+#define SPELL_Disengage        65869 //30s
+#define SPELL_EXPLOSIVE_SHOT   65866
+#define SPELL_Frost_Trap       65880 //30s
+#define SPELL_SHOOT            65868 //1.7s
+#define SPELL_Steady_Shot      65867 //3s
+#define SPELL_WING_CLIP        66207 //6s
+#define SPELL_Wyvern_Sting     65877 //60s
+
+struct mob_toc_hunterAI : public boss_faction_championsAI
+{
+    mob_toc_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47156, EQUIP_NO_CHANGE, 48711);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            if(EnemiesInRange(10.0f) > 3)
+                bsw->timedCast(SPELL_Disengage, diff);
+
+            if(me->GetHealthPercent() < 20.0f)
+                bsw->timedCast(SPELL_Deterrence, diff);
+
+            bsw->timedCast(SPELL_Wyvern_Sting, diff);
+
+            bsw->timedCast(SPELL_Frost_Trap, diff );
+
+            if(me->GetDistance2d(me->getVictim()) < 5.0f)
+                bsw->timedCast(SPELL_WING_CLIP, diff);
+
+        if(bsw->timedQuery(SPELL_SHOOT, diff))
+        {
+            switch(urand(0,3))
+            {
+                case 0: case 1:
+                    bsw->doCast(SPELL_SHOOT);
+                    break;
+                case 2:
+                    bsw->doCast(SPELL_EXPLOSIVE_SHOT);
+                    break;
+                case 3:
+                    bsw->doCast(SPELL_AIMED_SHOT);
+                    break;
+            }
+        }
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_Cyclone          65859 //6s
+#define SPELL_Entangling_Roots 65857 //10s
+#define SPELL_Faerie_Fire      65863
+#define SPELL_Force_of_Nature  65861 //180s
+#define SPELL_Insect_Swarm     65855
+#define SPELL_Moonfire         65856 //5s
+#define SPELL_Starfire         65854
+#define SPELL_Wrath            65862
+
+struct mob_toc_boomkinAI : public boss_faction_championsAI
+{
+    mob_toc_boomkinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 50966, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+        if(me->GetHealthPercent() < 50.0f)
+                bsw->timedCast(SPELL_BARKSKIN, diff);
+
+        bsw->timedCast(SPELL_Cyclone, diff);
+
+        bsw->timedCast(SPELL_Entangling_Roots, diff);
+
+        bsw->timedCast(SPELL_Faerie_Fire, diff);
+
+        if(bsw->timedQuery(SPELL_Moonfire, diff))
+        {
+            switch(urand(0,6))
+            {
+                case 0: case 1:
+                      bsw->doCast(SPELL_Moonfire);
+                      break;
+                case 2:
+                      bsw->doCast(SPELL_Insect_Swarm);
+                      break;
+                case 3:
+                      bsw->doCast(SPELL_Starfire);
+                      break;
+                case 4: case 5: case 6:
+                      bsw->doCast(SPELL_Wrath);
+                      break;
+            }
+        }
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+/********************************************************************
+                            MELEE
+********************************************************************/
+
+#define SPELL_BLADESTORM           65947
+#define SPELL_INTIMIDATING_SHOUT   65930
+#define SPELL_MORTAL_STRIKE        65926
+#define SPELL_CHARGE               68764
+#define SPELL_DISARM               65935
+#define SPELL_OVERPOWER            65924
+#define SPELL_SUNDER_ARMOR         65936
+#define SPELL_SHATTERING_THROW     65940
+#define SPELL_RETALIATION          65932
+
+struct mob_toc_warriorAI : public boss_faction_championsAI
+{
+    mob_toc_warriorAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47427, 46964, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_BLADESTORM, diff);
+
+            bsw->timedCast(SPELL_INTIMIDATING_SHOUT, diff);
+
+            bsw->timedCast(SPELL_MORTAL_STRIKE, diff);
+
+            bsw->timedCast(SPELL_SUNDER_ARMOR, diff);
+
+            bsw->timedCast(SPELL_CHARGE, diff);
+
+            bsw->timedCast(SPELL_RETALIATION, diff);
+
+            bsw->timedCast(SPELL_OVERPOWER, diff);
+
+            bsw->timedCast(SPELL_SHATTERING_THROW, diff);
+
+            bsw->timedCast(SPELL_DISARM, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_Chains_of_Ice      66020 //8sec
+#define SPELL_Death_Coil         66019    //5sec
+#define SPELL_Death_Grip         66017 //35sec
+#define SPELL_Frost_Strike       66047  //6sec
+#define SPELL_Icebound_Fortitude 66023 //1min
+#define SPELL_Icy_Touch          66021  //8sec
+#define SPELL_Strangulate        66018 //2min
+
+struct mob_toc_dkAI : public boss_faction_championsAI
+{
+    mob_toc_dkAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47518, 51021, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            if(me->GetHealthPercent() < 50.0f)
+                bsw->timedCast(SPELL_Icebound_Fortitude, diff);
+
+            bsw->timedCast(SPELL_Chains_of_Ice, diff);
+
+            bsw->timedCast(SPELL_Death_Coil, diff);
+
+            if(Unit *target = SelectEnemyCaster(false))
+                bsw->timedCast(SPELL_Strangulate, diff, target);
+
+            bsw->timedCast(SPELL_Frost_Strike, diff);
+
+            bsw->timedCast(SPELL_Icy_Touch, diff);
+
+            if(me->IsInRange(me->getVictim(), 10.0f, 30.0f, false))
+                bsw->timedCast(SPELL_Death_Grip, diff); 
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_FAN_OF_KNIVES        65955 //2sec
+#define SPELL_BLIND                65960 //2min
+#define SPELL_CLOAK                65961 //90sec
+#define SPELL_Blade_Flurry         65956 //2min
+#define SPELL_SHADOWSTEP           66178 //30sec
+#define SPELL_HEMORRHAGE           65954
+#define SPELL_EVISCERATE           65957
+
+struct mob_toc_rogueAI : public boss_faction_championsAI
+{
+    mob_toc_rogueAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47422, 49982, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+        if(EnemiesInRange(15.0f) > 2)
+            bsw->timedCast(SPELL_FAN_OF_KNIVES, diff);
+
+        bsw->timedCast(SPELL_HEMORRHAGE, diff);
+
+        bsw->timedCast(SPELL_EVISCERATE, diff);
+
+        if(me->IsInRange(me->getVictim(), 10.0f, 40.0f))
+            bsw->timedCast(SPELL_SHADOWSTEP, diff);
+
+        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if(me->IsInRange(target, 0.0f, 15.0f, false))
+                bsw->timedCast(SPELL_BLIND, diff, target);
+
+        if(me->GetHealthPercent() < 50.0f)
+            bsw->timedCast(SPELL_CLOAK, diff);
+
+        bsw->timedCast(SPELL_Blade_Flurry, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_EARTH_SHOCK      65973
+#define SPELL_LAVA_LASH        65974
+#define SPELL_STORMSTRIKE      65970
+
+struct mob_toc_enh_shamanAI : public boss_faction_championsAI
+{
+    mob_toc_enh_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 51803, 48013, EQUIP_NO_CHANGE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_HEROISM, diff);
+
+            bsw->timedCast(SPELL_EARTH_SHOCK, diff);
+
+            bsw->timedCast(SPELL_STORMSTRIKE, diff);
+
+            bsw->timedCast(SPELL_LAVA_LASH, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_Avenging_Wrath       66011 //3min cd
+#define SPELL_Crusader_Strike      66003 //6sec cd
+#define SPELL_Divine_Shield        66010 //5min cd
+#define SPELL_Divine_Storm         66006 //10sec cd
+#define SPELL_Hammer_of_Justice    66007 //40sec cd
+#define SPELL_Hand_of_Protection   66009 //5min cd
+#define SPELL_Judgement_of_Command 66005 //8sec cd
+#define SPELL_REPENTANCE           66008 //60sec cd
+#define SPELL_Seal_of_Command      66004 //no cd
+
+struct mob_toc_retro_paladinAI : public boss_faction_championsAI
+{
+    mob_toc_retro_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void Init()
+    {
+        SetEquipmentSlots(false, 47519, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        boss_faction_championsAI::EnterCombat(who);
+        bsw->doCast(SPELL_Seal_of_Command);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_REPENTANCE, diff);
+
+            bsw->timedCast(SPELL_Crusader_Strike, diff);
+
+            bsw->timedCast(SPELL_Avenging_Wrath, diff);
+
+            if(me->GetHealthPercent() < 20.0f)
+                 bsw->timedCast(SPELL_Divine_Shield, diff);
+
+            bsw->timedCast(SPELL_Divine_Storm, diff);
+
+            bsw->timedCast(SPELL_Judgement_of_Command, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_WPET0 67518
+#define SPELL_WPET1 67519
+
+struct mob_toc_pet_warlockAI : public boss_faction_championsAI
+{
+    mob_toc_pet_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void EnterCombat(Unit *who)
+    {
+        boss_faction_championsAI::EnterCombat(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_WPET0, diff);
+
+            bsw->timedCast(SPELL_WPET1, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+#define SPELL_HPET0 67793
+struct mob_toc_pet_hunterAI : public boss_faction_championsAI
+{
+    mob_toc_pet_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
+
+    void EnterCombat(Unit *who)
+    {
+        boss_faction_championsAI::EnterCombat(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim()) return;
+
+            bsw->timedCast(SPELL_HPET0, diff);
+
+        boss_faction_championsAI::UpdateAI(diff);
+    }
+};
+
+
+/*========================================================*/
+CreatureAI* GetAI_mob_toc_druid(Creature *pCreature) {
+    return new mob_toc_druidAI (pCreature);
 }
-
-// Mage
-struct  npc_mageAI : public ScriptedAI
-{
-    npc_mageAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Fireball_Timer;
-	uint32 Blast_Wave_Timer;
-	uint32 Haste_Timer;
-	uint32 Polymorph_Timer;
-
-    void Reset()
-    {
-		me->SetRespawnDelay(999999999);
-		Fireball_Timer = 0;
-		Blast_Wave_Timer = 20000;
-		Haste_Timer = 9000;
-		Polymorph_Timer = 15000;
-    }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
- 
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Fireball_Timer < diff)
-        {
-            DoCast(me->getVictim(), SPELL_FIREBALL_H);
-            Fireball_Timer = 3000;
-        }else Fireball_Timer -= diff;  
-
-		if (Blast_Wave_Timer < diff)
-        {
-			DoCast(me, SPELL_BLAST_WAVE_H);
-            Blast_Wave_Timer = 20000;
-        }else Blast_Wave_Timer -= diff;
-
-		if (Haste_Timer < diff)
-        {
-			DoCast(me, SPELL_HASTE);
-            Haste_Timer = 10000;
-        }else Haste_Timer -= diff;
-
-		if (Polymorph_Timer < diff)
-        {
-			if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-                DoCast(target, SPELL_POLYMORPH_H);
-            Polymorph_Timer = 15000;
-        }else Polymorph_Timer -= diff;
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_mage(Creature* pCreature)
-{
-    return new npc_mageAI(pCreature);
+CreatureAI* GetAI_mob_toc_shaman(Creature *pCreature) {
+    return new mob_toc_shamanAI (pCreature);
 }
-
-// Shaman ench
-struct  npc_shaman_enchAI : public ScriptedAI
-{
-    npc_shaman_enchAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Chain_Lightning_Timer;
-	uint32 Earth_Shield_Timer;
-	uint32 Healing_Wave_Timer;
-	uint32 Hex_Timer;
-
-	float mob1_health;
-	float mob2_health;
-	float mob3_health;
-
-    void Reset()
-    {
-		me->SetRespawnDelay(999999999);
-		Chain_Lightning_Timer = 1000;
-		Earth_Shield_Timer = 5000;
-		Healing_Wave_Timer = 13000;
-		Hex_Timer = 10000;
-    }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-	            me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-		if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);
-
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Chain_Lightning_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CHAIN_LIGHTNING_H);
-            Chain_Lightning_Timer = 10000;
-        }else Chain_Lightning_Timer -= diff;  
-
-		if (Hex_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_HEX_OF_MENDING);
-            Hex_Timer = 20000;
-        }else Hex_Timer -= diff;
-
-	if (Healing_Wave_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_HEALING_WAVE);
-                    Healing_Wave_Timer = 8000;
-                }
-        }else Healing_Wave_Timer -= diff;
-
-	if (Earth_Shield_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(!target->HasAura(SPELL_EARTH_SHIELD,me->GetGUID()) && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_EARTH_SHIELD);
-                    Earth_Shield_Timer = 25000;
-                }
-        }else Earth_Shield_Timer -= diff;
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_shaman_ench(Creature* pCreature)
-{
-    return new npc_shaman_enchAI(pCreature);
+CreatureAI* GetAI_mob_toc_paladin(Creature *pCreature) {
+    return new mob_toc_paladinAI (pCreature);
 }
-
-// Hunter
-struct  npc_hunterAI : public ScriptedAI
-{
-    npc_hunterAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-    uint32 Shoot_Timer;
-	uint32 Lightning_Arrows_Timer;
-	uint32 Multi_Shot_Timer;
-	uint32 Disengage_Cooldown;
-	uint32 enemy_check;
-	uint32 disengage_check;
-
-    void Reset()
-    {
-		me->SetRespawnDelay(999999999);
-		Shoot_Timer = 0;
-		Lightning_Arrows_Timer = 13000;
-		Multi_Shot_Timer = 10000;
-		Disengage_Cooldown = 0;
-		enemy_check = 1000;
-		disengage_check;
-    }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (enemy_check < diff)
-		{
-			if (!me->IsWithinDistInMap(me->getVictim(), 8) && me->IsWithinDistInMap(me->getVictim(), 30))
-			{
-				me->SetSpeed(MOVE_RUN, 0.0001);
-			}
-			else
-			{
-				me->SetSpeed(MOVE_RUN, 1);
-			}
-			enemy_check = 100;
-		}else enemy_check -= diff;
-
-		if (Disengage_Cooldown>0)
-			Disengage_Cooldown -= diff;
-
-		if (Shoot_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_SHOOT);
-            Shoot_Timer = 3000;
-        }else Shoot_Timer -= diff;  
-
-		if (Multi_Shot_Timer < diff)
-        {
-			me->CastStop(SPELL_SHOOT);
-			DoCast(me->getVictim(), SPELL_MULTI_SHOT);
-            Multi_Shot_Timer = 10000;
-        }else Multi_Shot_Timer -= diff;
-
-		if (Lightning_Arrows_Timer < diff)
-        {
-			me->CastStop(SPELL_SHOOT);
-			DoCast(me, SPELL_LIGHTNING_ARROWS);
-            Lightning_Arrows_Timer = 25000;
-        }else Lightning_Arrows_Timer -= diff;
-
-		if (disengage_check < diff)
-		{
-			if (me->IsWithinDistInMap(me->getVictim(), 5) && Disengage_Cooldown == 0)
-			{
-				DoCast(me, SPELL_DISENGAGE);
-				Disengage_Cooldown = 15000;
-			}
-			disengage_check = 1000;
-		}else disengage_check -= diff;
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_hunter(Creature* pCreature)
-{
-    return new npc_hunterAI(pCreature);
+CreatureAI* GetAI_mob_toc_priest(Creature *pCreature) {
+    return new mob_toc_priestAI (pCreature);
 }
-
-// Rogue
-struct  npc_rogueAI : public ScriptedAI
-{
-    npc_rogueAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Eviscerate_Timer;
-	uint32 FoK_Timer;
-	uint32 Poison_Timer;
-
-    void Reset()
-    {
-		me->SetRespawnDelay(999999999);
-		Eviscerate_Timer = 15000;
-		FoK_Timer = 10000;
-		Poison_Timer = 7000;
-    }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Eviscerate_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_EVISCERATE_H);
-            Eviscerate_Timer = 10000;
-        }else Eviscerate_Timer -= diff;  
-
-		if (FoK_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_FAN_OF_KNIVES);
-			FoK_Timer = 7000;
-        }else FoK_Timer -= diff;
-
-		if (Poison_Timer < diff)
-        {
-			if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-				DoCast(me, SPELL_POISON_BOTTLE);
-            Poison_Timer = 6000;
-        }else Poison_Timer -= diff;
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_rogue(Creature* pCreature)
-{
-    return new npc_rogueAI(pCreature);
+CreatureAI* GetAI_mob_toc_shadow_priest(Creature *pCreature) {
+    return new mob_toc_shadow_priestAI (pCreature);
 }
-
-//paladin retro
-struct  npc_paladin_retroAI : public ScriptedAI
-{
-    npc_paladin_retroAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Aventure_Wrath_Timer;
-	uint32 Crusuader_Strike_Timer;
-	uint32 Divine_Shield_Timer;
-	uint32 Devine_Storm_Timer;
-	uint32 Hummer_of_Justice_Timer;
-	uint32 Hand_of_Protection_Timer;
-	uint32 Jundgement_of_Command_Timer;
-	uint32 Repentance_Timer;
-	/*uint32 Seal_of_Command_Timer;*/
-
-	/*SPELL_AVENGING_WRATH        = 66011,
-	SPELL_CRUSUADER_STRIKE      = 66003,
-	SPELL_DIVINE_SHIELD         = 66010,
-	SPELL_DIVINE_STORM          = 66006,
-	SPELL_HUMMER_OF_JUSTICE     = 66007,
-	SPELL_HAND_OF_PROTECTION    = 66009,
-	SPELL_JUNDGEMENT_OF_COMMAND  = 68019,
-	SPELL_REPENTANCE             = 66008,
-	SPELL_SEAL_OF_COMMAND        = 68021,*/
-
-	 void Reset()
-     {
-		me->SetRespawnDelay(999999999);
-         Aventure_Wrath_Timer = 180000;
-	     Crusuader_Strike_Timer = 6000;
-	     Divine_Shield_Timer = 300000;
-	     Devine_Storm_Timer = 10000;
-	     Hummer_of_Justice_Timer = 40000;
-	     Hand_of_Protection_Timer = 300000;
-	     Jundgement_of_Command_Timer = 8000;
-	     Repentance_Timer = 60000;
-	     /*Seal_of_Command_Timer = 0; */
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Crusuader_Strike_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CRUSUADER_STRIKE);
-            Crusuader_Strike_Timer = 6000;
-        }else Crusuader_Strike_Timer -= diff;  
-
-		if (Devine_Storm_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_DIVINE_STORM);
-			Devine_Storm_Timer = 10000;
-        }else Devine_Storm_Timer -= diff;
-
-		if (Hummer_of_Justice_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_HUMMER_OF_JUSTICE);
-            Hummer_of_Justice_Timer = 40000;
-        }else Hummer_of_Justice_Timer -= diff;
-
-        if (Jundgement_of_Command_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_JUNDGEMENT_OF_COMMAND);
-            Jundgement_of_Command_Timer = 8000;
-        }else Jundgement_of_Command_Timer -= diff;
-
-		if(Repentance_Timer < diff)
-		  {
-		     DoCast(me->getVictim(), SPELL_REPENTANCE);
-             Repentance_Timer = 60000;
-          }else Repentance_Timer -= diff; 
-
-		if(Divine_Shield_Timer < diff)
-		  {
-			  if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(me))
-                {
-					DoCast(target, SPELL_DIVINE_SHIELD);
-                    Divine_Shield_Timer = 300000;
-				}
-          }else Divine_Shield_Timer -= diff;
-
-		if(Hand_of_Protection_Timer < diff)
-		  {
-			  if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(me))
-                {
-					DoCast(target, SPELL_HAND_OF_PROTECTION);
-                    Hand_of_Protection_Timer = 300000;
-				}
-          }else Hand_of_Protection_Timer -= diff;
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_paladin_retro(Creature* pCreature)
-{
-    return new npc_paladin_retroAI(pCreature);
+CreatureAI* GetAI_mob_toc_warlock(Creature *pCreature) {
+    return new mob_toc_warlockAI (pCreature);
 }
-
-
-//death knight
-struct  npc_death_knightAI : public ScriptedAI
-{
-    npc_death_knightAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Chain_of_Ice_Timer;
-	uint32 Frost_Strike_Timer;
-	uint32 Death_Coil_Timer;
-	uint32 Icebond_Fortitude_Timer;
-	uint32 Strangulate_Timer;
-	uint32 Death_Grip_Timer;
-
-	/*SPELL_FROST_STRIKE          = 67937,
-	SPELL_CHAINS_OF_ICE         = 66020,
-	SPELL_DEATH_COIL            = 67930,
-	SPELL_ICEBOUND_FORTITUDE    = 66023,
-	SPELL_STRANGULATE           = 66018,
-	SPELL_DEATH_GRIP            = 68755,*/
-
-	 void Reset()
-     {
-		me->SetRespawnDelay(999999999);
-        Chain_of_Ice_Timer = 8000;
-		Frost_Strike_Timer = 6000;
-		Death_Coil_Timer = 5000;
-		Icebond_Fortitude_Timer = 60000;
-        Strangulate_Timer = 120000;
-		Death_Grip_Timer = 20000; 
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Chain_of_Ice_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CHAINS_OF_ICE);
-            Chain_of_Ice_Timer = 8000;
-        }else Chain_of_Ice_Timer -= diff;  
-
-		if (Frost_Strike_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_FROST_STRIKE);
-			Frost_Strike_Timer = 6000;
-        }else Frost_Strike_Timer -= diff;
-
-		if (Death_Coil_Timer < diff)
-        {
-			DoCast(me, SPELL_DEATH_COIL);
-            Death_Coil_Timer = 5000;
-        }else Death_Coil_Timer -= diff;
-
-        if (Death_Grip_Timer < diff)
-        {
-			DoCast(me, SPELL_DEATH_GRIP);
-            Death_Grip_Timer = 20000;
-        }else Death_Grip_Timer -= diff;
-
-		/*if(Strangulate_Timer < diff)
-		  {
-			 if(target->CastSpell())
-			 {
-				 DoCast(target, SPELL_STRANGULATE);
-                 Strangulate_Timer = 180000;
-			 }
-          }else Strangulate_Timer -= diff; */
-
-		/*if(Icebond_Fortitude_Timer < diff)
-		  {
-		     //need cheak of target cast for self 
-		     DoCast(me, SPELL_ICEBOUND_FORTITUDE);
-             Icebond_Fortitude_Timer = 60000;
-          }else Icebond_Fortitude_Timer -= diff; */
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_death_knight(Creature* pCreature)
-{
-    return new npc_death_knightAI(pCreature);
+CreatureAI* GetAI_mob_toc_mage(Creature *pCreature) {
+    return new mob_toc_mageAI (pCreature);
 }
-
-//paladin holy
-struct  npc_paladin_holyAI : public ScriptedAI
-{
-    npc_paladin_holyAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Cleance_Timer;
-	uint32 Flash_of_Light_Timer;
-	uint32 Divine_Shield_Timer;
-	uint32 Hand_of_Freedom_Timer;
-	uint32 Hummer_of_Justice_Timer;
-	uint32 Hand_of_Protection_Timer;
-	uint32 Holy_Light_Timer;
-	uint32 Holy_Shock_Timer;
-
-	/*SPELL_CLEANCE                = 68623,
-	SPELL_FLASH_OF_LIGHT         = 68010,
-	SPELL_HAND_OF_FREEDOM        = 68758,
-	SPELL_HOLY_LIGHT             = 68012,
-	SPELL_HOLY_SHOCK             = 68016,*/
-
-	 void Reset()
-     {
-		me->SetRespawnDelay(999999999);
-         Cleance_Timer = 0;
-	     Flash_of_Light_Timer = 0;
-	     Divine_Shield_Timer = 300000;
-	     Hand_of_Freedom_Timer = 15000;
-	     Hummer_of_Justice_Timer = 40000;
-	     Hand_of_Protection_Timer = 300000;
-	     Holy_Light_Timer = 0;
-	     Holy_Shock_Timer = 6000;
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Flash_of_Light_Timer < diff)
-        {
-			if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-					DoCast(me->getVictim(), SPELL_FLASH_OF_LIGHT);
-                    Flash_of_Light_Timer = 0;
-				}
-        }else Flash_of_Light_Timer -= diff;  
-
-		if (Holy_Light_Timer < diff)
-        {
-			if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-					DoCast(me->getVictim(), SPELL_HOLY_LIGHT);
-			        Holy_Light_Timer = 0;
-				}
-        }else Holy_Light_Timer -= diff;
-
-		if (Hummer_of_Justice_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_HUMMER_OF_JUSTICE);
-            Hummer_of_Justice_Timer = 40000;
-        }else Hummer_of_Justice_Timer -= diff;
-
-        if (Holy_Shock_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_HOLY_SHOCK);
-            Holy_Shock_Timer = 6000;
-        }else Holy_Shock_Timer -= diff;
-
-		if(Divine_Shield_Timer < diff)
-		  {
-			  if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() <= 1500 && target->IsFriendlyTo(me))
-                {
-					DoCast(target, SPELL_DIVINE_SHIELD);
-                    Divine_Shield_Timer = 300000;
-				}
-          }else Divine_Shield_Timer -= diff;
-
-		if(Hand_of_Protection_Timer < diff)
-		  {
-			  if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() <= 3000 && target->IsFriendlyTo(me))
-                {
-					DoCast(target, SPELL_HAND_OF_PROTECTION);
-                    Hand_of_Protection_Timer = 300000;
-				}
-          }else Hand_of_Protection_Timer -= diff;
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_paladin_holy(Creature* pCreature)
-{
-    return new npc_paladin_holyAI(pCreature);
+CreatureAI* GetAI_mob_toc_hunter(Creature *pCreature) {
+    return new mob_toc_hunterAI (pCreature);
 }
-
-//druid balans
-struct  npc_druid_balansAI : public ScriptedAI
-{
-    npc_druid_balansAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Barkskin_Timer;
-	uint32 Cyclone_Timer;
-	uint32 Entangling_Roots_Timer;
-	uint32 Faerie_Fire_Timer;
-	uint32 Force_of_Nature_Timer;
-	uint32 Insect_Swarm_Timer;
-	uint32 Moonfire_Timer;
-	uint32 Starfire_Timer;
-	uint32 Wrath_Timer;
-
-	/*SPELL_BARKSKIN              = 65860,
-	SPELL_CYCLONE               = 65859,
-	SPELL_ENTANGLING_ROOTS      = 65857,
-	SPELL_FAERIE_FIRE           = 65863,
-	SPELL_FORCE_OF_NATURE       = 65861,
-	SPELL_INSECT_SWARM          = 67943,
-	SPELL_MOONFIRE              = 67946,
-	SPELL_STARFIRE              = 67949,
-	SPELL_WRATH                 = 67952,*/
-
-	 void Reset()
-     {
-		me->SetRespawnDelay(999999999);
-          Barkskin_Timer = 60000;
-	      Cyclone_Timer = 6000;
-	      Entangling_Roots_Timer = 10000;
-	      Faerie_Fire_Timer = 40000;
-	      Force_of_Nature_Timer = 180000;
-	      Insect_Swarm_Timer = 12000;
-	      Moonfire_Timer = 5000;
-	      Starfire_Timer = 2000;
-	      Wrath_Timer = 1500 ;
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Cyclone_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CYCLONE);
-            Cyclone_Timer = 6000;
-        }else Cyclone_Timer -= diff;  
-
-		if (Entangling_Roots_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_ENTANGLING_ROOTS);
-			Entangling_Roots_Timer = 10000;
-        }else Entangling_Roots_Timer -= diff;
-
-		if (Faerie_Fire_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_FAERIE_FIRE);
-            Faerie_Fire_Timer = 40000;
-        }else Faerie_Fire_Timer -= diff;
-
-        if (Force_of_Nature_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_FORCE_OF_NATURE);
-            Force_of_Nature_Timer = 180000;
-        }else Force_of_Nature_Timer -= diff;
-
-		if(Insect_Swarm_Timer < diff)
-		  {
-			  DoCast(me, SPELL_INSECT_SWARM);
-              Insect_Swarm_Timer = 12000;
-          }else Insect_Swarm_Timer -= diff;
-
-		if(Starfire_Timer < diff)
-		  {
-			  DoCast(me, SPELL_STARFIRE);
-              Starfire_Timer = 2000;
-          }else Starfire_Timer -= diff;
-
-		if(Wrath_Timer < diff)
-		  {
-			  DoCast(me, SPELL_WRATH);
-              Wrath_Timer = 1500;
-          }else Wrath_Timer -= diff;
-
-        if(Moonfire_Timer < diff)
-		  {
-			  if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() <= 2000)
-                {
-					DoCast(target, SPELL_MOONFIRE);
-                    Moonfire_Timer = 5000;
-				}
-          }else Moonfire_Timer -= diff;
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_druid_balans(Creature* pCreature)
-{
-    return new npc_druid_balansAI(pCreature);
+CreatureAI* GetAI_mob_toc_boomkin(Creature *pCreature) {
+    return new mob_toc_boomkinAI (pCreature);
 }
-
-//druid restor
-struct  npc_druid_restorAI : public ScriptedAI
-{
-    npc_druid_restorAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Barkskin_Timer;
-	uint32 Lifebloom_Timer;
-	uint32 Nature_Grasp_Timer;
-	uint32 Nourish_Timer;
-	uint32 Regrowth_Timer;
-	uint32 Rejuvenation_Timer;
-	uint32 Thorns_Timer;
-	uint32 Tranquility_Timer;
-
-	/*SPELL_LIFEBLOOM             = 67959,
-	SPELL_NATURE_GRASP          = 66071,
-	SPELL_NOURISH               = 67967,
-	SPELL_REGROWTH              = 67970,
-	SPELL_REJUVENATION          = 67973,
-	SPELL_THORNS                = 66068,
-	SPELL_TRANQUILITY           = 67976,*/
-
-	 void Reset()
-     {
-		  me->SetRespawnDelay(999999999);
-          Barkskin_Timer = 60000;
-	      Lifebloom_Timer = 0;
-	      Nature_Grasp_Timer = 60000;
-	      Nourish_Timer = 1500;
-	      Regrowth_Timer = 2000;
-	      Rejuvenation_Timer = 0;
-	      Thorns_Timer = 0;
-	      Tranquility_Timer = 600000;
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Nourish_Timer < diff)
-        {
-           if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me) )
-                {
-					DoCast(target, SPELL_NOURISH);
-                    Nourish_Timer = 1500;
-				}
-        }else Nourish_Timer -= diff;  
-
-        if (Regrowth_Timer < diff)
-        {
-           if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me) )
-                {
-					DoCast(target, SPELL_REGROWTH);
-                    Regrowth_Timer = 2000;
-				}
-        }else Regrowth_Timer -= diff;  
-
-        if (Tranquility_Timer < diff)
-        {
-           if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == 2500 && target->IsFriendlyTo(me) )
-                {
-					DoCast(target, SPELL_TRANQUILITY);
-                    Tranquility_Timer = 2000;
-				}
-        }else Tranquility_Timer -= diff;  
-
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_druid_restor(Creature* pCreature)
-{
-    return new npc_druid_restorAI(pCreature);
+CreatureAI* GetAI_mob_toc_warrior(Creature *pCreature) {
+    return new mob_toc_warriorAI (pCreature);
 }
-
-//shaman restor
-struct  npc_shaman_restorAI : public ScriptedAI
-{
-    npc_shaman_restorAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Cleans_Spirit_Timer;
-	uint32 Earth_Shield_Timer;
-	uint32 Earth_Shock_Timer;
-	uint32 Heroism_Timer;
-	uint32 Hex_Timer;
-	uint32 Leser_Healing_Wave_Timer;
-	uint32 Riptide_Timer;
-
-
-	/*SPELL_CLEANSE_SPIRIT       = 68629,
-	SPELL_EARTH_SHIRLD         = 66063,
-	SPELL_EARTH_SHOCK          = 68102,
-	SPELL_HEROISM              = 65983,
-	SPELL_HEX                  = 66054,
-	SPELL_LESSER_HEALING_WAVE  = 68116,
-	SPELL_RIPTIDE              = 68120,*/
-
-	 void Reset()
-     {
-		  me->SetRespawnDelay(999999999);
-          Cleans_Spirit_Timer = 0;
-	      Earth_Shield_Timer = 0;
-	      Earth_Shock_Timer = 6000;
-	      Heroism_Timer = 300000;
-	      Hex_Timer = 42000;
-	      Leser_Healing_Wave_Timer = 1500;
-	      Riptide_Timer = 6000;
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-		if (Earth_Shock_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_EARTH_SHOCK);
-            Earth_Shock_Timer = 6000;
-
-        }else Earth_Shock_Timer -= diff;  
-
-        if (Hex_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_HEX_OF_MENDING);
-            Hex_Timer = 20000;
-        }else Hex_Timer -= diff;
-
-	    if (Leser_Healing_Wave_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_LESSER_HEALING_WAVE);
-                    Leser_Healing_Wave_Timer = 3000;
-                }
-        }else Leser_Healing_Wave_Timer -= diff;
-
-	    if (Earth_Shield_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(!target->HasAura(SPELL_EARTH_SHIELD,me->GetGUID()) && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_EARTH_SHIELD);
-                    Earth_Shield_Timer = 25000;
-                }
-        }else Earth_Shield_Timer -= diff;
-      
-        if (Riptide_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_RIPTIDE);
-                    Riptide_Timer = 6000;
-                }
-        }else Riptide_Timer -= diff;
-
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_shaman_restor(Creature* pCreature)
-{
-    return new npc_shaman_restorAI(pCreature);
+CreatureAI* GetAI_mob_toc_dk(Creature *pCreature) {
+    return new mob_toc_dkAI (pCreature);
 }
-
-//priest disc
-struct  npc_priest_discAI : public ScriptedAI
-{
-    npc_priest_discAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Dispell_Magic_Timer;
-	uint32 Flash_Hill_Timer;
-	uint32 Mana_Burn_Timer;
-	uint32 Penance_Timer;
-	uint32 Power_World_Shield_Timer;
-	uint32 Psychic_Scream_Timer;
-	uint32 Renew_Timer;
-
-
-	/*SPELL_DISPELL_MAGIC        = 68626,
-	SPELL_FLASH_HEAL           = 68024,
-	SPELL_MANA_BURN            = 68028,
-	SPELL_PENANCE              = 68030,
-	SPELL_POWER_WORLD_SHIELD   = 68034,
-    SPELL_RSYCHIC_SCREAM       = 65543,
-	SPELL_RENEW                = 68037,*/
-
-	 void Reset()
-     {
-		  me->SetRespawnDelay(999999999);
-          Dispell_Magic_Timer = 0;
-	      Flash_Hill_Timer = 2000;
-	      Mana_Burn_Timer = 10000;
-	      Penance_Timer = 2000;
-	      Power_World_Shield_Timer = 40000;
-	      Psychic_Scream_Timer = 30000;
-	      Renew_Timer = 4000;
-
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-	    if (Flash_Hill_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_FLASH_HEAL);
-                    Flash_Hill_Timer = 2000;
-                }
-        }else Flash_Hill_Timer -= diff;
-      
-        if (Penance_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_PENANCE);
-                    Penance_Timer = 2000;
-                }
-        }else Penance_Timer -= diff;
-
-        if (Psychic_Scream_Timer < diff)
-        {
-                if (me->IsWithinDistInMap(me->getVictim(), 2))
-				{
-                    DoCast(me->getVictim(), SPELL_RSYCHIC_SCREAM);
-                    Psychic_Scream_Timer = 30000;
-                }
-        }else Psychic_Scream_Timer -= diff;
-
-	    if (Renew_Timer < diff)
-        {
-            if(Unit* target = me->SelectNearestTarget(40))
-                if(target->GetHealth() == target->GetHealth() * 100 / target->GetMaxHealth() && target->IsFriendlyTo(me))
-                {
-                    DoCast(target, SPELL_PENANCE);
-                    Renew_Timer = 4000;
-                }
-        }else Renew_Timer -= diff;
-
-		
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_priest_disc(Creature* pCreature)
-{
-    return new npc_priest_discAI(pCreature);
+CreatureAI* GetAI_mob_toc_rogue(Creature *pCreature) {
+    return new mob_toc_rogueAI (pCreature);
 }
-
-//priest shadow
-struct  npc_priest_shadowAI : public ScriptedAI
-{
-    npc_priest_shadowAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Dispersion_Timer;
-	uint32 Mind_Blast_Timer;
-	uint32 Mind_Flay_Timer;
-	uint32 Psychic_Horror_Timer;
-	uint32 Shadow_World_Pain_Timer;
-	uint32 Psychic_Scream_Timer;
-	uint32 Vampiric_Touch_Timer;
-    uint32 Silence_Timer;
-
-
-	/*SPELL_DISPERSION           = 65544,
-	SPELL_MIND_BLAST           = 68040,
-	SPELL_MIND_FLAY            = 68044,
-	SPELL_PSYCHIC_HORROR       = 65545,
-	SPELL_SHADOW_WORLD_PAIN    = 68089,
-	SPELL_SILENCE              = 65542,
-	SPELL_VAMPIRIC_TOUCH       = 68092,*/
-
-	 void Reset()
-     {
-		  me->SetRespawnDelay(999999999);
-          Dispersion_Timer = 180000;
-	      Mind_Blast_Timer = 8000;
-	      Mind_Flay_Timer = 3000;
-	      Psychic_Horror_Timer = 120000;
-	      Shadow_World_Pain_Timer = 21000;
-	      Psychic_Scream_Timer = 30000;
-	      Vampiric_Touch_Timer = 16000;
-          Silence_Timer = 45000;
-
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);           
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-	    if (Mind_Blast_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_MIND_BLAST);
-            Mind_Blast_Timer = 8000;
-        }else Mind_Blast_Timer -= diff;
-
-		if (Mind_Flay_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_MIND_FLAY);
-            Mind_Flay_Timer = 3000;
-        }else Mind_Flay_Timer -= diff;
-
-
-        if (Psychic_Scream_Timer < diff)
-        {
-               if (me->IsWithinDistInMap(me->getVictim(), 2))
-			   {
-                    DoCast(me->getVictim(), SPELL_RSYCHIC_SCREAM);
-                    Psychic_Scream_Timer = 30000;
-               }
-        }else Psychic_Scream_Timer -= diff;
-
-	    if (Psychic_Horror_Timer < diff)
-        {
-               if (me->IsWithinDistInMap(me->getVictim(), 2))
-			   {
-                    DoCast(me->getVictim(), SPELL_PSYCHIC_HORROR);
-                    Psychic_Horror_Timer = 120000;
-               }
-        }else Psychic_Horror_Timer -= diff;
-
-		if (Shadow_World_Pain_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_SHADOW_WORLD_PAIN);
-            Shadow_World_Pain_Timer = 21000;
-        }else Shadow_World_Pain_Timer -= diff;
-
-		if (Vampiric_Touch_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_VAMPIRIC_TOUCH);
-            Vampiric_Touch_Timer = 16000;
-        }else Vampiric_Touch_Timer -= diff;
-
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_priest_shadow(Creature* pCreature)
-{
-    return new npc_priest_shadowAI(pCreature);
+CreatureAI* GetAI_mob_toc_enh_shaman(Creature *pCreature) {
+    return new mob_toc_enh_shamanAI (pCreature);
 }
-
-//warlock
-struct  npc_warlockAI : public ScriptedAI
-{
-    npc_warlockAI(Creature* pCreature) : ScriptedAI(pCreature)
-	{
-		Reset();
-		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-	}
-
-	ScriptedInstance* m_pInstance;
-
-	uint32 Corruption_Timer;
-	uint32 Curse_of_Agony_Timer;
-	uint32 Death_Coil_Timer;
-	uint32 Fear_Timer;
-	uint32 Hellfire_Timer;
-	uint32 Searing_Pain_Timer;
-	uint32 Shadow_Bolt_Timer;
-    uint32 Unstable_Affliction_Timer;
-
-
-	/*SPELL_CORRUPTION           = 68135,
-	SPELL_CURSE_OF_AGONY       = 68138,
-	SPELL_CURSE_OF_EXHAUSTION  = 65815,
-	SPELL_DEATH_COIL           = 68139,
-	SPELL_FEAR                 = 65809,
-	SPELL_HELLFIRE             = 68147,
-	SPELL_SEARING_PAIN         = 68150,
-	SPELL_SHADOW_BOLT          = 68152,
-	SPELL_UNSTABLE_AFFLICTION  = 68155*/
-
-	 void Reset()
-     {
-		  me->SetRespawnDelay(999999999);
-          Corruption_Timer = 18000;
-	      Curse_of_Agony_Timer = 24000;
-	      Death_Coil_Timer = 120000;
-	      Fear_Timer = 8000;
-	      Hellfire_Timer = 15000;
-	      Searing_Pain_Timer = 2000;
-	      Shadow_Bolt_Timer = 3000;
-          Unstable_Affliction_Timer = 30000;
-     }
-
-	void EnterEvadeMode()
-	{
-	}
-
-	void Aggro(Unit* pWho)
-    {
-		if (!m_pInstance)
-			return;
-		if (m_pInstance->GetData(TYPE_CHAMPIONS) == DONE)
-		    me->ForcedDespawn();
-		else
-		    m_pInstance->SetData(TYPE_CHAMPIONS, IN_PROGRESS);
-    }
-
-	void JustDied(Unit* pKiller)
-        {
-	    if (!m_pInstance)
-		return;
-
-        if(!me->FindNearestCreature(34458, 200, true) && !me->FindNearestCreature(34451, 200, true) && !me->FindNearestCreature(34459, 200, true)
-			&& !me->FindNearestCreature(34448, 200, true) && !me->FindNearestCreature(34449, 200, true) && !me->FindNearestCreature(34445, 200, true)
-            && !me->FindNearestCreature(34456, 200, true) && !me->FindNearestCreature(34447, 200, true) && !me->FindNearestCreature(34441, 200, true)
-            && !me->FindNearestCreature(34454, 200, true) && !me->FindNearestCreature(34455, 200, true) && !me->FindNearestCreature(34444, 200, true)
-			&& !me->FindNearestCreature(34450, 200, true) && !me->FindNearestCreature(34461, 200, true) && !me->FindNearestCreature(34460, 200, true)
-			&& !me->FindNearestCreature(34469, 200, true) && !me->FindNearestCreature(34467, 200, true) && !me->FindNearestCreature(34468, 200, true)
-			&& !me->FindNearestCreature(34465, 200, true) && !me->FindNearestCreature(34471, 200, true) && !me->FindNearestCreature(34466, 200, true)
-			&& !me->FindNearestCreature(34473, 200, true) && !me->FindNearestCreature(34472, 200, true) && !me->FindNearestCreature(34463, 200, true)
-			&& !me->FindNearestCreature(34470, 200, true) && !me->FindNearestCreature(34474, 200, true) && !me->FindNearestCreature(34475, 200, true)
-			&& !me->FindNearestCreature(34453, 200, true))
-                m_pInstance->SetData(TYPE_CHAMPIONS, DONE);            
-	}
-
-	void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-	    if (Corruption_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CORRUPTION);
-            Corruption_Timer = 18000;
-        }else Corruption_Timer -= diff;
-
-		if (Curse_of_Agony_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_CURSE_OF_AGONY);
-            Curse_of_Agony_Timer = 24000;
-        }else Curse_of_Agony_Timer -= diff;
-
-
-        if (Death_Coil_Timer < diff)
-        {
-               if (me->IsWithinDistInMap(me->getVictim(), 2))
-			   {
-                    DoCast(me->getVictim(), SPELL_DEATH_COIL_W);
-                    Death_Coil_Timer = 120000;
-               }
-        }else Death_Coil_Timer -= diff;
-
-	    if (Fear_Timer < diff)
-        {
-               if (me->IsWithinDistInMap(me->getVictim(), 2))
-			   {
-                    DoCast(me->getVictim(), SPELL_FEAR);
-                    Fear_Timer = 8000;
-               }
-        }else Fear_Timer -= diff;
-
-		if (Searing_Pain_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_SEARING_PAIN);
-            Searing_Pain_Timer = 2000;
-        }else Searing_Pain_Timer -= diff;
-
-		if (Shadow_Bolt_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_SHADOW_BOLT);
-            Shadow_Bolt_Timer = 3000;
-        }else Shadow_Bolt_Timer -= diff;
-
-		if (Unstable_Affliction_Timer < diff)
-        {
-			DoCast(me->getVictim(), SPELL_UNSTABLE_AFFLICTION);
-            Unstable_Affliction_Timer = 30000;
-        }else Unstable_Affliction_Timer -= diff;
-
-		DoMeleeAttackIfReady();
-	}
-};
-
-CreatureAI* GetAI_npc_warlock(Creature* pCreature)
-{
-    return new npc_warlockAI(pCreature);
+CreatureAI* GetAI_mob_toc_retro_paladin(Creature *pCreature) {
+    return new mob_toc_retro_paladinAI (pCreature);
+}
+CreatureAI* GetAI_mob_toc_pet_warlock(Creature *pCreature) {
+    return new mob_toc_pet_warlockAI (pCreature);
+}
+CreatureAI* GetAI_mob_toc_pet_hunter(Creature *pCreature) {
+    return new mob_toc_pet_hunterAI (pCreature);
 }
 
 void AddSC_boss_champions()
 {
-    Script* NewScript;
+    Script *newscript;
 
-    NewScript = new Script;
-    NewScript->Name = "npc_warrior";
-    NewScript->GetAI = &GetAI_npc_warrior;
-    NewScript->RegisterSelf();
- 
-    NewScript = new Script;
-    NewScript->Name = "npc_mage";
-    NewScript->GetAI = &GetAI_npc_mage;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_druid";
+    newscript->GetAI = &GetAI_mob_toc_druid;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_shaman_ench";
-    NewScript->GetAI = &GetAI_npc_shaman_ench;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_shaman";
+    newscript->GetAI = &GetAI_mob_toc_shaman;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_shaman_restor";
-    NewScript->GetAI = &GetAI_npc_shaman_restor;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_paladin";
+    newscript->GetAI = &GetAI_mob_toc_paladin;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_hunter";
-    NewScript->GetAI = &GetAI_npc_hunter;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_priest";
+    newscript->GetAI = &GetAI_mob_toc_priest;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_rogue";
-    NewScript->GetAI = &GetAI_npc_rogue;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_shadow_priest";
+    newscript->GetAI = &GetAI_mob_toc_shadow_priest;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_paladin_retro";
-    NewScript->GetAI = &GetAI_npc_paladin_retro;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_mage";
+    newscript->GetAI = &GetAI_mob_toc_mage;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_death_knight";
-    NewScript->GetAI = &GetAI_npc_death_knight;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_warlock";
+    newscript->GetAI = &GetAI_mob_toc_warlock;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_paladin_holy";
-    NewScript->GetAI = &GetAI_npc_paladin_holy;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_hunter";
+    newscript->GetAI = &GetAI_mob_toc_hunter;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_druid_balans";
-    NewScript->GetAI = &GetAI_npc_druid_balans;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_boomkin";
+    newscript->GetAI = &GetAI_mob_toc_boomkin;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_druid_restor";
-    NewScript->GetAI = &GetAI_npc_druid_restor;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_warrior";
+    newscript->GetAI = &GetAI_mob_toc_warrior;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_priest_disc";
-    NewScript->GetAI = &GetAI_npc_priest_disc;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_dk";
+    newscript->GetAI = &GetAI_mob_toc_dk;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_priest_shadow";
-    NewScript->GetAI = &GetAI_npc_priest_shadow;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_rogue";
+    newscript->GetAI = &GetAI_mob_toc_rogue;
+    newscript->RegisterSelf();
 
-	NewScript = new Script;
-    NewScript->Name = "npc_warlock";
-    NewScript->GetAI = &GetAI_npc_warlock;
-    NewScript->RegisterSelf();
+    newscript = new Script;
+    newscript->Name = "mob_toc_enh_shaman";
+    newscript->GetAI = &GetAI_mob_toc_enh_shaman;
+    newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "mob_toc_retro_paladin";
+    newscript->GetAI = &GetAI_mob_toc_retro_paladin;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_toc_pet_warlock";
+    newscript->GetAI = &GetAI_mob_toc_pet_warlock;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_toc_pet_hunter";
+    newscript->GetAI = &GetAI_mob_toc_pet_hunter;
+    newscript->RegisterSelf();
 }

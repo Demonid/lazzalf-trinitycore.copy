@@ -352,10 +352,8 @@ SET(scripts_STAT_SRCS
    Northrend/CrusadersColiseum/TrialOfTheChampion/trial_of_the_champion.h
    Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_anubarak_toc.cpp
    Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_champions.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_dreadscale.cpp
    Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_fjola.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_gormok.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_icehowl.cpp
+   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_northrend_beasts.cpp
    Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_lord_jaraksus.cpp
    Northrend/CrusadersColiseum/TrialOfTheCrusader/def.h
    Northrend/CrusadersColiseum/TrialOfTheCrusader/instance_trial_of_the_crusader.cpp

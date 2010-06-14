@@ -1,141 +1,174 @@
-#ifndef DEF_TOC6_H
-#define DEF_TOC6_H
+/* Copyright (C) 2009 - 2010 by /dev/rsa for ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * This program is free software licensed under GPL version 2
+ * Please see the included DOCS/LICENSE.TXT for more information */
+
+#ifndef DEF_CRUSADER_H
+#define DEF_CRUSADER_H
+#include "Custom/sc_bs_sp_wrkr.h"
+
 enum
 {
-    BOSS_GORMOK		= 34796,
-    BOSS_ASIDMAW	= 35144,
-    BOSS_DREADSCALE	= 34799,
-    BOSS_ICEHOWL	= 34797,
-    BOSS_LORD_JARAXXUS	= 34780,
-    BOSS_ANUBARAK	= 34564,
-    BOSS_EYDIS		= 34496,
-    BOSS_FJOLA		= 34497,
-    NPC_NERUBIAN_BURROWER = 34607,
-    NPC_ANNOUNCER	= 34816,
-    
-    NPC_LORD		= 34996,
-    HIGHLORD_TIRION = 36095,
-    NPC_KRIK		= 34995,
-    NPC_VARIAN		= 34990,
-    NPC_NEPOPALIS	= 35458,
-    NPC_KING		= 35877
+    TYPE_STAGE                  = 0,
+    TYPE_BEASTS                 = 1,
+    TYPE_JARAXXUS               = 2,
+    TYPE_CRUSADERS              = 3,
+    TYPE_VALKIRIES              = 4,
+    TYPE_LICH_KING              = 5,
+    TYPE_ANUBARAK               = 6,
+    TYPE_COUNTER                = 7,
+    TYPE_EVENT                  = 8,
+    MAX_ENCOUNTERS              = 9,
+
+    NPC_BARRENT                 = 34816,
+    NPC_TIRION                  = 34996,
+    NPC_FIZZLEBANG              = 35458,
+    NPC_GARROSH                 = 34995,
+    NPC_RINN                    = 34990,
+    NPC_LICH_KING_0             = 16980,
+    NPC_LICH_KING_1             = 35877,
+
+    NPC_THRALL                  = 34994,
+    NPC_PROUDMOORE              = 34992,
+    NPC_PORTAL                  = 19224,
+    NPC_TRIGGER                 = 22517,
+
+    NPC_ICEHOWL                 = 34797,
+    NPC_GORMOK                  = 34796,
+    NPC_DREADSCALE              = 34799,
+    NPC_ACIDMAW                 = 35144,
+
+    NPC_JARAXXUS                = 34780,
+
+    NPC_CRUSADER_1_1            = 34460,
+    NPC_CRUSADER_1_2            = 34463,
+    NPC_CRUSADER_1_3            = 34461,
+    NPC_CRUSADER_1_4            = 34471,
+    NPC_CRUSADER_1_5            = 34475,
+    NPC_CRUSADER_1_6            = 34472,
+    NPC_CRUSADER_1_7            = 34467,
+    NPC_CRUSADER_1_8            = 34468,
+    NPC_CRUSADER_1_9            = 34473,
+    NPC_CRUSADER_1_10           = 34474,
+
+    NPC_CRUSADER_2_1            = 34453,
+    NPC_CRUSADER_2_2            = 34455,
+    NPC_CRUSADER_2_3            = 34458,
+    NPC_CRUSADER_2_4            = 34454,
+    NPC_CRUSADER_2_5            = 34451,
+    NPC_CRUSADER_2_6            = 34456,
+    NPC_CRUSADER_2_7            = 34441,
+    NPC_CRUSADER_2_8            = 34449,
+    NPC_CRUSADER_2_9            = 34448,
+    NPC_CRUSADER_2_10           = 34450,
+
+    NPC_CRUSADER_0_1            = 35465,
+    NPC_CRUSADER_0_2            = 35610,
+
+    NPC_LIGHTBANE               = 34497,
+    NPC_DARKBANE                = 34496,
+
+    NPC_ANUBARAK                = 34564,
+
+    GO_CRUSADERS_CACHE_10       = 195631,
+    GO_CRUSADERS_CACHE_25       = 195632,
+    GO_CRUSADERS_CACHE_10_H     = 195633,
+    GO_CRUSADERS_CACHE_25_H     = 195635,
+
+    GO_TRIBUTE_CHEST_10H_25     = 195665,
+    GO_TRIBUTE_CHEST_10H_45     = 195666,
+    GO_TRIBUTE_CHEST_10H_50     = 195667,
+    GO_TRIBUTE_CHEST_10H_99     = 195668,
+
+    GO_TRIBUTE_CHEST_25H_25     = 195669,
+    GO_TRIBUTE_CHEST_25H_45     = 195670,
+    GO_TRIBUTE_CHEST_25H_50     = 195671,
+    GO_TRIBUTE_CHEST_25H_99     = 195672,
+
+    GO_ARGENT_COLISEUM_FLOOR    = 195527, //20943
+    GO_MAIN_GATE_DOOR           = 195647,
+
+    GO_WEST_PORTCULLIS          = 195589,
+    GO_SOUTH_PORTCULLIS         = 195590,
+    GO_NORTH_PORTCULLIS         = 195591,
+
+    TYPE_DIFFICULTY             = 101,
+    TYPE_EVENT_TIMER            = 102,
+    TYPE_EVENT_NPC              = 103,
+    TYPE_NORTHREND_BEASTS       = 104,
+    TYPE_CRUSADERS_COUNT        = 105,
+
+    DATA_HEALTH_EYDIS           = 201,
+    DATA_HEALTH_FJOLA           = 202,
+    DATA_CASTING_EYDIS          = 203,
+    DATA_CASTING_FJOLA          = 204,
+
+    SPELL_WILFRED_PORTAL        = 68424,
+    SPELL_JARAXXUS_CHAINS       = 67924,
+    NPC_WILFRED_POTAL           = 35651,
+
+    DESPAWN_TIME                = 300000,
+
 };
 
-enum Say
+static Locations SpawnLoc[]=
 {
-SAY_LORD_GORMOK	= -1900501,
-SAY_LORD_DREADSCALE	= -1900503,
-SAY_LORD_ICEHOWL	= -1900505,
-SAY_ANUBARAK	= -1900549,
-SAY_ANUBARAK2	= -1900554,
-SAY_LORD1	= -1900500,
-SAY_VARIAN	= -1900502,
-SAY_VARIAN_1	= -1900528,
-SAY_LORD_WIN	= -1900509,
-SAY_LORD_PHASE2 = -1900510,
-SAY_NEPOPALIS_S = -1900511,
-SAY_NEPOPALIS_Z = -1900512,
-SAY_NEPOPALIS_A = -1900513,
-SAY_JARAXXUS_1	= -1900514,
-SAY_NEPOPALIS_G = -1900515,
-SAY_LORD_KILL	= -1900516,
-SAY_LORD_DEAD	= -1900526,
-SAY_LORD_SPOK	= -1900529,
-SAY_LORD_NEXT	= -1900530,
-SAY_LORD_WAR	= -1900532,
-SAY_LORD_PAB	= -1900535,
-SAY_LORD_VAL	= -1900536,
-SAY_LORD_GO	= -1900537,
-SAY_LORD_POTER	= -1900549,
-SAY_LORD_ARTAS	= -1900551,
-SAY_LORD_END	= -1900565,
-SAY_KRIK_1	= -1900527,
-SAY_KRIK_2	= -1900531,
-SAY_KRIK_3	= -1900533,
-SAY_KING_1	= -1900550,
-SAY_KING_2	= -1900552,
-SAY_KING_3	= -1900553
+    {559.257996f, 90.266197f, 395.122986f},  // 0 Barrent
+    {563.672974f, 139.571f, 393.837006f},    // 1 Center
+    {563.833008f, 187.244995f, 394.5f},      // 2 Backdoor
+    {577.347839f, 195.338888f, 395.14f},     // 3 - Right
+    {550.955933f, 195.338888f, 395.14f},     // 4 - Left
+    {575.042358f, 195.260727f, 395.137146f}, // 5
+    {552.248901f, 195.331955f, 395.132658f}, // 6
+    {573.342285f, 195.515823f, 395.135956f}, // 7
+    {554.239929f, 195.825577f, 395.137909f}, // 8
+    {571.042358f, 195.260727f, 395.137146f}, // 9
+    {556.720581f, 195.015472f, 395.132658f}, // 10
+    {569.534119f, 195.214478f, 395.139526f}, // 11
+    {569.231201f, 195.941071f, 395.139526f}, // 12
+    {558.811610f, 195.985779f, 394.671661f}, // 13
+    {567.641724f, 195.351501f, 394.659943f}, // 14
+    {560.633972f, 195.391708f, 395.137543f}, // 15
+    {565.816956f, 195.477921f, 395.136810f}, // 16
+    {563.549f, 152.474f, 394.393f},          // 17 - Lich king start
+    {563.547f, 141.613f, 393.908f},          // 18 - Lich king end
+    {787.932556f, 133.28978f, 142.612152f},  // 19 - Anub'arak start location
+    {618.157898f, 132.640869f, 139.559769f}, // 20 - Anub'arak move point location
+    {508.104767f, 138.247345f, 395.128052f}, // 21 - Fizzlebang start location
+    {586.060242f, 117.514809f, 394.314026f}, // 22 - Dark essence 1
+    {541.602112f, 161.879837f, 394.587952f}, // 23 - Dark essence 2
+    {541.021118f, 117.262932f, 395.314819f}, // 24 - Light essence 1
+    {586.200562f, 162.145523f, 394.626129f}, // 25 - Light essence 2
+    {563.833008f, 195.244995f, 394.585561f}, // 26 - outdoor
+    {548.610596f, 139.807800f, 394.321838f}, // 27 - fizzlebang end
 };
 
-enum Data64
+enum uiWorldStates
 {
-    DATA_ANOUNSER,
-    DATA_MAIN_DOOR,
-    DATA_FLOOR,
-    DATA_FJOLA,
-    DATA_EYDIS
+    UPDATE_STATE_UI_SHOW            = 4390,
+    UPDATE_STATE_UI_COUNT           = 4389,
 };
 
-enum eData
+enum NorthrendBeasts
 {
-    DATA_BOSS_GORMOK,
-    DATA_BOSS_DREADSCALE,
-    DATA_BOSS_ICEHOWL,
-    DATA_BOSS_ANUBARAK,
-    DATA_BOSS_LORD_JARAXXUS,
-    DATA_BOSS_ASIDMAW,
-    TYPE_CHAMPIONS,
-    DATA_START,
-    DATA_START1,
-    DATA_START2,
-    DATA_START3,
-    DATA_PHASE2,
-    DATA_PHASE2_1,
-    DATA_PHASE3,
-    DATA_PHASE3_1,
-    DATA_PHASE4,
-    DATA_PHASE4_1,
-    DATA_PHASE5,
-    DATA_PHASE5_1,
-    DATA_LIGHT_KING,
-    TYPE_FJOLA
+    GORMOK_IN_PROGRESS              = 1000,
+    GORMOK_DONE                     = 1001,
+    SNAKES_IN_PROGRESS              = 2000,
+    DREADSCALE_SUBMERGED            = 2001,
+    ACIDMAW_SUBMERGED               = 2002,
+    SNAKES_SPECIAL                  = 2003,
+    SNAKES_DONE                     = 2004,
+    ICEHOWL_IN_PROGRESS             = 3000,
+    ICEHOWL_DONE                    = 3001,
 };
 
-enum eObject
+enum AnnounserMessages
 {
-    GO_FLOOR		= 195527,
-    GO_MAIN_DOOR	= 195647,
-    GO_CHAMPIONS_CHEST	= 195631,
-    GO_CHAMPIONS_CHEST_H = 195632,
-   // GO_HOLY_CHEST	= 195374,
-   // GO_HOLY_CHEST_H	= 195375,
-   // GO_SHADOW_CHEST	= 195671,
-   // GO_SHADOW_CHEST_H	= 195672
-};
-
-enum Champions
-{
-  NPC_DK_H		= 34458,
-  NPC_DRUID_BALANS_H	= 34451,
-  NPC_DRUID_RESTO_H	= 34459,
-  NPC_PRIST_SHAD_H	= 34441,
-  NPC_PRIST_DIST_H	= 34447,
-  NPC_HUNTER_H		= 34448,
-  NPC_HUNTER_CAT	= 35610,
-  NPC_PAL_HOLY_H	= 34445,
-  NPC_PAL_RETRO_H	= 34456,
-  NPC_MAGE_H		= 34449,
-  NPC_ROGUE_H		= 34454,
-  NPC_SHAM_ENH_H	= 34455,
-  NPC_SHAM_RESTO_H	= 34444,
-  NPC_WARLOCK_H		= 34450,
-  NPC_WARRIOR_H		= 34453,
-  
-  NPC_DK_A		= 34461,
-  NPC_DRUID_BALANS_A	= 34460,
-  NPC_DRUID_RESTO_A	= 34469,
-  NPC_HUNTER_A		= 34467,
-  NPC_MAGE_A		= 34468,
-  NPC_PAL_HOLY_A	= 34465,
-  NPC_PAL_RETRO_A	= 34471,
-  NPC_PRIST_DIST_A	= 34466,
-  NPC_PRIST_SHAD_A	= 34473,
-  NPC_ROGUE_A		= 34472,
-  NPC_SHAM_ENH_A	= 34463,
-  NPC_SHAM_RESTO_A	= 34470,
-  NPC_WARLOCK_A		= 34474,
-  NPC_WARLOCK_PET	= 35465,
-  NPC_WARRIOR_A		= 34475
+    MSG_BEASTS                 = 724001,
+    MSG_JARAXXUS               = 724002,
+    MSG_CRUSADERS              = 724003,
+    MSG_VALKIRIES              = 724004,
+    MSG_LICH_KING              = 724005,
+    MSG_ANUBARAK               = 724006,
 };
 
 #endif
