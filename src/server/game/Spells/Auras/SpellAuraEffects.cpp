@@ -1483,7 +1483,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             int32 damage = m_amount > 0 ? m_amount : 0;
 
             if (GetAuraType() == SPELL_AURA_OBS_MOD_HEALTH)
-                damage = uint32(target->GetMaxHealth() * damage / 100);
+                damage = caster->SpellHealingBonus(target, GetSpellProto(), uint32(target->GetMaxHealth() * damage / 100), DOT);
             else
             {
                 // Wild Growth = amount + (6 - 2*doneTicks) * ticks* amount / 100
