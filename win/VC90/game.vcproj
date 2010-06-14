@@ -2846,23 +2846,15 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_dreadscale.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_fjola.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_gormok.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_icehowl.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_lord_jaraksus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_northrend_beasts.cpp"
 						>
 					</File>
 					<File
@@ -4645,6 +4637,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\server\game\Custom\GuildHouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_bs_sp_wrkr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_bs_sp_wrkr.h"
 				>
 			</File>
 			<File
