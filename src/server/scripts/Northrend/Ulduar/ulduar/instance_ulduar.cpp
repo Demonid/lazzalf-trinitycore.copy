@@ -51,7 +51,10 @@ enum eGameObjects
     GO_Thorim_LEVER         = 194265,
     GO_Thorim_CHEST_HERO    = 194315,
     GO_Thorim_CHEST         = 194314,
-    GO_Mimiron_TRAM         = 194675
+    GO_Mimiron_TRAM         = 194675,
+    GO_Mimiron_ELEVATOR     = 194749,
+    GO_Mimiron_CHEST_HERO   = 194789,
+    GO_Mimiron_CHEST        = 194956,
 };
 
 struct instance_ulduar : public InstanceData
@@ -85,8 +88,12 @@ struct instance_ulduar : public InstanceData
     uint64 uiRuneGiant;
     uint64 uiMimiron;
     uint64 uiLeviathanMKII;
+    uint64 uiVX001;
+    uint64 uiAerialUnit;
+    uint64 uiMagneticCore;
     
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest, *MimironTram;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest,
+        *MimironTram, *MimironElevator, *MimironChest;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -105,6 +112,9 @@ struct instance_ulduar : public InstanceData
             case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
             case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
             case GO_Mimiron_TRAM: MimironTram = add ? pGo : NULL; break;
+            case GO_Mimiron_ELEVATOR: MimironElevator = add ? pGo : NULL; break;
+            case GO_Mimiron_CHEST_HERO: MimironChest = add ? pGo : NULL; break;
+            case GO_Mimiron_CHEST: MimironChest = add ? pGo : NULL; break;
         }
     }
 
@@ -141,6 +151,9 @@ struct instance_ulduar : public InstanceData
             case 32873: uiRuneGiant = pCreature->GetGUID(); return;
             case 33350: uiMimiron = pCreature->GetGUID(); return;
             case 33432: uiLeviathanMKII = pCreature->GetGUID(); return;
+            case 33651: uiVX001 = pCreature->GetGUID(); return;
+            case 33670: uiAerialUnit = pCreature->GetGUID(); return;
+            case 34068: uiMagneticCore = pCreature->GetGUID(); return;
             
             // Hodir: Alliance npcs are spawned by default
             case 33325:
@@ -228,6 +241,12 @@ struct instance_ulduar : public InstanceData
             return uiMimiron;
         case DATA_LEVIATHAN_MK_II:
             return uiLeviathanMKII;
+        case DATA_VX_001:
+            return uiVX001;
+        case DATA_AERIAL_UNIT:
+            return uiAerialUnit;
+        case DATA_MAGNETIC_CORE:
+            return uiMagneticCore;
         }
         return 0;
     }
@@ -278,6 +297,10 @@ struct instance_ulduar : public InstanceData
                         }
                 }
                 break;
+            case DATA_MIMIRON_ELEVATOR:
+                if (MimironElevator)
+                    MimironElevator->SetGoState(GOState(value));
+                break;
         }
     }
 
@@ -301,6 +324,9 @@ struct instance_ulduar : public InstanceData
             
         if (id == BOSS_THORIM && state == DONE)
             ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+            
+        if (id == BOSS_MIMIRON && state == DONE)
+            MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
 
         return true;
     }
@@ -311,7 +337,7 @@ InstanceData* GetInstanceData_instance_ulduar(Map* pMap)
     return new instance_ulduar(pMap);
 }
 
-// Mimiron Tram (need update packet support)
+// Mimiron Tram
 bool GOHello_go_call_tram(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = pGo->GetInstanceData();
