@@ -595,11 +595,9 @@ class World
         uint32 GetUpdateTime() const { return m_updateTime; }
         void SetRecordDiffInterval(int32 t) { if (t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
-        /// Next daily quest reset time
-        time_t GetNextDailyQuestReset() const { return m_NextDailyQuestReset; }
-        /// Next weekly quest reset time
-        time_t GetNextWeeklyQuestReset() const { return m_NextWeeklyQuestReset; }
-        /// Next BG quest reset time
+        /// Next daily quests and random bg reset time
+        time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
+        time_t GetNextWeeklyQuestsResetTime() const { return m_NextWeeklyQuestReset; }
         time_t GetNextRandomBGResetTime() const { return m_NextRandomBGReset; }
  
         /// Get the maximum skill level a player can reach

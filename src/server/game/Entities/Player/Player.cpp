@@ -14935,10 +14935,10 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
     {
         if ((*itr).first == quest_id)
         {
-            if (daily && (*itr).second.ltime > sWorld.GetNextDailyQuestReset()-DAY)
+            if (daily && (*itr).second.ltime > sWorld.GetNextDailyQuestsResetTime()-DAY)
                 return false;
 
-            if (!daily && (*itr).second.ltime > sWorld.GetNextWeeklyQuestReset()-WEEK)
+            if (!daily && (*itr).second.ltime > sWorld.GetNextWeeklyQuestsResetTime()-WEEK)
                 return false;
         }
     }
