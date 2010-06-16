@@ -2,8 +2,9 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#include "sc_bs_sp_wrkr.h"
 #include "ScriptPCH.h"
+#include "sc_bs_sp_wrkr.h"
+#include "ace/Process_Mutex.h"
 
 #ifdef DEF_BOSS_SPELL_WORKER_H
 
@@ -585,15 +586,69 @@ Unit* BossSpellWorker::SelectLowHPFriendly(float fRange, uint32 uiMinHPDiff)
 
     return pUnit;
 }
+
+// Not threat-based select random player function
+
+Unit* BossSpellWorker::_doSelect(uint32 SpellID, bool spellsearchtype, float range)
+{
+    Map::PlayerList const &pList = pMap->GetPlayers();
+          if (pList.isEmpty()) return NULL;
+
+#if defined( __GNUC__ )
+    Unit* _list[pMap->GetMaxPlayers()];
+#else
+    Unit* _list[INSTANCE_MAX_PLAYERS];
+#endif 
+    uint8 _count = 0;
+
+    memset(&_list, 0, sizeof(_list));
+
+
+          for(Map::PlayerList::const_iterator i = pList.begin(); i != pList.end(); ++i)
+          {
+              if (Player* player = i->getSource())
+                 {
+                  if (player->isGameMaster()) continue;
+
+                  if ( player->isAlive()
+                       && player->IsWithinDistInMap(boss, range)
+                       && (SpellID == 0 || (player->HasAura(SpellID) == spellsearchtype))
+                     )
+                     {
+                     _list[_count] = (Unit*)player;
+                     ++_count;
+                     }
+                 }
+           }
+    debug_log("BSW: search result for random player, count = %u ",_count);
+    if (_count == 0) return NULL;
+    else return _list[urand(0,_count)];
+};
+
+#endif
 /* GUDE: ERRORS EXAMPLE!
 
 #include "precompiled.h" to  #include "ScriptedPch.h"
 
 pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0); -> pTarget = bsw->SelectUnit();
-if (!m_creature->SelectHostileTarget() || !m_creature->getVictim()) -> if (!UpdateVictim())
-m_creature->SetSpeedRate -> me->SetSpeed()
+pTarget= me->SelectAttackingTarget(SELECT_TARGET_RANDOM, 0) -> Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0) )
+
 m_creature->AddSplineFlag -> AddUnitMovementFlag (unit.cpp enum MovementFlags )
 
-*/
+if (!m_creature->SelectHostileTarget() || !m_creature->getVictim()) -> if (!UpdateVictim())
 
-#endif
+m_creature->SetSpeedRate -> me->SetSpeed()
+
+***(unit.cpp enum MovementFlags ) ***
+me->AddSplineFlag(SPLINEFLAG_WALKMODE); -> me->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+ThreatList -> std::list<HostileReference*>
+
+ATTACKING_TARGET_RANDOM -> SELECT_TARGET_RANDOM
+
+ me->AddThreat(pWho); -> me->AddThreat(pWho, 10.0f);
+
+me->RemoveSpellsCausingAura to me->RemoveAurasByType
+
+
+*/

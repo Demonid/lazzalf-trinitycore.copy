@@ -324,7 +324,7 @@ void AddSC_northrend_beasts();
 void AddSC_boss_anub_arak_crusader();
 void AddSC_instance_trial_of_the_crusader();
 void AddSC_boss_jaraxxus();
-void AddSC_boss_champions();
+void AddSC_boss_faction_champions();
 void AddSC_twin_valkyr();
 
 void AddSC_boss_slad_ran();
@@ -848,7 +848,7 @@ void AddScripts()
     AddSC_boss_anub_arak_crusader();
     AddSC_instance_trial_of_the_crusader();
     AddSC_boss_jaraxxus();
-    AddSC_boss_champions();
+    AddSC_boss_faction_champions();
     AddSC_twin_valkyr();
 
     AddSC_boss_slad_ran();               //Gundrak
