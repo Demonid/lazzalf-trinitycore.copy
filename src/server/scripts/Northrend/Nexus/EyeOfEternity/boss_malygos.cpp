@@ -809,28 +809,18 @@ struct boss_malygosAI : public ScriptedAI
         SurgeOfPower->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    bool isFlying(Unit* pUnit)
-    {
-        if(!m_pInstance)
-            return false;
-
-        m_pInstance->SetData64(TYPE_SET_PLAYER_TO_CHECK, pUnit->GetGUID());
-        bool result = m_pInstance->GetData(TYPE_CHECK_PLAYER_FLYING);
-        m_pInstance->SetData64(TYPE_SET_PLAYER_TO_CHECK, 0);
-
-        return result;
-    }
-
     void UpdateAI(const uint32 uiDiff)
     {
-        if(m_uiPhase == PHASE_NOSTART)
+        if (m_uiPhase == PHASE_NOSTART)
         {
             //TODO: This is wrong, the event starts when players klick on Focusing Iris! This is just the event begin
-            if(!m_uiIsDown && m_uiIsDownTimer <= uiDiff)       
+            if (!m_uiIsDown && m_uiIsDownTimer <= uiDiff)       
             {
                m_uiSubPhase = SUBPHASE_FLY_DOWN1;
                m_uiIsDown = true;
-            }else m_uiIsDownTimer -= uiDiff;
+            }
+            else m_uiIsDownTimer -= uiDiff;
+
             if(m_uiSubPhase == SUBPHASE_FLY_DOWN1)
             {
                 me->InterruptNonMeleeSpells(false);
@@ -840,7 +830,7 @@ struct boss_malygosAI : public ScriptedAI
                 m_uiSubPhase = SUBPHASE_FLY_DOWN2;
                 m_uiTimer = 3500;
             }
-            else if(m_uiSubPhase == SUBPHASE_FLY_DOWN2)
+            else if (m_uiSubPhase == SUBPHASE_FLY_DOWN2)
             {
                 if(m_uiTimer <= uiDiff)
                 {
@@ -851,7 +841,8 @@ struct boss_malygosAI : public ScriptedAI
                     me->RemoveUnitMovementFlag(MOVEMENTFLAG_SPLINE);
                     me->SetInCombatWithZone();
                     return;
-                }else m_uiTimer -= uiDiff;
+                }
+                else m_uiTimer -= uiDiff;
             }  
             else
             {
@@ -860,7 +851,7 @@ struct boss_malygosAI : public ScriptedAI
                 {
                     DoScriptText(SAY_INTRO1-m_uiSpeechCount, me);
                     m_uiSpeechCount++;
-                    if(m_uiSpeechCount == 5)
+                    if (m_uiSpeechCount == 5)
                     {
                         m_uiSpeechCount = 0;
                         m_uiSpeechTimer[0] = 15000;
@@ -870,7 +861,8 @@ struct boss_malygosAI : public ScriptedAI
                         m_uiSpeechTimer[4] = 18000;
                         m_uiSpeechTimer[5] = 17000;
                     }
-                }else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
+                }
+                else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
                 //Random movement over platform
                 if(m_uiTimer <= uiDiff)
                 {
@@ -913,31 +905,6 @@ struct boss_malygosAI : public ScriptedAI
                 }
                 m_uiWipeCheckTimer = 2500;
             }else m_uiWipeCheckTimer -= uiDiff;
-        }
-
-        if(m_uiPhase == PHASE_ADDS)
-        {
-            if(m_uiCheckDisksTimer < uiDiff)
-            {
-                if(m_pInstance)
-                {
-                    Map* pMap = me->GetMap();
-                    if(!pMap)
-                        return;
-
-                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                    {
-                        if(Creature* pDisk = (Creature*)itr->getSource()->GetVehicleBase())
-                        {
-                            itr->getSource()->ExitVehicle();
-                            m_pInstance->SetData64(TYPE_PLAYER_HOVER, itr->getSource()->GetGUID());
-                            pDisk->ForcedDespawn();
-                        }
-                    }
-                }
-                m_uiCheckDisksTimer = 2000;
-            }else m_uiCheckDisksTimer -= uiDiff;
         }
  
         //Enrage timer.....
@@ -1541,18 +1508,6 @@ struct mob_scion_of_eternityAI : public ScriptedAI
         uint32 y = urand(SHELL_MIN_Y, SHELL_MAX_Y);
         me->GetMotionMaster()->MovePoint(m_uiMovePoint, x, y, FLOOR_Z+10);
     }
-
-    bool isFlying(Unit* pUnit)
-    {
-        if(!m_pInstance)
-            return false;
-
-        m_pInstance->SetData64(TYPE_SET_PLAYER_TO_CHECK, pUnit->GetGUID());
-        bool result = m_pInstance->GetData(TYPE_CHECK_PLAYER_FLYING);
-        m_pInstance->SetData64(TYPE_SET_PLAYER_TO_CHECK, 0);
-
-        return result;
-    }
     
     void UpdateAI(const uint32 uiDiff)
     {
@@ -1563,7 +1518,7 @@ struct mob_scion_of_eternityAI : public ScriptedAI
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
-                if(isFlying(pTarget))
+                if (pTarget->GetVehicle())
                     return;
 
                 int32 bpoints0 = RAID_MODE(int32(BP_BARRAGE0), int32(BP_BARRAGE0_H));
@@ -1742,7 +1697,7 @@ bool GOHello_go_focusing_iris(Player* pPlayer, GameObject* pGo)
     if(pMalygos)
     {
         ((boss_malygosAI*)pMalygos->AI())->m_uiSubPhase = SUBPHASE_FLY_DOWN2;
-        pGo->Delete();
+        //pGo->Delete();
     }
     return true;
 }
