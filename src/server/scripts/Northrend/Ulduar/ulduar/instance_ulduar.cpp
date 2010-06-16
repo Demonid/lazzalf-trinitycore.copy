@@ -154,99 +154,79 @@ struct instance_ulduar : public InstanceData
             case 33651: uiVX001 = pCreature->GetGUID(); return;
             case 33670: uiAerialUnit = pCreature->GetGUID(); return;
             case 34068: uiMagneticCore = pCreature->GetGUID(); return;
-            
-            // Hodir: Alliance npcs are spawned by default
-            case 33325:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32941, HORDE); return;
-            case 32901:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(33333, HORDE); return;
-            case 33328:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(33332, HORDE); return;
-            case 32900:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32950, HORDE); return;
-            case 32893:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(33331, HORDE); return;
-            case 33327:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32946, HORDE); return;
-            case 32897:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32948, HORDE); return;
-            case 33326:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(33330, HORDE); return;
-                    
-            // Thorim: Pre-Phase Adds
-            case 32908:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32907, HORDE); return;
-            case 32885:
-                if (TeamInInstance == HORDE)
-                    pCreature->UpdateEntry(32883, HORDE); return;
         }
 
-        AddMinion(pCreature, add);
+        // Hodir: Alliance npcs are spawned by default
+        if (TeamInInstance == HORDE)
+            switch(pCreature->GetEntry())
+            {
+                case 33325: pCreature->UpdateEntry(32941, HORDE); return;
+                case 32901: pCreature->UpdateEntry(33333, HORDE); return;
+                case 33328: pCreature->UpdateEntry(33332, HORDE); return;
+                case 32900: pCreature->UpdateEntry(32950, HORDE); return;
+                case 32893: pCreature->UpdateEntry(33331, HORDE); return;
+                case 33327: pCreature->UpdateEntry(32946, HORDE); return;
+                case 32897: pCreature->UpdateEntry(32948, HORDE); return;
+                case 33326: pCreature->UpdateEntry(33330, HORDE); return;
+                case 32908: pCreature->UpdateEntry(32907, HORDE); return;
+                case 32885: pCreature->UpdateEntry(32883, HORDE); return;
+            }
     }
 
     uint64 GetData64(uint32 id)
     {
         switch(id)
         {
-        case DATA_LEVIATHAN:
-            return uiLeviathan;
-        case DATA_NORGANNON:
-            return uiNorgannon;
-        case DATA_IGNIS:
-            return uiIgnis;
-        case DATA_RAZORSCALE:
-            return uiRazorscale;
-        case DATA_EXP_COMMANDER:
-            return uiExpCommander;
-        case DATA_XT002:
-            return uiXT002;
-        case DATA_STEELBREAKER:
-            return uiSteelbreaker;
-        case DATA_MOLGEIM:
-            return uiMolgeim;
-        case DATA_BRUNDIR:
-            return uiBrundir;
-        case DATA_KOLOGARN:
-            return uiKologarn;
-        case DATA_RIGHT_ARM:
-            return uiRightArm;
-        case DATA_LEFT_ARM:
-            return uiLeftArm;
-        case DATA_AURIAYA:
-            return uiAuriaya;
-        case DATA_BRIGHTLEAF:
-            return uiBrightleaf;
-        case DATA_IRONBRANCH:
-            return uiIronbranch;
-        case DATA_STONEBARK:
-            return uiStonebark;
-        case DATA_FREYA:
-            return uiFreya;
-        case DATA_THORIM:
-            return uiThorim;
-        case DATA_RUNIC_COLOSSUS:
-            return uiRunicColossus;
-        case DATA_RUNE_GIANT:
-            return uiRuneGiant;
-        case DATA_MIMIRON:
-            return uiMimiron;
-        case DATA_LEVIATHAN_MK_II:
-            return uiLeviathanMKII;
-        case DATA_VX_001:
-            return uiVX001;
-        case DATA_AERIAL_UNIT:
-            return uiAerialUnit;
-        case DATA_MAGNETIC_CORE:
-            return uiMagneticCore;
+            case DATA_LEVIATHAN:
+                return uiLeviathan;
+            case DATA_NORGANNON:
+                return uiNorgannon;
+            case DATA_IGNIS:
+                return uiIgnis;
+            case DATA_RAZORSCALE:
+                return uiRazorscale;
+            case DATA_EXP_COMMANDER:
+                return uiExpCommander;
+            case DATA_XT002:
+                return uiXT002;
+            case DATA_STEELBREAKER:
+                return uiSteelbreaker;
+            case DATA_MOLGEIM:
+                return uiMolgeim;
+            case DATA_BRUNDIR:
+                return uiBrundir;
+            case DATA_KOLOGARN:
+                return uiKologarn;
+            case DATA_RIGHT_ARM:
+                return uiRightArm;
+            case DATA_LEFT_ARM:
+                return uiLeftArm;
+            case DATA_AURIAYA:
+                return uiAuriaya;
+            case DATA_BRIGHTLEAF:
+                return uiBrightleaf;
+            case DATA_IRONBRANCH:
+                return uiIronbranch;
+            case DATA_STONEBARK:
+                return uiStonebark;
+            case DATA_FREYA:
+                return uiFreya;
+            case DATA_THORIM:
+                return uiThorim;
+            case DATA_RUNIC_COLOSSUS:
+                return uiRunicColossus;
+            case DATA_RUNE_GIANT:
+                return uiRuneGiant;
+            case DATA_MIMIRON:
+                return uiMimiron;
+            case DATA_LEVIATHAN_MK_II:
+                return uiLeviathanMKII;
+            case DATA_VX_001:
+                return uiVX001;
+            case DATA_AERIAL_UNIT:
+                return uiAerialUnit;
+            case DATA_MAGNETIC_CORE:
+                return uiMagneticCore;
         }
         return 0;
     }
@@ -309,25 +289,30 @@ struct instance_ulduar : public InstanceData
         if (!InstanceData::SetBossState(id, state))
             return false;
             
-        if (id == BOSS_KOLOGARN && state == DONE)
+        switch (id)
         {
-            HandleGameObject(uiKologarnBridge, false);
-            KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+            case BOSS_KOLOGARN:
+                if (state == DONE)
+                {
+                    HandleGameObject(uiKologarnBridge, false);
+                    KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+                }
+                break;
+            case BOSS_HODIR:
+                if (state == DONE)
+                    HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
+                break;
+            case BOSS_THORIM:
+                if (state == IN_PROGRESS)
+                    pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                if (state == DONE)
+                    ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+                break;
+            case BOSS_MIMIRON:
+                if (state == DONE)
+                    MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
+                break;
         }
-        
-        if (id == BOSS_HODIR && state == DONE)
-            HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
-        
-        // Thorim Lever activated only when boss encounter is in progress
-        if (id == BOSS_THORIM && state == IN_PROGRESS)
-            pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
-            
-        if (id == BOSS_THORIM && state == DONE)
-            ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
-            
-        if (id == BOSS_MIMIRON && state == DONE)
-            MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
-
         return true;
     }
 };
@@ -345,18 +330,17 @@ bool GOHello_go_call_tram(Player* pPlayer, GameObject* pGo)
     if (!pInstance)
         return false;
 
-        switch(pGo->GetEntry())
-        {
-            case 194914:
-            case 194438:
-                pInstance->SetData(DATA_CALL_TRAM, 0);
-                break;
-            case 194912:
-            case 194437:
-                pInstance->SetData(DATA_CALL_TRAM, 1);
-                break;
-        }
-        
+    switch(pGo->GetEntry())
+    {
+        case 194914:
+        case 194438:
+            pInstance->SetData(DATA_CALL_TRAM, 0);
+            break;
+        case 194912:
+        case 194437:
+            pInstance->SetData(DATA_CALL_TRAM, 1);
+            break;
+    }
     return true;
 }
 
