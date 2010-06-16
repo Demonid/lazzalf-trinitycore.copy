@@ -1,3 +1,4 @@
+
 /* ScriptData
 SDName: instance_trial_of_the_crusader
 SD%Complete: 80%
@@ -5,13 +6,14 @@ SDComment: by /dev/rsa
 SDCategory: Trial of the Crusader
 EndScriptData */
 
+#include "Custom/sc_bs_sp_wrkr.h"
 #include "ScriptPCH.h"
 #include "def.h"
 
 struct instance_trial_of_the_crusader : public ScriptedInstance
 {
     instance_trial_of_the_crusader(Map* pMap) : ScriptedInstance(pMap) { 
-    Difficulty = ((InstanceMap*)pMap)->GetDifficulty();
+    Difficulty = pMap->GetDifficulty();
     Initialize(); 
     }
 
@@ -25,8 +27,7 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
 
     uint32 m_uiDataDamageFjola;
     uint32 m_uiDataDamageEydis;
-    uint32 m_uiFjolaCasting;
-    uint32 m_uiEydisCasting;
+    uint32 m_uiValkyrsCasting;
 
     uint32 m_auiCrusadersCount;
 
@@ -57,6 +58,10 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
     uint64 m_uiCrusader18Guid;
     uint64 m_uiCrusader19Guid;
     uint64 m_uiCrusader1aGuid;
+    uint64 m_uiCrusader1bGuid;
+    uint64 m_uiCrusader1cGuid;
+    uint64 m_uiCrusader1dGuid;
+    uint64 m_uiCrusader1eGuid;
 
     uint64 m_uiCrusader21Guid;
     uint64 m_uiCrusader22Guid;
@@ -68,6 +73,10 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
     uint64 m_uiCrusader28Guid;
     uint64 m_uiCrusader29Guid;
     uint64 m_uiCrusader2aGuid;
+    uint64 m_uiCrusader2bGuid;
+    uint64 m_uiCrusader2cGuid;
+    uint64 m_uiCrusader2dGuid;
+    uint64 m_uiCrusader2eGuid;
 
     uint64 m_uiCrusader01Guid;
     uint64 m_uiCrusader02Guid;
@@ -96,48 +105,38 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
     uint64 m_uiNorthPortcullisGUID;
     uint64 m_uiSouthPortcullisGUID;
 
+
     void Initialize()
     {
-        for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+    for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
             m_auiEncounter[i] = NOT_STARTED;
 
-        m_auiEncounter[0] = 0;
-        m_auiEncounter[7] = 50;
-        m_auiEncounter[8] = 0;
+            m_auiEncounter[0] = 0;
+            m_auiEncounter[7] = 50;
+            m_auiEncounter[8] = 0;
 
-        m_uiTributeChest1GUID = 0;
-        m_uiTributeChest2GUID = 0;
-        m_uiTributeChest3GUID = 0;
-        m_uiTributeChest4GUID = 0;
-        m_uiDataDamageFjola = 0;
-        m_uiDataDamageEydis = 0;
-        m_uiLich0GUID = 0;
-        m_uiLich1GUID = 0;
+    m_uiTributeChest1GUID = 0;
+    m_uiTributeChest2GUID = 0;
+    m_uiTributeChest3GUID = 0;
+    m_uiTributeChest4GUID = 0;
+    m_uiDataDamageFjola = 0;
+    m_uiDataDamageEydis = 0;
+    m_uiLich0GUID = 0;
+    m_uiLich1GUID = 0;
 
-        m_auiNorthrendBeasts = NOT_STARTED;
+    m_auiNorthrendBeasts = NOT_STARTED;
 
-        m_auiEventTimer = 1000;
+    m_auiEventTimer = 1000;
 
-        switch (Difficulty)
-        {
-        case RAID_DIFFICULTY_10MAN_NORMAL :
-        case RAID_DIFFICULTY_10MAN_HEROIC :
-            m_auiCrusadersCount = 6;
-            break;
-        case RAID_DIFFICULTY_25MAN_NORMAL :
-        case RAID_DIFFICULTY_25MAN_HEROIC :
-            m_auiCrusadersCount = 10;
-            break;
-        }
+    m_auiCrusadersCount = 6;
 
-        needsave = false;
+    needsave = false;
     }
 
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 1; i < MAX_ENCOUNTERS-2 ; ++i)
-            if (m_auiEncounter[i] == IN_PROGRESS)
-                return true;
+            if (m_auiEncounter[i] == IN_PROGRESS) return true;
 
         return false;
     }
@@ -180,7 +179,7 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
         if(pGo) pGo->SetGoState(GO_STATE_READY);
     }
 
-     void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+     void OnCreatureCreate(Creature* pCreature)
      {
         switch(pCreature->GetEntry())
         {
@@ -211,6 +210,10 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
          case NPC_CRUSADER_1_8: m_uiCrusader18Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_1_9: m_uiCrusader19Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_1_10: m_uiCrusader1aGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_1_11: m_uiCrusader1bGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_1_12: m_uiCrusader1cGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_1_13: m_uiCrusader1dGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_1_14: m_uiCrusader1eGuid = pCreature->GetGUID(); break;
 
          case NPC_CRUSADER_2_1: m_uiCrusader21Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_2_2: m_uiCrusader22Guid = pCreature->GetGUID(); break;
@@ -222,13 +225,17 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
          case NPC_CRUSADER_2_8: m_uiCrusader28Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_2_9: m_uiCrusader29Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_2_10: m_uiCrusader2aGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_2_11: m_uiCrusader2bGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_2_12: m_uiCrusader2cGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_2_13: m_uiCrusader2dGuid = pCreature->GetGUID(); break;
+         case NPC_CRUSADER_2_14: m_uiCrusader2eGuid = pCreature->GetGUID(); break;
 
          case NPC_CRUSADER_0_1: m_uiCrusader01Guid = pCreature->GetGUID(); break;
          case NPC_CRUSADER_0_2: m_uiCrusader02Guid = pCreature->GetGUID(); break;
         }
     }
 
-    void OnGameObjectCreate(GameObject* pGo, bool /*bAdd*/)
+    void OnObjectCreate(GameObject *pGo)
     {
         switch(pGo->GetEntry())
         {
@@ -253,10 +260,9 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
                                   break;
         case GO_MAIN_GATE_DOOR:   m_uiMainGateDoorGUID = pGo->GetGUID(); break;
 
-        case GO_SOUTH_PORTCULLIS: m_uiSouthPortcullisGUID = pGo->GetGUID(); break;
-        case GO_WEST_PORTCULLIS:  m_uiWestPortcullisGUID = pGo->GetGUID(); break;
-        case GO_NORTH_PORTCULLIS: m_uiNorthPortcullisGUID = pGo->GetGUID(); break;
-
+        case GO_SOUTH_PORTCULLIS:  m_uiSouthPortcullisGUID = pGo->GetGUID(); break;
+        case GO_WEST_PORTCULLIS:   m_uiWestPortcullisGUID = pGo->GetGUID(); break;
+        case GO_NORTH_PORTCULLIS:  m_uiNorthPortcullisGUID = pGo->GetGUID(); break;
 
         case GO_TRIBUTE_CHEST_10H_25: m_uiTC10h25GUID = pGo->GetGUID(); break;
         case GO_TRIBUTE_CHEST_10H_45: m_uiTC10h45GUID = pGo->GetGUID(); break;
@@ -325,29 +331,22 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
         case TYPE_COUNTER:   m_auiEncounter[7] = uiData; uiData = DONE; break;
         case TYPE_EVENT:     m_auiEncounter[8] = uiData; uiData = NOT_STARTED; break;
         case TYPE_EVENT_TIMER:      m_auiEventTimer = uiData; uiData = NOT_STARTED; break;
-        case TYPE_NORTHREND_BEASTS:
-            m_auiNorthrendBeasts = uiData;
-            if (uiData == ICEHOWL_DONE)
-            {
-                m_auiEncounter[1] = DONE;
-                needsave = true;
-            }
-            break;
+        case TYPE_NORTHREND_BEASTS: m_auiNorthrendBeasts = uiData; break;
         case DATA_HEALTH_FJOLA:     m_uiDataDamageFjola = uiData; uiData = NOT_STARTED; break;
         case DATA_HEALTH_EYDIS:     m_uiDataDamageEydis = uiData; uiData = NOT_STARTED; break;
-        case DATA_CASTING_FJOLA:    m_uiFjolaCasting = uiData; uiData = NOT_STARTED; break;
-        case DATA_CASTING_EYDIS:    m_uiEydisCasting = uiData; uiData = NOT_STARTED; break;
+        case DATA_CASTING_FJOLA:    m_uiValkyrsCasting = uiData; uiData = NOT_STARTED; break;
         }
-        if (IsEncounterInProgress())
-        {
-            CloseDoor(GetData64(GO_WEST_PORTCULLIS));
-            CloseDoor(GetData64(GO_NORTH_PORTCULLIS));
-            //CloseDoor(GetData64(GO_SOUTH_PORTCULLIS));
-        } else {
-            OpenDoor(GetData64(GO_WEST_PORTCULLIS));
-            OpenDoor(GetData64(GO_NORTH_PORTCULLIS));
-            //OpenDoor(GetData64(GO_SOUTH_PORTCULLIS));
-        }
+
+        if (IsEncounterInProgress()) {
+                                    CloseDoor(GetData64(GO_WEST_PORTCULLIS));
+                                    CloseDoor(GetData64(GO_NORTH_PORTCULLIS));
+//                                    CloseDoor(GetData64(GO_SOUTH_PORTCULLIS));
+                                    }
+                    else            {
+                                    OpenDoor(GetData64(GO_WEST_PORTCULLIS));
+                                    OpenDoor(GetData64(GO_NORTH_PORTCULLIS));
+//                                    OpenDoor(GetData64(GO_SOUTH_PORTCULLIS));
+                                    };
 
         if (uiData == FAIL && uiType != TYPE_STAGE
                            && uiType != TYPE_EVENT
@@ -364,8 +363,18 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
                            && uiType != TYPE_EVENT_TIMER)
                            || needsave == true)
         {
-            needsave = false;
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+
+            for(uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+                saveStream << m_auiEncounter[i] << " ";
+
+            m_strInstData = saveStream.str();
+
             SaveToDB();
+            OUT_SAVE_INST_DATA_COMPLETE;
+        needsave = false;
         }
     }
 
@@ -373,53 +382,62 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
     {
         switch(uiData)
         {
-            case NPC_BARRENT:  return m_uiBarrentGUID;
-            case NPC_TIRION:   return m_uiTirionGUID;
-            case NPC_FIZZLEBANG: return m_uiFizzlebangGUID;
-            case NPC_GARROSH:  return m_uiGarroshGUID;
-            case NPC_RINN:     return m_uiRinnGUID;
-            case NPC_LICH_KING_0: return m_uiLich0GUID;
-            case NPC_LICH_KING_1: return m_uiLich1GUID;
+         case NPC_BARRENT:  return m_uiBarrentGUID;
+         case NPC_TIRION:   return m_uiTirionGUID;
+         case NPC_FIZZLEBANG: return m_uiFizzlebangGUID;
+         case NPC_GARROSH:  return m_uiGarroshGUID;
+         case NPC_RINN:     return m_uiRinnGUID;
+         case NPC_LICH_KING_0: return m_uiLich0GUID;
+         case NPC_LICH_KING_1: return m_uiLich1GUID;
 
-            case NPC_GORMOK: return m_uiGormokGUID;
-            case NPC_ACIDMAW: return m_uiAcidmawGUID;
-            case NPC_DREADSCALE: return m_uiDreadscaleGUID;
-            case NPC_ICEHOWL: return m_uiIcehowlGUID;
-            case NPC_JARAXXUS: return  m_uiJaraxxusGUID;
-            case NPC_DARKBANE: return m_uiDarkbaneGUID;
-            case NPC_LIGHTBANE: return m_uiLightbaneGUID;
-            case NPC_ANUBARAK: return m_uiAnubarakGUID;
+         case NPC_GORMOK: return m_uiGormokGUID;
+         case NPC_ACIDMAW: return m_uiAcidmawGUID;
+         case NPC_DREADSCALE: return m_uiDreadscaleGUID;
+         case NPC_ICEHOWL: return m_uiIcehowlGUID;
+         case NPC_JARAXXUS: return  m_uiJaraxxusGUID;
+         case NPC_DARKBANE: return m_uiDarkbaneGUID;
+         case NPC_LIGHTBANE: return m_uiLightbaneGUID;
+         case NPC_ANUBARAK: return m_uiAnubarakGUID;
 
-            case NPC_CRUSADER_1_1: return m_uiCrusader11Guid;
-            case NPC_CRUSADER_1_2: return m_uiCrusader12Guid;
-            case NPC_CRUSADER_1_3: return m_uiCrusader13Guid;
-            case NPC_CRUSADER_1_4: return m_uiCrusader14Guid;
-            case NPC_CRUSADER_1_5: return m_uiCrusader15Guid;
-            case NPC_CRUSADER_1_6: return m_uiCrusader16Guid;
-            case NPC_CRUSADER_1_7: return m_uiCrusader17Guid;
-            case NPC_CRUSADER_1_8: return m_uiCrusader18Guid;
-            case NPC_CRUSADER_1_9: return m_uiCrusader19Guid;
-            case NPC_CRUSADER_1_10: return m_uiCrusader1aGuid;
+         case NPC_CRUSADER_1_1: return m_uiCrusader11Guid;
+         case NPC_CRUSADER_1_2: return m_uiCrusader12Guid;
+         case NPC_CRUSADER_1_3: return m_uiCrusader13Guid;
+         case NPC_CRUSADER_1_4: return m_uiCrusader14Guid;
+         case NPC_CRUSADER_1_5: return m_uiCrusader15Guid;
+         case NPC_CRUSADER_1_6: return m_uiCrusader16Guid;
+         case NPC_CRUSADER_1_7: return m_uiCrusader17Guid;
+         case NPC_CRUSADER_1_8: return m_uiCrusader18Guid;
+         case NPC_CRUSADER_1_9: return m_uiCrusader19Guid;
+         case NPC_CRUSADER_1_10: return m_uiCrusader1aGuid;
+         case NPC_CRUSADER_1_11: return m_uiCrusader1bGuid;
+         case NPC_CRUSADER_1_12: return m_uiCrusader1cGuid;
+         case NPC_CRUSADER_1_13: return m_uiCrusader1dGuid;
+         case NPC_CRUSADER_1_14: return m_uiCrusader1eGuid;
 
-            case NPC_CRUSADER_2_1: return m_uiCrusader21Guid;
-            case NPC_CRUSADER_2_2: return m_uiCrusader22Guid;
-            case NPC_CRUSADER_2_3: return m_uiCrusader23Guid;
-            case NPC_CRUSADER_2_4: return m_uiCrusader24Guid;
-            case NPC_CRUSADER_2_5: return m_uiCrusader25Guid;
-            case NPC_CRUSADER_2_6: return m_uiCrusader26Guid;
-            case NPC_CRUSADER_2_7: return m_uiCrusader27Guid;
-            case NPC_CRUSADER_2_8: return m_uiCrusader28Guid;
-            case NPC_CRUSADER_2_9: return m_uiCrusader29Guid;
-            case NPC_CRUSADER_2_10: return m_uiCrusader2aGuid;
+         case NPC_CRUSADER_2_1: return m_uiCrusader21Guid;
+         case NPC_CRUSADER_2_2: return m_uiCrusader22Guid;
+         case NPC_CRUSADER_2_3: return m_uiCrusader23Guid;
+         case NPC_CRUSADER_2_4: return m_uiCrusader24Guid;
+         case NPC_CRUSADER_2_5: return m_uiCrusader25Guid;
+         case NPC_CRUSADER_2_6: return m_uiCrusader26Guid;
+         case NPC_CRUSADER_2_7: return m_uiCrusader27Guid;
+         case NPC_CRUSADER_2_8: return m_uiCrusader28Guid;
+         case NPC_CRUSADER_2_9: return m_uiCrusader29Guid;
+         case NPC_CRUSADER_2_10: return m_uiCrusader2aGuid;
+         case NPC_CRUSADER_2_11: return m_uiCrusader2bGuid;
+         case NPC_CRUSADER_2_12: return m_uiCrusader2cGuid;
+         case NPC_CRUSADER_2_13: return m_uiCrusader2dGuid;
+         case NPC_CRUSADER_2_14: return m_uiCrusader2eGuid;
 
-            case NPC_CRUSADER_0_1: return m_uiCrusader01Guid;
-            case NPC_CRUSADER_0_2: return m_uiCrusader02Guid;
-            case GO_ARGENT_COLISEUM_FLOOR: return m_uiFloorGUID;
-            case GO_MAIN_GATE_DOOR:        return m_uiMainGateDoorGUID;
+         case NPC_CRUSADER_0_1: return m_uiCrusader01Guid;
+         case NPC_CRUSADER_0_2: return m_uiCrusader02Guid;
 
-            case GO_SOUTH_PORTCULLIS:       return m_uiSouthPortcullisGUID;
-            case GO_WEST_PORTCULLIS:        return m_uiWestPortcullisGUID;
-            case GO_NORTH_PORTCULLIS:       return m_uiNorthPortcullisGUID;
+         case GO_ARGENT_COLISEUM_FLOOR: return m_uiFloorGUID;
+         case GO_MAIN_GATE_DOOR:        return m_uiMainGateDoorGUID;
+
+         case GO_SOUTH_PORTCULLIS:       return m_uiSouthPortcullisGUID;
+         case GO_WEST_PORTCULLIS:        return m_uiWestPortcullisGUID;
+         case GO_NORTH_PORTCULLIS:       return m_uiNorthPortcullisGUID;
 
         }
         return 0;
@@ -514,11 +532,15 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
                                  case 1110:
                                  case 1120:
                                  case 1130:
+                                 case 1132:
+                                 case 1134:
                                  case 1135:
                                  case 1140:
+                                 case 1142:
+                                 case 1144:
+                                 case 1145:
                                  case 1150:
                                  case 1160:
-                                 case 1170:
                                  m_auiEventNPCId = NPC_FIZZLEBANG;
                                  break;
 
@@ -531,38 +553,27 @@ struct instance_trial_of_the_crusader : public ScriptedInstance
 
         case DATA_HEALTH_FJOLA: return m_uiDataDamageFjola;
         case DATA_HEALTH_EYDIS: return m_uiDataDamageEydis;
-        case DATA_CASTING_FJOLA: return m_uiFjolaCasting;
-        case DATA_CASTING_EYDIS: return m_uiEydisCasting;
+        case DATA_CASTING_FJOLA: return m_uiValkyrsCasting;
         }
         return 0;
     }
 
-    std::string GetSaveData()
+    const char* Save()
     {
-        OUT_SAVE_INST_DATA;
-
-        std::ostringstream saveStream;
-
-        for(uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
-            saveStream << m_auiEncounter[i] << " ";
-
-        m_strInstData = saveStream.str();
-
-        OUT_SAVE_INST_DATA_COMPLETE;
-        return m_strInstData;
+        return m_strInstData.c_str();
     }
 
-    void Load(const char* in)
+    void Load(const char* strIn)
     {
-        if (!in)
+        if (!strIn)
         {
             OUT_LOAD_INST_DATA_FAIL;
             return;
         }
 
-        OUT_LOAD_INST_DATA(in);
+        OUT_LOAD_INST_DATA(strIn);
 
-        std::istringstream loadStream(in);
+        std::istringstream loadStream(strIn);
 
         for(uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
         {

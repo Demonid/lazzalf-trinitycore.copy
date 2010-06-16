@@ -6,6 +6,7 @@ SDCategory: Crusader Coliseum
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "Custom/sc_bs_sp_wrkr.h"
 #include "def.h"
 
 #define AI_MELEE    0
@@ -15,7 +16,7 @@ EndScriptData */
 #define SPELL_ANTI_AOE     68595
 #define SPELL_PVP_TRINKET  65547
 
-struct boss_faction_championsAI : public ScriptedAI
+struct  boss_faction_championsAI : public ScriptedAI
 {
     boss_faction_championsAI(Creature* pCreature, uint32 aitype) : ScriptedAI(pCreature) 
     {
@@ -45,7 +46,7 @@ struct boss_faction_championsAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_CRUSADERS, FAIL);
-        me->ForcedDespawn();
+            me->ForcedDespawn();
     }
 
     float CalculateThreat(float distance, float armor, uint32 health)
@@ -97,14 +98,17 @@ struct boss_faction_championsAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
-        if(m_pInstance)
-            m_pInstance->SetData(TYPE_CRUSADERS_COUNT, 0);
+        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS_COUNT, 0);
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
+        if(!m_pInstance) return;
+        m_pInstance->SetData(TYPE_CRUSADERS, IN_PROGRESS);
         DoCast(me, SPELL_ANTI_AOE, true);
-        if(m_pInstance) m_pInstance->SetData(TYPE_CRUSADERS, IN_PROGRESS);
+            if(who->GetTypeId() != TYPEID_PLAYER)
+				if (Unit* player = bsw->SelectUnit())
+                       me->AddThreat(player, 100.0f);
     }
 
     void Reset()
@@ -165,7 +169,9 @@ struct boss_faction_championsAI : public ScriptedAI
                 DoStartMovement(pWho);
             else
                 DoStartMovement(pWho, 20.0f);
-            SetCombatMovement(true);
+
+        SetCombatMovement(true);
+
         }
     }
 
@@ -203,14 +209,14 @@ struct boss_faction_championsAI : public ScriptedAI
 #define SPELL_THORNS           66068
 #define SPELL_NATURE_GRASP     66071 //1 min cd, self buff
 
-struct mob_toc_druidAI : public boss_faction_championsAI
+struct  mob_toc_druidAI : public boss_faction_championsAI
 {
     mob_toc_druidAI(Creature* pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
-    
-    void Init()
-    {
-         SetEquipmentSlots(false, 51799, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+
+   void Init()
+   {
+        SetEquipmentSlots(false, 51799, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -258,14 +264,14 @@ struct mob_toc_druidAI : public boss_faction_championsAI
 #define SPELL_EARTH_SHIELD         66063
 #define SPELL_EARTH_SHOCK          65973
 
-struct mob_toc_shamanAI : public boss_faction_championsAI
+struct  mob_toc_shamanAI : public boss_faction_championsAI
 {
     mob_toc_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
-    
-    void Init()
-    {
-         SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+
+   void Init()
+   {
+        SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -311,14 +317,14 @@ struct mob_toc_shamanAI : public boss_faction_championsAI
 #define SPELL_HAND_OF_PROTECTION 66009
 #define SPELL_HAMMER_OF_JUSTICE  66613
 
-struct mob_toc_paladinAI : public boss_faction_championsAI
+struct  mob_toc_paladinAI : public boss_faction_championsAI
 {
     mob_toc_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
 
-    void Init()
-    {
+   void Init()
+   {
         SetEquipmentSlots(false, 50771, 47079, EQUIP_NO_CHANGE);
-    }
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -366,14 +372,14 @@ struct mob_toc_paladinAI : public boss_faction_championsAI
 #define SPELL_PSYCHIC_SCREAM   65543
 #define SPELL_MANA_BURN        66100
 
-struct mob_toc_priestAI : public boss_faction_championsAI
+struct  mob_toc_priestAI : public boss_faction_championsAI
 {
     mob_toc_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_HEALER) {Init();}
-    
-    void Init()
-    {
-         SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+
+   void Init()
+   {
+        SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -422,18 +428,18 @@ struct mob_toc_priestAI : public boss_faction_championsAI
 #define SPELL_DISPERSION       65544
 #define SPELL_SHADOWFORM       16592
 
-struct mob_toc_shadow_priestAI : public boss_faction_championsAI
+struct  mob_toc_shadow_priestAI : public boss_faction_championsAI
 {
     mob_toc_shadow_priestAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
 
-    void Init()
-    {
-         SetEquipmentSlots(false, 50040, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+   void Init()
+   {
+        SetEquipmentSlots(false, 50040, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
+   }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
-        boss_faction_championsAI::EnterCombat(who);
+        boss_faction_championsAI::Aggro(who);
         bsw->doCast(SPELL_SHADOWFORM);
     }
 
@@ -484,14 +490,14 @@ struct mob_toc_shadow_priestAI : public boss_faction_championsAI
 #define SPELL_Unstable_Affliction  65812
 #define H_SPELL_Unstable_Affliction 68155 //15s
 
-struct mob_toc_warlockAI : public boss_faction_championsAI
+struct  mob_toc_warlockAI : public boss_faction_championsAI
 {
     mob_toc_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
 
-    void Init()
-    {
+   void Init()
+   {
         SetEquipmentSlots(false, 49992, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -539,14 +545,14 @@ struct mob_toc_warlockAI : public boss_faction_championsAI
 #define SPELL_Ice_Block        65802 //5min
 #define SPELL_Polymorph        65801 //15s
 
-struct mob_toc_mageAI : public boss_faction_championsAI
+struct  mob_toc_mageAI : public boss_faction_championsAI
 {
     mob_toc_mageAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
 
-    void Init()
-    {
+   void Init()
+   {
         SetEquipmentSlots(false, 47524, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -597,7 +603,7 @@ struct mob_toc_mageAI : public boss_faction_championsAI
 #define SPELL_WING_CLIP        66207 //6s
 #define SPELL_Wyvern_Sting     65877 //60s
 
-struct mob_toc_hunterAI : public boss_faction_championsAI
+struct  mob_toc_hunterAI : public boss_faction_championsAI
 {
     mob_toc_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
 
@@ -651,14 +657,14 @@ struct mob_toc_hunterAI : public boss_faction_championsAI
 #define SPELL_Starfire         65854
 #define SPELL_Wrath            65862
 
-struct mob_toc_boomkinAI : public boss_faction_championsAI
+struct  mob_toc_boomkinAI : public boss_faction_championsAI
 {
     mob_toc_boomkinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_RANGED) {Init();}
 
-    void Init()
-    {
+   void Init()
+   {
         SetEquipmentSlots(false, 50966, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
-    }
+   }
 
     void UpdateAI(const uint32 diff)
     {
@@ -709,7 +715,7 @@ struct mob_toc_boomkinAI : public boss_faction_championsAI
 #define SPELL_SHATTERING_THROW     65940
 #define SPELL_RETALIATION          65932
 
-struct mob_toc_warriorAI : public boss_faction_championsAI
+struct  mob_toc_warriorAI : public boss_faction_championsAI
 {
     mob_toc_warriorAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
@@ -752,7 +758,7 @@ struct mob_toc_warriorAI : public boss_faction_championsAI
 #define SPELL_Icy_Touch          66021  //8sec
 #define SPELL_Strangulate        66018 //2min
 
-struct mob_toc_dkAI : public boss_faction_championsAI
+struct  mob_toc_dkAI : public boss_faction_championsAI
 {
     mob_toc_dkAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
@@ -794,7 +800,7 @@ struct mob_toc_dkAI : public boss_faction_championsAI
 #define SPELL_HEMORRHAGE           65954
 #define SPELL_EVISCERATE           65957
 
-struct mob_toc_rogueAI : public boss_faction_championsAI
+struct  mob_toc_rogueAI : public boss_faction_championsAI
 {
     mob_toc_rogueAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
@@ -834,7 +840,7 @@ struct mob_toc_rogueAI : public boss_faction_championsAI
 #define SPELL_LAVA_LASH        65974
 #define SPELL_STORMSTRIKE      65970
 
-struct mob_toc_enh_shamanAI : public boss_faction_championsAI
+struct  mob_toc_enh_shamanAI : public boss_faction_championsAI
 {
     mob_toc_enh_shamanAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
@@ -869,7 +875,7 @@ struct mob_toc_enh_shamanAI : public boss_faction_championsAI
 #define SPELL_REPENTANCE           66008 //60sec cd
 #define SPELL_Seal_of_Command      66004 //no cd
 
-struct mob_toc_retro_paladinAI : public boss_faction_championsAI
+struct  mob_toc_retro_paladinAI : public boss_faction_championsAI
 {
     mob_toc_retro_paladinAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
@@ -878,15 +884,15 @@ struct mob_toc_retro_paladinAI : public boss_faction_championsAI
         SetEquipmentSlots(false, 47519, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
-        boss_faction_championsAI::EnterCombat(who);
+        boss_faction_championsAI::Aggro(who);
         bsw->doCast(SPELL_Seal_of_Command);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim()) return;
+       if (!UpdateVictim()) return;
 
             bsw->timedCast(SPELL_REPENTANCE, diff);
 
@@ -908,19 +914,20 @@ struct mob_toc_retro_paladinAI : public boss_faction_championsAI
 #define SPELL_WPET0 67518
 #define SPELL_WPET1 67519
 
-struct mob_toc_pet_warlockAI : public boss_faction_championsAI
+struct  mob_toc_pet_warlockAI : public boss_faction_championsAI
 {
     mob_toc_pet_warlockAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
-        boss_faction_championsAI::EnterCombat(who);
+        boss_faction_championsAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim()) return;
 
+        
             bsw->timedCast(SPELL_WPET0, diff);
 
             bsw->timedCast(SPELL_WPET1, diff);
@@ -930,13 +937,13 @@ struct mob_toc_pet_warlockAI : public boss_faction_championsAI
 };
 
 #define SPELL_HPET0 67793
-struct mob_toc_pet_hunterAI : public boss_faction_championsAI
+struct  mob_toc_pet_hunterAI : public boss_faction_championsAI
 {
     mob_toc_pet_hunterAI(Creature *pCreature) : boss_faction_championsAI(pCreature, AI_MELEE) {Init();}
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
-        boss_faction_championsAI::EnterCombat(who);
+        boss_faction_championsAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1000,7 +1007,7 @@ CreatureAI* GetAI_mob_toc_pet_hunter(Creature *pCreature) {
     return new mob_toc_pet_hunterAI (pCreature);
 }
 
-void AddSC_boss_champions()
+void AddSC_boss_faction_champions()
 {
     Script *newscript;
 

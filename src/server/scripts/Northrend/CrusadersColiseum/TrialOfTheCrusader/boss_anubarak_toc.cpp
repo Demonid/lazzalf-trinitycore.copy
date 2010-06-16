@@ -1,3 +1,14 @@
+/* ScriptData
+SDName: boss_anubarak_trial
+SD%Complete: 70%
+SDComment: by /dev/rsa
+SDCategory:
+EndScriptData */
+
+// Anubarak - underground phase partially not worked, timers need correct
+// Burrower - underground phase not implemented, buff not worked.
+// Leecheng Swarm spell not worked - awaiting core support
+// Anubarak spike aura worked only after 9750
 
 #include "ScriptPCH.h"
 #include "def.h"
@@ -54,11 +65,10 @@ struct boss_anubarak_trialAI : public ScriptedAI
         if(!m_pInstance) return;
         stage = 0;
         intro = true;
-        me->SetRespawnDelay(DAY);
+       me->SetRespawnDelay(DAY);
         pTarget = NULL;
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
 
@@ -72,14 +82,14 @@ struct boss_anubarak_trialAI : public ScriptedAI
         if (!intro) return;
         DoScriptText(-1713554,me);
         intro = false;
-        me->SetInCombatWithZone();
+       me->SetInCombatWithZone();
     }
 
     void JustReachedHome()
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ANUBARAK, FAIL);
-            //me->ForcedDespawn();
+//           me->ForcedDespawn();
     }
 
     void JustDied(Unit* pKiller)
@@ -89,18 +99,18 @@ struct boss_anubarak_trialAI : public ScriptedAI
             m_pInstance->SetData(TYPE_ANUBARAK, DONE);
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
         if (!intro) DoScriptText(-1713555,me);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        me->SetInCombatWithZone();
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+       me->SetInCombatWithZone();
         m_pInstance->SetData(TYPE_ANUBARAK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!UpdateVictim())
+		if (!UpdateVictim())
             return;
 
         switch(stage)
@@ -117,13 +127,13 @@ struct boss_anubarak_trialAI : public ScriptedAI
                     break;}
             case 1: {
                     bsw->doCast(SPELL_SUBMERGE_0);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                   me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     stage = 2;
                     DoScriptText(-1713557,me);
                     break;}
             case 2: {
                     if (bsw->timedQuery(SPELL_SPIKE_CALL, uiDiff)) {
-                         pTarget = bsw->SelectUnit();
+                         pTarget =bsw->SelectUnit();
 //                         bsw->doCast(SPELL_SPIKE_CALL);
 //                         This summon not supported in database. Temporary override.
                          Unit* spike = bsw->doSummon(NPC_SPIKE,TEMPSUMMON_TIMED_DESPAWN,60000);
@@ -143,7 +153,7 @@ struct boss_anubarak_trialAI : public ScriptedAI
             case 3: {
                     stage = 0;
                     DoScriptText(-1713559,me);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                   me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     bsw->doRemove(SPELL_SUBMERGE_0,me);
                     break;}
             case 4: {
@@ -186,14 +196,8 @@ struct mob_swarm_scarabAI : public ScriptedAI
 
     void Reset()
     {
-        me->SetInCombatWithZone();
-        me->SetRespawnDelay(DAY);
-
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-        {
-                me->GetMotionMaster()->MoveChase(pTarget);
-                me->SetSpeed(MOVE_RUN, 1);
-        }
+       me->SetInCombatWithZone();
+       me->SetRespawnDelay(DAY);
     }
 
     void KilledUnit(Unit* pVictim)
@@ -205,7 +209,7 @@ struct mob_swarm_scarabAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -213,7 +217,7 @@ struct mob_swarm_scarabAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_pInstance && m_pInstance->GetData(TYPE_ANUBARAK) != IN_PROGRESS) 
-            me->ForcedDespawn();
+           me->ForcedDespawn();
 
         if (!UpdateVictim())
             return;
@@ -247,16 +251,10 @@ struct mob_nerubian_borrowerAI : public ScriptedAI
 
     void Reset()
     {
-        me->SetInCombatWithZone();
-        me->SetRespawnDelay(DAY);
+       me->SetInCombatWithZone();
+       me->SetRespawnDelay(DAY);
         submerged = false;
         currentTarget = NULL;
-
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-        {
-                me->GetMotionMaster()->MoveChase(pTarget);
-                me->SetSpeed(MOVE_RUN, 1);
-        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -268,7 +266,7 @@ struct mob_nerubian_borrowerAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -276,7 +274,7 @@ struct mob_nerubian_borrowerAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_pInstance && m_pInstance->GetData(TYPE_ANUBARAK) != IN_PROGRESS) 
-            me->ForcedDespawn();
+           me->ForcedDespawn();
 
         if (!UpdateVictim())
             return;
@@ -327,10 +325,11 @@ struct mob_frost_sphereAI : public ScriptedAI
 
     void Reset()
     {
-        me->SetRespawnDelay(DAY);
-        me->SetSpeed(MOVE_RUN, 0.1f);
-        me->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        me->GetMotionMaster()->MoveRandom();
+       me->SetRespawnDelay(DAY);
+       me->SetSpeed(MOVE_RUN, 0.1f);
+       me->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+       me->GetMotionMaster()->MoveRandom();
+
     }
 
     void EnterCombat(Unit* attacker)
@@ -341,7 +340,7 @@ struct mob_frost_sphereAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_pInstance || m_pInstance->GetData(TYPE_ANUBARAK) != IN_PROGRESS) 
-           me->ForcedDespawn();
+          me->ForcedDespawn();
     }
 };
 
@@ -365,14 +364,14 @@ struct mob_anubarak_spikeAI : public ScriptedAI
 
     void Reset()
     {
-        me->SetRespawnDelay(DAY);
-        me->SetSpeed(MOVE_RUN, 0.5f);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+       me->SetRespawnDelay(DAY);
+       me->SetSpeed(MOVE_RUN, 0.5f);
+       me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+       me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         defaultTarget = NULL;
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
         bsw->doCast(SPELL_IMPALE);
@@ -382,10 +381,10 @@ struct mob_anubarak_spikeAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (m_pInstance && m_pInstance->GetData(TYPE_ANUBARAK) != IN_PROGRESS) 
-            me->ForcedDespawn();
+           me->ForcedDespawn();
         if (defaultTarget)
             if (!defaultTarget->isAlive() || !bsw->hasAura(SPELL_MARK,defaultTarget))
-                 me->ForcedDespawn();
+                me->ForcedDespawn();
 
 /*        if (bsw->timedQuery(SPELL_IMPALE,uiDiff)) {
         if (me->IsWithinDist(me->getVictim(), 4.0f)

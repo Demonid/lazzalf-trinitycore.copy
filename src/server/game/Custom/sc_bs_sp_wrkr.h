@@ -18,6 +18,7 @@ enum
   DIFFICULTY_LEVELS = 4,
   MAX_BOSS_SPELLS   = 16,
   SPELL_INDEX_ERROR = 255,
+  INSTANCE_MAX_PLAYERS = 40,
 };
 
 enum BossSpellFlag
@@ -148,6 +149,16 @@ class BossSpellWorker
              return _doSummon(FindSpellIDX(SpellID), type, delay);
              };
 
+        Unit* SelectRandomPlayer(uint32 SpellID = 0, bool spellsearchtype = false, float range = 100.0f)
+             {
+             return _doSelect(SpellID, spellsearchtype, range);
+             };
+
+        Unit* SelectRandomPlayerAtRange(float range)
+             {
+             return _doSelect(0, false, range);
+             };
+
         Unit* doSummon(uint32 SpellID, float fPosX, float fPosY, float fPosZ, TempSummonType type = TEMPSUMMON_CORPSE_TIMED_DESPAWN, uint32 delay = 60000)
              {
              return _doSummonAtPosition(FindSpellIDX(SpellID), type, delay, fPosX, fPosY, fPosZ);
@@ -186,6 +197,8 @@ class BossSpellWorker
         void          _resetTimer(uint8 m_uiSpellIdx);
 
         bool          isSummon(uint8 m_uiSpellIdx);
+
+		Unit*         _doSelect(uint32 SpellID, bool spellsearchtype = false, float range = 100.0f);
 
         Unit*         _doSummon(uint8 m_uiSpellIdx, TempSummonType type = TEMPSUMMON_CORPSE_TIMED_DESPAWN, uint32 delay = 60000);
 

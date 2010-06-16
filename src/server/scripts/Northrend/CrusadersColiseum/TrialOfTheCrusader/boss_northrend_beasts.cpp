@@ -1,7 +1,3 @@
-// Gormok - Firebomb not implemented, timers need correct
-// Snakes - Underground phase not worked, timers need correct
-// Icehowl - Trample&Crash event not implemented, timers need correct
-
 /* ScriptData
 SDName: northrend_beasts
 SD%Complete: 90% 
@@ -12,10 +8,9 @@ EndScriptData */
 // not implemented:
 // snobolds link
 // snakes underground cast (not support in core)
-// aura 31 (SPELL_ADRENALINE) not applyed by undefined reason
-// model_id (or visual effect) for slime_pool need change.
 
 #include "ScriptPCH.h"
+#include "Custom/sc_bs_sp_wrkr.h"
 #include "def.h"
 
 enum Equipment
@@ -68,6 +63,7 @@ SPELL_FROTHING_RAGE    = 66759,
 SPELL_STAGGERED_DAZE   = 66758,
 SPELL_SLIME_POOL_1     = 66881,
 SPELL_SLIME_POOL_2     = 66882,
+SPELL_SLIME_POOL_VISUAL  = 63084,
 };
 
 struct boss_gormokAI : public ScriptedAI
@@ -87,7 +83,7 @@ struct boss_gormokAI : public ScriptedAI
 
         if(!m_pInstance) return;
         SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
-        me->SetRespawnDelay(DAY);
+        me->SetRespawnDelay(7*DAY);
         me->SetInCombatWithZone();
         SnoboldsCount = 4;
     }
@@ -105,14 +101,14 @@ struct boss_gormokAI : public ScriptedAI
             me->ForcedDespawn();
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, GORMOK_IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!UpdateVictim())
+       if (!UpdateVictim())
             return;
 
         bsw->timedCast(SPELL_IMPALE, uiDiff);
@@ -154,17 +150,11 @@ struct mob_snobold_vassalAI : public ScriptedAI
         defaultTarget = NULL;
         me->SetInCombatWithZone();
         me->SetRespawnDelay(DAY);
-        pBoss = Unit::GetCreature((*me),m_pInstance->GetData64(NPC_GORMOK));
+        pBoss = (Creature*)Unit::GetUnit((*me),m_pInstance->GetData64(NPC_GORMOK));
         if (pBoss) bsw->doCast(SPELL_RISING_ANGER,pBoss);
-
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-        {
-                me->GetMotionMaster()->MoveChase(pTarget);
-                me->SetSpeed(MOVE_RUN, 1);
-        }
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
         defaultTarget = who;
@@ -227,40 +217,40 @@ struct boss_acidmawAI : public ScriptedAI
         stage = 1;
         enraged = false;
         me->SetInCombatWithZone();
-        me->SetRespawnDelay(DAY);
+        me->SetRespawnDelay(7*DAY);
+        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
     }
 
     void JustDied(Unit* pKiller)
     {
         if (!m_pInstance) return;
-        if (Creature* pSister = Unit::GetCreature((*me), m_pInstance->GetData64(NPC_DREADSCALE)))
-            if (pSister->isAlive())
-                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
-        else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+            if (Creature* pSister = (Creature*)Unit::GetUnit((*me),m_pInstance->GetData64(NPC_DREADSCALE)))
+               if (!pSister->isAlive())
+                         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+                else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
     }
 
     void JustReachedHome()
     {
         if (!m_pInstance) return;
-        if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
-            m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-
-        me->ForcedDespawn();
+        if (m_pInstance->GetData(TYPE_BEASTS) == IN_PROGRESS
+            && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
+                        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
+            me->ForcedDespawn();
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_pInstance && !Unit::GetCreature((*me), m_pInstance->GetData64(NPC_DREADSCALE)))
-            this->JustReachedHome();
 
-        if (!UpdateVictim())
+        if (!UpdateVictim() 
+        && (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != ACIDMAW_SUBMERGED))
             return;
 
-        switch (stage) 
+    switch (stage) 
         {
         case 0: {
                 bsw->timedCast(SPELL_ACID_SPEW, uiDiff);
@@ -279,6 +269,7 @@ struct boss_acidmawAI : public ScriptedAI
                     break;}
         case 1: {
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->InterruptNonMeleeSpells(true);
                     bsw->doCast(SPELL_SUBMERGE_0);
                     stage = 2;
                     DoScriptText(-1713557,me);
@@ -288,19 +279,17 @@ struct boss_acidmawAI : public ScriptedAI
                 if (bsw->timedQuery(SPELL_SLIME_POOL, uiDiff))
                     bsw->doCast(NPC_SLIME_POOL);
 
-                if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
+                if ((bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
+                    || m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED)
                         stage = 3;
                     break;}
         case 3: {
                     DoScriptText(-1713559,me);
                     bsw->doRemove(SPELL_SUBMERGE_0);
-
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    bsw->resetTimer(SPELL_SLIME_POOL);
                     stage = 0;
                     m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
-                    break;
-                }
+                    break;}
         }
 
         if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == SNAKES_SPECIAL && !enraged)
@@ -336,44 +325,41 @@ struct boss_dreadscaleAI : public ScriptedAI
     BossSpellWorker* bsw;
     uint8 stage;
     bool enraged;
-    Creature* acidmaw;
 
     void Reset()
     {
         stage = 0;
         enraged = false;
         me->SetInCombatWithZone();
-        me->SetRespawnDelay(DAY);
+        me->SetRespawnDelay(7*DAY);
     }
 
     void JustDied(Unit* pKiller)
     {
         if (!m_pInstance) return;
-        if (Creature* pSister = Unit::GetCreature((*me), m_pInstance->GetData64(NPC_ACIDMAW)))
-            if (pSister->isAlive())
-                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
-        else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+            if (Creature* pSister = (Creature*)Unit::GetUnit((*me),m_pInstance->GetData64(NPC_ACIDMAW)))
+               if (!pSister->isAlive())
+                         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+                else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
     }
 
     void JustReachedHome()
     {
         if (!m_pInstance) return;
-        if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
-            m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-
-        me->ForcedDespawn();
+        if (m_pInstance->GetData(TYPE_BEASTS) == IN_PROGRESS
+            && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
+                        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
+            me->ForcedDespawn();
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_pInstance && !Unit::GetCreature((*me), m_pInstance->GetData64(NPC_ACIDMAW)))
-            this->JustReachedHome();
-
-        if (!UpdateVictim())
+        if (!UpdateVictim() 
+        && (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != DREADSCALE_SUBMERGED))
             return;
 
         switch (stage) 
@@ -395,24 +381,25 @@ struct boss_dreadscaleAI : public ScriptedAI
                     break;}
         case 1: {
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->InterruptNonMeleeSpells(true);
                     bsw->doCast(SPELL_SUBMERGE_0);
                     stage = 2;
                     DoScriptText(-1713557,me);
                     m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
                     break;}
         case 2: {
+
                 if (bsw->timedQuery(SPELL_SLIME_POOL, uiDiff))
                     bsw->doCast(NPC_SLIME_POOL);
 
-                if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED) 
+                if ((bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED)
+                    || m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
                          stage = 3;
                     break;}
         case 3: {
                     DoScriptText(-1713559,me);
                     bsw->doRemove(SPELL_SUBMERGE_0);
-
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    bsw->resetTimer(SPELL_SLIME_POOL);
                     stage = 0;
                     m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
                     break;}
@@ -450,20 +437,19 @@ struct mob_slime_poolAI : public ScriptedAI
     ScriptedInstance *m_pInstance;
     BossSpellWorker* bsw;
     float m_Size;
-    uint8 Difficulty;
+    bool cloudcasted;
 
     void Reset()
     {
         if(!m_pInstance) return;
-        Difficulty = m_pInstance->GetData(TYPE_DIFFICULTY);
-        if (Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || Difficulty == RAID_DIFFICULTY_25MAN_HEROIC) 
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetInCombatWithZone();
         me->SetSpeed(MOVE_RUN, 0.05f);
         SetCombatMovement(false);
         me->GetMotionMaster()->MoveRandom();
         bsw->doCast(SPELL_SLIME_POOL_2);
         m_Size = me->GetFloatValue(OBJECT_FIELD_SCALE_X);
+        cloudcasted = false;
     }
 
     void AttackStart(Unit *who)
@@ -473,12 +459,17 @@ struct mob_slime_poolAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-            if (bsw->timedQuery(SPELL_SLIME_POOL_2,uiDiff)) {
-                m_Size = m_Size*1.036;
+        if (!cloudcasted) {
+                          bsw->doCast(SPELL_SLIME_POOL_VISUAL);
+                          cloudcasted = true;
+                          }
+
+        if (bsw->timedQuery(SPELL_SLIME_POOL_2,uiDiff)) {
+                m_Size = m_Size*1.035;
                 me->SetFloatValue(OBJECT_FIELD_SCALE_X, m_Size);
                 }
                 // Override especially for clean core
-                   if (m_Size >= 5.0f) me->ForcedDespawn();
+                   if (m_Size >= 6.0f) me->ForcedDespawn();
     }
 
 };
@@ -507,7 +498,7 @@ struct boss_icehowlAI : public ScriptedAI
 
     void Reset() {
         if(!m_pInstance) return;
-        me->SetRespawnDelay(DAY);
+        me->SetRespawnDelay(7*DAY);
         MovementStarted = false;
         stage = 0;
     }
@@ -541,7 +532,7 @@ struct boss_icehowlAI : public ScriptedAI
             me->ForcedDespawn();
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
         me->SetInCombatWithZone();
         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ICEHOWL_IN_PROGRESS);
@@ -575,7 +566,7 @@ struct boss_icehowlAI : public ScriptedAI
                  break;
                 }
         case 2: {
-                        if (pTarget = bsw->SelectUnit()) {
+                        if (pTarget = bsw->SelectUnit(SELECT_TARGET_RANDOM, 0)) {
                         TrampleCasted = false;
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         stage = 3;
@@ -588,6 +579,7 @@ struct boss_icehowlAI : public ScriptedAI
                 }
         case 3: {
                 if (bsw->timedQuery(SPELL_TRAMPLE,uiDiff)) {
+                        if (pTarget && pTarget->isAlive() && (pTarget->IsWithinDistInMap(me, 200.0f))) {
                                     pTarget->GetPosition(fPosX, fPosY, fPosZ);
                                     TrampleCasted = false;
                                     MovementStarted = true;
@@ -596,6 +588,11 @@ struct boss_icehowlAI : public ScriptedAI
                                     bsw->doCast(SPELL_ADRENALINE);
                                     stage = 4;
                                     }
+                        else        {
+                                    TrampleCasted = true;
+                                    stage = 5;
+                                    }
+                        }
                 break;
                 }
         case 4: {

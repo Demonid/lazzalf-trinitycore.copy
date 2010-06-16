@@ -9,7 +9,9 @@ SDCategory: Crusader Coliseum
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "Custom/sc_bs_sp_wrkr.h"
 #include "def.h"
+
 enum Equipment
 {
     EQUIP_MAIN           = 47266,
@@ -71,7 +73,7 @@ struct boss_jaraxxusAI : public ScriptedAI
         if(!m_pInstance) return;
         Difficulty = m_pInstance->GetData(TYPE_DIFFICULTY);
         m_pInstance->SetData(TYPE_JARAXXUS, NOT_STARTED);
-        SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
+//        SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
         m_portalsCount = 1;
         if (Difficulty == RAID_DIFFICULTY_10MAN_HEROIC || Difficulty == RAID_DIFFICULTY_25MAN_HEROIC) 
         {
@@ -101,7 +103,7 @@ struct boss_jaraxxusAI : public ScriptedAI
             m_pInstance->SetData(TYPE_STAGE,0);
     }
 
-    void EnterCombat(Unit* pWho)
+    void Aggro(Unit* pWho)
     {
         if (!m_pInstance) return;
         me->SetInCombatWithZone();
@@ -120,7 +122,7 @@ struct boss_jaraxxusAI : public ScriptedAI
         bsw->timedCast(SPELL_FEL_LIGHTING, uiDiff);
 
         if (bsw->timedQuery(SPELL_INCINERATE_FLESH, uiDiff)) {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                    if (Unit* pTarget = bsw->SelectUnit())
                            {
                            DoScriptText(-1713522,me,pTarget);
                            bsw->doCast(SPELL_INCINERATE_FLESH,pTarget);
@@ -173,11 +175,10 @@ struct mob_legion_flameAI : public ScriptedAI
         me->SetInCombatWithZone();
         me->SetRespawnDelay(DAY);
 
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0) ) {
+        if (Unit* pTarget= SelectUnit(SELECT_TARGET_RANDOM, 0) ) {
                 me->GetMotionMaster()->MoveChase(pTarget);
                 me->SetSpeed(MOVE_RUN, 0.5);
                 }
-
     }
 
     void KilledUnit(Unit* pVictim)
@@ -185,7 +186,11 @@ struct mob_legion_flameAI : public ScriptedAI
         if (pVictim->GetTypeId() != TYPEID_PLAYER) return;
     }
 
-    void EnterCombat(Unit *who)
+    void JustDied(Unit* Killer)
+    {
+    }
+
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -202,22 +207,19 @@ struct mob_legion_flameAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                if (me->IsWithinDist(me->getVictim(), 4.0f, false))
-                {
-                    DoCast(me->getVictim(), SPELL_LEGION_FLAME_0);
-                    me->ForcedDespawn();
-                }
+                    if (me->IsWithinDist(me->getVictim(), 4.0f, false))
+                    {
+                        DoCast(me,SPELL_LEGION_FLAME_0);
+                    }
             }
-            
             m_uiRangeCheck_Timer = 1000;
-            
-            if (me->getVictim())
-            {
-                me->GetMotionMaster()->MoveChase(me->getVictim());
-                me->SetSpeed(MOVE_RUN, 0.5);
-            }
+            if (me->getVictim()) {
+                                  me->GetMotionMaster()->MoveChase(me->getVictim());
+                                  me->SetSpeed(MOVE_RUN, 0.5);
+                                  }
         }
         else m_uiRangeCheck_Timer -= uiDiff;
+
     }
 };
 
@@ -272,7 +274,7 @@ struct mob_infernal_volcanoAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -315,10 +317,6 @@ struct mob_fel_infernalAI : public ScriptedAI
     {
         me->SetInCombatWithZone();
         me->SetRespawnDelay(DAY);
-
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0)) {
-            me->Attack(pTarget, true);
-        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -330,7 +328,7 @@ struct mob_fel_infernalAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -400,7 +398,7 @@ struct mob_nether_portalAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
     }
@@ -444,12 +442,6 @@ struct mob_mistress_of_painAI : public ScriptedAI
     {
         me->SetInCombatWithZone();
         me->SetRespawnDelay(DAY);
-
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-        {
-                me->GetMotionMaster()->MoveChase(pTarget);
-                me->SetSpeed(MOVE_RUN, 1);
-        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -461,7 +453,7 @@ struct mob_mistress_of_painAI : public ScriptedAI
     {
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit *who)
     {
         if (!m_pInstance) return;
         DoScriptText(-1713523,me, who);
