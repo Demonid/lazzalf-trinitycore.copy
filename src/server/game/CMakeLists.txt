@@ -104,6 +104,12 @@ SET(game_STAT_SRCS
    Combat/UnitEvents.h
    Conditions/ConditionMgr.cpp
    Conditions/ConditionMgr.h
+   Custom/GuildHouse.cpp
+   Custom/GuildHouse.h
+   Custom/sc_npc_teleport.cpp
+   Custom/sc_npc_teleport.h
+   Custom/sc_bs_sp_wrkr.cpp
+   Custom/sc_bs_sp_wrkr.h
    DataStores/DBCEnums.h
    DataStores/DBCStores.cpp
    DataStores/DBCStores.h
@@ -444,4 +450,3 @@ ADD_DEPENDENCIES(game revision.h)
 IF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
         ADD_PRECOMPILED_HEADER(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/NixCorePCH.h)
 ENDIF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
-
