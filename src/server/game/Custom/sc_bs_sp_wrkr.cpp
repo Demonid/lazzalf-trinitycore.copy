@@ -8,20 +8,118 @@
 
 #ifdef DEF_BOSS_SPELL_WORKER_H
 
+void BossSpellWorker::resetTimer(uint32 SpellID)
+{
+    return _resetTimer(FindSpellIDX(SpellID));
+};
+
+void BossSpellWorker::resetTimers()
+{
+    for (uint8 i = 0; i < _bossSpellCount; ++i)
+    _resetTimer(i);
+};
+
+bool BossSpellWorker::timedQuery(uint32 SpellID, uint32 diff)
+{
+    return _QuerySpellPeriod(FindSpellIDX(SpellID), diff);
+};
+
+CanCastResult BossSpellWorker::timedCast(uint32 SpellID, uint32 diff, Unit* pTarget)
+{
+    uint8 m_uiSpellIdx = FindSpellIDX(SpellID);
+    if (!_QuerySpellPeriod(FindSpellIDX(SpellID), diff)) 
+        return CAST_FAIL_STATE;
+    else 
+        return _BSWSpellSelector(m_uiSpellIdx, pTarget);
+};
+
+CanCastResult BossSpellWorker::doCast(uint32 SpellID, Unit* pTarget)
+{
+    uint8 m_uiSpellIdx = FindSpellIDX(SpellID);
+    if ( m_uiSpellIdx != SPELL_INDEX_ERROR) 
+        return _BSWSpellSelector(m_uiSpellIdx, pTarget);
+    else 
+        return CAST_FAIL_OTHER;
+};
+
+CanCastResult BossSpellWorker::doCast(Unit* pTarget, uint32 SpellID)
+{
+    if (!pTarget) 
+        return CAST_FAIL_OTHER;
+    uint8 m_uiSpellIdx = FindSpellIDX(SpellID);
+    if ( m_uiSpellIdx != SPELL_INDEX_ERROR) 
+        return _BSWCastOnTarget(pTarget, m_uiSpellIdx);
+    else 
+        return CAST_FAIL_OTHER;
+};
+
+bool BossSpellWorker::doRemove(uint32 SpellID, Unit* pTarget, SpellEffectIndex index)
+{
+    return _doRemove(FindSpellIDX(SpellID),pTarget, index);
+};
+
+bool BossSpellWorker::hasAura(uint32 SpellID, Unit* pTarget)
+{
+    if (!pTarget) 
+        pTarget = boss;
+    return _hasAura(FindSpellIDX(SpellID),pTarget);
+};
+
+Unit* BossSpellWorker::doSummon(uint32 SpellID, TempSummonType type, uint32 delay)
+{
+    return _doSummon(FindSpellIDX(SpellID), type, delay);
+};
+
+Unit* BossSpellWorker::SelectRandomPlayer(uint32 SpellID, bool spellsearchtype, float range)
+{
+    return _doSelect(SpellID, spellsearchtype, range);
+};
+
+Unit* BossSpellWorker::SelectRandomPlayerAtRange(float range)
+{
+    return _doSelect(0, false, range);
+};
+
+Unit* BossSpellWorker::doSummon(uint32 SpellID, float fPosX, float fPosY, float fPosZ, TempSummonType type, uint32 delay)
+{
+    return _doSummonAtPosition(FindSpellIDX(SpellID), type, delay, fPosX, fPosY, fPosZ);
+};
+
+CanCastResult BossSpellWorker::BSWSpellSelector(uint32 SpellID, Unit* pTarget)
+{
+    return _BSWSpellSelector(FindSpellIDX(SpellID), pTarget);
+};
+
+CanCastResult BossSpellWorker::BSWDoCast(uint32 SpellID, Unit* pTarget)
+{
+    return _BSWDoCast(FindSpellIDX(SpellID), pTarget);
+};
+
+Unit*  BossSpellWorker::SelectUnit(SelectAggroTarget target, uint32 uiPosition)
+{
+    return  _SelectUnit(target, uiPosition);
+};
+
+uint8 BossSpellWorker::bossSpellCount()
+{
+    return _bossSpellCount;
+};
+
 BossSpellWorker::BossSpellWorker(ScriptedAI* bossAI)
 {
-     boss = bossAI->me;
-     bossID = boss->GetEntry();
-     _bossSpellCount = 0;
-     currentTarget = NULL;
-     memset(&m_uiSpell_Timer, 0, sizeof(m_uiSpell_Timer));
-     memset(&m_BossSpell,0,sizeof(m_BossSpell));
-     if (pMap = boss->GetMap())
-              currentDifficulty = ((InstanceMap*)pMap)->GetDifficulty();
-        else currentDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
-     debug_log("BSW: Initializing BossSpellWorker object for boss %u difficulty %u",bossID,currentDifficulty);
-     LoadSpellTable();
-     Reset((uint8)currentDifficulty);
+    boss = bossAI->me;
+    bossID = boss->GetEntry();
+    _bossSpellCount = 0;
+    currentTarget = NULL;
+    memset(&m_uiSpell_Timer, 0, sizeof(m_uiSpell_Timer));
+    memset(&m_BossSpell,0,sizeof(m_BossSpell));
+    if (pMap = boss->GetMap())
+    currentDifficulty = ((InstanceMap*)pMap)->GetDifficulty();
+    else 
+         currentDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
+    debug_log("BSW: Initializing BossSpellWorker object for boss %u difficulty %u",bossID,currentDifficulty);
+    LoadSpellTable();
+    Reset((uint8)currentDifficulty);
 };
 
 BossSpellWorker::~BossSpellWorker()
@@ -37,10 +135,14 @@ void BossSpellWorker::Reset(uint8 _Difficulty)
 
 void BossSpellWorker::_resetTimer(uint8 m_uiSpellIdx)
 {
-    if (m_uiSpellIdx > _bossSpellCount) return;
+    if (m_uiSpellIdx > _bossSpellCount) 
+        return;
+
     if (m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty] != m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty])
-            m_uiSpell_Timer[m_uiSpellIdx] = urand(0,m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty]);
-                else m_uiSpell_Timer[m_uiSpellIdx] = m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty];
+        m_uiSpell_Timer[m_uiSpellIdx] = urand(0,m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty]);
+    else 
+        m_uiSpell_Timer[m_uiSpellIdx] = m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty];
+
     if (m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty] == 0 
         && m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILISECONDS)
             m_uiSpell_Timer[m_uiSpellIdx] = 0;
@@ -116,19 +218,26 @@ void BossSpellWorker::LoadSpellTable()
 }
 
 bool BossSpellWorker::_QuerySpellPeriod(uint8 m_uiSpellIdx, uint32 diff)
-    {
-    if (_bossSpellCount == 0) return false;
+{
+    if (_bossSpellCount == 0) 
+        return false;
+
     SpellTable* pSpell = &m_BossSpell[m_uiSpellIdx];
 
-    if (m_uiSpell_Timer[m_uiSpellIdx] < diff) {
-            if (pSpell->m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILISECONDS) m_uiSpell_Timer[m_uiSpellIdx]=HOUR*IN_MILISECONDS;
-            else m_uiSpell_Timer[m_uiSpellIdx]=urand(pSpell->m_uiSpellTimerMin[currentDifficulty],pSpell->m_uiSpellTimerMax[currentDifficulty]);
-            return true;
-            } else {
-            m_uiSpell_Timer[m_uiSpellIdx] -= diff;
-            return false;
-            };
-    };
+    if (m_uiSpell_Timer[m_uiSpellIdx] < diff) 
+    {
+        if (pSpell->m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILISECONDS) 
+            m_uiSpell_Timer[m_uiSpellIdx] = HOUR*IN_MILISECONDS;
+        else 
+            m_uiSpell_Timer[m_uiSpellIdx] = urand(pSpell->m_uiSpellTimerMin[currentDifficulty],pSpell->m_uiSpellTimerMax[currentDifficulty]);
+        return true;
+    }
+    else 
+    {
+        m_uiSpell_Timer[m_uiSpellIdx] -= diff;
+        return false;
+    }
+};
 
 CanCastResult BossSpellWorker::_BSWSpellSelector(uint8 m_uiSpellIdx, Unit* pTarget)
 {
