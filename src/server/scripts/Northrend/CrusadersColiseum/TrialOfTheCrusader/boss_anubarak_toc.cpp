@@ -23,46 +23,52 @@ enum Summons
 
 enum BossSpells
 {
-    SPELL_COLD              = 66013,
-    SPELL_MARK              = 67574,
-    SPELL_LEECHING_SWARM    = 66118,
-    SPELL_LEECHING_HEAL     = 66125,
-    SPELL_LEECHING_DAMAGE   = 66240,
-    SPELL_IMPALE            = 65920,
-    SPELL_SPIKE_CALL        = 66169,
-    SPELL_POUND             = 66012,
-    SPELL_SHOUT             = 67730,
-    SPELL_SUBMERGE_0        = 53421,
-    SPELL_SUBMERGE_1        = 67322,
-    SPELL_SUMMON_BEATLES    = 66339,
-    SPELL_DETERMINATION     = 66092,
-    SPELL_ACID_MANDIBLE     = 67861,
-    SPELL_SPIDER_FRENZY     = 66129,
-    SPELL_EXPOSE_WEAKNESS   = 67847,
-    SUMMON_SCARAB           = NPC_SCARAB,
-    SUMMON_BORROWER         = NPC_BURROWER,
-    SUMMON_FROSTSPHERE      = NPC_FROST_SPHERE,
-    SPELL_BERSERK           = 26662,
-    SPELL_PERMAFROST        = 66193,
+SPELL_COLD              = 66013,
+SPELL_MARK              = 67574,
+SPELL_LEECHING_SWARM    = 66118,
+SPELL_LEECHING_HEAL     = 66125,
+SPELL_LEECHING_DAMAGE   = 66240,
+SPELL_IMPALE            = 65920,
+SPELL_SPIKE_CALL        = 66169,
+SPELL_POUND             = 66012,
+SPELL_SHOUT             = 67730,
+SPELL_SUBMERGE_0        = 53421,
+SPELL_SUBMERGE_1        = 67322,
+SPELL_SUMMON_BEATLES    = 66339,
+SPELL_DETERMINATION     = 66092,
+SPELL_ACID_MANDIBLE     = 67861,
+SPELL_SPIDER_FRENZY     = 66129,
+SPELL_EXPOSE_WEAKNESS   = 67847,
+SUMMON_SCARAB           = NPC_SCARAB,
+SUMMON_BORROWER         = NPC_BURROWER,
+SUMMON_FROSTSPHERE      = NPC_FROST_SPHERE,
+SPELL_BERSERK           = 26662,
+SPELL_PERMAFROST        = 66193,
 };
 
-struct boss_anubarak_trialAI : public BossAI
+struct boss_anubarak_trialAI : public ScriptedAI
 {
-    boss_anubarak_trialAI(Creature* pCreature) : BossAI(pCreature, TYPE_ANUBARAK){}
+    boss_anubarak_trialAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        bsw = new BossSpellWorker(this);
+        Reset();
+    }
 
+    ScriptedInstance* m_pInstance;
     uint8 stage;
     bool intro;
+    BossSpellWorker* bsw;
     Unit* pTarget;
 
-    void Reset() 
-    {
-        _Reset();
+    void Reset() {
+        if(!m_pInstance) return;
         stage = 0;
         intro = true;
-        me->SetRespawnDelay(DAY);
+       me->SetRespawnDelay(DAY);
         pTarget = NULL;
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+       me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
 
@@ -73,65 +79,52 @@ struct boss_anubarak_trialAI : public BossAI
 
     void MoveInLineOfSight(Unit* pWho) 
     {
-        if (!intro) 
-            return;
+        if (!intro) return;
         DoScriptText(-1713554,me);
-        intro = false;        
+        intro = false;
+       me->SetInCombatWithZone();
     }
 
     void JustReachedHome()
     {
-        if (instance)
-            instance->SetData(TYPE_ANUBARAK, FAIL);
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_ANUBARAK, FAIL);
 //           me->ForcedDespawn();
     }
 
     void JustDied(Unit* pKiller)
     {
-        DoScriptText(-1713564,me);
-        _JustDied();
+        if (!m_pInstance) return;
+            DoScriptText(-1713564,me);
+            m_pInstance->SetData(TYPE_ANUBARAK, DONE);
     }
 
     void Aggro(Unit* pWho)
     {
-       if (!intro) 
-            DoScriptText(-1713555,me);
+        if (!intro) DoScriptText(-1713555,me);
        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-       _EnterCombat();
+       me->SetInCombatWithZone();
+        m_pInstance->SetData(TYPE_ANUBARAK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
 		if (!UpdateVictim())
             return;
-         
-        events.Update(uiDiff);
-
-        while (uint32 eventId = events.ExecuteEvent())
-        {
-            switch(eventId)
-            {
-            
-            
-            }
-        }
 
         switch(stage)
         {
-            case 0: 
-            {
-            bsw->timedCast(SPELL_POUND, uiDiff);
-            bsw->timedCast(SPELL_COLD, uiDiff);
-            if (bsw->timedQuery(SUMMON_BORROWER, uiDiff)) 
-            {
-                bsw->doCast(SUMMON_BORROWER);
-                DoScriptText(-1713556,me);
-            };
-            if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff)) 
-                stage = 1;
-                break;
-            }
+            case 0: {
+                bsw->timedCast(SPELL_POUND, uiDiff);
+                bsw->timedCast(SPELL_COLD, uiDiff);
+                if (bsw->timedQuery(SUMMON_BORROWER, uiDiff)) {
+                        bsw->doCast(SUMMON_BORROWER);
+                        DoScriptText(-1713556,me);
+                        };
+                if (bsw->timedQuery(SPELL_SUBMERGE_0, uiDiff)) stage = 1;
+
+                    break;}
             case 1: {
                     bsw->doCast(SPELL_SUBMERGE_0);
                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);

@@ -2836,6 +2836,42 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="Trial of the Crusader"
+					>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_anubarak_toc.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_champions.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_fjola.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_lord_jaraksus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\boss_northrend_beasts.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\instance_trial_of_the_crusader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\trial_of_crusader.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\server\scripts\Northrend\CrusadersColiseum\TrialOfTheCrusader\trial_of_the_crusader.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Outland"
@@ -4639,6 +4675,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\server\game\Custom\GuildHouse.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_bs_sp_wrkr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Custom\sc_bs_sp_wrkr.h"
 				>
 			</File>
 			<File
