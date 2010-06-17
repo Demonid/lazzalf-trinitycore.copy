@@ -1,5 +1,5 @@
 #include "ScriptPCH.h"
-#include "OutdoorPvPWG.h"
+#include "Zones/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "World.h"
 

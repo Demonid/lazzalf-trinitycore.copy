@@ -10,7 +10,7 @@ EndScriptData */
 // snakes underground cast (not support in core)
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 enum Equipment
 {

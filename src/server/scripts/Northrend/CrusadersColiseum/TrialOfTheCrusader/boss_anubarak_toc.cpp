@@ -11,7 +11,7 @@ EndScriptData */
 // Anubarak spike aura worked only after 9750
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 enum Summons
 {

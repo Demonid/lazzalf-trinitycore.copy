@@ -7,7 +7,7 @@ SDCategory: Trial of the Crusader
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 struct instance_trial_of_the_crusader : public ScriptedInstance
 {

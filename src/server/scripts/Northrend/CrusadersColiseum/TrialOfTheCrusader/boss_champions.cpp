@@ -6,7 +6,7 @@ SDCategory: Crusader Coliseum
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 #define AI_MELEE    0
 #define AI_RANGED   1
