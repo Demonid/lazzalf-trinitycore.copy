@@ -6,7 +6,6 @@ SDComment: by /dev/rsa
 SDCategory: Trial of the Crusader
 EndScriptData */
 
-#include "Custom/sc_bs_sp_wrkr.h"
 #include "ScriptPCH.h"
 #include "def.h"
 

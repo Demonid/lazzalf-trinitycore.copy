@@ -6,7 +6,6 @@ SDCategory: Crusader Coliseum
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include "Custom/sc_bs_sp_wrkr.h"
 #include "def.h"
 
 #define AI_MELEE    0

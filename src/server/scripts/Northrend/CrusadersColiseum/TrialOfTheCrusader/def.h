@@ -4,7 +4,7 @@
 
 #ifndef DEF_CRUSADER_H
 #define DEF_CRUSADER_H
-#include "Custom/sc_bs_sp_wrkr.h"
+#include "../../Custom/sc_bs_sp_wrkr.h"
 
 enum
 {

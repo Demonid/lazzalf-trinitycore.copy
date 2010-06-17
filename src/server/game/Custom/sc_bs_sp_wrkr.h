@@ -12,6 +12,7 @@
 #include "Database/DatabaseEnv.h"
 #include "ScriptMgr.h"
 #include "CreatureEventAI.h"
+#include "Map.h"
 
 enum
 {
