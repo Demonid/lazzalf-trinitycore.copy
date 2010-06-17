@@ -30,6 +30,8 @@ SET(scripts_STAT_SRCS
    ../game/AI/ScriptedAI/ScriptedInstance.h
    ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
    ../game/AI/ScriptedAI/ScriptedSimpleAI.h
+   ../game/Custom/sc_bs_sp_wrkr.cpp
+   ../game/Custom/sc_bs_sp_wrkr.h
    Custom/GuildHouse_npc.cpp
    Custom/npc_teleport.cpp
    Custom/on_events.cpp
