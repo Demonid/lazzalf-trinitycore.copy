@@ -227,6 +227,7 @@ struct boss_xt002_AI : public BossAI
                 if (!hardMode)
                 {
                     hardMode = true;
+                    uiEnrageTimer = TIMER_ENRAGE;
 
                     // Enter hard mode
                     enterHardMode = true;

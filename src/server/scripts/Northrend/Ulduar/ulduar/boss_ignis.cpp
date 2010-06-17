@@ -184,7 +184,7 @@ struct boss_ignis_AI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() || !CheckInRoom())
+        if (!UpdateVictim())
             return;
 
         if(me->GetPositionY() < 150 || me->GetPositionX() < 450 || me->getVictim()->GetTypeId() == !TYPEID_PLAYER)
