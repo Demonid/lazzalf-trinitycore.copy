@@ -109,6 +109,7 @@ enum DarkRuneSpells
 #define ACHIEVEMENT_QUICK_SHAVE     RAID_MODE(2919, 2921)
 
 #define ACTION_EVENT_START          1
+#define ACTION_GROUND_PHASE         2
 
 enum Phases
 {
@@ -167,7 +168,6 @@ struct boss_razorscaleAI : public BossAI
         me->SetFlying(true);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
-        me->GetMotionMaster()->MoveTargetedHome();
     }
 
     void EnterCombat(Unit* who)
@@ -175,8 +175,6 @@ struct boss_razorscaleAI : public BossAI
         _EnterCombat();
         Harpoon[0] = me->SummonCreature(NPC_HARPOON, Harpoon1, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
         Harpoon[1] = me->SummonCreature(NPC_HARPOON, Harpoon2, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
-        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        me->SetSpeed(MOVE_RUN, 3.0f, true);
         me->SetSpeed(MOVE_FLIGHT, 3.0f, true);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_PASSIVE);
@@ -232,10 +230,9 @@ struct boss_razorscaleAI : public BossAI
                         phase = PHASE_FLIGHT;
                         events.SetPhase(PHASE_FLIGHT);
                         me->SetFlying(true);
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         me->SetReactState(REACT_PASSIVE);
                         me->AttackStop();
-                        me->SendMovementFlagUpdate();
                         me->RemoveAllAuras();
                         me->GetMotionMaster()->MovePoint(0,RazorFlight);
                         events.ScheduleEvent(EVENT_FIREBALL, 7000, 0, PHASE_FLIGHT);
@@ -248,6 +245,8 @@ struct boss_razorscaleAI : public BossAI
                         me->SetFlying(false);
                         me->CastSpell(me, SPELL_STUN, true);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        if (Creature *pCommander = me->GetCreature(*me, pInstance->GetData64(DATA_EXP_COMMANDER)))
+                            pCommander->AI()->DoAction(ACTION_GROUND_PHASE);
                         events.ScheduleEvent(EVENT_HARPOON, 0, 0, PHASE_GROUND);
                         events.ScheduleEvent(EVENT_BREATH, 30000, 0, PHASE_GROUND);
                         events.ScheduleEvent(EVENT_BUFFET, 33000, 0, PHASE_GROUND);
@@ -354,12 +353,10 @@ struct boss_razorscaleAI : public BossAI
         phase = PHASE_PERMAGROUND;
         events.SetPhase(PHASE_PERMAGROUND);
         me->SetFlying(false);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_AGGRESSIVE);
         me->RemoveAurasDueToSpell(SPELL_STUN);
-        me->SetSpeed(MOVE_RUN, 1.0f, true);
         me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
-        me->SendMovementFlagUpdate();
         PermaGround = true;
         DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
         events.ScheduleEvent(EVENT_FLAME, 15000, 0, PHASE_PERMAGROUND);
@@ -464,6 +461,16 @@ struct npc_expedition_commanderAI : public ScriptedAI
     void JustSummoned(Creature *summon)
     {
         summons.Summon(summon);
+    }
+
+    void DoAction(const int32 action)
+    {
+        switch(action)
+        {
+            case ACTION_GROUND_PHASE:
+                DoScriptText(SAY_GROUND_PHASE, me);
+                break;
+        }
     }
     
     void UpdateAI(const uint32 uiDiff)
