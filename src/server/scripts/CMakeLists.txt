@@ -492,6 +492,7 @@ SET(scripts_STAT_SRCS
    Northrend/storm_peaks.cpp
    Northrend/zuldrak.cpp
    Northrend/crystalsong_forest.cpp
+   Northrend/wintergrasp.cpp
    Outland/Auchindoun/AuchenaiCrypts/boss_exarch_maladaar.cpp
    Outland/Auchindoun/AuchenaiCrypts/boss_shirrak_the_dead_watcher.cpp
    Outland/Auchindoun/ManaTombs/boss_nexusprince_shaffar.cpp
