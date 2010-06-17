@@ -9,7 +9,7 @@ EndScriptData */
 // timers need correct
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 enum Equipment
 {

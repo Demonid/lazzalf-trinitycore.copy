@@ -6,7 +6,7 @@ SDCategory: trial_of_the_crusader
 EndScriptData */
 
 #include "ScriptPCH.h"
-#include "def.h"
+#include "trial_of_crusader.h"
 
 struct _Messages
 {
