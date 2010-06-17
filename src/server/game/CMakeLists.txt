@@ -108,8 +108,6 @@ SET(game_STAT_SRCS
    Custom/GuildHouse.h
    Custom/sc_npc_teleport.cpp
    Custom/sc_npc_teleport.h
-   Custom/sc_bs_sp_wrkr.cpp
-   Custom/sc_bs_sp_wrkr.h
    DataStores/DBCEnums.h
    DataStores/DBCStores.cpp
    DataStores/DBCStores.h
@@ -374,6 +372,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Commands
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
@@ -441,6 +440,8 @@ if(NOT DO_SCRIPTS)
       AI/ScriptedAI/ScriptedInstance.h
       AI/ScriptedAI/ScriptedSimpleAI.cpp
       AI/ScriptedAI/ScriptedSimpleAI.h
+      Custom/sc_bs_sp_wrkr.cpp
+      Custom/sc_bs_sp_wrkr.h
    )
    message("-- Added Script Engine to GAME lib")
 endif(NOT DO_SCRIPTS)
