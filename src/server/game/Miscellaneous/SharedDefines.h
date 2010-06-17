@@ -1635,8 +1635,7 @@ enum Emote
     EMOTE_STATE_SIT_CHAIR_LOW          = 461,
     EMOTE_ONE_SHOT_STUN                = 462,
     EMOTE_ONESHOT_SPELLCAST_OMNI       = 463,
-    EMOTE_STATE_READYTHROWN            = 464,
-    EMOTE_STATE_SPELL_CHANNEL_OMNI     = 468
+    EMOTE_STATE_READYTHROWN            = 464
 };
 
 enum Anim

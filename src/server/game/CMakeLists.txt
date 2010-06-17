@@ -108,8 +108,6 @@ SET(game_STAT_SRCS
    Custom/GuildHouse.h
    Custom/sc_npc_teleport.cpp
    Custom/sc_npc_teleport.h
-   Custom/sc_bs_sp_wrkr.cpp
-   Custom/sc_bs_sp_wrkr.h
    DataStores/DBCEnums.h
    DataStores/DBCStores.cpp
    DataStores/DBCStores.h

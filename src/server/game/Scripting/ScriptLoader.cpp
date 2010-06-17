@@ -319,13 +319,13 @@ void AddSC_ungoro_crater();
 void AddSC_winterspring();
 
 //northrend
-void AddSC_trial_of_the_crusader();			// Trial of The crusader
+/*void AddSC_trial_of_the_crusader();			// Trial of The crusader
 void AddSC_northrend_beasts(); 			    
 void AddSC_boss_anub_arak_crusader();
 void AddSC_instance_trial_of_the_crusader();
 void AddSC_boss_jaraxxus();
 void AddSC_boss_faction_champions();
-void AddSC_twin_valkyr();
+void AddSC_twin_valkyr();*/
 
 void AddSC_boss_slad_ran();
 void AddSC_boss_moorabi();
@@ -843,13 +843,13 @@ void AddScripts()
     AddSC_winterspring();
 
     //northrend
-    AddSC_trial_of_the_crusader();		//Trial of the crusader
+    /*AddSC_trial_of_the_crusader();		//Trial of the crusader
 	AddSC_northrend_beasts();			
     AddSC_boss_anub_arak_crusader();
     AddSC_instance_trial_of_the_crusader();
     AddSC_boss_jaraxxus();
     AddSC_boss_faction_champions();
-    AddSC_twin_valkyr();
+    AddSC_twin_valkyr();*/
 
     AddSC_boss_slad_ran();               //Gundrak
     AddSC_boss_moorabi();
