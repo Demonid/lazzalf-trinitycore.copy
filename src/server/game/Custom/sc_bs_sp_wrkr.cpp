@@ -595,7 +595,7 @@ Unit* BossSpellWorker::_doSelect(uint32 SpellID, bool spellsearchtype, float ran
           if (pList.isEmpty()) return NULL;
 
 #if defined( __GNUC__ )
-    Unit* _list[pMap->GetMaxPlayers()];
+    Unit* _list[((InstanceMap*)pMap)->GetMaxPlayers()];
 #else
     Unit* _list[INSTANCE_MAX_PLAYERS];
 #endif 

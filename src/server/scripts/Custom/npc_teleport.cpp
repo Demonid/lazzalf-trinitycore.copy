@@ -12,7 +12,7 @@
 
 
 #include "ScriptPCH.h"
-#include "Custom/sc_npc_teleport.h"
+#include "../../Custom/sc_npc_teleport.h"
 #include <sstream>
 
 

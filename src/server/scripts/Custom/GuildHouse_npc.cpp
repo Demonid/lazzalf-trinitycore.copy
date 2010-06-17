@@ -34,7 +34,7 @@
 #include "ScriptMgr.h"
 #include "World.h"
 #include "Guild.h"
-#include "Custom/GuildHouse.h"
+#include "../../Custom/GuildHouse.h"
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 

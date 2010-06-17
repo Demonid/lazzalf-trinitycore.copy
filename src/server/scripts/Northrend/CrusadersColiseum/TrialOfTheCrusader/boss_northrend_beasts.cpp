@@ -10,7 +10,6 @@ EndScriptData */
 // snakes underground cast (not support in core)
 
 #include "ScriptPCH.h"
-#include "Custom/sc_bs_sp_wrkr.h"
 #include "def.h"
 
 enum Equipment

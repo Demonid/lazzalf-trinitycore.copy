@@ -2987,14 +2987,16 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     switch(spellId)
     {
         case 58600: // No fly Zone - Dalaran (Krasus Landing exception)
-            if (!player)
-                return false;
+            {
+                if (!player)
+                    return false;
 
-            AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
-            if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
-                return false;
-            if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
-                return false;
+                AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
+                if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                    return false;
+                if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
+                    return false;
+            }
             break;
             /*if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
                 || player->HasAura(44795))
