@@ -23845,6 +23845,9 @@ void Player::ActivateSpec(uint8 spec)
     if (GetMap()->IsBattleGround() && !HasAura(44521)) // In BattleGround with no Preparation buff
         return;
 
+    if (HasAura(28682)) // HackFix for remove Combustion
+        RemoveAurasDueToSpell(28682);
+
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
 
