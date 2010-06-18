@@ -2442,6 +2442,13 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             power = POWER_HEALTH;
                             break;
                         case 57669: // Replenishment
+                            // In arenas Replenishment may only affect the caster
+                            if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->InArena())
+                            {
+                                unitList.clear();
+                                unitList.push_back(m_caster);
+                                break;
+                            }
                             maxSize = 10;
                             power = POWER_MANA;
                             break;
@@ -2465,6 +2472,8 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         maxSize = 3;
                         power = POWER_MANA;
                     }
+                    else
+                        break;
 
                     // Remove targets outside caster's raid
                     for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
@@ -2481,6 +2490,8 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
                         power = POWER_HEALTH;
                     }
+                    else
+                        break;
 
                     // Remove targets outside caster's raid
                     for (std::list<Unit*>::iterator itr = unitList.begin() ; itr != unitList.end();)
