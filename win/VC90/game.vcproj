@@ -4498,6 +4498,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\server\game\Spells\Auras\SpellEffects.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\server\game\Spells\SpellMgr.cpp"
 				>
 			</File>
@@ -4526,10 +4530,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\server\game\Spells\Auras\SpellAuras.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\server\game\Spells\Auras\SpellEffects.cpp"
 					>
 				</File>
 			</Filter>
