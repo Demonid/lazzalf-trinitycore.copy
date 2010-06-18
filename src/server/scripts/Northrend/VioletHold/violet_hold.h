@@ -1,6 +1,21 @@
 #ifndef DEF_VIOLET_HOLD_H
 #define DEF_VIOLET_HOLD_H
 
+enum GameObjects
+{
+    GO_MAIN_DOOR                                    = 191723,
+    GO_XEVOZZ_DOOR                                  = 191556,
+    GO_LAVANTHOR_DOOR                               = 191566,
+    GO_ICHORON_DOOR                                 = 191722,
+    GO_ZURAMAT_DOOR                                 = 191565,
+    GO_EREKEM_DOOR                                  = 191564,
+    GO_EREKEM_GUARD_1_DOOR                          = 191563,
+    GO_EREKEM_GUARD_2_DOOR                          = 191562,
+    GO_MORAGG_DOOR                                  = 191606,
+    GO_INTRO_ACTIVATION_CRYSTAL                     = 193615,
+    GO_ACTIVATION_CRYSTAL                           = 193611
+};
+
 enum Creatures
 {
     CREATURE_TELEPORTATION_PORTAL                   = 31011,
@@ -23,7 +38,10 @@ enum Data
     DATA_2ND_BOSS_EVENT,
     DATA_CYANIGOSA_EVENT,
     DATA_WAVE_COUNT,
-    DATA_REMOVE_NPC
+    DATA_REMOVE_NPC,
+    DATA_DOOR,
+	DATA_BOSS_PHASE,
+	DATA_LASTBOSS
 };
 
 enum Data64
@@ -46,7 +64,8 @@ enum Data64
     DATA_XEVOZZ_CELL,
     DATA_ZURAMAT_CELL,
     DATA_MAIN_DOOR,
-    DATA_SINCLARI
+    DATA_SINCLARI,
+    DATA_INSTANCE_FAILED
 };
 
 enum Bosses
@@ -61,11 +80,23 @@ enum Bosses
     BOSS_CYANIGOSA
 };
 
-enum VHWorldStates
+enum WorldStates_VH
 {
     WORLD_STATE_VH              = 3816,
     WORLD_STATE_VH_PRISON_STATE = 3815,
     WORLD_STATE_VH_WAVE_COUNT   = 3810,
 };
+
+enum DefenceSystem
+{
+	SPELL_DEFENSE_SYSTEM_VISUAL			= 57887,
+    SPELL_DEFENSE_SYSTEM_SPAWN			= 57886,
+	SPELL_CONTROL_CRYSTAL_ACTIVATION	= 57804,
+	NPC_DEFENSE_SYSTEM					= 30837,
+    NPC_DEFENSE_DUMMY_TARGET			= 30857
+};
+
+static float fDefenseSystemLoc[4] = {1888.146f, 803.382f, 58.604f, 3.072f};
+
 
 #endif
