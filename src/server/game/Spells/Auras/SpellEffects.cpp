@@ -392,8 +392,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             return;
                         break;
                     }
-                    // gruul's shatter
-                    case 33671:
+                    case 33671: // gruul's shatter
+                    case 50811: // krystallus shatter ( Normal )
+                    case 61547: // krystallus shatter ( Heroic )
                     {
                         // don't damage self and only players
                         if (unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -437,6 +438,22 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     {
                         // about +4 base spell dmg per level
                         damage = (m_caster->getLevel() - 60) * 4 + 60;
+                        break;
+                    }
+                    
+                    // Loken Pulsing Shockwave
+                    case 59837:
+                    case 52942:
+                    {
+                        // don't damage self and only players
+                        if(unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                            return;
+                        
+                        float radius = GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[0]));
+                        if (!radius)
+                            return;
+                        float distance = m_caster->GetDistance2d(unitTarget);
+                        damage = (distance > radius) ? 0 : int32(m_spellInfo->EffectBasePoints[0]*distance);
                         break;
                     }
                 }
@@ -2585,6 +2602,27 @@ void Spell::EffectTeleportUnits(uint32 /*i*/)
     if (!unitTarget || unitTarget->isInFlight())
         return;
 
+    // Pre effects
+    uint8 uiMaxSafeLevel = 0;
+    switch (m_spellInfo->Id)
+    {
+        case 48129:  // Scroll of Recall
+            uiMaxSafeLevel = 40;
+        case 60320:  // Scroll of Recall II
+            if (!uiMaxSafeLevel)
+                uiMaxSafeLevel = 70;
+        case 60321:  // Scroll of Recal III
+            if (!uiMaxSafeLevel)
+                uiMaxSafeLevel = 80;
+            
+            if (unitTarget->getLevel() > uiMaxSafeLevel)
+            {
+                unitTarget->AddAura(60444,unitTarget); //Apply Lost! Aura
+                return;
+            }
+            break;
+    }
+
     // If not exist data for dest location - return
     if (!m_targets.HasDst())
     {
@@ -2960,6 +2998,10 @@ void Spell::SpellDamageHeal(uint32 /*i*/)
             addhealth = caster->SpellHealingBonus(unitTarget, m_spellInfo, int32(caster->GetMaxHealth() * damage / 100.0f), HEAL);
         else
             addhealth = caster->SpellHealingBonus(unitTarget, m_spellInfo, addhealth, HEAL);
+
+        // Remove Grievious bite if fully healed
+        if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
+            unitTarget->RemoveAura(48920);
 
         m_damage -= addhealth;
     }
@@ -6912,6 +6954,13 @@ void Spell::EffectResurrect(uint32 /*effIndex*/)
             if (roll_chance_i(50))
             {
                 m_caster->CastSpell(m_caster, 23055, true, m_CastItem);
+                return;
+            }
+            break;
+        // Defibrillate ( Gnomish Army Knife) have 67% chance on success_list
+        case 54732:
+            if (roll_chance_i(33))
+            {
                 return;
             }
             break;

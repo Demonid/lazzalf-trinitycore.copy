@@ -25,6 +25,7 @@
 #include "ModelInstance.h"
 #include "WorldModel.h"
 #include "VMapDefinitions.h"
+#include "Log.h"
 
 using G3D::Vector3;
 
@@ -109,7 +110,7 @@ namespace VMAP
                 ss2 >> map_num;
                 if (map_num >= 0)
                 {
-                    std::cout << "ingoring Map " << map_num << " for VMaps\n";
+                    sLog.outDebug("Ignoring Map %i for VMaps", map_num);
                     iIgnoreMapIds[map_num] = true;
                     // unload map in case it is loaded
                     unloadMap(map_num);
@@ -279,6 +280,7 @@ namespace VMAP
             if (instanceTree->second->GetLocationInfo(pos, info))
             {
                 floor = info.ground_Z;
+                ASSERT(floor < std::numeric_limits<float>::max());
                 type = info.hitModel->GetLiquidType();
                 if (ReqLiquidType && !(type & ReqLiquidType))
                     return false;
@@ -299,11 +301,11 @@ namespace VMAP
             WorldModel *worldmodel = new WorldModel();
             if (!worldmodel->readFile(basepath + filename + ".vmo"))
             {
-                std::cout << "VMapManager2: could not load '" << basepath << filename << ".vmo'!\n";
+                sLog.outError("VMapManager2: could not load '%s%s.vmo'!", basepath.c_str(), filename.c_str());
                 delete worldmodel;
                 return NULL;
             }
-            std::cout << "VMapManager2: loading file '" << basepath << filename << "'.\n";
+            sLog.outDebug("VMapManager2: loading file '%s%s'.", basepath.c_str(), filename.c_str());
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
             model->second.setModel(worldmodel);
         }
@@ -316,12 +318,12 @@ namespace VMAP
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
         {
-            std::cout << "VMapManager2: trying to unload non-loaded file '" << filename << "'!\n";
+            sLog.outError("VMapManager2: trying to unload non-loaded file '%s'!", filename.c_str());
             return;
         }
         if( model->second.decRefCount() == 0)
         {
-            std::cout << "VMapManager2: unloading file '" << filename << "'.\n";
+            sLog.outDebug("VMapManager2: unloading file '%s'", filename.c_str());
             delete model->second.getModel();
             iLoadedModelFiles.erase(model);
         }
