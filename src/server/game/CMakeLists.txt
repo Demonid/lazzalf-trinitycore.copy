@@ -104,6 +104,10 @@ SET(game_STAT_SRCS
    Combat/UnitEvents.h
    Conditions/ConditionMgr.cpp
    Conditions/ConditionMgr.h
+   Custom/GuildHouse.cpp
+   Custom/GuildHouse.h
+   Custom/sc_npc_teleport.cpp
+   Custom/sc_npc_teleport.h
    DataStores/DBCEnums.h
    DataStores/DBCStores.cpp
    DataStores/DBCStores.h
@@ -247,6 +251,8 @@ SET(game_STAT_SRCS
    OutdoorPvP/Zones/OutdoorPvPTF.h
    OutdoorPvP/Zones/OutdoorPvPZM.cpp
    OutdoorPvP/Zones/OutdoorPvPZM.h
+   OutdoorPvP/Zones/OutdoorPvPWG.cpp
+   OutdoorPvP/Zones/OutdoorPvPWG.h
    OutdoorPvP/OutdoorPvP.cpp
    OutdoorPvP/OutdoorPvP.h
    OutdoorPvP/OutdoorPvPImpl.h
@@ -366,6 +372,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Commands
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
@@ -433,6 +440,8 @@ if(NOT DO_SCRIPTS)
       AI/ScriptedAI/ScriptedInstance.h
       AI/ScriptedAI/ScriptedSimpleAI.cpp
       AI/ScriptedAI/ScriptedSimpleAI.h
+      Custom/sc_bs_sp_wrkr.cpp
+      Custom/sc_bs_sp_wrkr.h
    )
    message("-- Added Script Engine to GAME lib")
 endif(NOT DO_SCRIPTS)
@@ -444,4 +453,3 @@ ADD_DEPENDENCIES(game revision.h)
 IF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
         ADD_PRECOMPILED_HEADER(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/NixCorePCH.h)
 ENDIF(DO_PCH AND CMAKE_COMPILER_IS_GNUCXX)
-

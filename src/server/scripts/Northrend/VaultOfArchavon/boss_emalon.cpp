@@ -21,7 +21,7 @@
 
 //Emalon spells
 #define SPELL_CHAIN_LIGHTNING           RAID_MODE(64213, 64215)
-#define SPELL_LIGHTNING_NOVA            RAID_MODE(64216, 65279)
+#define SPELL_LIGHTNING_NOVA            64216//RAID_MODE(64216, 65279)
 #define SPELL_OVERCHARGE                64218                   //Casted every 45 sec on a random Tempest Minion
 #define SPELL_BERSERK                   26662
 
@@ -60,16 +60,34 @@ struct Position TempestMinions[MAX_TEMPEST_MINIONS] =
 ######*/
 struct boss_emalonAI : public BossAI
 {
-    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT)
-    {
-    }
+    boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT) {}
+
+    uint32 checktimer;
 
     void Reset()
     {
         _Reset();
 
+        CheckForVoA();
+
+        checktimer = 10000;
+
         for (uint8 i = 0; i < MAX_TEMPEST_MINIONS; ++i)
             me->SummonCreature(MOB_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
+    }
+
+    void CheckForVoA()
+    {
+        if (!sOutdoorPvPMgr.CanBeAttacked(me))
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+        }
+        else
+        {
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
     }
 
     void JustSummoned(Creature *summoned)
@@ -78,6 +96,11 @@ struct boss_emalonAI : public BossAI
 
         if (me->getVictim() && summoned->AI())
             summoned->AI()->AttackStart(me->getVictim());
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        _JustDied();
     }
 
     void EnterCombat(Unit * who)
@@ -102,9 +125,16 @@ struct boss_emalonAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        //Return since we have no target
         if (!UpdateVictim())
+        {
+            if (checktimer <= diff)
+            {
+                CheckForVoA();
+                checktimer = 10000;
+            } else checktimer -= diff;
+
             return;
+        }
 
         events.Update(diff);
 
@@ -223,8 +253,15 @@ struct mob_tempest_minionAI : public ScriptedAI
                 if (overchargedAura->GetStackAmount() == 10)
                 {
                     DoCast(me, SPELL_OVERCHARGED_BLAST);
+                    if (Creature *pEmalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
+                    {
+                        if (pEmalon->isAlive())
+                        {
+                            pEmalon->SummonCreature(MOB_TEMPEST_MINION, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            DoScriptText(EMOTE_MINION_RESPAWN, me);
+                        }
+                    }
                     me->ForcedDespawn();
-                    DoScriptText(EMOTE_MINION_RESPAWN, me);
                 }
             }
         }
