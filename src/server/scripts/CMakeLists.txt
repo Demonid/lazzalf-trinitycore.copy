@@ -48,15 +48,6 @@ set(scripts_STAT_SRCS
   ${scripts_outland}
   ${scripts_world}
   ${scripts_examples}
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_anubarak_toc.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_champions.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_fjola.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_northrend_beasts.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/boss_lord_jaraksus.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/trial_of_crusader.h
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/instance_trial_of_the_crusader.cpp
-   Northrend/CrusadersColiseum/TrialOfTheCrusader/trial_of_the_crusader.cpp
-   Northrend/wintergrasp.cpp
 )
 message("-- Added Scriptengine to SCRIPTS lib")
 
