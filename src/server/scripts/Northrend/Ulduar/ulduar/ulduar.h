@@ -65,6 +65,7 @@ enum Data64
     DATA_VX_001,
     DATA_AERIAL_UNIT,
     DATA_MAGNETIC_CORE,
+    DATA_VEZAX,
 };
 
 enum Data
