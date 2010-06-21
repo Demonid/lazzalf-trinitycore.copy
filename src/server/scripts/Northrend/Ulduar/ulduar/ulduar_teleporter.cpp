@@ -25,14 +25,14 @@ bool GoHello_ulduar_teleporter( Player *pPlayer, GameObject *pGO )
     if (data->GetBossState(BOSS_LEVIATHAN) == DONE)
     {
         pPlayer->ADD_GOSSIP_ITEM(0, "Colossal Forge", GOSSIP_SENDER_MAIN, FORGE);
-        if (data->GetBossState(BOSS_XT002) == DONE)
+        if (data->GetBossState(BOSS_XT002) == DONE && (((InstanceMap*)pPlayer->GetMap())->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)) || pPlayer->isGameMaster())
         {
             pPlayer->ADD_GOSSIP_ITEM(0, "Scrapyard", GOSSIP_SENDER_MAIN, SCRAPYARD);
             pPlayer->ADD_GOSSIP_ITEM(0, "Antechamber of Ulduar", GOSSIP_SENDER_MAIN, ANTECHAMBER);
             if (data->GetBossState(BOSS_KOLOGARN) == DONE)
             {
                 pPlayer->ADD_GOSSIP_ITEM(0, "Shattered Walkway", GOSSIP_SENDER_MAIN, WALKWAY);
-                if (data->GetBossState(BOSS_AURIAYA) == DONE)
+                if (data->GetBossState(BOSS_AURIAYA) == DONE && pPlayer->isGameMaster())
                 {
                     pPlayer->ADD_GOSSIP_ITEM(0, "Conservatory of Life", GOSSIP_SENDER_MAIN, CONSERVATORY);
                     pPlayer->ADD_GOSSIP_ITEM(0, "Spark of Imagination", GOSSIP_SENDER_MAIN, SPARK_IMAGINATION);
