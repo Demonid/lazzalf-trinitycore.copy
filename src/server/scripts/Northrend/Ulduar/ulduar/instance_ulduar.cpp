@@ -91,6 +91,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiVX001;
     uint64 uiAerialUnit;
     uint64 uiMagneticCore;
+    uint64 uiVezax;
     
     GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest,
         *MimironTram, *MimironElevator, *MimironChest;
@@ -154,6 +155,7 @@ struct instance_ulduar : public InstanceData
             case 33651: uiVX001 = pCreature->GetGUID(); return;
             case 33670: uiAerialUnit = pCreature->GetGUID(); return;
             case 34068: uiMagneticCore = pCreature->GetGUID(); return;
+            case 33271: uiVezax = pCreature->GetGUID(); return;
         }
 
         // Hodir: Alliance npcs are spawned by default
@@ -227,6 +229,8 @@ struct instance_ulduar : public InstanceData
                 return uiAerialUnit;
             case DATA_MAGNETIC_CORE:
                 return uiMagneticCore;
+            case DATA_VEZAX:
+                return uiVezax;
         }
         return 0;
     }
