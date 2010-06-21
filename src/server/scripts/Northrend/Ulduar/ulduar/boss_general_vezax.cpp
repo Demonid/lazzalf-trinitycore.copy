@@ -285,7 +285,6 @@ struct mob_saronite_vaporsAI : public ScriptedAI
             me->ForcedDespawn(30000);
             me->GetMotionMaster()->Initialize();
             me->SetStandState(UNIT_STAND_STATE_DEAD);
-            me->setFaction(35);
             DoCast(me, SPELL_SARONITE_VAPOR);
             if (Creature* Vezax = me->GetCreature(*me, pInstance->GetData64(DATA_VEZAX)))
                 Vezax->AI()->DoAction(ACTION_VAPOR_DEAD);
