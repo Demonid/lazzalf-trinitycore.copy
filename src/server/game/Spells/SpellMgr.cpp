@@ -766,6 +766,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
             return false;
         case 12042:                                         // Arcane Power
         case 30877:                                         // Tag Murloc
+        case 47585:                                         // Dispersion
             return true;
     }
 
