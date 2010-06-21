@@ -762,6 +762,7 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case 61251:                                         // Power of Vesperon
         case 58105:                                         // Power of Shadron
         case 50524:                                         // Runic Power Feed
+        case 63322:                                         // Saronite Vapors
             return false;
         case 12042:                                         // Arcane Power
         case 30877:                                         // Tag Murloc

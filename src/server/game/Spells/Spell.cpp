@@ -820,6 +820,10 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     // Check for effect immune skip if immuned
     bool immuned = pVictim->IsImmunedToSpellEffect(m_spellInfo, effIndex);
 
+    // Saronite Vapors Hack
+    if (m_spellInfo->Id == 63337)
+        immuned = false;
+
     uint64 targetGUID = pVictim->GetGUID();
 
     // Lookup target in already in list
