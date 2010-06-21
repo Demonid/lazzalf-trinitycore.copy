@@ -255,10 +255,10 @@ struct boss_hodir_AI : public BossAI
                     
         if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
         {
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                 if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
                     continue;
 
@@ -418,6 +418,7 @@ struct mob_hodir_priestAI : public ScriptedAI
     mob_hodir_priestAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
+        me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
     }
 
     ScriptedInstance* pInstance;
@@ -462,6 +463,7 @@ struct mob_hodir_shamanAI : public ScriptedAI
     mob_hodir_shamanAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
+        me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
     }
 
     ScriptedInstance* pInstance;
@@ -503,6 +505,7 @@ struct mob_hodir_druidAI : public ScriptedAI
     mob_hodir_druidAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
+        me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
     }
 
     ScriptedInstance* pInstance;
@@ -544,6 +547,7 @@ struct mob_hodir_mageAI : public ScriptedAI
     mob_hodir_mageAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceData();
+        me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
     }
 
     ScriptedInstance* pInstance;

@@ -35,6 +35,7 @@ const DoorData doorData[] =
     {194774,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
     {194775,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
     {194776,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
+    {194750,    BOSS_VEZAX,     DOOR_TYPE_PASSAGE,  0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
 

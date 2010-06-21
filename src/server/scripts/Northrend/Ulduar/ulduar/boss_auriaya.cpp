@@ -42,7 +42,6 @@ EndScriptData */
 #define SPELL_SEEPING_ESSENCE                   RAID_MODE(64458, 64676)
 #define SPELL_SUMMON_ESSENCE                    64457
 #define SPELL_FERAL_ESSENCE                     64455
-#define SPELL_DEATH_EFFECT                      64165
 
 // Sanctum Sentry
 #define SPELL_SAVAGE_POUNCE                     RAID_MODE(64666, 64374)
@@ -302,7 +301,7 @@ struct mob_sanctum_sentryAI : public ScriptedAI
         } else PounceTimer -= uiDiff;
         
         // Increases the damage of all Sanctum Sentries within 10 yards by 30%
-        uint8 aura = 0;
+        uint8 aura = -1;
         if (CheckTimer < uiDiff)
         {
             std::list<Creature*> Sanctum;
@@ -316,7 +315,12 @@ struct mob_sanctum_sentryAI : public ScriptedAI
                             aura++;
                 }
             }
-            me->SetAuraStack(SPELL_STRENGHT_PACK, me, aura);
+            me->RemoveAurasDueToSpell(SPELL_STRENGHT_PACK);
+            while(aura !=0)
+            {
+                me->AddAura(SPELL_STRENGHT_PACK, me);
+                aura=aura-1;
+            }
             CheckTimer = 2000;
         } else CheckTimer -= uiDiff;
 
@@ -349,18 +353,15 @@ struct mob_feral_defenderAI : public ScriptedAI
     int32 RushTimer;
     int32 RessTimer;
     int32 Lifes;
-    bool Dead;
 
     void Reset()
     {
         PounceTimer = 5000;
         RushTimer = 12000;
         Lifes = 8;
-        Dead = false;
         RessTimer = 999999;
         
-        for (uint8 i = 0; i < Lifes; ++i)
-            DoCast(me, SPELL_FERAL_ESSENCE);
+        me->SetAuraStack(SPELL_FERAL_ESSENCE, me, Lifes);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -397,13 +398,11 @@ struct mob_feral_defenderAI : public ScriptedAI
         
         if (RessTimer <= uiDiff)
         {
-            me->RemoveAurasDueToSpell(SPELL_DEATH_EFFECT);
-            me->SetHealth(me->GetMaxHealth());
+            me->SetStandState(UNIT_STAND_STATE_STAND);
             for (uint8 i = 0; i < Lifes; ++i)
                 DoCast(me, SPELL_FERAL_ESSENCE);
- 	        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
- 	        me->SetReactState(REACT_AGGRESSIVE);
- 	        Dead = false;
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+            me->SetReactState(REACT_AGGRESSIVE);
             RessTimer = 999999;
             DoZoneInCombat();
         } else RessTimer -= uiDiff;
@@ -412,30 +411,29 @@ struct mob_feral_defenderAI : public ScriptedAI
     }
     
     void DamageTaken(Unit* pKiller, uint32 &damage)
- 	{
- 	    if(damage >= me->GetHealth()) // Feign Death
- 	    {
- 	        if (!Dead)
- 	        {
- 	            DoCast(me, SPELL_SUMMON_ESSENCE);
- 	            me->SetHealth(0);
- 	            me->RemoveAllAuras();
- 	            me->AddAura(SPELL_DEATH_EFFECT, me);
- 	            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
- 	            me->SetReactState(REACT_PASSIVE);
- 	            me->AttackStop();
- 	            Lifes--;
- 	            Dead = true;
- 	            PounceTimer = 35000;
+    {
+        if(damage >= me->GetHealth())
+        {
+            if (me->HasAura(SPELL_FERAL_ESSENCE))
+            {
+                damage = 0;
+                DoCast(me, SPELL_SUMMON_ESSENCE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetStandState(UNIT_STAND_STATE_DEAD);
+                me->SetHealth(me->GetMaxHealth());
+                me->RemoveAllAuras();
+                me->AttackStop();
+                Lifes--;
+                PounceTimer = 35000;
                 RushTimer = 42000;
- 	            RessTimer = 30000;
- 	            if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
+                RessTimer = 30000;
+                if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
                     if (pAuriaya->AI())
                         pAuriaya->AI()->DoAction(ACTION_NINE_LIVES);
             }
-            else damage = 0;
- 	    }
- 	}
+        }
+    }
 };
 
 CreatureAI* GetAI_mob_feral_defender(Creature* pCreature)
@@ -464,7 +462,6 @@ struct seeping_triggerAI : public ScriptedAI
         if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
             me->ForcedDespawn();
     }
-
 };
 
 CreatureAI* GetAI_seeping_trigger(Creature* pCreature)
