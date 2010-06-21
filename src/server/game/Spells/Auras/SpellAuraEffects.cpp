@@ -1276,6 +1276,9 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                     damage = damageReductedArmor;
                 }
 
+                if (GetSpellProto()->Id == 50344) // Dream Funnel
+                    damage = uint32(target->GetMaxHealth()*0.05f);
+
                 // Curse of Agony damage-per-tick calculation
                 if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags[0] & 0x400) && GetSpellProto()->SpellIconID == 544)
                 {

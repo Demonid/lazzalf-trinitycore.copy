@@ -440,7 +440,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         damage = (m_caster->getLevel() - 60) * 4 + 60;
                         break;
                     }
-                    
+                    // Touch the Nightmare
+                    case 50341:
+                    {
+                        if (effect_idx == 2)
+                            damage = unitTarget->GetMaxHealth() * 0.3f;
+                        break;
+                    }                    
                     // Loken Pulsing Shockwave
                     case 59837:
                     case 52942:
