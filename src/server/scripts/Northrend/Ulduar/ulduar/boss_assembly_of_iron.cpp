@@ -25,6 +25,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
+#include "Spell.h"
 
 // Any boss
 #define SPELL_SUPERCHARGE   61920
@@ -52,6 +53,7 @@ EndScriptData */
 #define SPELL_OVERLOAD                        RAID_MODE(61869,63481)
 #define SPELL_LIGHTNING_WHIRL                 RAID_MODE(61915,63483)
 #define SPELL_LIGHTNING_TENDRILS              RAID_MODE(61887,63486)
+#define SPELL_LIGHTNING_TENDRILS_SELF_VISUAL  61883
 #define SPELL_STORMSHIELD                     64187
 
 enum eEnums
@@ -448,6 +450,7 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_RUNE_OF_DEATH);
                     events.ScheduleEvent(EVENT_RUNE_OF_DEATH, 30000);
+
                 }
                 break;
                 case EVENT_RUNE_OF_SUMMONING:
@@ -561,6 +564,20 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
             if(Steelbreaker->isAlive())
                 Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
     }
+    
+    void SpellHit(Unit* caster, const SpellEntry *spell)
+    {
+        if (!spell)
+            return;
+ 
+        // Makes Lightning Whirl interruptable
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
+            if (spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+            {
+                if (me->GetCurrentSpell(3)->m_spellInfo->Id == SPELL_LIGHTNING_WHIRL)
+                    me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+            }
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -603,29 +620,33 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                 break;
                 case EVENT_LIGHTNING_TENDRILS:
                     DoScriptText(SAY_BRUNDIR_FLIGHT, me);
-                    events.DelayEvents(27000);
                     DoCast(SPELL_LIGHTNING_TENDRILS);
                     me->AttackStop();
                     me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+                    DoCast(SPELL_LIGHTNING_TENDRILS_SELF_VISUAL);
                     me->GetMotionMaster()->Clear(true);
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 440);
+                    events.DelayEvents(30000);
                     events.ScheduleEvent(EVENT_FLIGHT, 2500);
+                    events.ScheduleEvent(EVENT_LAND, 28000);
                     events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                 break;
                 case EVENT_FLIGHT:
-                    events.RescheduleEvent(EVENT_MOVE_POS, 0);
-                    events.CancelEvent(EVENT_FLIGHT);
-                    events.ScheduleEvent(EVENT_LAND, 22000);
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        me->GetMotionMaster()->MovePoint(0, pTarget->GetPositionX(), pTarget->GetPositionY(), 440);
+                    events.ScheduleEvent(EVENT_FLIGHT, 6000);
                 break;
                 case EVENT_LAND:
                     me->GetMotionMaster()->Clear(true);
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28);
                     events.CancelEvent(EVENT_LAND);
+                    events.CancelEvent(EVENT_FLIGHT);
                     events.ScheduleEvent(EVENT_GROUND, 2500);
                 break;
                 case EVENT_GROUND:
                     me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
                     me->RemoveAurasDueToSpell(SPELL_LIGHTNING_TENDRILS);
+                    me->RemoveAurasDueToSpell(SPELL_LIGHTNING_TENDRILS_SELF_VISUAL);
                     events.CancelEvent(EVENT_GROUND);
                 break;
             }
