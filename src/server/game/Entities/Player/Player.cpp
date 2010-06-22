@@ -551,10 +551,7 @@ Player::~Player ()
 
     // Note: buy back item already deleted from DB when player was saved
     for (uint8 i = 0; i < PLAYER_SLOTS_COUNT; ++i)
-    {
-        if (m_items[i])
-            delete m_items[i];
-    }
+        delete m_items[i];
 
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
         delete itr->second;
@@ -576,8 +573,7 @@ Player::~Player ()
     delete PlayerTalkClass;
 
     for (size_t x = 0; x < ItemSetEff.size(); x++)
-        if (ItemSetEff[x])
-            delete ItemSetEff[x];
+        delete ItemSetEff[x];
 
     delete m_declinedname;
     delete m_runes;
@@ -15760,9 +15756,7 @@ void Player::_LoadDeclinedNames(QueryResult_AutoPtr result)
     if (!result)
         return;
 
-    if (m_declinedname)
-        delete m_declinedname;
-
+    delete m_declinedname;
     m_declinedname = new DeclinedName;
     Field *fields = result->Fetch();
     for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
@@ -16012,11 +16006,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         SetUInt64Value(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2), 0);
         SetVisibleItemSlot(slot, NULL);
 
-        if (m_items[slot])
-        {
-            delete m_items[slot];
-            m_items[slot] = NULL;
-        }
+        delete m_items[slot];
+        m_items[slot] = NULL;
     }
 
     sLog.outDebug("Load Basic value of player %s is: ", m_name.c_str());
@@ -16139,6 +16130,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         // There are no transports on instances
         instanceId = 0;
 
+        m_movementInfo.t_guid = MAKE_NEW_GUID(transGUID, 0, HIGHGUID_TRANSPORT);
         m_movementInfo.t_x = fields[26].GetFloat();
         m_movementInfo.t_y = fields[27].GetFloat();
         m_movementInfo.t_z = fields[28].GetFloat();
@@ -19619,30 +19611,30 @@ void Player::ContinueTaxiFlight()
 
     float distPrev = MAP_SIZE*MAP_SIZE;
     float distNext =
-        (nodeList[0].x-GetPositionX())*(nodeList[0].x-GetPositionX())+
-        (nodeList[0].y-GetPositionY())*(nodeList[0].y-GetPositionY())+
-        (nodeList[0].z-GetPositionZ())*(nodeList[0].z-GetPositionZ());
+        (nodeList[0]->x-GetPositionX())*(nodeList[0]->x-GetPositionX())+
+        (nodeList[0]->y-GetPositionY())*(nodeList[0]->y-GetPositionY())+
+        (nodeList[0]->z-GetPositionZ())*(nodeList[0]->z-GetPositionZ());
 
     for (uint32 i = 1; i < nodeList.size(); ++i)
     {
-        TaxiPathNode const& node = nodeList[i];
-        TaxiPathNode const& prevNode = nodeList[i-1];
+        TaxiPathNodeEntry const* node = nodeList[i];
+        TaxiPathNodeEntry const* prevNode = nodeList[i-1];
 
         // skip nodes at another map
-        if (node.mapid != GetMapId())
+        if (node->mapid != GetMapId())
             continue;
 
         distPrev = distNext;
 
         distNext =
-            (node.x-GetPositionX())*(node.x-GetPositionX())+
-            (node.y-GetPositionY())*(node.y-GetPositionY())+
-            (node.z-GetPositionZ())*(node.z-GetPositionZ());
+            (node->x-GetPositionX())*(node->x-GetPositionX())+
+            (node->y-GetPositionY())*(node->y-GetPositionY())+
+            (node->z-GetPositionZ())*(node->z-GetPositionZ());
 
         float distNodes =
-            (node.x-prevNode.x)*(node.x-prevNode.x)+
-            (node.y-prevNode.y)*(node.y-prevNode.y)+
-            (node.z-prevNode.z)*(node.z-prevNode.z);
+            (node->x-prevNode->x)*(node->x-prevNode->x)+
+            (node->y-prevNode->y)*(node->y-prevNode->y)+
+            (node->z-prevNode->z)*(node->z-prevNode->z);
 
         if (distNext + distPrev < distNodes)
         {

@@ -235,8 +235,8 @@ inline void LoadDBC(uint32& availableDbcLocales,barGoLink& bar, StoreProblemList
         else
             errlist.push_back(dbc_filename);
     }
-    if (sql)
-       delete sql;
+
+    delete sql;
 }
 
 void LoadDBCStores(const std::string& dataPath)
@@ -506,8 +506,7 @@ void LoadDBCStores(const std::string& dataPath)
     // fill data
     for (uint32 i = 1; i < sTaxiPathNodeStore.GetNumRows(); ++i)
         if (TaxiPathNodeEntry const* entry = sTaxiPathNodeStore.LookupEntry(i))
-            sTaxiPathNodesByPath[entry->path][entry->index] = TaxiPathNode(entry->mapid,entry->x,entry->y,entry->z,entry->actionFlag,entry->delay);
-    sTaxiPathNodeStore.Clear();
+            sTaxiPathNodesByPath[entry->path][entry->index] = entry;
 
     // Initialize global taxinodes mask
     // include existed nodes that have at least single not spell base (scripted) path

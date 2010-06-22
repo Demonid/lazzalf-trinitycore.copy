@@ -3419,7 +3419,7 @@ void ObjectMgr::LoadGuilds()
             !newGuild->LoadMembersFromDB(guildMembersResult) ||
             !newGuild->LoadBankRightsFromDB(guildBankTabRightsResult) ||
             !newGuild->CheckGuildStructure()
-)
+            )
         {
             newGuild->Disband();
             delete newGuild;
@@ -5682,31 +5682,10 @@ void ObjectMgr::GetTaxiPathNodes(uint32 path, Path &pathnodes, std::vector<uint3
 
     for (size_t i = 0; i < nodeList.size(); ++i)
     {
-        pathnodes[ i ].x = nodeList[i].x;
-        pathnodes[ i ].y = nodeList[i].y;
-        pathnodes[ i ].z = nodeList[i].z;
-
-        mapIds[i] = nodeList[i].mapid;
-    }
-}
-
-void ObjectMgr::GetTransportPathNodes(uint32 path, TransportPath &pathnodes)
-{
-    if (path >= sTaxiPathNodesByPath.size())
-        return;
-
-    TaxiPathNodeList& nodeList = sTaxiPathNodesByPath[path];
-
-    pathnodes.Resize(nodeList.size());
-
-    for (size_t i = 0; i < nodeList.size(); ++i)
-    {
-        pathnodes[ i ].mapid = nodeList[i].mapid;
-        pathnodes[ i ].x = nodeList[i].x;
-        pathnodes[ i ].y = nodeList[i].y;
-        pathnodes[ i ].z = nodeList[i].z;
-        pathnodes[ i ].actionFlag = nodeList[i].actionFlag;
-        pathnodes[ i ].delay = nodeList[i].delay;
+        pathnodes[i].x = nodeList[i]->x;
+        pathnodes[i].y = nodeList[i]->y;
+        pathnodes[i].z = nodeList[i]->z;
+        mapIds[i] = nodeList[i]->mapid;
     }
 }
 
@@ -8840,7 +8819,7 @@ bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 item_id, int32 max
     if (!vItems)
         return true;                                        // later checks for non-empty lists
 
-    if(vItems->FindItemCostPair(item_id,extendedCostId))
+    if (vItems->FindItemCostPair(item_id, ExtendedCost))
     {
         if (pl)
             ChatHandler(pl).PSendSysMessage(LANG_ITEM_ALREADY_IN_LIST, item_id, extendedCostId);
