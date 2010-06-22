@@ -18226,7 +18226,7 @@ void Player::_SaveTimedQuestStatus()
     // Check the players quest cool downs...
     for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
     {
-        CharacterDatabase.PExecute("INSERT INTO character_queststatus_timed (guid,quest,daily,time) VALUES ('%u', '%u','" UI64FMTD "')",
+        CharacterDatabase.PExecute("INSERT INTO character_queststatus_timed (guid,quest,daily,time) VALUES ('%u', '%u', '%u','" UI64FMTD "')",
             GetGUIDLow(),(*itr).first, ((*itr).second.daily)?1:0, (*itr).second.ltime);
     }
 
