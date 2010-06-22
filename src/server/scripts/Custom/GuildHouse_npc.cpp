@@ -553,7 +553,7 @@ bool GossipSelectWithCode_guildmaster( Player *player, Creature *_creature,
                 if (strlen(sCode) + 1 == sizeof CODE_SELL)
                     i = strcmp(CODE_SELL, sCode);
 
-            } catch(char *str) {error_db_log(str);}
+            } catch(char *str) {sLog.outErrorDb(str);}
 
             if (i == 0)
             {

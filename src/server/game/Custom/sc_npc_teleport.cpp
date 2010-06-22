@@ -314,7 +314,7 @@ void LoadNpcTele(void)
 
     if (result)
     {
-        outstring_log( "TSCR: Loading %s, %s and %s...", Table[0], Table[1], Table[2]);
+        sLog.outString( "TSCR: Loading %s, %s and %s...", Table[0], Table[1], Table[2]);
         barGoLink bar(result->GetRowCount());
 
         uint32 catid = 0;
@@ -365,9 +365,9 @@ void LoadNpcTele(void)
             ++nbDest;
         } while (result->NextRow());
 
-        outstring_log("");
-        outstring_log("TSCR: >> Loaded %u npc_teleport.", nbDest);
-    } else outstring_log("TSCR: WARNING >> Loaded 0 npc_teleport.");
+        sLog.outString("");
+        sLog.outString("TSCR: >> Loaded %u npc_teleport.", nbDest);
+    } else sLog.outString("TSCR: WARNING >> Loaded 0 npc_teleport.");
 }
 
 
