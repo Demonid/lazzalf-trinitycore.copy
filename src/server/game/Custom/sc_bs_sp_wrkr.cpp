@@ -399,7 +399,7 @@ uint8 BossSpellWorker::FindSpellIDX(uint32 SpellID)
       for(uint8 i = 0; i < _bossSpellCount; ++i)
         if (m_BossSpell[i].m_uiSpellEntry[RAID_DIFFICULTY_10MAN_NORMAL] == SpellID) return i;
 
-    error_log("BSW: spell %u not found  in boss %u spelltable. Memory or database error?", SpellID, bossID);
+    sLog.outDebug("BSW: spell %u not found  in boss %u spelltable. Memory or database error?", SpellID, bossID);
     return SPELL_INDEX_ERROR;
 }
 
@@ -635,7 +635,7 @@ CanCastResult BossSpellWorker::_DoCastSpellIfCan(Unit* pTarget, uint32 uiSpell, 
         }
         else
         {
-            error_log("BSW: DoCastSpellIfCan by creature entry %u attempt to cast spell %u but spell does not exist.", boss->GetEntry(), uiSpell);
+            sLog.outDebug("BSW: DoCastSpellIfCan by creature entry %u attempt to cast spell %u but spell does not exist.", boss->GetEntry(), uiSpell);
             return CAST_FAIL_OTHER;
         }
     }
@@ -673,7 +673,7 @@ Unit*  BossSpellWorker::_SelectUnit(SelectAggroTarget target, uint32 uiPosition)
             break;
     }
 
-    error_log("BSW: Cannot find target for spell :(");
+    sLog.outDebug("BSW: Cannot find target for spell :(");
     return NULL;
 }
 
