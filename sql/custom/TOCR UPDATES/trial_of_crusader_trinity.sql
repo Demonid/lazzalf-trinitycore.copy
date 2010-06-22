@@ -1,4 +1,4 @@
--- instance
+﻿-- instance
 UPDATE `instance_template` SET `script`='instance_trial_of_the_crusader' WHERE `map`=649;
 DELETE FROM `creature` WHERE `map` = 649 AND `id` IN 
 (34797,34796,34799,35144,34780,34460,34463,34461,34471,34475,34472,34453,34455,34458,34454,34451,34456,34497,34496,34564,34467,35465,34468,35610,34473,34474,34441,34449,34448,34450,34606, 34605, 34607, 34564);
@@ -14,9 +14,9 @@ INSERT INTO `npc_text` (`ID`, `Text0_0`) VALUES
 (724003, 'Are you ready to fight the champions of the Silver vanguard?'),
 (724004, 'Are you ready for the next stage?'),
 (724005, 'Are you ready to continue battle with Anub-Arak?'),
-(724006, 'Today, the arena is closed. Script dungeon designed specifically for server Pandora http://wow.teletoria.ru (c) /dev/rsa 2010');
+(724006, 'Today, the arena is closed.');
 
-DELETE FROM `locales_npc_text` WHERE `entry` IN (724001, 724002, 724003, 724004, 724005, 724006); 
+DELETE FROM `locales_npc_text` WHERE `entry` IN (724001, 724002, 724003, 724004, 724005, 724006);
 INSERT INTO `locales_npc_text` (`entry`, `Text0_0_loc1`, `Text0_0_loc2`, `Text0_0_loc3`, `Text0_0_loc4`, `Text0_0_loc5`, `Text0_0_loc6`, `Text0_0_loc7`, `Text0_0_loc8`) VALUES
 (724001, 'Greetings $N! Are you ready to be tested in Crusaders Coliseum?', NULL, NULL, NULL, NULL, NULL, NULL, 'Приветствую, $N! Вы готовы пройти Испытание Крестоносца?'),
 (724002, 'Are you ready for the next stage?', NULL, NULL, NULL, NULL, NULL, NULL, 'Вы готовы к следующему этапу?'),
@@ -113,4 +113,3 @@ UPDATE `creature_template` SET `modelid1` = 25144, `modelid2` = 0, `modelid3` = 
 UPDATE `creature_template` SET `scriptname`='mob_swarm_scarab', `AIName` ='' WHERE `entry`=34605;
 UPDATE `creature_template` SET `scriptname`='mob_nerubian_borrower', `AIName` ='' WHERE `entry`=34607;
 UPDATE `creature_template` SET `scriptname`='mob_anubarak_spike', `faction_A` = 14, `minlevel` = 80, `maxlevel` = 80,`faction_H` = 14, `AIName` ='' WHERE `entry`=34660;
-
