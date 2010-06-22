@@ -21439,15 +21439,16 @@ void Player::SetTimedQuestStatus(uint32 quest_id)
                 if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx))
                 {
                     SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
-                    //CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
+                    CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
                     break;
                 }
         }
         // Weekly
-        //else
-            //CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
+        else
+            CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
 
-        m_TimedQuestChanged = true;
+        //m_TimedQuestChanged = true;
+        m_TimedQuestChanged = false;
         mTimedQuestStatus[quest_id].daily = quest->IsDaily();
         mTimedQuestStatus[quest_id].ltime = now;
     }
