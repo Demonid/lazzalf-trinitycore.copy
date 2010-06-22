@@ -178,7 +178,7 @@ struct boss_flame_leviathanAI : public BossAI
         events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 2000);
         //events.ScheduleEvent(EVENT_SUMMON, 0);
-        events.ScheduleEvent(EVENT_SHUTDOWN, 90000);
+        events.ScheduleEvent(EVENT_SHUTDOWN, 60000);
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }
@@ -288,7 +288,7 @@ struct boss_flame_leviathanAI : public BossAI
                 DoCast(SPELL_SYSTEMS_SHUTDOWN);
                 me->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
                 me->MonsterTextEmote(EMOTE_REPAIR, 0, true);
-                events.RescheduleEvent(EVENT_SHUTDOWN, 90000);
+                events.RescheduleEvent(EVENT_SHUTDOWN, 70000);
                 break;
             default:
                 events.PopEvent();
