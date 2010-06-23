@@ -22,13 +22,15 @@ enum Spells
     SPELL_ENERGIZE_CORES                          = 50785, //Damage 5938 to 6562, effec2 Triggers 54069, effect3 Triggers 56251
     SPELL_ENERGIZE_CORES_TRIGGER_1                = 54069,
     SPELL_ENERGIZE_CORES_TRIGGER_2                = 56251,
-    SPELL_ENERGIZE_CORES_2                        = 59372, //Damage 9025 to 9975, effect2 Triggers 54069, effect 56251
+    H_SPELL_ENERGIZE_CORES                        = 59372, //Damage 9025 to 9975, effect2 Triggers 54069, effect 56251
     SPELL_CALL_AZURE_RING_CAPTAIN                 = 51002, //Effect    Send Event (12229)
     SPELL_CALL_AZURE_RING_CAPTAIN_2               = 51006, //Effect    Send Event (10665)
     SPELL_CALL_AZURE_RING_CAPTAIN_3               = 51007, //Effect    Send Event (18454)
     SPELL_CALL_AZURE_RING_CAPTAIN_4               = 51008, //Effect    Send Event (18455)
     SPELL_CALL_AMPLIFY_MAGIC                      = 51054,
-    SPELL_CALL_AMPLIFY_MAGIC_2                    = 59371
+    SPELL_CALL_AMPLIFY_MAGIC_2                    = 59371,
+	SPELL_ARCANE_SHIELD                           = 53813,
+	SPELL_PARACHUTE								  = 61243
 };
 //not in db
 enum Yells
@@ -51,41 +53,90 @@ struct boss_varosAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
+	bool started,JiustYell;
+	uint32 uiEnergizeCore_Timer;
 
     void Reset()
     {
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, NOT_STARTED);
+		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+		DoCast(SPELL_ARCANE_SHIELD);
+		uiEnergizeCore_Timer = 10000;
+		m_creature->SetReactState(REACT_PASSIVE);
+		started = false;
+		JiustYell = false;
     }
-    void EnterCombat(Unit* /*who*/)
+    void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, me);
+        DoScriptText(SAY_AGGRO, m_creature);
 
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, IN_PROGRESS);
     }
-    void AttackStart(Unit* /*who*/) {}
-    void MoveInLineOfSight(Unit* /*who*/) {}
-    void UpdateAI(const uint32 /*diff*/)
+
+	void UpdateAI(const uint32 diff)
     {
+		if(!pInstance)
+			return;
+
+		if(!JiustYell && pInstance->GetData(DATA_DRAKOS_EVENT) == DONE)
+		{
+			DoScriptText(SAY_SPAWN, m_creature);
+			JiustYell = true;
+		}
+		if(!started && pInstance->GetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT) == 10)
+		{
+			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+			m_creature->RemoveAllAuras();
+			m_creature->SetReactState(REACT_AGGRESSIVE);
+			started=true;
+		}
         //Return since we have no target
-        if (!UpdateVictim())
+		if (!started || !UpdateVictim())
             return;
 
+		if(uiEnergizeCore_Timer <= diff)
+		{
+			DoCast(m_creature->getVictim(),SPELL_ENERGIZE_CORES);
+			uiEnergizeCore_Timer = 10000;
+		} else uiEnergizeCore_Timer -= diff;
+
         DoMeleeAttackIfReady();
+
+		std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
+        for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
+        {
+            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+			if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
+            {
+				Vehicle* v = pUnit->GetVehicle();
+				if(v)
+				{
+					pUnit->ExitVehicle();
+					v->Dismiss();
+					DoCast(pUnit,SPELL_PARACHUTE);					
+				}
+            }
+        }
     }
-    void JustDied(Unit* /*killer*/)
+    void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, me);
+        DoScriptText(SAY_DEATH, m_creature);
 
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, DONE);
     }
-    void KilledUnit(Unit * victim)
+    void KilledUnit(Unit *victim)
     {
-        if (victim == me)
+        if (victim == m_creature)
             return;
-        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), me);
+        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), m_creature);
     }
 };
 
