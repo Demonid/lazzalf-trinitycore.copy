@@ -5,7 +5,7 @@
 #include <list>
 #include <errno.h>
 
-#ifdef WIN32
+#ifdef _WIN32
     #include <Windows.h>
     #include <sys/stat.h>
     #include <direct.h>
@@ -56,6 +56,7 @@ bool preciseVectorData = false;
 
 //static const char * szWorkDirMaps = ".\\Maps";
 const char * szWorkDirWmo = "./Buildings";
+
 // Local testing functions
 
 static void clreol()
@@ -103,7 +104,7 @@ void ReadLiquidTypeTableDBC()
     printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
 }
 
-bool ExtractWmo()
+int ExtractWmo()
 {
     char   szLocalFile[1024] = "";
     bool success=true;
@@ -234,10 +235,10 @@ void ParsMapFiles()
                         delete ADT;
                     }
                 }
-            printf("#");
-            fflush(stdout);
+                printf("#");
+                fflush(stdout);
             }
-        printf("]\n");
+            printf("]\n");
         }
     }
 }
@@ -251,7 +252,6 @@ void getGamePath()
     s = sizeof(input_path);
     memset(input_path,0,s);
     l = RegOpenKeyExA(HKEY_LOCAL_MACHINE,"SOFTWARE\\Blizzard Entertainment\\World of Warcraft",0,KEY_QUERY_VALUE,&key);
-    //l = RegOpenKeyEx(HKEY_LOCAL_MACHINE,"SOFTWARE\\Blizzard Entertainment\\Burning Crusade Closed Beta",0,KEY_QUERY_VALUE,&key);
     l = RegQueryValueExA(key,"InstallPath",0,&t,(LPBYTE)input_path,&s);
     RegCloseKey(key);
     if (strlen(input_path) > 0)
@@ -461,7 +461,7 @@ int main(int argc, char ** argv)
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     // Create the working directory
     if(mkdir(szWorkDirWmo
-#ifdef __linux__
+#ifdef _XOPEN_UNIX
                     , 0711
 #endif
                     ))
