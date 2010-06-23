@@ -5301,6 +5301,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 case 18765:
                 case 35429:
                 {
+                    if (HasAura(46924)) // Bladestorm
+                    {
+                        if (HasAura(18765))
+                            RemoveAurasDueToSpell(18765);
+                        else
+                            RemoveAurasDueToSpell(35429);
+                        return false;
+                    }
+
                     target = SelectNearbyTarget();
                     if (!target)
                         return false;
@@ -5904,7 +5913,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             {
                 // Sweeping Strikes
                 case 12328:
-                {
+                {                    
+                    if (HasAura(46924)) // Bladestorm
+                    {
+                        RemoveAurasDueToSpell(12328);                        
+                        return false;
+                    }
                     target = SelectNearbyTarget();
                     if (!target)
                         return false;
