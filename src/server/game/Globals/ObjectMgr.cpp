@@ -4985,26 +4985,9 @@ void ObjectMgr::LoadEventScripts()
     // Load all possible script entries from gameobjects
     for (uint32 i = 1; i < sGOStorage.MaxEntry; ++i)
     {
-        GameObjectInfo const * goInfo = sGOStorage.LookupEntry<GameObjectInfo>(i);
-        if (goInfo)
-        {
-            switch(goInfo->type)
-            {
-                case GAMEOBJECT_TYPE_GOOBER:
-                    if (goInfo->goober.eventId)
-                        evt_scripts.insert(goInfo->goober.eventId);
-                    break;
-                case GAMEOBJECT_TYPE_CHEST:
-                    if (goInfo->chest.eventId)
-                        evt_scripts.insert(goInfo->chest.eventId);
-                    break;
-                case GAMEOBJECT_TYPE_CAMERA:
-                    if (goInfo->camera.eventID)
-                        evt_scripts.insert(goInfo->camera.eventID);
-                default:
-                    break;
-            }
-        }
+        if (GameObjectInfo const * goInfo = sGOStorage.LookupEntry<GameObjectInfo>(i))
+            if (uint32 eventId = goInfo->GetEventScriptId())
+                evt_scripts.insert(eventId);
     }
     // Load all possible script entries from spells
     for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
@@ -5020,6 +5003,20 @@ void ObjectMgr::LoadEventScripts()
                         evt_scripts.insert(spell->EffectMiscValue[j]);
                 }
             }
+        }
+    }
+
+    for(size_t path_idx = 0; path_idx < sTaxiPathNodesByPath.size(); ++path_idx)
+    {
+        for(size_t node_idx = 0; node_idx < sTaxiPathNodesByPath[path_idx].size(); ++node_idx)
+        {
+            TaxiPathNodeEntry const& node = sTaxiPathNodesByPath[path_idx][node_idx];
+
+            if (node.arrivalEventID)
+                evt_scripts.insert(node.arrivalEventID);
+
+            if (node.departureEventID)
+                evt_scripts.insert(node.departureEventID);
         }
     }
 
@@ -5668,25 +5665,6 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         mount_id = minfo->modelid;
 
     return mount_id;
-}
-
-void ObjectMgr::GetTaxiPathNodes(uint32 path, Path &pathnodes, std::vector<uint32>& mapIds)
-{
-    if (path >= sTaxiPathNodesByPath.size())
-        return;
-
-    TaxiPathNodeList& nodeList = sTaxiPathNodesByPath[path];
-
-    pathnodes.Resize(nodeList.size());
-    mapIds.resize(nodeList.size());
-
-    for (size_t i = 0; i < nodeList.size(); ++i)
-    {
-        pathnodes[i].x = nodeList[i]->x;
-        pathnodes[i].y = nodeList[i]->y;
-        pathnodes[i].z = nodeList[i]->z;
-        mapIds[i] = nodeList[i]->mapid;
-    }
 }
 
 void ObjectMgr::LoadGraveyardZones()
@@ -8972,40 +8950,6 @@ GameObjectInfo const *GetGameObjectInfo(uint32 id)
 CreatureInfo const *GetCreatureInfo(uint32 id)
 {
     return objmgr.GetCreatureTemplate(id);
-}
-
-void ObjectMgr::LoadTransportEvents()
-{
-
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, waypoint_id, event_id FROM transport_events");
-
-    if (!result)
-    {
-        barGoLink bar1(1);
-        bar1.step();
-        sLog.outString("\n>> Transport events table is empty \n");
-        return;
-    }
-
-    barGoLink bar1(result->GetRowCount());
-
-    do
-    {
-        bar1.step();
-
-        Field *fields = result->Fetch();
-
-        //Load event values
-        uint32 entry = fields[0].GetUInt32();
-        uint32 waypoint_id = fields[1].GetUInt32();
-        uint32 event_id = fields[2].GetUInt32();
-
-        uint32 event_count = (entry*100)+waypoint_id;
-        TransportEventMap[event_count] = event_id;
-    }
-    while (result->NextRow());
-
-    sLog.outString("\n>> Loaded %u transport events \n", result->GetRowCount());
 }
 
 CreatureInfo const* GetCreatureTemplateStore(uint32 entry)

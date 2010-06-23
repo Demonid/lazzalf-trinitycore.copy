@@ -752,25 +752,47 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
     if (spellproto->Attributes & SPELL_ATTR_NEGATIVE_1)
         return false;
 
-    switch(spellId)
+    switch (spellproto->SpellFamilyName)
     {
-        //case 37675:                                         // Chaos Blast removed from mangos
-        case 34700:                                         // Allergic Reaction
-        case 61987:                                         // Avenging Wrath Marker
-        case 61988:                                         // Divine Shield exclude aura
-        case 61248:                                         // Power of Tenebron
-        case 61251:                                         // Power of Vesperon
-        case 58105:                                         // Power of Shadron
-        case 50524:                                         // Runic Power Feed
-        case 63322:                                         // Saronite Vapors
-            return false;
-        case 12042:                                         // Arcane Power
-        case 30877:                                         // Tag Murloc
-        case 47585:                                         // Dispersion
-            return true;
+        case SPELLFAMILY_GENERIC:
+            switch (spellId)
+            {
+                case 34700: // Allergic Reaction
+                case 61987: // Avenging Wrath Marker
+                case 61988: // Divine Shield exclude aura
+                case 61248:                                         // Power of Tenebron
+                case 61251:                                         // Power of Vesperon
+                case 58105:                                         // Power of Shadron
+                case 63322:                                         // Saronite Vapors
+                    return false;
+                case 30877: // Tag Murloc
+                case 12042:                                         // Arcane Power
+                    return true;
+                default:
+                    break;
+            }
+            break;
+        case SPELLFAMILY_MAGE:
+            // Amplify Magic, Dampen Magic
+            if (spellproto->SpellFamilyFlags[0] == 0x00002000)
+                return true;
+            break;
+        case SPELLFAMILY_PRIEST:
+            switch (spellId)
+            {
+                case 64844: // Divine Hymn
+                case 64904: // Hymn of Hope
+                case 47585: // Dispersion
+                    return true;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
     }
 
-    switch(spellproto->Mechanic)
+    switch (spellproto->Mechanic)
     {
         case MECHANIC_IMMUNE_SHIELD:
             return true;
