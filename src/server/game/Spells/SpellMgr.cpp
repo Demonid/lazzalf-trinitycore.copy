@@ -3754,6 +3754,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             count++;
             break;
+        case 49838:     // Stop time (Amber Drake in oculus)
+            spellInfo->EffectRadiusIndex[0] = 150;
+            count++;
+            break;
         case 25771: // Forbearance - wrong mechanic immunity in DBC since 3.0.x
             spellInfo->EffectMiscValue[0] = MECHANIC_IMMUNE_SHIELD;
             count++;
