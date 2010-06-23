@@ -639,9 +639,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 }
 
                 // speed and teleport hack checks
-                if ( plMover->GetMapId() != 650 &&     // ToC
-                     plMover->GetMapId() != 603 &&     // Ulduar
-                     plMover->GetZoneId() != 4197 ) // Wintergrasp
+                if (!plMover->GetVehicle()) // Disable on vehicle
                 {
                     if (World::GetEnableAntiSpeedTele() && (real_delta > allowed_delta))
                     {
@@ -684,9 +682,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 }
 
                 // Fly hack checks
-                if ( plMover->GetMapId() != 650 &&     // ToC
-                     plMover->GetMapId() != 603 &&     // Ulduar
-                     plMover->GetZoneId() != 4197 ) // Wintergrasp
+                if (!plMover->GetVehicle()) // Disable on Vehicle
                 {
                     if (World::GetEnableAntiFlyHack() && no_fly_auras && !no_fly_flags)
                     {
