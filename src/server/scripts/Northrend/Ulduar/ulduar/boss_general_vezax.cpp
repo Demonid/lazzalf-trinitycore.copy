@@ -25,6 +25,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
+#include "Spell.h"
 
 enum Yells
 {
@@ -191,7 +192,7 @@ struct boss_general_vezaxAI : public BossAI
                     break;
                 case EVENT_SEARING_FLAMES:
                     DoCastAOE(SPELL_SEARING_FLAMES);
-                    events.ScheduleEvent(EVENT_SEARING_FLAMES, urand(10000,15000));
+                    events.ScheduleEvent(EVENT_SEARING_FLAMES, urand(10000,20000));
                     break;
                 case EVENT_DARKNESS:
                     me->MonsterTextEmote(EMOTE_DARKNESS, 0, true);
@@ -231,6 +232,20 @@ struct boss_general_vezaxAI : public BossAI
         }
 
         DoMeleeAttackIfReady();
+    }
+    
+    void SpellHit(Unit* caster, const SpellEntry *spell)
+    {
+        if (!spell)
+            return;
+ 
+        // Make Searing Flmaes interruptable
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
+            if (spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+            {
+                if (me->GetCurrentSpell(1)->m_spellInfo->Id == SPELL_SEARING_FLAMES)
+                    me->InterruptSpell(CURRENT_GENERIC_SPELL);
+            }
     }
     
     void DoAction(const int32 action)
