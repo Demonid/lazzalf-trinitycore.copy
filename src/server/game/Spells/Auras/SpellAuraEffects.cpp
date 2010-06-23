@@ -1313,7 +1313,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             if (crit)
             {
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
-                damage -= target->GetSpellCritDamageReduction(damage);
+                //damage -= target->GetSpellCritDamageReduction(damage);
             }
             
             // Reduce damage from resilience for players and pets only.
@@ -1384,7 +1384,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             if (crit)
             {
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
-                damage -= target->GetSpellCritDamageReduction(damage);
+                //damage -= target->GetSpellCritDamageReduction(damage);
             }
 
             //Calculate armor mitigation if it is a physical spell
