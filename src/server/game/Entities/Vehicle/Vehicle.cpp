@@ -39,6 +39,29 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo) : me(unit), m_vehicleI
                     ++m_usableSeatNum;
             }
     }
+
+    switch (vehInfo->m_ID)
+    {
+        case 244: // Wintergrasp Turret
+        // case 116: // Wintergrasp Siege Turret
+            me->SetControlled(true, UNIT_STAT_ROOT);
+        case 79:  // Wintergrasp Catapult        
+        case 106: // Wintergrasp Demolisher            
+        //case 117: // Wintergrasp Siege Engine
+        //case 324: // Wintergrasp Siege Engine
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_HEAL, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_FEAR, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_PERIODIC_HEAL, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_ROOT, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+            break;
+        default:
+            break;
+    }
+
     assert(!m_Seats.empty());
 }
 
@@ -224,6 +247,9 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
     if (unit->GetVehicle() != this)
         return false;
 
+    if (unit->GetTypeId() == TYPEID_PLAYER && unit->GetMap()->IsBattleArena())
+        return false;
+
     SeatMap::iterator seat;
     if (seatId < 0) // no specific seat requirement
     {
@@ -263,7 +289,18 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
     }
 
     if (seat->second.seatInfo->m_flags && !(seat->second.seatInfo->m_flags & 0x400))
-        unit->addUnitState(UNIT_STAT_ONVEHICLE);
+    {
+        switch (GetVehicleInfo()->m_ID)
+        {
+            case 342: //Ignis
+            case 353: //XT-002
+            case 380: //Kologarn's Right Arm
+                break;
+            default: 
+                unit->addUnitState(UNIT_STAT_ONVEHICLE); 
+                break; 
+        }
+    }
 
     //SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
