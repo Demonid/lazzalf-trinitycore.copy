@@ -74,8 +74,8 @@ enum eEnums
     EVENT_OVERLOAD,
     EVENT_LIGHTNING_WHIRL,
     EVENT_LIGHTNING_TENDRILS,
-    EVENT_STORMSHIELD,
     EVENT_FLIGHT,
+    EVENT_ENDFLIGHT,
     EVENT_GROUND,
     EVENT_LAND,
     EVENT_MOVE_POS,
@@ -292,7 +292,8 @@ struct boss_steelbreakerAI : public ScriptedAI
                     DoCast(SPELL_BERSERK);
                 break;
                 case EVENT_FUSION_PUNCH:
-                    DoCastVictim(SPELL_FUSION_PUNCH);
+                    if (me->IsWithinMeleeRange(me->getVictim()))
+                        DoCastVictim(SPELL_FUSION_PUNCH);
                     events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(15000, 20000));
                 break;
                 case EVENT_STATIC_DISRUPTION:
@@ -450,7 +451,6 @@ struct boss_runemaster_molgeimAI : public ScriptedAI
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_RUNE_OF_DEATH);
                     events.ScheduleEvent(EVENT_RUNE_OF_DEATH, 30000);
-
                 }
                 break;
                 case EVENT_RUNE_OF_SUMMONING:
@@ -626,9 +626,9 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     DoCast(SPELL_LIGHTNING_TENDRILS_SELF_VISUAL);
                     me->GetMotionMaster()->Clear(true);
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 440);
-                    events.DelayEvents(30000);
+                    events.DelayEvents(35000);
                     events.ScheduleEvent(EVENT_FLIGHT, 2500);
-                    events.ScheduleEvent(EVENT_LAND, 28000);
+                    events.ScheduleEvent(EVENT_ENDFLIGHT, 28000);
                     events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                 break;
                 case EVENT_FLIGHT:
@@ -636,11 +636,17 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                         me->GetMotionMaster()->MovePoint(0, pTarget->GetPositionX(), pTarget->GetPositionY(), 440);
                     events.ScheduleEvent(EVENT_FLIGHT, 6000);
                 break;
+                case EVENT_ENDFLIGHT:
+                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->MovePoint(0, 1586.920166, 119.848984, 440);
+                    events.CancelEvent(EVENT_FLIGHT);
+                    events.CancelEvent(EVENT_ENDFLIGHT);
+                    events.ScheduleEvent(EVENT_LAND, 4000);
+                break;
                 case EVENT_LAND:
                     me->GetMotionMaster()->Clear(true);
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28);
                     events.CancelEvent(EVENT_LAND);
-                    events.CancelEvent(EVENT_FLIGHT);
                     events.ScheduleEvent(EVENT_GROUND, 2500);
                 break;
                 case EVENT_GROUND:
@@ -673,7 +679,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     events.RescheduleEvent(EVENT_LIGHTNING_WHIRL, urand(15000, 20000));
                 if(phase >= 3)
                 {
-                    DoCast(me, SPELL_STORMSHIELD);
+                    me->AddAura(SPELL_STORMSHIELD, me);
                     events.RescheduleEvent(EVENT_LIGHTNING_TENDRILS, 60000);
                 }
                 break;

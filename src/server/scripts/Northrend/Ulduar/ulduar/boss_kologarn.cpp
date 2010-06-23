@@ -132,7 +132,7 @@ struct boss_kologarnAI : public BossAI
     void MoveInLineOfSight(Unit *who)
     {
         // Birth animation
-        if (!emerged && me->IsWithinDistInMap(who, 30.0f) && who->GetTypeId() == TYPEID_PLAYER)
+        if (!emerged && me->IsWithinDistInMap(who, 35.0f) && who->GetTypeId() == TYPEID_PLAYER)
         {
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
@@ -198,14 +198,19 @@ struct boss_kologarnAI : public BossAI
     
     void Reset()
     {
+        if (RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM)))
+        {
+            RightArm->Respawn(true);
+            RightArm->EnterVehicle(vehicle, 1);
+        }
+        if (LeftArm = me->GetCreature(*me, pInstance->GetData64(DATA_LEFT_ARM)))
+        {
+            LeftArm->Respawn(true);
+            LeftArm->EnterVehicle(vehicle, 0);
+        }
         _Reset();
     }
     
-    void EnterEvadeMode()
-    {
-        _EnterEvadeMode();
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -227,9 +232,11 @@ struct boss_kologarnAI : public BossAI
             case EVENT_NONE: break;
             case EVENT_SMASH:
                 if (left && right)
-                    DoCastVictim(SPELL_TWO_ARM_SMASH, true);
+                    if (me->IsWithinMeleeRange(me->getVictim()))
+                        DoCastVictim(SPELL_TWO_ARM_SMASH, true);
                 else if(left || right)
-                    DoCastVictim(SPELL_ONE_ARM_SMASH, true);
+                    if (me->IsWithinMeleeRange(me->getVictim()))
+                        DoCastVictim(SPELL_ONE_ARM_SMASH, true);
                 events.RescheduleEvent(EVENT_SMASH, 15000);
                 break;
             case EVENT_SWEEP:

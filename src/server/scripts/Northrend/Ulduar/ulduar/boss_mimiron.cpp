@@ -294,9 +294,9 @@ struct boss_mimironAI : public BossAI
                                 if (pVX_001->getStandState() == UNIT_STAND_STATE_DEAD)
                                     if (pAerialUnit->getStandState() == UNIT_STAND_STATE_DEAD)
                                     {
-                                        me->Kill(pLeviathan, false);
-                                        me->Kill(pVX_001, false);
-                                        me->Kill(pAerialUnit, false);
+                                        pLeviathan->DisappearAndDie();
+                                        pVX_001->DisappearAndDie();
+                                        pAerialUnit->DisappearAndDie();
                                         DespawnCreatures(34050, 100);
                                         me->Kill(me, false);
                                         checkBotAlive = true;
@@ -422,7 +422,7 @@ struct boss_mimironAI : public BossAI
                     if (pInstance)
                         if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                         {
-                            pVX_001->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_OMNICAST_GHOUL);
+                            pVX_001->AddAura(57764, pVX_001); // Hover
                             pVX_001->AI()->DoAction(DO_START_VX001);
                             phase = PHASE_COMBAT;
                         }
@@ -934,7 +934,6 @@ struct boss_vx_001AI : public BossAI
                 me->RemoveAllAuras();
                 me->SetHealth(me->GetMaxHealth());
                 me->SetStandState(UNIT_STAND_STATE_DEAD);
-                me->HandleEmoteCommand(EMOTE_ONESHOT_CUSTOMSPELL06);
                 phase = PHASE_NULL;
                 events.SetPhase(PHASE_NULL);
                 if (Creature *pMimiron = Creature::GetCreature((*me), pInstance->GetData64(DATA_MIMIRON)))
@@ -993,7 +992,7 @@ struct boss_vx_001AI : public BossAI
                         RapidBurst++;
                         if(RapidBurst > 1)
                             RapidBurst = 0;
-                        events.RescheduleEvent(EVENT_RAPID_BURST, 1000, 0, PHASE_VX001_SOLO);
+                        events.RescheduleEvent(EVENT_RAPID_BURST, 500, 0, PHASE_VX001_SOLO);
                         break;
                     case EVENT_PRE_LASER_BARRAGE:
                         DoCast(SPELL_SPINNING_UP);

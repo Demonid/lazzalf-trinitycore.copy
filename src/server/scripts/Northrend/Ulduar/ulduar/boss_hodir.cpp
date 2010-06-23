@@ -294,7 +294,7 @@ struct boss_hodir_AI : public BossAI
                             if (pTarget->isAlive())
                                 pTarget->CastSpell(pTarget, SPELL_ICICLE_SNOWDRIFT, true);
                     DoCast(SPELL_FLASH_FREEZE);
-                    events.DelayEvents(12000);
+                    events.DelayEvents(14000);
                     events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
                     events.ScheduleEvent(EVENT_FLASH_EFFECT, 9000);
                     break;
