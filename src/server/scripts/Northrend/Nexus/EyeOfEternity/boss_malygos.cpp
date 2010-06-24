@@ -476,7 +476,7 @@ struct boss_malygosAI : public ScriptedAI
         {
             if(pVictim->GetEntry() == NPC_WYRMREST_SKYTALON)
             {
-                for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); iter)
+                for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); ++iter)
                 {
                     if(pVictim->GetGUID() == (*iter).first)
                     {
