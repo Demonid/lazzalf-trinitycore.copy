@@ -60,18 +60,18 @@ struct boss_varosAI : public ScriptedAI
     {
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, NOT_STARTED);
-		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+		me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 		DoCast(SPELL_ARCANE_SHIELD);
 		uiEnergizeCore_Timer = 10000;
-		m_creature->SetReactState(REACT_PASSIVE);
+		me->SetReactState(REACT_PASSIVE);
 		started = false;
 		JiustYell = false;
     }
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
 
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, IN_PROGRESS);
@@ -84,16 +84,16 @@ struct boss_varosAI : public ScriptedAI
 
 		if(!JiustYell && pInstance->GetData(DATA_DRAKOS_EVENT) == DONE)
 		{
-			DoScriptText(SAY_SPAWN, m_creature);
+			DoScriptText(SAY_SPAWN, me);
 			JiustYell = true;
 		}
 		if(!started && pInstance->GetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT) == 10)
 		{
-			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-			m_creature->RemoveAllAuras();
-			m_creature->SetReactState(REACT_AGGRESSIVE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+			me->RemoveAllAuras();
+			me->SetReactState(REACT_AGGRESSIVE);
 			started=true;
 		}
         //Return since we have no target
@@ -102,17 +102,17 @@ struct boss_varosAI : public ScriptedAI
 
 		if(uiEnergizeCore_Timer <= diff)
 		{
-			DoCast(m_creature->getVictim(),SPELL_ENERGIZE_CORES);
+			DoCast(me->getVictim(),SPELL_ENERGIZE_CORES);
 			uiEnergizeCore_Timer = 10000;
 		} else uiEnergizeCore_Timer -= diff;
 
         DoMeleeAttackIfReady();
 
-		std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+		std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
         std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
         for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+            Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
 			if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
             {
 				Vehicle* v = pUnit->GetVehicle();
@@ -127,16 +127,16 @@ struct boss_varosAI : public ScriptedAI
     }
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
             pInstance->SetData(DATA_VAROS_EVENT, DONE);
     }
     void KilledUnit(Unit *victim)
     {
-        if (victim == m_creature)
+        if (victim == me)
             return;
-        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), m_creature);
+        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), me);
     }
 };
 

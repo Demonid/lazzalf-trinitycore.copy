@@ -122,16 +122,16 @@ struct boss_uromAI : public ScriptedAI
 		ui_TimeBomb_Timer = 15000;
 		ui_ArcaneExplosion_Timer = 30000;
 		ui_ArcaneExplosionDuration=DUNGEON_MODE(9000,7000);
-		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+		me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         DoCast(SPELL_ARCANE_SHIELD);
-		m_creature->SetReactState(REACT_PASSIVE);
+		me->SetReactState(REACT_PASSIVE);
 
     }
 
 	bool PlayerInRange(float distance)
 	{
-		Map *map = m_creature->GetMap();
+		Map *map = me->GetMap();
 		if (map->IsDungeon())
 		{            
 			Map::PlayerList const &PlayerList = map->GetPlayers();
@@ -142,7 +142,7 @@ struct boss_uromAI : public ScriptedAI
 			for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
 			{
 
-				if (i->getSource()->isAlive() && i->getSource()->GetDistance2d(m_creature->GetPositionX(), m_creature->GetPositionY()) <= distance)
+				if (i->getSource()->isAlive() && i->getSource()->GetDistance2d(me->GetPositionX(), me->GetPositionY()) <= distance)
 				{
 					return true;
 				}
@@ -153,7 +153,7 @@ struct boss_uromAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
 
         if (pInstance)
             pInstance->SetData(DATA_UROM_EVENT, IN_PROGRESS);
@@ -161,11 +161,11 @@ struct boss_uromAI : public ScriptedAI
 
 	void DismountPlayers()
 	{
-		std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+		std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
 		std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
 		for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
 		{
-			Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+			Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
 			if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
 			{
 				Vehicle* v = pUnit->GetVehicle();
@@ -198,131 +198,131 @@ struct boss_uromAI : public ScriptedAI
 			case 1:
 				if(!summoning_casted)
 				{
-					DoScriptText(SAY_SUMMON_1,m_creature);
+					DoScriptText(SAY_SUMMON_1,me);
 					DoCast(SPELL_SUMMON_MENAGERIE_1);
 					summoning_casted = true;
 				}
 				if (!just_summoned && ui_SummonSimulation_Timer <= uiDiff)
 				{
-					temp_summ = DoSummon(NPC_PHANTASMAL_WATER, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_WATER, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_AIR, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_AIR, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_FIRE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_FIRE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_FIRE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_FIRE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
 					just_summoned = true;
 					ui_SummonSimulation_Timer = 4000;
-					m_creature->GetMotionMaster()->Clear(false);
+					me->GetMotionMaster()->Clear(false);
 					DoResetThreat();
-					m_creature->CombatStop(true);
-					m_creature->NearTeleportTo(BossLocSpawn[0].x, BossLocSpawn[0].y, BossLocSpawn[0].z, BossLocSpawn[0].o);
+					me->CombatStop(true);
+					me->NearTeleportTo(BossLocSpawn[0].x, BossLocSpawn[0].y, BossLocSpawn[0].z, BossLocSpawn[0].o);
 					waiting_teleport = false;
 				}else ui_SummonSimulation_Timer -= uiDiff;
 				break;
 			case 2:
 				if(!summoning_casted)
 				{
-					DoScriptText(SAY_SUMMON_2,m_creature);
+					DoScriptText(SAY_SUMMON_2,me);
 					DoCast(SPELL_SUMMON_MENAGERIE_2);
 					summoning_casted = true;
 				}
 				if (!just_summoned && ui_SummonSimulation_Timer <= uiDiff)
 				{
-					temp_summ = DoSummon(NPC_PHANTASMAL_NAGA, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_NAGA, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_MURLOC, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_MURLOC, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_OGRE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_OGRE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_OGRE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_OGRE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
 					just_summoned = true;
 					ui_SummonSimulation_Timer = 4000;
-					m_creature->GetMotionMaster()->Clear(false);
+					me->GetMotionMaster()->Clear(false);
 					DoResetThreat();
-					m_creature->CombatStop(true);
-					m_creature->NearTeleportTo(BossLocSpawn[1].x, BossLocSpawn[1].y, BossLocSpawn[1].z, BossLocSpawn[1].o);
+					me->CombatStop(true);
+					me->NearTeleportTo(BossLocSpawn[1].x, BossLocSpawn[1].y, BossLocSpawn[1].z, BossLocSpawn[1].o);
 					waiting_teleport = false;
 				}else ui_SummonSimulation_Timer -= uiDiff;
 				break;
 			case 3:
 				if(!summoning_casted)
 				{
-					DoScriptText(SAY_SUMMON_3,m_creature);
+					DoScriptText(SAY_SUMMON_3,me);
 					DoCast(SPELL_SUMMON_MENAGERIE_3);
 					summoning_casted = true;
 				}
 				if (!just_summoned && ui_SummonSimulation_Timer <= uiDiff)
 				{
-					temp_summ = DoSummon(NPC_PHANTASMAL_MAMMOTH, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_MAMMOTH, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_WOLVE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_WOLVE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_WOLVE, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_WOLVE, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_CLUODSCRAPER, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_CLUODSCRAPER, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
-					temp_summ = DoSummon(NPC_PHANTASMAL_CLUODSCRAPER, m_creature, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
+					temp_summ = DoSummon(NPC_PHANTASMAL_CLUODSCRAPER, me, (rand()%RANGE)+1, 30000, TEMPSUMMON_DEAD_DESPAWN);
 					if(temp_summ)
 						if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
 							temp_summ->Attack(pTarget,true);
 					just_summoned = true;
 					ui_SummonSimulation_Timer = 4000;
-					m_creature->GetMotionMaster()->Clear(false);
+					me->GetMotionMaster()->Clear(false);
 					DoResetThreat();
-					m_creature->CombatStop(true);
-					m_creature->NearTeleportTo(BossLocSpawn[2].x, BossLocSpawn[2].y, BossLocSpawn[2].z, BossLocSpawn[2].o);
+					me->CombatStop(true);
+					me->NearTeleportTo(BossLocSpawn[2].x, BossLocSpawn[2].y, BossLocSpawn[2].z, BossLocSpawn[2].o);
 					waiting_teleport = false;
 				}else ui_SummonSimulation_Timer -= uiDiff;
 				break;
 			case 4:
-				m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-				m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-				m_creature->SetReactState(REACT_AGGRESSIVE);
-				m_creature->RemoveAllAuras();
+				me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+				me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+				me->SetReactState(REACT_AGGRESSIVE);
+				me->RemoveAllAuras();
 
 				//Return since we have no target
 				if (!UpdateVictim())
 					return;
 				if(casting_explosion && !done_casting_explosion)
 				{
-					m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
-					m_creature->NearTeleportTo(BossLocSpawn[3].x, BossLocSpawn[3].y, BossLocSpawn[3].z, BossLocSpawn[3].o);
-					DoScriptText(RAND(SAY_EXPLOSION_1,SAY_EXPLOSION_2), m_creature);
+					me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+					me->NearTeleportTo(BossLocSpawn[3].x, BossLocSpawn[3].y, BossLocSpawn[3].z, BossLocSpawn[3].o);
+					DoScriptText(RAND(SAY_EXPLOSION_1,SAY_EXPLOSION_2), me);
 					DoCast(SPELL_EMPOWERED_ARCANE_EXPLOSION);
 					done_casting_explosion = true;
 				}
 				if(casting_explosion && ui_ArcaneExplosionDuration <= uiDiff){
-					Unit* victim = m_creature->getVictim();
+					Unit* victim = me->getVictim();
 					if(victim)
-						m_creature->NearTeleportTo(victim->GetPositionX()+4,victim->GetPositionY(),victim->GetPositionZ(),0);
-					m_creature->SetUnitMovementFlags(MOVEMENTFLAG_NONE);
+						me->NearTeleportTo(victim->GetPositionX()+4,victim->GetPositionY(),victim->GetPositionZ(),0);
+					me->SetUnitMovementFlags(MOVEMENTFLAG_NONE);
 					casting_explosion = false;
 				}
 				else if (casting_explosion)
@@ -330,7 +330,7 @@ struct boss_uromAI : public ScriptedAI
 
 				if(ui_FrostBomb_Timer <= uiDiff)
 				{
-					DoCast(m_creature->getVictim(),SPELL_FROSTBOMB);
+					DoCast(me->getVictim(),SPELL_FROSTBOMB);
 					ui_FrostBomb_Timer = 60000;
 				} else ui_FrostBomb_Timer -= uiDiff;
 
@@ -360,16 +360,16 @@ struct boss_uromAI : public ScriptedAI
     }
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
             pInstance->SetData(DATA_UROM_EVENT, DONE);
     }
     void KilledUnit(Unit *victim)
     {
-        if (victim == m_creature)
+        if (victim == me)
             return;
-        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2,SAY_KILL_3), m_creature);
+        DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2,SAY_KILL_3), me);
     }
 };
 

@@ -110,24 +110,24 @@ struct boss_eregosAI : public ScriptedAI
 		phase = 1;
 		started = false;
 		lSummons.DespawnAll();
-		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		m_creature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
-		m_creature->GetMotionMaster()->Clear();
-		m_creature->GetMotionMaster()->MoveRandom(80.0f);
-		m_creature->SetReactState(REACT_PASSIVE);
+		me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+		me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+		me->GetMotionMaster()->Clear();
+		me->GetMotionMaster()->MoveRandom(80.0f);
+		me->SetReactState(REACT_PASSIVE);
     }
 
 	void SummonPlanarAnomaly()
 	{
-		std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+		std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
 		std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
 		for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
 		{
-			Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+			Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
 			if (pUnit )
 			{
-				Creature* summon = DoSummon(PLANAR_ANOMALY, m_creature, 3.0f, 30000, TEMPSUMMON_DEAD_DESPAWN);
+				Creature* summon = DoSummon(PLANAR_ANOMALY, me, 3.0f, 30000, TEMPSUMMON_DEAD_DESPAWN);
 				if(summon)
 				{
 					summon->Attack(pUnit,true);
@@ -152,10 +152,10 @@ struct boss_eregosAI : public ScriptedAI
     {
 		if(!started && pInstance->GetData(DATA_UROM_EVENT) == DONE)
 		{
-			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-			m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-			m_creature->RemoveAllAuras();
-			m_creature->SetReactState(REACT_AGGRESSIVE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+			me->RemoveAllAuras();
+			me->SetReactState(REACT_AGGRESSIVE);
 			started=true;
 		}
         //Return since we have no target
@@ -177,13 +177,13 @@ struct boss_eregosAI : public ScriptedAI
 		switch(phase)
 		{
 			case 1:
-				if(!m_creature->HasAura(SPELL_PLANAR_SHIFT))
+				if(!me->HasAura(SPELL_PLANAR_SHIFT))
 				{
 					lSummons.DespawnAll();
 					if(uiArcaneBarrage_Timer <= uiDiff)
 					{
 						uiArcaneBarrage_Timer = 3000;
-						DoCast(m_creature->getVictim(),DUNGEON_MODE(SPELL_ARCANE_BARRAGE,H_SPELL_ARCANE_BARRAGE)); 
+						DoCast(me->getVictim(),DUNGEON_MODE(SPELL_ARCANE_BARRAGE,H_SPELL_ARCANE_BARRAGE)); 
 					} else uiArcaneBarrage_Timer -= uiDiff;
 
 					if(uiArcaneVolley_Timer <= uiDiff)
@@ -236,8 +236,8 @@ struct npc_planar_anomalyAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetReactState(REACT_PASSIVE);
-        m_creature->GetMotionMaster()->MoveRandom(40.0f);
+        me->SetReactState(REACT_PASSIVE);
+        me->GetMotionMaster()->MoveRandom(40.0f);
 
         uiDeathTimer = 16000;
     }
@@ -251,7 +251,7 @@ struct npc_planar_anomalyAI : public ScriptedAI
         } else uiDeathTimer -= uiDiff;
 
         if (uiDeathTimer <= uiDiff)
-            m_creature->DisappearAndDie();
+            me->DisappearAndDie();
         else uiDeathTimer -= uiDiff;
     }
 };
