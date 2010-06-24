@@ -62,11 +62,11 @@ struct mob_CentrifigeConstructAI : public ScriptedAI
 
 	void DismountPlayers()
 	{
-		std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+		std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
 		std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
 		for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
 		{
-			Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+			Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
 			if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
 			{
 				Vehicle* v = pUnit->GetVehicle();

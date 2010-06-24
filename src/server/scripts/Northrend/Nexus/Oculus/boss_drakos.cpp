@@ -102,20 +102,20 @@ struct boss_drakosAI : public ScriptedAI
         if (uiBombSummonTimer <= uiDiff)
         {
             Position pPosition;
-            m_creature->GetPosition(&pPosition);
+            me->GetPosition(&pPosition);
 
             if (bPostPull)
             {
                 for (uint8 uiI = 0; uiI >= 3; uiI++)
                 {
-                    m_creature->GetRandomNearPosition(pPosition, float(urand(0,10)));
-                    m_creature->SummonCreature(NPC_UNSTABLE_SPHERE, pPosition);
+                    me->GetRandomNearPosition(pPosition, float(urand(0,10)));
+                    me->SummonCreature(NPC_UNSTABLE_SPHERE, pPosition);
                 }
             }
             else
             {
-                m_creature->GetRandomNearPosition(pPosition, float(urand(0,10)));
-                m_creature->SummonCreature(NPC_UNSTABLE_SPHERE, pPosition);
+                me->GetRandomNearPosition(pPosition, float(urand(0,10)));
+                me->SummonCreature(NPC_UNSTABLE_SPHERE, pPosition);
             }
 
             uiBombSummonTimer = 6000;
@@ -173,11 +173,11 @@ struct npc_unstable_sphereAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetReactState(REACT_PASSIVE);
-        m_creature->GetMotionMaster()->MoveRandom(40.0f);
+        me->SetReactState(REACT_PASSIVE);
+        me->GetMotionMaster()->MoveRandom(40.0f);
 
-        m_creature->AddAura(SPELL_UNSTABLE_SPHERE_PASSIVE, me);
-        m_creature->AddAura(SPELL_UNSTABLE_SPHERE_TIMER, me);
+        me->AddAura(SPELL_UNSTABLE_SPHERE_PASSIVE, me);
+        me->AddAura(SPELL_UNSTABLE_SPHERE_TIMER, me);
 
         uiPulseTimer = 3000;
         uiDeathTimer = 19000;
@@ -192,7 +192,7 @@ struct npc_unstable_sphereAI : public ScriptedAI
         } else uiPulseTimer -= uiDiff;
 
         if (uiDeathTimer <= uiDiff)
-            m_creature->DisappearAndDie();
+            me->DisappearAndDie();
         else uiDeathTimer -= uiDiff;
     }
 };
