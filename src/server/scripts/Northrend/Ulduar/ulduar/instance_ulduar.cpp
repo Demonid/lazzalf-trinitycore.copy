@@ -24,7 +24,6 @@ const DoorData doorData[] =
     {194416,    BOSS_LEVIATHAN, DOOR_TYPE_ROOM,     0},
     {194905,    BOSS_LEVIATHAN, DOOR_TYPE_PASSAGE,  0},
     {194631,    BOSS_XT002,     DOOR_TYPE_ROOM,     0},
-    {194553,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
     {194554,    BOSS_ASSEMBLY,  DOOR_TYPE_ROOM,     0},
     {194556,    BOSS_ASSEMBLY,  DOOR_TYPE_PASSAGE,  0},
     {194553,    BOSS_KOLOGARN,  DOOR_TYPE_ROOM,     0},
@@ -56,6 +55,7 @@ enum eGameObjects
     GO_Mimiron_ELEVATOR     = 194749,
     GO_Mimiron_CHEST_HERO   = 194789,
     GO_Mimiron_CHEST        = 194956,
+    GO_Keepers_DOOR         = 194255
 };
 
 struct instance_ulduar : public InstanceData
@@ -94,8 +94,11 @@ struct instance_ulduar : public InstanceData
     uint64 uiMagneticCore;
     uint64 uiVezax;
     
+    uint32 m_auiKeeper[4];
+    std::string strSaveData;
+    
     GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest,
-        *MimironTram, *MimironElevator, *MimironChest;
+        *MimironTram, *MimironElevator, *MimironChest, *KeepersGate;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -117,6 +120,9 @@ struct instance_ulduar : public InstanceData
             case GO_Mimiron_ELEVATOR: MimironElevator = add ? pGo : NULL; break;
             case GO_Mimiron_CHEST_HERO: MimironChest = add ? pGo : NULL; break;
             case GO_Mimiron_CHEST: MimironChest = add ? pGo : NULL; break;
+            case GO_Keepers_DOOR: KeepersGate = add ? pGo : NULL;
+                if (m_auiKeeper[0] == DONE && m_auiKeeper[1] == DONE && m_auiKeeper[2] == DONE && m_auiKeeper[3] == DONE)
+                    KeepersGate->SetGoState(GO_STATE_ACTIVE); break;
         }
     }
 
@@ -174,6 +180,11 @@ struct instance_ulduar : public InstanceData
                 case 32908: pCreature->UpdateEntry(32907, HORDE); return;
                 case 32885: pCreature->UpdateEntry(32883, HORDE); return;
             }
+    }
+    
+    std::string GetSaveData()
+    {
+        return strSaveData;
     }
 
     uint64 GetData64(uint32 id)
@@ -306,19 +317,61 @@ struct instance_ulduar : public InstanceData
             case BOSS_HODIR:
                 if (state == DONE)
                     HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
+                m_auiKeeper[0] = state;
                 break;
             case BOSS_THORIM:
                 if (state == IN_PROGRESS)
                     pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
                 if (state == DONE)
                     ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+                m_auiKeeper[1] = state;
                 break;
             case BOSS_MIMIRON:
                 if (state == DONE)
                     MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
+                m_auiKeeper[2] = state;
+                break;
+            case BOSS_FREYA:
+                m_auiKeeper[3] = state;
                 break;
         }
+        
+        if (state == DONE)
+        {
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << m_auiKeeper[0] << " " << m_auiKeeper[1] << " " << m_auiKeeper[2] << " "
+                << m_auiKeeper[3];
+
+            strSaveData = saveStream.str();
+
+            SaveToDB();
+            OUT_SAVE_INST_DATA_COMPLETE;
+        }
+        
+        if (m_auiKeeper[0] == DONE && m_auiKeeper[1] == DONE && m_auiKeeper[2] == DONE && m_auiKeeper[3] == DONE)
+            KeepersGate->SetGoState(GO_STATE_ACTIVE);
+        
         return true;
+    }
+    
+    void Load(const char* chrIn)
+    {
+        if (!chrIn)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(chrIn);
+        std::istringstream loadStream(chrIn);
+
+        loadStream >> m_auiKeeper[0] >> m_auiKeeper[1] >> m_auiKeeper[2] >> m_auiKeeper[3];
+        for (uint8 i = 0; i < 4; ++i)
+            if (m_auiKeeper[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
+                m_auiKeeper[i] = NOT_STARTED;
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 };
 
