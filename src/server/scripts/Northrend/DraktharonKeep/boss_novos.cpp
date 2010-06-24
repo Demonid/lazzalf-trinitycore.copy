@@ -137,6 +137,9 @@ struct boss_novosAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (!UpdateVictim())
+            return;
+
         switch (Phase)
         {
             case PHASE_1:
