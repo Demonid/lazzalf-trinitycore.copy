@@ -151,6 +151,7 @@ Position m_aVesp[]=
     {3227.268, 533.238, 59.995}
 };
 
+#define ACTION_TELEPORT_BACK_SAR 70
 #define MAX_WAYPOINT 6
 //points around raid "isle", counter clockwise. should probably be adjusted to be more alike
 Position m_aDragonCommon[MAX_WAYPOINT]=
@@ -225,6 +226,7 @@ struct boss_sartharionAI : public BossAI
     bool m_bIsSoftEnraged;
 
     uint32 achievProgress;
+    uint32 Acolytes;
 
     void Reset()
     {
@@ -242,7 +244,8 @@ struct boss_sartharionAI : public BossAI
         me->ResetLootMode();
         me->SetHomePosition(3246.57, 551.263, 58.6164, 4.66003); 
 
-        achievProgress = 0;        
+        achievProgress = 0; 
+        Acolytes = 2;
     }
 
     void EnterCombat(Unit* pWho)
@@ -259,6 +262,16 @@ struct boss_sartharionAI : public BossAI
         events.ScheduleEvent(EVENT_CLEAVE, 7000);
         events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
         events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILISECONDS);
+    }
+
+    void DoAction(const int32 action)
+    {
+        switch(action)
+        {
+            case ACTION_TELEPORT_BACK_SAR:
+                Acolytes--;
+                break;
+        }
     }
 
     void JustDied(Unit* pKiller)
@@ -502,6 +515,32 @@ struct boss_sartharionAI : public BossAI
 
     void UpdateAI(const uint32 uiDiff)
     {
+        if (Acolytes == 0)
+        {
+            if (instance)
+            {
+                Map *map = me->GetMap();
+                if (map->IsDungeon())
+                {
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        if (i->getSource() && i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                        {
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
+                        }
+                    }
+                }
+            }
+        }
+
         //Return since we have no target
         if (!UpdateVictim())
             return;
@@ -580,7 +619,7 @@ struct boss_sartharionAI : public BossAI
         }
 
         // Don't attack current target if he's not visible for us.
-        if(me->getVictim()->HasAura(57874, 0))
+        if (me->getVictim() && me->getVictim()->HasAura(57874, 0))
             me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
 
         DoMeleeAttackIfReady();
@@ -1078,7 +1117,7 @@ struct mob_shadronAI : public dummy_dragonAI
         if (m_uiAcolyteShadronTimer <= uiDiff)
         {
             if(m_bHasPortalOpen)
-                m_uiAcolyteShadronTimer = 10000;
+                return;
             else
             {
                 //if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
@@ -1173,11 +1212,12 @@ struct mob_vesperonAI : public dummy_dragonAI
         // Portal Event
         if (m_uiAcolyteVesperonTimer <= uiDiff)
         {
-            if(m_bHasPortalOpen)
-                m_uiAcolyteVesperonTimer = 10000;
+            if (m_bHasPortalOpen)
+                return;
             else
             {
-                OpenPortal();                
+                OpenPortal(); 
+                m_bHasPortalOpen = true;
                 m_uiAcolyteVesperonTimer = urand(60000,70000);
             }
         }
@@ -1229,43 +1269,55 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        if (pInstance)
+        if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
         {
-            Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
-            if(Shadron)
-                ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
-
-            Creature* pDebuffTarget = NULL;
-            Map *map = me->GetMap();
-            if (map->IsDungeon())
+            if (Creature* pTenebron = me->GetCreature(*me, pInstance->GetData64(DATA_TENEBRON)))
+                pTenebron->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
+        }
+        else
+        {
+            if (pInstance)
             {
-                Map::PlayerList const &PlayerList = map->GetPlayers();
-
-                if (PlayerList.isEmpty())
-                    return;
-
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+                if(Shadron)
+                    ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
+                
+                Map *map = me->GetMap();
+                if (map->IsDungeon())
                 {
-                    if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
-                        i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
-                        i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
-                        i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
+                        if (i->getSource() && i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                        {
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
+                        }
                     }
                 }
             }
 
-            //not solo fight, so main boss has deduff
-            pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
-            if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
-                pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
-        
-            //event not in progress, then solo fight and must remove debuff mini-boss
-            pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
-            if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-                pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
-            
+            Creature* pDebuffTarget = NULL;
+            if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
+            {
+                //not solo fight, so main boss has deduff
+                pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
+                if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
+                    pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
+            }
+            else
+            {
+                //event not in progress, then solo fight and must remove debuff mini-boss
+                pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+                if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
+                    pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
+            }
         }
     }
 
@@ -1341,37 +1393,48 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
             if (pVesperon && pVesperon->isAlive() && pVesperon->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
                 pVesperon->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
 
-            Map *map = me->GetMap();
-            if (map->IsDungeon())
+           if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             {
-                Map::PlayerList const &PlayerList = map->GetPlayers();
-
-                if (PlayerList.isEmpty())
-                    return;
-
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                if (Creature* pTenebron = me->GetCreature(*me, pInstance->GetData64(DATA_TENEBRON)))
+                    pTenebron->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
+            }
+            else
+            {
+                Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+                if(Shadron)
+                    ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
+                
+                Map *map = me->GetMap();
+                if (map->IsDungeon())
                 {
-                    if (i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
-                        i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
-                        i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
-                        i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
-                    
-                        i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
-                        i->getSource()->RemoveAurasDueToSpell(57988);
-                        i->getSource()->RemoveAurasDueToSpell(57935);
+                        if (i->getSource() && i->getSource()->isAlive() && i->getSource()->HasAura(SPELL_TWILIGHT_SHIFT,0) && !i->getSource()->getVictim())
+                        {
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_SHIFT_REMOVAL_ALL,true);
+                            i->getSource()->CastSpell(i->getSource(),SPELL_TWILIGHT_RESIDUE,true);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT);
+                            i->getSource()->RemoveAurasDueToSpell(SPELL_TWILIGHT_SHIFT_ENTER);
+                        }
                     }
                 }
             }
-
         }
     }
+
 
     void UpdateAI(const uint32 uiDiff)
     {        
         if (!UpdateVictim())
             return;
+
+        if(me->getVictim() && !me->getVictim()->HasAura(57874, 0))
+ 	        me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
 
         DoMeleeAttackIfReady();
     }
@@ -1545,6 +1608,7 @@ struct mob_twilight_whelpAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
+        me->SetInCombatWithZone();
         //Return since we have no target
         if (!UpdateVictim())
             return;
