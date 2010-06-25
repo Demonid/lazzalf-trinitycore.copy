@@ -22,7 +22,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "WorldPacket.h"
-#include "SingletonImp.h"
+
 
 #include "ArenaTeam.h"
 #include "BattleGroundMgr.h"
@@ -49,8 +49,6 @@
 #include "SharedDefines.h"
 #include "Configuration/ConfigEnv.h"
 #include "Formulas.h"
-
-INSTANTIATE_SINGLETON_1(BattleGroundMgr);
 
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
@@ -1805,7 +1803,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
     }
 
     // generate a new instance id
-    bg->SetInstanceID(MapManager::Instance().GenerateInstanceId()); // set instance id
+    bg->SetInstanceID(sMapMgr.GenerateInstanceId()); // set instance id
     bg->SetClientInstanceID(CreateClientVisibleInstanceId(isRandom ? BATTLEGROUND_RB : bgTypeId, bracketEntry->GetBracketId()));
 
     // reset the new bg (set status to status_wait_queue from status_none)

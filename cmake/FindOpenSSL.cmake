@@ -24,17 +24,12 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
       /usr/local/include
       /usr/local/include/openssl
       /usr/local/openssl/include
-      "C:/OpenSSL/include/openssl"
-      "C:/OpenSSL-Win32/include/openssl"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/include/openssl"
       "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
       "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
     DOC
       "Specify the directory containing openssl.h."
   )
-
-  if( WIN32 )
-    set(TMP_OPENSSL_LIBRARIES "libeay32 ssleay32")
-  endif( WIN32 )
 
   find_library(OPENSSL_LIBRARIES
     NAMES
@@ -46,9 +41,9 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
       /usr/local/lib
       /usr/local/lib/ssl
       /usr/local/ssl/lib
-      "C:/OpenSSL/lib"
-      "C:/OpenSSL-Win32/lib"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/lib"
       "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
     DOC "Specify the OpenSSL library here."
   )
 
@@ -57,8 +52,9 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
     NAMES
       libeay32
     PATHS
-      "C:/OpenSSL/lib"
-       "C:/OpenSSL-Win32/lib"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/lib"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
     DOC
       "if more libraries are necessary to link in a OpenSSL client, specify them here."
   )
