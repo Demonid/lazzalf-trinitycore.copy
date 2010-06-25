@@ -43,10 +43,12 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo) : me(unit), m_vehicleI
     switch (vehInfo->m_ID)
     {
         case 244: // Wintergrasp Turret
-        // case 116: // Wintergrasp Siege Turret
+        // case 116: // Wintergrasp Siege Turret        
+        case 160:
             me->SetControlled(true, UNIT_STAT_ROOT);
         case 79:  // Wintergrasp Catapult        
         case 106: // Wintergrasp Demolisher 
+        case 158:
         //case 117: // Wintergrasp Siege Engine
         //case 324: // Wintergrasp Siege Engine
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
