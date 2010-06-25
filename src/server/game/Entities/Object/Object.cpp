@@ -110,7 +110,7 @@ Object::~Object()
     {
         sLog.outCrash("Object::~Object - guid="UI64FMTD", typeid=%d, entry=%u deleted but still in update list!!", GetGUID(), GetTypeId(), GetEntry());
         assert(false);
-        ObjectAccessor::Instance().RemoveUpdateObject(this);
+        sObjectAccessor.RemoveUpdateObject(this);
     }
 
     delete [] m_uint32Values;
@@ -731,7 +731,7 @@ void Object::ClearUpdateMask(bool remove)
     if (m_objectUpdated)
     {
         if (remove)
-            ObjectAccessor::Instance().RemoveUpdateObject(this);
+            sObjectAccessor.RemoveUpdateObject(this);
         m_objectUpdated = false;
     }
 }
@@ -804,7 +804,7 @@ void Object::SetInt32Value(uint16 index, int32 value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -823,7 +823,7 @@ void Object::SetUInt32Value(uint16 index, uint32 value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -849,7 +849,7 @@ void Object::SetUInt64Value(uint16 index, const uint64 &value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -868,7 +868,7 @@ bool Object::AddUInt64Value(uint16 index, const uint64 &value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -889,7 +889,7 @@ bool Object::RemoveUInt64Value(uint16 index, const uint64 &value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -910,7 +910,7 @@ void Object::SetFloatValue(uint16 index, float value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -936,7 +936,7 @@ void Object::SetByteValue(uint16 index, uint8 offset, uint8 value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -962,7 +962,7 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -1031,7 +1031,7 @@ void Object::SetFlag(uint16 index, uint32 newFlag)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -1052,7 +1052,7 @@ void Object::RemoveFlag(uint16 index, uint32 oldFlag)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -1077,7 +1077,7 @@ void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -1102,7 +1102,7 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
         {
             if (!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor.AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -1379,28 +1379,15 @@ bool Position::HasInArc(float arc, const Position *obj) const
         return true;
 
     // move arc to range 0.. 2*pi
-    while (arc >= 2.0f * M_PI)
-        arc -=  2.0f * M_PI;
-    while (arc < 0)
-        arc +=  2.0f * M_PI;
+    arc = MapManager::NormalizeOrientation(arc);
 
     float angle = GetAngle(obj);
     angle -= m_orientation;
 
-    //if (angle > 100 || angle < -100)
-    //{
-    //    sLog.outCrash("Invalid Angle %f: this %u %u %f %f %f %f, that %u %u %f %f %f %f", angle,
-    //        GetEntry(), GetGUIDLow(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),
-    //        obj->GetEntry(), obj->GetGUIDLow(), obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
-    //    assert(false);
-    //    return false;
-    //}
-
     // move angle to range -pi ... +pi
-    while (angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while (angle < -M_PI)
-        angle += 2.0f * M_PI;
+    angle = MapManager::NormalizeOrientation(angle);
+    if(angle > M_PI)
+        angle -= 2.0f*M_PI;
 
     float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
     float rborder = (arc/2.0f);                             // in range 0..pi
@@ -1515,7 +1502,7 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
     {
         if (!m_objectUpdated)
         {
-            ObjectAccessor::Instance().AddUpdateObject(this);
+            sObjectAccessor.AddUpdateObject(this);
             m_objectUpdated = true;
         }
     }

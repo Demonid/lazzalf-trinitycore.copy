@@ -10,11 +10,8 @@
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
-#include "SingletonImp.h"
 #include "Custom/sc_npc_teleport.h"
 #include "Custom/GuildHouse.h"
-
-INSTANTIATE_SINGLETON_1(ScriptMgr);
 
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];

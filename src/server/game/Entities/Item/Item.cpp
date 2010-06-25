@@ -635,7 +635,7 @@ void Item::SetState(ItemUpdateState state, Player *forplayer)
     {
         // pretend the item never existed
         RemoveFromUpdateQueueOf(forplayer);
-        forplayer->DeleteRefundReference(GetGUID());
+        forplayer->DeleteRefundReference(GetGUIDLow());
         delete this;
         return;
     }
@@ -1037,20 +1037,11 @@ bool Item::IsBindedNotWith(Player const* player) const
     if (GetOwnerGUID() == player->GetGUID())
         return false;
 
-    // not BOA item case
-    if (!IsBoundAccountWide())
-        return true;
-
-    // online
-    if (Player* owner = objmgr.GetPlayer(GetOwnerGUID()))
-    {
-        return owner->GetSession()->GetAccountId() != player->GetSession()->GetAccountId();
-    }
-    // offline slow case
-    else
-    {
-        return objmgr.GetPlayerAccountIdByGUID(GetOwnerGUID()) != player->GetSession()->GetAccountId();
-    }
+    // BOA item case
+    if (IsBoundAccountWide())
+        return false;
+        
+    return true;
 }
 
 bool ItemRequiredTarget::IsFitToRequirements(Unit* pUnitTarget) const
@@ -1108,7 +1099,7 @@ void Item::SetNotRefundable(Player *owner, bool changestate)
     SetPaidExtendedCost(0);
     DeleteRefundDataFromDB();
 
-    owner->DeleteRefundReference(GetGUID());
+    owner->DeleteRefundReference(GetGUIDLow());
 }
 
 void Item::UpdatePlayedTime(Player *owner)

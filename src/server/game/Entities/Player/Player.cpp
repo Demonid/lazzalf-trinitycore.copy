@@ -280,6 +280,105 @@ std::ostringstream& operator<< (std::ostringstream& ss, PlayerTaxi const& taxi)
     return ss;
 }
 
+//== TradeData =================================================
+
+TradeData* TradeData::GetTraderData() const
+{
+    return m_trader->GetTradeData();
+}
+
+Item* TradeData::GetItem(TradeSlots slot) const
+{
+    return m_items[slot] ? m_player->GetItemByGuid(m_items[slot]) : NULL;
+}
+
+bool TradeData::HasItem(uint64 item_guid) const
+{
+    for(uint8 i = 0; i < TRADE_SLOT_COUNT; ++i)
+        if (m_items[i] == item_guid)
+            return true;
+
+    return false;
+}
+
+Item* TradeData::GetSpellCastItem() const
+{
+    return m_spellCastItem ? m_player->GetItemByGuid(m_spellCastItem) : NULL;
+}
+
+void TradeData::SetItem(TradeSlots slot, Item* item)
+{
+    uint64 itemGuid = item ? item->GetGUID() : 0;
+
+    if (m_items[slot] == itemGuid)
+        return;
+
+    m_items[slot] = itemGuid;
+
+    SetAccepted(false);
+    GetTraderData()->SetAccepted(false);
+
+    Update();
+
+    // need remove possible trader spell applied to changed item
+    if (slot == TRADE_SLOT_NONTRADED)
+        GetTraderData()->SetSpell(0);
+
+    // need remove possible player spell applied (possible move reagent)
+    SetSpell(0);
+}
+
+void TradeData::SetSpell(uint32 spell_id, Item* castItem /*= NULL*/)
+{
+    uint64 itemGuid = castItem ? castItem->GetGUID() : 0;
+
+    if (m_spell == spell_id && m_spellCastItem == itemGuid)
+        return;
+
+    m_spell = spell_id;
+    m_spellCastItem = itemGuid;
+
+    SetAccepted(false);
+    GetTraderData()->SetAccepted(false);
+
+    Update(true);                                           // send spell info to item owner
+    Update(false);                                          // send spell info to caster self
+}
+
+void TradeData::SetMoney(uint32 money)
+{
+    if (m_money == money)
+        return;
+
+    m_money = money;
+
+    SetAccepted(false);
+    GetTraderData()->SetAccepted(false);
+
+    Update(true);
+}
+
+void TradeData::Update(bool forTarget /*= true*/)
+{
+    if (forTarget)
+        m_trader->GetSession()->SendUpdateTrade(true);      // player state for trader
+    else
+        m_player->GetSession()->SendUpdateTrade(false);     // player state for player
+}
+
+void TradeData::SetAccepted(bool state, bool crosssend /*= false*/)
+{
+    m_accepted = state;
+
+    if (!state)
+    {
+        if (crosssend)
+            m_trader->GetSession()->SendTradeStatus(TRADE_STATUS_BACK_TO_TRADE);
+        else
+            m_player->GetSession()->SendTradeStatus(TRADE_STATUS_BACK_TO_TRADE);
+    }
+}
+
 // == Player ====================================================
 
 UpdateMask Player::updateVisualBits;
@@ -370,8 +469,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_bHasDelayedTeleport = false;
     m_teleport_options = 0;
 
-    pTrader = 0;
-    ClearTrade();
+    m_trade = NULL;
 
     m_cinematic = 0;
 
@@ -624,7 +722,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
         return false;
     }
 
-    SetMap(MapManager::Instance().CreateMap(info->mapId, this, 0));
+    SetMap(sMapMgr.CreateMap(info->mapId, this, 0));
 
     uint8 powertype = cEntry->powerType;
 
@@ -1940,7 +2038,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
-        if (!MapManager::Instance().CanPlayerEnter(mapid, this, false))
+        if (!sMapMgr.CanPlayerEnter(mapid, this, false))
             return false;
  
         // Get the instance id if exists
@@ -1960,7 +2058,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = MapManager::Instance().FindMap(mapid, instanceId);
+        Map *map = sMapMgr.FindMap(mapid, instanceId);
         if (!map ||  map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
@@ -4389,7 +4487,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
-    ObjectAccessor::Instance().ConvertCorpseForPlayer(playerguid);
+    sObjectAccessor.ConvertCorpseForPlayer(playerguid);
 
     // remove from guild
     uint32 guildId = GetGuildIdFromDB(playerguid);
@@ -4819,19 +4917,19 @@ void Player::CreateCorpse()
         corpse->SaveToDB();
 
     // register for player, but not show
-    ObjectAccessor::Instance().AddCorpse(corpse);
+    sObjectAccessor.AddCorpse(corpse);
 }
 
 void Player::SpawnCorpseBones()
 {
-    if (ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID()))
+    if (sObjectAccessor.ConvertCorpseForPlayer(GetGUID()))
         if (!GetSession()->PlayerLogoutWithSave())          // at logout we will already store the player
             SaveToDB();                                     // prevent loading as ghost without corpse
 }
 
 Corpse* Player::GetCorpse() const
 {
-    return ObjectAccessor::Instance().GetCorpseForPlayerGUID(GetGUID());
+    return sObjectAccessor.GetCorpseForPlayerGUID(GetGUID());
 }
 
 void Player::DurabilityLossAll(double percent, bool inventory)
@@ -6910,7 +7008,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         float posy = fields[2].GetFloat();
         float posz = fields[3].GetFloat();
 
-        zone = MapManager::Instance().GetZoneId(map,posx,posy,posz);
+        zone = sMapMgr.GetZoneId(map,posx,posy,posz);
 
         if (zone > 0)
             CharacterDatabase.PExecute("UPDATE characters SET zone='%u' WHERE guid='%u'", zone, guidLow);
@@ -8192,7 +8290,7 @@ void Player::RemovedInsignia(Player* looterPlr)
 
     // We have to convert player corpse to bones, not to be able to resurrect there
     // SpawnCorpseBones isn't handy, 'cos it saves player while he in BG
-    Corpse *bones = ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID(),true);
+    Corpse *bones = sObjectAccessor.ConvertCorpseForPlayer(GetGUID(),true);
     if (!bones)
         return;
 
@@ -9718,7 +9816,7 @@ bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
     for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
     {
         Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-        if (pItem && pItem->GetEntry() == item)
+        if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
         {
             tempcount += pItem->GetCount();
             if (tempcount >= count)
@@ -9728,7 +9826,7 @@ bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
     for (uint8 i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
     {
         Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-        if (pItem && pItem->GetEntry() == item)
+        if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
         {
             tempcount += pItem->GetCount();
             if (tempcount >= count)
@@ -9742,7 +9840,7 @@ bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
             for (uint32 j = 0; j < pBag->GetBagSize(); j++)
             {
                 Item* pItem = GetItemByPos(i, j);
-                if (pItem && pItem->GetEntry() == item)
+                if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
                 {
                     tempcount += pItem->GetCount();
                     if (tempcount >= count)
@@ -9757,7 +9855,7 @@ bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
         for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
         {
             Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-            if (pItem && pItem->GetEntry() == item)
+            if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
             {
                 tempcount += pItem->GetCount();
                 if (tempcount >= count)
@@ -9771,7 +9869,7 @@ bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
                 for (uint32 j = 0; j < pBag->GetBagSize(); j++)
                 {
                     Item* pItem = GetItemByPos(i, j);
-                    if (pItem && pItem->GetEntry() == item)
+                    if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
                     {
                         tempcount += pItem->GetCount();
                         if (tempcount >= count)
@@ -11992,7 +12090,7 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
     {
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
         {
-            if (pItem->GetEntry() == item)
+            if (pItem->GetEntry() == item && !pItem->IsInTrade())
             {
                 if (pItem->GetCount() + remcount <= count)
                 {
@@ -12020,7 +12118,7 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
     {
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
         {
-            if (pItem->GetEntry() == item)
+            if (pItem->GetEntry() == item && !pItem->IsInTrade())
             {
                 if (pItem->GetCount() + remcount <= count)
                 {
@@ -12053,7 +12151,7 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
             {
                 if (Item* pItem = pBag->GetItemByPos(j))
                 {
-                    if (pItem->GetEntry() == item)
+                    if (pItem->GetEntry() == item && !pItem->IsInTrade())
                     {
                         // all items in bags can be unequipped
                         if (pItem->GetCount() + remcount <= count)
@@ -12084,7 +12182,7 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
     {
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
         {
-            if (pItem && pItem->GetEntry() == item)
+            if (pItem && pItem->GetEntry() == item && !pItem->IsInTrade())
             {
                 if (pItem->GetCount() + remcount <= count)
                 {
@@ -12330,7 +12428,7 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         BankItem(dest, pNewItem, true);
         if (isRefundable)
         {
-            AddRefundReference(pNewItem->GetGUID());
+            AddRefundReference(pNewItem->GetGUIDLow());
             pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
             pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
             pNewItem->SetRefundRecipient(GetGUIDLow());
@@ -12842,33 +12940,23 @@ void Player::SendSellError(uint8 msg, Creature* pCreature, uint64 guid, uint32 p
     GetSession()->SendPacket(&data);
 }
 
-void Player::ClearTrade()
-{
-    tradeGold = 0;
-    acceptTrade = false;
-    for (uint8 i = 0; i < TRADE_SLOT_COUNT; i++)
-        tradeItems[i] = 0;
-}
-
 void Player::TradeCancel(bool sendback)
 {
-    if (pTrader)
+    if (m_trade)
     {
+        Player* trader = m_trade->GetTrader();
+
         // send yellow "Trade canceled" message to both traders
-        WorldSession* ws;
-        ws = GetSession();
         if (sendback)
-            ws->SendCancelTrade();
-        ws = pTrader->GetSession();
-        if (!ws->PlayerLogout())
-            ws->SendCancelTrade();
+            GetSession()->SendCancelTrade();
+
+        trader->GetSession()->SendCancelTrade();
 
         // cleanup
-        ClearTrade();
-        pTrader->ClearTrade();
-        // prevent loss of reference
-        pTrader->pTrader = NULL;
-        pTrader = NULL;
+        delete m_trade;
+        m_trade = NULL;
+        delete trader->m_trade;
+        trader->m_trade = NULL;
     }
 }
 
@@ -13859,7 +13947,7 @@ void Player::PrepareQuestMenu(uint64 guid)
     {
         //we should obtain map pointer from GetMap() in 99% of cases. Special case
         //only for quests which cast teleport spells on player
-        Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
         ASSERT(_map);
         GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
@@ -14034,7 +14122,7 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
     {
         //we should obtain map pointer from GetMap() in 99% of cases. Special case
         //only for quests which cast teleport spells on player
-        Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
         ASSERT(_map);
         GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
@@ -16151,7 +16239,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         }
         else
         {
-            for (MapManager::TransportSet::iterator iter = MapManager::Instance().m_Transports.begin(); iter != MapManager::Instance().m_Transports.end(); ++iter)
+            for (MapManager::TransportSet::iterator iter = sMapMgr.m_Transports.begin(); iter != sMapMgr.m_Transports.end(); ++iter)
             {
                 if ((*iter)->GetGUIDLow() == transGUID)
                 {
@@ -16238,7 +16326,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // NOW player must have valid map
     // load the player's map here if it's not already loaded
-    Map *map = MapManager::Instance().CreateMap(mapId, this, instanceId);
+    Map *map = sMapMgr.CreateMap(mapId, this, instanceId);
 
     if (!map)
     {
@@ -16256,14 +16344,14 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             RelocateToHomebind();
         }
 
-        map = MapManager::Instance().CreateMap(mapId, this, 0);
+        map = sMapMgr.CreateMap(mapId, this, 0);
         if (!map)
         {
             PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
             mapId = info->mapId;
             Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
             sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
-            map = MapManager::Instance().CreateMap(mapId, this, 0);
+            map = sMapMgr.CreateMap(mapId, this, 0);
             if (!map)
             {
                 sLog.outError("ERROR: Player (guidlow %d) has invalid default map coordinates (X: %f Y: %f Z: %f O: %f). or instance couldn't be created",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
@@ -16801,7 +16889,7 @@ void Player::_LoadGlyphAuras()
 void Player::LoadCorpse()
 {
     if (isAlive())
-        ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID());
+        sObjectAccessor.ConvertCorpseForPlayer(GetGUID());
     else
     {
         if (Corpse *corpse = GetCorpse())
@@ -16902,7 +16990,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                         item->SetRefundRecipient(fields[0].GetUInt32());
                         item->SetPaidMoney(fields[1].GetUInt32());
                         item->SetPaidExtendedCost(fields[2].GetUInt32());
-                        AddRefundReference(item->GetGUID());
+                        AddRefundReference(item->GetGUIDLow());
                     }
                 }
             }
@@ -17699,7 +17787,7 @@ bool Player::CheckInstanceLoginValid()
     }
 
     // do checks for satisfy accessreqs, instance full, encounter in progress (raid), perm bind group != perm bind player
-    return MapManager::Instance().CanPlayerEnter(GetMap()->GetId(), this, true);
+    return sMapMgr.CanPlayerEnter(GetMap()->GetId(), this, true);
 }
 
 bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
@@ -18062,14 +18150,14 @@ void Player::_SaveInventory()
     // the client auto counts down in real time after having received the initial played time on the first
     // SMSG_ITEM_REFUND_INFO_RESPONSE packet.
     // Item::UpdatePlayedTime is only called when needed, which is in DB saves, and item refund info requests.
-    std::set<uint64>::iterator i_next;
-    for (std::set<uint64>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
+    std::set<uint32>::iterator i_next;
+    for (std::set<uint32>::iterator itr = m_refundableItems.begin(); itr!= m_refundableItems.end(); itr = i_next)
     {
         // use copy iterator because itr may be invalid after operations in this loop
         i_next = itr;
         ++i_next;
 
-        Item* iPtr = GetItemByGuid(*itr);
+        Item* iPtr = GetItemByGuid(MAKE_NEW_GUID(*itr, 0, HIGHGUID_ITEM));
         if (iPtr)
         {
             iPtr->UpdatePlayedTime(this);
@@ -18077,7 +18165,7 @@ void Player::_SaveInventory()
         }
         else
         {
-            sLog.outError("Can't find item guid " UI64FMTD " but is in refundable storage for player %u ! Removing.", *itr, GetGUIDLow());
+            sLog.outError("Can't find item guid %u but is in refundable storage for player %u ! Removing.", *itr, GetGUIDLow());
             m_refundableItems.erase(itr);
         }
     }
@@ -18533,7 +18621,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
         }
 
         // if the map is loaded, reset it
-        Map *map = MapManager::Instance().FindMap(p->GetMapId(), p->GetInstanceId());
+        Map *map = sMapMgr.FindMap(p->GetMapId(), p->GetInstanceId());
         if (map && map->IsDungeon())
             if (!((InstanceMap*)map)->Reset(method))
             {
@@ -19918,7 +20006,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->GetExtendedCostId());
                 it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUID());
+                AddRefundReference(it->GetGUIDLow());
             }
         }
     }
@@ -19976,7 +20064,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->GetExtendedCostId());
                 it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUID());
+                AddRefundReference(it->GetGUIDLow());
             }
         }
     }
@@ -23373,6 +23461,9 @@ void Player::BuildPlayerTalentsInfoData(WorldPacket *data)
 
     if (m_specsCount)
     {
+        if (m_specsCount > MAX_TALENT_SPECS)
+            m_specsCount = MAX_TALENT_SPECS;
+
         // loop through all specs (only 1 for now)
         for (uint32 specIdx = 0; specIdx < m_specsCount; ++specIdx)
         {
@@ -24006,14 +24097,14 @@ void Player::SendDuelCountdown(uint32 counter)
     GetSession()->SendPacket(&data);
 }
 
-void Player::AddRefundReference(uint64 it)
+void Player::AddRefundReference(uint32 it)
 {
     m_refundableItems.insert(it);
 }
 
-void Player::DeleteRefundReference(uint64 it)
+void Player::DeleteRefundReference(uint32 it)
 {
-    std::set<uint64>::iterator itr = m_refundableItems.find(it);
+    std::set<uint32>::iterator itr = m_refundableItems.find(it);
     if (itr != m_refundableItems.end())
     {
         m_refundableItems.erase(itr);
