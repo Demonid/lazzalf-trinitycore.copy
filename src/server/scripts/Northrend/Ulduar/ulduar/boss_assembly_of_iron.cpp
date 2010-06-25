@@ -574,8 +574,9 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
             if (spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
             {
-                if (me->GetCurrentSpell(3)->m_spellInfo->Id == SPELL_LIGHTNING_WHIRL)
-                    me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                if (me->GetCurrentSpell(3) && me->GetCurrentSpell(3)->m_spellInfo)
+                    if (me->GetCurrentSpell(3)->m_spellInfo->Id == SPELL_LIGHTNING_WHIRL)
+                        me->InterruptSpell(CURRENT_CHANNELED_SPELL);
             }
     }
 
