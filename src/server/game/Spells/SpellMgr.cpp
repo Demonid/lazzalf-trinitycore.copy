@@ -3758,6 +3758,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 150;
             count++;
             break;
+        case 62713:     // Ironbranch's Essence
+        case 62968:     // Brightleaf's Essence
+        case 62775:     // Tympanic Tantrum
+            spellInfo->EffectRadiusIndex[0] = 41; // 150 yard
+            spellInfo->EffectRadiusIndex[1] = 41;
+            count++;
+            break;
         case 25771: // Forbearance - wrong mechanic immunity in DBC since 3.0.x
             spellInfo->EffectMiscValue[0] = MECHANIC_IMMUNE_SHIELD;
             count++;
@@ -3789,6 +3796,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 53651:     // beacon of light
         case 30708:     // totem of wrath debuff
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        case 62661:     // Searing Flames
+        case 61915:     // Lightning Whirl 10
+        case 63483:     // Lightning Whirl 25
+            spellInfo->InterruptFlags = 47;
             count++;
             break;
         case 61306:     // Kirin Tor Commendation Badge
