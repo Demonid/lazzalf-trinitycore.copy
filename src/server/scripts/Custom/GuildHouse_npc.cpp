@@ -35,6 +35,8 @@
 #include "World.h"
 #include "Guild.h"
 #include "GuildHouse.h"
+#include "Zones/OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 
@@ -786,12 +788,14 @@ return true;
 }
 
 bool GossipHello_portal_npc(Player *player, Creature *_Creature)
-{
+{ 
+    player->ADD_GOSSIP_ITEM( 5, "Teleport Dalaran"              , GOSSIP_SENDER_MAIN, 1005);
+    player->ADD_GOSSIP_ITEM( 5, "Teleport Shattrath"            , GOSSIP_SENDER_MAIN, 1010);
+    player->ADD_GOSSIP_ITEM( 5, "Teleport Wintergrasp"          , GOSSIP_SENDER_MAIN, 1100);
+
     // Main Menu for Alliance
     if ( player->GetTeam() == ALLIANCE )
     {
-        player->ADD_GOSSIP_ITEM( 5, "Teleport Dalaran"              , GOSSIP_SENDER_MAIN, 1005);
-        player->ADD_GOSSIP_ITEM( 5, "Teleport Shattrath"            , GOSSIP_SENDER_MAIN, 1010);
         player->ADD_GOSSIP_ITEM( 5, "Teleport Stormwind"            , GOSSIP_SENDER_MAIN, 1015);
         player->ADD_GOSSIP_ITEM( 5, "Teleport Ironforge"            , GOSSIP_SENDER_MAIN, 1020);                     
         player->ADD_GOSSIP_ITEM( 5, "Teleport Darnassus"            , GOSSIP_SENDER_MAIN, 1025);
@@ -799,8 +803,6 @@ bool GossipHello_portal_npc(Player *player, Creature *_Creature)
     }
     else // Main Menu for Horde
     {
-        player->ADD_GOSSIP_ITEM( 5, "Teleport Dalaran"              , GOSSIP_SENDER_MAIN, 1005);
-        player->ADD_GOSSIP_ITEM( 5, "Teleport Shattrath"            , GOSSIP_SENDER_MAIN, 1010);
         player->ADD_GOSSIP_ITEM( 5, "Teleport Orgrimmar"            , GOSSIP_SENDER_MAIN, 1035);
         player->ADD_GOSSIP_ITEM( 5, "Teleport Undercity"            , GOSSIP_SENDER_MAIN, 1040);                     
         player->ADD_GOSSIP_ITEM( 5, "Teleport Thunder Bluff"        , GOSSIP_SENDER_MAIN, 1045);
@@ -821,6 +823,8 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
         _Creature->MonsterSay(MSG_INCOMBAT, LANG_UNIVERSAL, 0);
         return;
     }
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     switch(action)
     {
@@ -863,7 +867,17 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
         case 1050: // Silvermoon
             player->CLOSE_GOSSIP_MENU();
             player->TeleportTo(530, 10000.25, -7112.02, 47.71, 0);
-            break;       
+            break;
+        case 1100: //Wintergrasp
+            player->CLOSE_GOSSIP_MENU();
+            if (pvpWG)
+            {
+                if (player->GetTeam() != pvpWG->getDefenderTeamId())
+                    player->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+                else
+                    player->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
+            }
+            break;
     }
 }
 

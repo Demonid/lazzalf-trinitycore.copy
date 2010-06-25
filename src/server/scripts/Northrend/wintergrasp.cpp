@@ -273,6 +273,59 @@ CreatureAI* GetAI_npc_wg_misc(Creature* pCreature)
     return new npc_wg_miscAI (pCreature);
 }
 
+/*******************************************************
+ * npc_winterguard
+ *******************************************************/
+
+struct npc_winterguardAI : public Scripted_NoMovementAI
+{
+    npc_winterguardAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        pCreature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_NORMAL, true);
+        pCreature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
+        
+        pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    }
+
+    OutdoorPvPWG *pvpWG;
+
+    void Reset(){}
+
+    void Aggro(Unit* /*pWho*/){}
+
+    void AttackStart(Unit* /*pWho*/){}
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (!pWho || !pWho->IsInWorld() || pWho->GetZoneId() != NORTHREND_WINTERGRASP)
+            return;
+
+        if (!pvpWG || (pvpWG->isWarTime() == true))
+            return;
+
+        if (!me->IsWithinDist(pWho, 40.0f, false))
+            return;
+
+        Player *pPlayer = pWho->GetCharmerOrOwnerPlayerOrPlayerItself();
+
+        if (!pPlayer || pPlayer->isGameMaster() || pPlayer->IsBeingTeleported())
+            return;
+
+        if (pPlayer->GetTeam() != pvpWG->getDefenderTeamId())
+            pPlayer->TeleportTo(571, 5047.93, 2848.57, 393, 0);  // Out the Fortress
+
+        return;
+    }
+
+    void UpdateAI(const uint32 /*diff*/){}
+};
+
+CreatureAI* GetAI_npc_winterguard(Creature* pCreature)
+{
+    return new npc_winterguardAI(pCreature);
+}
+
 void AddSC_wintergrasp()
 {
     Script *newscript;
@@ -287,5 +340,10 @@ void AddSC_wintergrasp()
     newscript = new Script;
     newscript->Name = "npc_wg_misc";
     newscript->GetAI = &GetAI_npc_wg_misc;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_winterguard";
+    newscript->GetAI = &GetAI_npc_winterguard;
     newscript->RegisterSelf();
 }
