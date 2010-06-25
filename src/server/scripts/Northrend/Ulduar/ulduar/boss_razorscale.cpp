@@ -68,7 +68,7 @@ const Position pos3 = {563.530884, -201.557312, 391.517090, 4.108194};
 const Position pos4 = {560.231260, -153.677198, 391.517090, 5.402720};
 
 const Position RazorFlight = {588.050293, -235.191223, 460.535980, 1.605303};//const Position RazorFlight = {588.050293, -251.191223, 470.535980, 1.605303};
-const Position RazorGround = {586.966, -175.534, 390.516998, 1.691704};
+const Position RazorGround = {586.966, -175.534, 391.518, 1.691704};
 const Position WATCHER1 = {629.309, -197.959, 391.516, 1.691704};
 const Position WATCHER2 = {561.045, -214.221, 391.516, 1.691704};
 const Position WATCHER3 = {541.707, -166.307, 391.516, 1.691704};
