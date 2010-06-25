@@ -9937,9 +9937,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         {
             DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
                      
- 	        /*if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetId() == 53386)
-                if ((*i)->GetBase())
-                    (*i)->GetBase()->DropCharge(); // Cinderglacier*/
+            /*if ((*i)->GetId() != 53386) // Only Cinderglacier should be removed there
+                continue;
+            if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
+                i = mModDamagePercentDone.begin();*/
         }
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
@@ -11248,10 +11249,6 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
                 if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
                 {
                     DoneTotalMod *= ((*i)->GetAmount()+100.0f)/100.0f;
-
-                    /*if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetId() == 53386)
-                        if ((*i)->GetBase())
-                            (*i)->GetBase()->DropCharge(); // Cinderglacier*/
                 }
         }
 
