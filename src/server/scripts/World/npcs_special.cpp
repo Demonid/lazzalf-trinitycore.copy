@@ -1903,6 +1903,7 @@ struct npc_training_dummy : Scripted_NoMovementAI
         me->SetControlled(true,UNIT_STAT_STUNNED);//disable rotate
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         ResetTimer = 10000;
         DespawnTimer = 15000;
     }
