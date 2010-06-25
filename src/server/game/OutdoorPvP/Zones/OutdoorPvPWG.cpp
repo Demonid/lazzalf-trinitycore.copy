@@ -524,18 +524,16 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
 
     if (obj->GetEntry() == WG_GO_TITAN_RELIC)
     {
-        if (isWarTime() && m_gate && obj->GetGOInfo()->goober.eventId == eventId && m_gate->damageState == DAMAGE_DESTROYED)
-        {
-            m_changeDefender = true;
-            m_timer = 0;
-            if (player)
+        if (player && (player->getLevel() > 70))
+            if (isWarTime() && m_gate && obj->GetGOInfo()->goober.eventId == eventId && m_gate->damageState == DAMAGE_DESTROYED)
             {
-               std::stringstream msg;
-               msg << player->GetName() << " porta alla vittoria la sua fazione!";
-               std::string msgStr = msg.str();
-               sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                m_changeDefender = true;
+                m_timer = 0;
+                std::stringstream msg;
+                msg << player->GetName() << " porta alla vittoria la sua fazione!";
+                std::string msgStr = msg.str();
+                sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
             }
-        }
     }
     else if (obj->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
     {
