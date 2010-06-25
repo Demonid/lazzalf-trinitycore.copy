@@ -25,7 +25,6 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
-#include "Spell.h"
 
 enum Yells
 {
@@ -118,6 +117,7 @@ struct boss_general_vezaxAI : public BossAI
         _Reset();
         DespawnCreatures(MOB_SARONITE_VAPORS, 100);
         DespawnCreatures(BOSS_SARONITE_ANIMUS, 100);
+        me->ResetLootMode();
         VaporsCount = 0;
         HardMode = true;
         Dodged = true;
@@ -217,6 +217,7 @@ struct boss_general_vezaxAI : public BossAI
                         me->MonsterTextEmote(EMOTE_BARRIER, 0, true);
                         DoCast(SPELL_SARONITE_BARRIER);
                         DoCast(SPELL_SUMMON_SARONITE_ANIMUS);
+                        me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                         DespawnCreatures(MOB_SARONITE_VAPORS, 100);
                         events.CancelEvent(EVENT_SARONITE_VAPORS);
                     }
@@ -234,20 +235,6 @@ struct boss_general_vezaxAI : public BossAI
         DoMeleeAttackIfReady();
     }
     
-    void SpellHit(Unit* caster, const SpellEntry *spell)
-    {
-        if (!spell)
-            return;
- 
-        // Make Searing Flmaes interruptable
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            if (spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-            {
-                if (me->GetCurrentSpell(1)->m_spellInfo->Id == SPELL_SEARING_FLAMES)
-                    me->InterruptSpell(CURRENT_GENERIC_SPELL);
-            }
-    }
-    
     void DoAction(const int32 action)
     {
         switch (action)
@@ -255,7 +242,7 @@ struct boss_general_vezaxAI : public BossAI
             case ACTION_VAPOR_DEAD:
                 HardMode = false;
                 break;
-        }        
+        }
     }
     
     void DespawnCreatures(uint32 entry, float distance, bool discs = false)

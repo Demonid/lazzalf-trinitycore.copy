@@ -25,7 +25,6 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
-#include "Spell.h"
 
 // Any boss
 #define SPELL_SUPERCHARGE   61920
@@ -213,6 +212,7 @@ struct boss_steelbreakerAI : public ScriptedAI
         events.Reset();
         phase = 0;
         me->RemoveAllAuras();
+        me->ResetLootMode();
         if(pInstance)
             pInstance->SetBossState(BOSS_ASSEMBLY, NOT_STARTED);
             
@@ -327,6 +327,8 @@ struct boss_steelbreakerAI : public ScriptedAI
                 events.RescheduleEvent(EVENT_STATIC_DISRUPTION, 30000);
                 if(phase >= 3)
                 events.RescheduleEvent(EVENT_OVERWHELMING_POWER, urand(2000, 5000));
+                // Add HardMode Loot
+                me->AddLootMode(LOOT_MODE_HARD_MODE_2);
                 break;
         }
     }
@@ -565,21 +567,6 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                 Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
     }
     
-    void SpellHit(Unit* caster, const SpellEntry *spell)
-    {
-        if (!spell)
-            return;
- 
-        // Makes Lightning Whirl interruptable
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            if (spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-            {
-                if (me->GetCurrentSpell(3) && me->GetCurrentSpell(3)->m_spellInfo)
-                    if (me->GetCurrentSpell(3)->m_spellInfo->Id == SPELL_LIGHTNING_WHIRL)
-                        me->InterruptSpell(CURRENT_CHANNELED_SPELL);
-            }
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
