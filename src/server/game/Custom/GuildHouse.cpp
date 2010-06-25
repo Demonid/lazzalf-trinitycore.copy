@@ -175,7 +175,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
             if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
             {
                 objmgr.RemoveCreatureFromGrid(*itr2, data);
-                if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
+                if( Creature* pCreature = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
                     pCreature->AddObjectToRemoveList();
             }
         }
@@ -185,7 +185,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
             if (GameObjectData const* data = objmgr.GetGOData(*itr2))
             { 
                 objmgr.RemoveGameobjectFromGrid(*itr2, data);
-                if (GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
+                if (GameObject* pGameobject = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
                      pGameobject->AddObjectToRemoveList();
             }
         }               
@@ -213,7 +213,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                 {
                     objmgr.AddGameobjectToGrid(*itr2, data);
 
-                    Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+                    Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
 
                     if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                     {
@@ -238,7 +238,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                     {
                         objmgr.AddCreatureToGrid(*itr2, data);
 
-                        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+                        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
                         
                         if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                         {
