@@ -1117,7 +1117,7 @@ struct mob_shadronAI : public dummy_dragonAI
         if (m_uiAcolyteShadronTimer <= uiDiff)
         {
             if(m_bHasPortalOpen)
-                return;
+                m_uiAcolyteShadronTimer = 10000;
             else
             {
                 //if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
@@ -1213,7 +1213,7 @@ struct mob_vesperonAI : public dummy_dragonAI
         if (m_uiAcolyteVesperonTimer <= uiDiff)
         {
             if (m_bHasPortalOpen)
-                return;
+                m_uiAcolyteVesperonTimer = 10000;
             else
             {
                 OpenPortal(); 
@@ -1265,6 +1265,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         uiShiftEffectTimer = 1000;
         shield = false;
         me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
+        me->SetPhaseMask(2, true);
     }
 
     void JustDied(Unit* killer)
@@ -1369,6 +1370,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         {
             me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
         }
+        me->SetPhaseMask(2, true);
     }
     
     void EnterCombat(Unit* who)
