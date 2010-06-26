@@ -312,8 +312,9 @@ struct npc_winterguardAI : public Scripted_NoMovementAI
         if (!pPlayer || pPlayer->isGameMaster() || pPlayer->IsBeingTeleported())
             return;
 
-        if (pPlayer->GetTeam() != pvpWG->getDefenderTeamId())
-            pPlayer->TeleportTo(571, 5047.93, 2848.57, 393, 0);  // Out the Fortress
+        if ((pPlayer->GetTeam() == ALLIANCE && pvpWG->getDefenderTeamId() != TEAM_ALLIANCE)
+            || (pPlayer->GetTeam() == TEAM_HORDE && pvpWG->getDefenderTeamId() != TEAM_HORDE))
+                pPlayer->TeleportTo(571, 5047.93, 2848.57, 393, 0);  // Out the Fortress
 
         return;
     }

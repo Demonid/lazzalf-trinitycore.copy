@@ -872,10 +872,12 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
             player->CLOSE_GOSSIP_MENU();
             if (pvpWG)
             {
-                if (player->GetTeam() != pvpWG->getDefenderTeamId())
-                    player->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+                if ((player->GetTeam() == ALLIANCE && pvpWG->getDefenderTeamId() == TEAM_ALLIANCE)
+                    || (player->GetTeam() == TEAM_HORDE && pvpWG->getDefenderTeamId() == TEAM_HORDE))
+                    player->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress                
                 else
-                    player->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
+                    player->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+                    
             }
             break;
     }
