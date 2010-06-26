@@ -2041,6 +2041,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!sMapMgr.CanPlayerEnter(mapid, this, false))
             return false;
  
+
+        // Start dalaran teleport Fix
         // Get the instance id if exists
         InstancePlayerBind *pBind = this->GetBoundInstance(mapid, this->GetDifficulty(mEntry->IsRaid()));
         InstanceSave *pSave = pBind ? pBind->save : NULL;
@@ -2055,10 +2057,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 pSave = groupBind->save;
         }
         uint32 instanceId = pSave ? pSave->GetInstanceId() : 0;
+        // End dalaran teleport Fix
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = sMapMgr.FindMap(mapid, instanceId);
+        Map *map = sMapMgr.FindMap(mapid, instanceId); //Map *map = sMapMgr.FindMap(mapid);
         if (!map ||  map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
