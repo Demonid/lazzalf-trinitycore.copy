@@ -125,12 +125,12 @@ struct boss_black_knightAI : public BossAI
     bool bStartCombat;
 
     uint8 uiPhase;
-        //uint8 uiState;
+    //uint8 uiState;
 
     uint32 uiPlagueStrikeTimer;
     uint32 uiPlagueStrike1Timer;
     uint32 uiIcyTouchTimer;
-        uint32 uiIcyTouch1Timer;
+    uint32 uiIcyTouch1Timer;
     uint32 uiDeathRespiteTimer;
     uint32 uiObliterateTimer;
     uint32 uiObliterate1Timer;
