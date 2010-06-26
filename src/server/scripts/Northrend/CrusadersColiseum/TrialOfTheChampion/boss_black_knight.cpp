@@ -93,11 +93,9 @@ enum ePhases
 /*
 enum eState
 {
-        START =0,
-        IDLE  =1,
-        ENABLE  =2
-
-
+    START =0,
+    IDLE  =1,
+    ENABLE  =2
 };
 */
 
@@ -113,6 +111,7 @@ struct boss_black_knightAI : public BossAI
     boss_black_knightAI(Creature* pCreature) : BossAI(pCreature,BOSS_BLACK_KNIGHT)
     {
         pInstance = pCreature->GetInstanceData();
+        bStartCombat = false;
     }
 
     ScriptedInstance* pInstance;
@@ -122,7 +121,8 @@ struct boss_black_knightAI : public BossAI
     bool bEvent;
     bool bSummonArmy;
     bool bDeathArmyDone;
-        bool bReset;
+    bool bReset;
+    bool bStartCombat;
 
     uint8 uiPhase;
         //uint8 uiState;
@@ -150,7 +150,7 @@ struct boss_black_knightAI : public BossAI
         me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
         
         Map* pMap = me->GetMap();
-        if (pMap && pMap->IsDungeon())
+        if (pMap && pMap->IsDungeon() && !bStartCombat)
         {
             bReset = true;
             Map::PlayerList const &players = pMap->GetPlayers();
@@ -160,6 +160,9 @@ struct boss_black_knightAI : public BossAI
                     bReset = false;
             }
         }
+        else
+            bReset = true;
+
                
         ResetEncounter();
        
@@ -344,8 +347,9 @@ struct boss_black_knightAI : public BossAI
     {
         //uiState=START;
         _EnterCombat();
+        bStartCombat = true;
         DoScriptText(SAY_AGGRO_2, me);
-        me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
             pInstance->HandleGameObject(pGO->GetGUID(),false);
         //me->SetHomePosition(746.843, 695.68, 412.339, 4.70776);
