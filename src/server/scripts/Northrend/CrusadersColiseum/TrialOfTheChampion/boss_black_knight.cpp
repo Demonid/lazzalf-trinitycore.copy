@@ -33,19 +33,19 @@ EndScriptData */
 enum eEnums
 {
     //Yell
-        SAY_DEATH_3                             = -1999935,
-        SAY_AGGRO                               = -1999929,
-        SAY_AGGRO_2                             = -1999930,
+    SAY_DEATH_3                             = -1999935,
+    SAY_AGGRO                               = -1999929,
+    SAY_AGGRO_2                             = -1999930,
     SAY_SLAY                                = -1999932,
     SAY_DEATH_1                             = -1999933,
     SAY_DEATH                               = -1999934,
-        SAY_START5                              = -1999936,
-        SAY_START6                              = -1999937,
-        SAY_START7                              = -1999928,
-        SAY_START8                              = -1999929,
-        SAY_START9                              = -1999952,
-        SAY_START10                             = -1999932,
-        SAY_START11                             = -1999953,
+    SAY_START5                              = -1999936,
+    SAY_START6                              = -1999937,
+    SAY_START7                              = -1999928,
+    SAY_START8                              = -1999929,
+    SAY_START9                              = -1999952,
+    SAY_START10                             = -1999932,
+    SAY_START11                             = -1999953,
 };
 enum eSpells
 {
@@ -148,22 +148,25 @@ struct boss_black_knightAI : public BossAI
         RemoveSummons();
         me->SetDisplayId(me->GetNativeDisplayId());
         me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-            Map* pMap = me->GetMap();
+        
+        /*
+        Map* pMap = me->GetMap();
         if (pMap && pMap->IsDungeon())
         {
-                        bReset = true;
-                        Map::PlayerList const &players = pMap->GetPlayers();
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        {
+            bReset = true;
+            Map::PlayerList const &players = pMap->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
                 if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
-                    bReset = false;
-                        }
-                }
+                bReset = false;
+            }
+        }*/
+        bReset = true;
                
-                ResetEncounter();
-               
-                //me->SummonCreature(28859,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_CORPSE_DESPAWN);
-                //uiState=IDLE;
+        ResetEncounter();
+       
+        //me->SummonCreature(28859,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_CORPSE_DESPAWN);
+        //uiState=IDLE;
         bEventInProgress = false;
         bEvent = false;
         bSummonArmy = false;
@@ -210,18 +213,9 @@ struct boss_black_knightAI : public BossAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-                //me->set
         if (!UpdateVictim())
-                {  
-                        /*
-                        if(uiState==START)
-                                uiState=IDLE;
+            return;  
 
-                        if(uiState==IDLE)
-                                ResetEncounter();
-                        */
-                        return;
-                }      
         if (bEventInProgress)
             if (uiResurrectTimer <= uiDiff)
             {
@@ -357,17 +351,18 @@ struct boss_black_knightAI : public BossAI
         if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
             pInstance->HandleGameObject(pGO->GetGUID(),false);
         //me->SetHomePosition(746.843, 695.68, 412.339, 4.70776);
-
+        //if (pInstance)
+        //    pInstance->SetData(DATA_AGGRO_DONE, DONE);
         if (pInstance)
-            pInstance->SetData(DATA_AGGRO_DONE,DONE);
+            pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
     }
 
-        void KilledUnit(Unit* pVictim)
+    void KilledUnit(Unit* pVictim)
     {
         DoScriptText(SAY_SLAY, me);
                
-        if (pInstance)
-            pInstance->SetData(BOSS_BLACK_KNIGHT,IN_PROGRESS);
+        //if (pInstance)
+        //    pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
     }
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
@@ -391,37 +386,37 @@ struct boss_black_knightAI : public BossAI
         }
     }
                
-        void ResetEncounter()
-        {
+    void ResetEncounter()
+    {
         if(bReset)
         {      
             if(me)
             {
-                Map *instance=me->GetMap();
+                Map *instance = me->GetMap();
                 if(instance && pInstance)
                 {
-                    Creature*  npc =instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
-                    GameObject* GO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
-                    pInstance->HandleGameObject(GO->GetGUID(),true);
+                    Creature* npc = instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+                    GameObject* door = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1));
+                    if (door)
+                        pInstance->HandleGameObject(door->GetGUID(),true);
                     if(npc)
-                    {
-                        npc->RemoveFromWorld();
-                    }                                  
+                        npc->RemoveFromWorld();       
                     me->SummonCreature(35004, 742.835, 639.134, 411.571, 0, TEMPSUMMON_CORPSE_DESPAWN);
                     me->RemoveFromWorld();
                 }
             }
         }
-        }
+    }
 
 
     void JustDied(Unit* pKiller)
     {
                
-                //uiState=ENABLE;
-                DoScriptText(SAY_DEATH_3, me);
-                if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
-                    pInstance->HandleGameObject(pGO->GetGUID(),true);
+        _JustDied()
+        //uiState=ENABLE;
+        DoScriptText(SAY_DEATH_3, me);
+        if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
+            pInstance->HandleGameObject(pGO->GetGUID(),true);
                
         if (pInstance)
         {
@@ -429,19 +424,18 @@ struct boss_black_knightAI : public BossAI
             if (IsHeroic())
                 pInstance->DoCompleteAchievement(ACHIEV_WORSE);
         }
-               
-                Map* instance=me->GetMap();
-                Creature* npc;
-                if(instance)
-                {
-                        npc=instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
-                        //fix brutale per il loot °O°
 
-						pInstance->SetBossState(NPC_BLACK_KNIGHT,DONE);
-                       // me->SummonGameObject(IsHeroic()? GO_BK_LOOT_H : GO_BK_LOOT, 746.59,618.49, 411.09, 1.42, 0, 0, 0, 0, 90000000);
-                }
-                if(npc)
-                        npc->RemoveFromWorld();
+        if (Map* instance = me->GetMap())
+        {
+            Creature* npc = instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
+            //fix brutale per il loot °O°
+
+			//pInstance->SetBossState(NPC_BLACK_KNIGHT,DONE);
+            // me->SummonGameObject(IsHeroic()? GO_BK_LOOT_H : GO_BK_LOOT, 746.59,618.49, 411.09, 1.42, 0, 0, 0, 0, 90000000);
+            if(npc)
+                npc->RemoveFromWorld();
+        }
+       
     }
 };
 
