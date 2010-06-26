@@ -412,7 +412,7 @@ struct boss_black_knightAI : public BossAI
     void JustDied(Unit* pKiller)
     {
                
-        _JustDied()
+        _JustDied();
         //uiState=ENABLE;
         DoScriptText(SAY_DEATH_3, me);
         if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
