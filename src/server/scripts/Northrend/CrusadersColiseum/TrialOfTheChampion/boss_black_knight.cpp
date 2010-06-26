@@ -149,7 +149,6 @@ struct boss_black_knightAI : public BossAI
         me->SetDisplayId(me->GetNativeDisplayId());
         me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
         
-        /*
         Map* pMap = me->GetMap();
         if (pMap && pMap->IsDungeon())
         {
@@ -158,10 +157,9 @@ struct boss_black_knightAI : public BossAI
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
                 if(itr->getSource() && itr->getSource()->isAlive() && !itr->getSource()->isGameMaster())
-                bReset = false;
+                    bReset = false;
             }
-        }*/
-        bReset = true;
+        }
                
         ResetEncounter();
        
@@ -351,18 +349,18 @@ struct boss_black_knightAI : public BossAI
         if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
             pInstance->HandleGameObject(pGO->GetGUID(),false);
         //me->SetHomePosition(746.843, 695.68, 412.339, 4.70776);
-        //if (pInstance)
-        //    pInstance->SetData(DATA_AGGRO_DONE, DONE);
         if (pInstance)
-            pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
+            pInstance->SetData(DATA_AGGRO_DONE, DONE);
+        //if (pInstance)
+        //    pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* pVictim)
     {
         DoScriptText(SAY_SLAY, me);
                
-        //if (pInstance)
-        //    pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
+        if (pInstance)
+            pInstance->SetData(BOSS_BLACK_KNIGHT, IN_PROGRESS);
     }
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
@@ -453,27 +451,27 @@ struct npc_risen_ghoulAI : public ScriptedAI
 
     void Reset()
     {
-                Map* pMap = me->GetMap();
+        Map* pMap = me->GetMap();
         if (pMap && pMap->IsDungeon())
         {
-                        bReset=true;
-                        Map::PlayerList const &players = pMap->GetPlayers();
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        {
-                                if(itr->getSource())
-                                        if(itr->getSource()->isAlive())
-                                                bReset=false;
-                        }
-                }
-                Despawn();
+            bReset=true;
+            Map::PlayerList const &players = pMap->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if(itr->getSource())
+                    if(itr->getSource()->isAlive())
+                        bReset=false;
+            }
+        }
+        Despawn();
         uiAttackTimer = 3500;
     }
        
-        void Despawn()
-        {
-                if(bReset)
-                        me->RemoveFromWorld();
-        }
+    void Despawn()
+    {
+        if(bReset)
+            me->RemoveFromWorld();
+    }
 
     void UpdateAI(const uint32 uiDiff)
     {
