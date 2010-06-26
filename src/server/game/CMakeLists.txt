@@ -131,7 +131,7 @@ set(game_STAT_SRCS
    OutdoorPvP/Zones/OutdoorPvPWG.h
   OutdoorPvP/OutdoorPvP.cpp
   OutdoorPvP/OutdoorPvPMgr.cpp
-  Pools/PoolHandler.cpp
+  Pools/PoolMgr.cpp
   Quests/QuestDef.cpp
   Reputation/ReputationMgr.cpp
   Scripting/ScriptLoader.cpp
