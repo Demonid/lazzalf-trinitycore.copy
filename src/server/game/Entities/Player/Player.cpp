@@ -385,6 +385,22 @@ UpdateMask Player::updateVisualBits;
 
 Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputationMgr(this)
 {
+    // Jail
+	m_jail_guid     = 0;
+	m_jail_char     = "";
+	m_jail_amnestie = false;
+	m_jail_warning  = false;
+	m_jail_isjailed = false;
+	m_jail_amnestietime =0;
+	m_jail_release  = 0;
+	m_jail_times    = 0;
+	m_jail_reason   = "";
+	m_jail_gmacc    = 0;
+	m_jail_gmchar   = "";
+	m_jail_lasttime = "";
+        m_jail_duration = 0;
+	// Jail end
+
     m_speakTime = 0;
     m_speakCount = 0;
 
@@ -460,8 +476,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     PlayerTalkClass = new PlayerMenu(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
 
-    m_DailyQuestChanged = false;
-    m_lastDailyQuestTime = 0;
+    m_TimedQuestChanged = false;
 
     for (uint8 i=0; i<MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
@@ -512,6 +527,27 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
+    // movement anticheat
+    m_anti_LastClientTime  = 0;          // last movement client time
+    m_anti_LastServerTime  = 0;          // last movement server time
+    m_anti_DeltaClientTime = 0;          // client side session time
+    m_anti_DeltaServerTime = 0;          // server side session time
+    m_anti_MistimingCount  = 0;          // mistiming count
+
+    m_anti_LastSpeedChangeTime = 0;      // last speed change time
+
+    m_anti_Last_HSpeed =  7.0f;          // horizontal speed, default RUN speed
+    m_anti_Last_VSpeed = -2.3f;          // vertical speed, default max jump height
+
+    m_anti_TeleToPlane_Count = 0;        // Teleport To Plane alarm counter
+
+    m_anti_AlarmCount = 0;               // alarm counter
+
+    m_anti_JumpCount = 0;                // Jump already began, anti air jump check
+    m_anti_JumpBaseZ = 0;                // Z coord before jump (AntiGrav)
+    m_logcheat_time = 0;                 // Time for logs
+    // end movement anticheat
+
     m_mailsLoaded = false;
     m_mailsUpdated = false;
     unReadMails = 0;
@@ -559,6 +595,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_baseFeralAP = 0;
     m_baseManaRegen = 0;
     m_baseHealthRegen = 0;
+    m_baseSpellPenetration = 0;
 
     // Honor System
     m_lastHonorUpdateTime = time(NULL);
@@ -1269,6 +1306,78 @@ void Player::Update(uint32 p_time)
     Unit::Update(p_time);
     SetCanDelayTeleport(false);
 
+	if(m_jail_isjailed)
+    {
+        time_t localtime;
+        localtime = time(NULL);
+		
+        if (m_jail_release <= localtime)
+        {
+            m_jail_isjailed = false;
+            m_jail_release = 0;
+
+            _SaveJail();
+            
+            sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+            
+			CastSpell(this,8690,false);
+
+            return;
+        }
+
+        if (m_team == ALLIANCE)
+        {
+            if (GetDistance(objmgr.m_jailconf_ally_x, objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z) > objmgr.m_jailconf_radius)
+            {
+                TeleportTo(objmgr.m_jailconf_ally_m, objmgr.m_jailconf_ally_x,
+                    objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z, objmgr.m_jailconf_ally_o);
+                return;
+            }
+        }
+        else
+        {
+            if (GetDistance(objmgr.m_jailconf_horde_x, objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z) > objmgr.m_jailconf_radius)
+            {
+                TeleportTo(objmgr.m_jailconf_horde_m, objmgr.m_jailconf_horde_x,
+                    objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z, objmgr.m_jailconf_horde_o);
+                return;
+            }
+			
+        }
+    }
+	
+	if(m_jail_warning == true)
+	{
+		m_jail_warning = false;
+		
+		if(objmgr.m_jailconf_warn_player && objmgr.m_jailconf_warn_player == m_jail_times)
+		{
+			if (((objmgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (objmgr.m_jailconf_ban - 1))
+			{
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING_BAN, m_jail_times , objmgr.m_jailconf_max_jails-1);
+			}
+			else
+			{
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING, m_jail_times , objmgr.m_jailconf_max_jails);
+			}
+		        
+		}
+		return;
+	}
+    if(m_jail_amnestie == true && objmgr.m_jailconf_amnestie > 0 )
+    {
+	    m_jail_amnestie =false;
+    	time_t localtime;
+        localtime    = time(NULL);
+	
+    	if(localtime >  m_jail_amnestietime)
+    	{   
+    		CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",GetGUIDLow());
+    		ChatHandler(this).PSendSysMessage(LANG_JAIL_AMNESTII);
+    	}
+        return;
+    }
+
     time_t now = time(NULL);
 
     UpdatePvPFlag(now);
@@ -1446,9 +1555,17 @@ void Player::Update(uint32 p_time)
     }
 
     if (m_deathState == JUST_DIED)
-        KillPlayer();
+	{
+    // Prevent death of jailed players
+        if (!m_jail_isjailed) KillPlayer();
+        else
+        {
+            m_deathState = ALIVE;
+            RegenerateAll();
+        }
+    }
 
-    if (m_nextSave > 0)
+    if(m_nextSave > 0 && !m_jail_isjailed)
     {
         if (p_time >= m_nextSave)
         {
@@ -1867,6 +1984,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if (GetMapId() == mapid && !m_transport)
     {
+        m_anti_JumpBaseZ = 0;
         //lets reset far teleport flag if it wasn't reset during chained teleports
         SetSemaphoreTeleportFar(false);
         //setup delayed teleport flag
@@ -1922,10 +2040,28 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this check not dependent from map instance copy and same for all instance copies of selected map
         if (!sMapMgr.CanPlayerEnter(mapid, this, false))
             return false;
+ 
+
+        // Start dalaran teleport Fix
+        // Get the instance id if exists
+        InstancePlayerBind *pBind = this->GetBoundInstance(mapid, this->GetDifficulty(mEntry->IsRaid()));
+        InstanceSave *pSave = pBind ? pBind->save : NULL;
+        // the player's permanent player bind is taken into consideration first
+        // then the player's group bind and finally the solo bind.
+        if (!pBind || !pBind->perm)
+        {
+            InstanceGroupBind *groupBind = NULL;
+            Group *group = this->GetGroup();
+            // use the player's difficulty setting (it may not be the same as the group's)
+            if (group && (groupBind = group->GetBoundInstance(this)))
+                pSave = groupBind->save;
+        }
+        uint32 instanceId = pSave ? pSave->GetInstanceId() : 0;
+        // End dalaran teleport Fix
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = sMapMgr.FindMap(mapid);
+        Map *map = sMapMgr.FindMap(mapid, instanceId); //Map *map = sMapMgr.FindMap(mapid);
         if (!map ||  map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
@@ -2016,6 +2152,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             m_teleport_dest = WorldLocation(mapid, final_x, final_y, final_z, final_o);
             SetFallInformation(0, final_z);
+            m_anti_JumpBaseZ = 0;
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
@@ -4492,9 +4629,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     CharacterDatabase.PExecute("DELETE FROM character_equipmentsets WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE PlayerGuid1 = '%u' OR PlayerGuid2 = '%u'",guid, guid);
     CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE PlayerGuid = '%u'",guid);
+	CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_battleground_data WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_glyphs WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",guid);
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus_timed WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_talent WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
 
@@ -5012,11 +5150,19 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
+    bool bResurrect = false;
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -500.0f)
     {
-        ResurrectPlayer(0.5f);
         SpawnCorpseBones();
+        bResurrect = true;
+    }
+
+    // Naxxramas is unreachable as a ghost and the player must be automatically revived - HACK
+    if ((!isAlive() && zone && zone->ID == 4188 && GetPositionZ() > 240))
+    {
+        SpawnCorpseBones();
+        bResurrect = true;
     }
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
@@ -5047,6 +5193,10 @@ void Player::RepopAtGraveyard()
     }
     else if (GetPositionZ() < -500.0f)
         TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+
+    // player must be resurrected after teleport to avoid aggroing creatures at death location
+    if (bResurrect)
+        ResurrectPlayer(0.5f);
 }
 
 void Player::JoinedChannel(Channel *c)
@@ -6690,14 +6840,15 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     if (uVictim != NULL)
     {
+        honor *= sWorld.getRate(RATE_HONOR);
+
         if (groupsize > 1)
             honor_f /= groupsize;
 
         // apply honor multiplier from aura (not stacking-get highest)
         honor_f *= (GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HONOR_GAIN_PCT) + 100) / 100.0f;
     }
-
-    honor_f *= sWorld.getRate(RATE_HONOR);
+    
     // Back to int now
     honor = honor_f;
     // honor - for show honor points in log
@@ -6776,6 +6927,8 @@ void Player::ModifyHonorPoints(int32 value)
     }
     else
         SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, GetHonorPoints() < sWorld.getConfig(CONFIG_MAX_HONOR_POINTS) - value ? GetHonorPoints() + value : sWorld.getConfig(CONFIG_MAX_HONOR_POINTS));
+    
+    UpdateAllStats();
 }
 
 void Player::ModifyArenaPoints(int32 value)
@@ -6789,6 +6942,8 @@ void Player::ModifyArenaPoints(int32 value)
     }
     else
         SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() < sWorld.getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld.getConfig(CONFIG_MAX_ARENA_POINTS));
+
+    UpdateAllStats();
 }
 
 uint32 Player::GetGuildIdFromDB(uint64 guid)
@@ -7120,6 +7275,12 @@ void Player::DuelComplete(DuelCompleteType type)
     else if (duel->opponent->GetComboTarget() == GetPetGUID())
         duel->opponent->ClearComboPoints();
 
+    if (type != DUEL_INTERUPTED)
+    {
+        RemoveArenaSpellCooldowns();
+        duel->opponent->RemoveArenaSpellCooldowns();
+    }
+
     // Honor points after duel (the winner) - ImpConfig
     if (uint32 amount = sWorld.getConfig(CONFIG_HONOR_AFTER_DUEL))
         duel->opponent->RewardHonor(NULL,1,amount);
@@ -7355,8 +7516,14 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
             case ITEM_MOD_SPELL_POWER:
                 ApplySpellPowerBonus(int32(val), apply);
                 break;
+            case ITEM_MOD_BLOCK_VALUE:
+                HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, float(val), apply);
+                break;
             case ITEM_MOD_HEALTH_REGEN:
                 ApplyHealthRegenBonus(int32(val), apply);
+                break;
+            case ITEM_MOD_SPELL_PENETRATION:
+                ApplySpellPenetrationBonus(int32(val), apply);
                 break;
             // depricated item mods
             case ITEM_MOD_SPELL_HEALING_DONE:
@@ -7812,8 +7979,23 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             {
                 if (IsPositiveSpell(pEnchant->spellid[s]))
                     CastSpell(this, pEnchant->spellid[s], true, item);
-                else
+                else 
+                {
                     CastSpell(target, pEnchant->spellid[s], true, item);
+                    // Deadly Poison
+                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags[0] == 0x10000 && spellInfo->SpellFamilyFlags[1] == 0x80000) 
+                    {
+                        if (Aura * aur = target->GetAura(pEnchant->spellid[s], GetGUID()))
+                            if (aur->GetStackAmount() == 5)
+                                if (Item* Weapon = GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK, true))
+                                    if (SpellItemEnchantmentEntry const *Poison = sSpellItemEnchantmentStore.LookupEntry(Weapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))) 
+                                    {
+                                        SpellEntry const* poisonEntry = sSpellStore.LookupEntry(Poison->spellid[s]);
+                                        if(poisonEntry && poisonEntry->Dispel == DISPEL_POISON)
+                                            CastSpell(target, poisonEntry, true, Weapon);
+                                    }
+                    }
+                }
             }
         }
     }
@@ -13203,7 +13385,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         case ITEM_MOD_SPELL_POWER:
                             ApplySpellPowerBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u SPELL_POWER", enchant_amount);
-                            break;
+                            break;                        
                         case ITEM_MOD_HEALTH_REGEN:
                             ApplyHealthRegenBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u HEALTH_REGENERATION", enchant_amount);
@@ -13959,7 +14141,7 @@ bool Player::CanSeeStartQuest(Quest const *pQuest)
     if (SatisfyQuestRace(pQuest, false) && SatisfyQuestSkillOrClass(pQuest, false) &&
         SatisfyQuestExclusiveGroup(pQuest, false) && SatisfyQuestReputation(pQuest, false) &&
         SatisfyQuestPreviousQuest(pQuest, false) && SatisfyQuestNextChain(pQuest, false) &&
-        SatisfyQuestPrevChain(pQuest, false) && SatisfyQuestDay(pQuest, false) && SatisfyQuestWeek(pQuest, false))
+        SatisfyQuestPrevChain(pQuest, false) && SatisfyQuestDay(pQuest, false))
     {
         return getLevel() + sWorld.getConfig(CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF) >= pQuest->GetMinLevel();
     }
@@ -13974,7 +14156,7 @@ bool Player::CanTakeQuest(Quest const *pQuest, bool msg)
         && SatisfyQuestSkillOrClass(pQuest, msg) && SatisfyQuestReputation(pQuest, msg)
         && SatisfyQuestPreviousQuest(pQuest, msg) && SatisfyQuestTimed(pQuest, msg)
         && SatisfyQuestNextChain(pQuest, msg) && SatisfyQuestPrevChain(pQuest, msg)
-        && SatisfyQuestDay(pQuest, msg) && SatisfyQuestWeek(pQuest, msg);
+        && SatisfyQuestDay(pQuest, msg);
 }
 
 bool Player::CanAddQuest(Quest const *pQuest, bool msg)
@@ -14094,7 +14276,7 @@ bool Player::CanRewardQuest(Quest const *pQuest, bool msg)
         return false;
 
     // daily quest can't be rewarded (25 daily quest already completed)
-    if (!SatisfyQuestDay(pQuest,true) || !SatisfyQuestWeek(pQuest,true))
+    if (!SatisfyQuestDay(pQuest,true))
         return false;
 
     // rewarded and not repeatable quest (only cheating case, then ignore without message)
@@ -14385,15 +14567,13 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     if (uint32 mail_template_id = pQuest->GetRewMailTemplateId())
         MailDraft(mail_template_id).SendMailTo(this, questGiver, MAIL_CHECK_MASK_HAS_BODY, pQuest->GetRewMailDelaySecs());
 
-    if (pQuest->IsDaily())
+    if (pQuest->IsDailyOrWeekly())
     {
-        SetDailyQuestStatus(quest_id);
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, quest_id);
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY, quest_id);
+        if (pQuest->IsDaily())
+            GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY, quest_id);
+        
+        SetTimedQuestStatus(quest_id);        
     }
-
-    if (pQuest->IsWeekly())
-        SetWeeklyQuestStatus(quest_id);
 
     if (!pQuest->IsRepeatable())
         SetQuestStatus(quest_id, QUEST_STATUS_COMPLETE);
@@ -14741,7 +14921,7 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
 
         // not allow have daily quest if daily quest from exclusive group already recently completed
         Quest const* Nquest = objmgr.GetQuestTemplate(exclude_Id);
-        if (!SatisfyQuestDay(Nquest, false) || !SatisfyQuestWeek(Nquest, false))
+        if (!SatisfyQuestDay(Nquest, false))
         {
             if (msg)
                 SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
@@ -14820,37 +15000,56 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
 {
-    if (!qInfo->IsDaily())
+    if (!qInfo->IsDailyOrWeekly())
         return true;
 
-    bool have_slot = false;
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    bool daily = qInfo->IsDaily();
+    uint32 quest_id = qInfo->GetQuestId();
+
+    // Check the players quest cool downs...
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
     {
-        uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
-        if (qInfo->GetQuestId() == id)
+        if ((*itr).first == quest_id)
+        {
+            if (daily && (*itr).second.ltime > sWorld.GetNextDailyQuestsResetTime()-DAY)
+                return false;
+
+            if (!daily && (*itr).second.ltime > sWorld.GetNextWeeklyQuestsResetTime()-WEEK)
+                return false;
+        }
+    }
+
+    // Check the players daily slots...
+    if (daily)
+    {
+        bool have_slot = false;
+
+        for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        {
+            uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
+
+            if (!id)
+                have_slot = true;
+
+            if (id == quest_id)
+            {
+                if (msg)
+                    SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUEST_COMPLETED_TODAY);
+
+                return false;
+            }
+
+        }
+        if (!have_slot)
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
+
             return false;
-
-        if (!id)
-            have_slot = true;
+        }
     }
-
-    if (!have_slot)
-    {
-        if (msg)
-            SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
-        return false;
-    }
-
+    
     return true;
-}
-
-bool Player::SatisfyQuestWeek(Quest const* qInfo, bool /*msg*/)
-{
-    if (!qInfo->IsWeekly() || m_weeklyquests.empty())
-        return true;
-
-    // if not found in cooldown list
-    return m_weeklyquests.find(qInfo->GetQuestId()) == m_weeklyquests.end();
 }
 
 bool Player::GiveQuestSourceItem(Quest const *pQuest)
@@ -16108,6 +16307,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             RelocateToHomebind();
         }
 
+    // Vault of Archavon
+    if (mapEntry->MapID == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(this))
+  	    RelocateToHomebind();
+
         // fix crash (because of if (Map *map = _FindMap(instanceId)) in MapInstanced::CreateInstance)
         if (instanceId)
             if (InstanceSave * save = GetInstanceSave(mapId, mapEntry->IsRaid()))
@@ -16301,8 +16504,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
-    _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
-    _LoadWeeklyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS));
+    _LoadTimedQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS));
     _LoadRandomBGStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADRANDOMBG));
 
     // after spell and quest load
@@ -16422,9 +16624,79 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     m_achievementMgr.LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
     m_achievementMgr.CheckAllAchievementCriteria();
 
-    _LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+	// Loads the jail datas and if jailed it corrects the position to the corresponding jail
+    _LoadJail();
+
+	_LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     return true;
+
+}
+
+void Player::_LoadJail(void)
+{
+    CharacterDatabase.BeginTransaction();
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GetGUIDLow());
+    CharacterDatabase.CommitTransaction();
+
+    if (!result)
+    {
+		m_jail_times = 0;
+        m_jail_isjailed = false;
+        return;
+    }
+
+		Field *fields = result->Fetch();
+		m_jail_warning = true;
+		m_jail_isjailed = true;
+		m_jail_guid = fields[0].GetUInt32();
+		m_jail_char = fields[1].GetString();
+		m_jail_release = fields[2].GetUInt32();
+		m_jail_amnestietime = fields[3].GetUInt32();
+		m_jail_reason = fields[4].GetString();
+		m_jail_times = fields[5].GetUInt32();
+		m_jail_gmacc = fields[6].GetUInt32();
+		m_jail_gmchar = fields[7].GetString();
+		m_jail_lasttime = fields[8].GetString();
+		m_jail_duration = fields[9].GetUInt32();
+
+    if (m_jail_release == 0)
+    {
+        m_jail_isjailed = false;
+        return;
+    }
+
+    time_t localtime;
+    localtime = time(NULL);
+
+    if (m_jail_release <= localtime)
+    {
+        m_jail_isjailed = false;
+        m_jail_release = 0;
+
+        _SaveJail();
+
+        sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+
+        CastSpell(this,8690,false);
+        return;
+    }
+
+    if (m_jail_isjailed)
+    {
+        if (m_team == ALLIANCE)
+        {
+            TeleportTo(objmgr.m_jailconf_ally_m, objmgr.m_jailconf_ally_x,
+                objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z, objmgr.m_jailconf_ally_o);
+        }
+        else
+        {
+            TeleportTo(objmgr.m_jailconf_horde_m, objmgr.m_jailconf_horde_x,
+                objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z, objmgr.m_jailconf_horde_o);
+        }
+         
+        sWorld.SendWorldText(LANG_JAIL_CHAR_TELE, GetName() );
+    }
 }
 
 bool Player::isAllowedToLoot(const Creature* creature)
@@ -17038,12 +17310,12 @@ void Player::_LoadQuestStatus(QueryResult_AutoPtr result)
         SetQuestSlot(i, 0);
 }
 
-void Player::_LoadDailyQuestStatus(QueryResult_AutoPtr result)
+void Player::_LoadTimedQuestStatus(QueryResult_AutoPtr result)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
+    mTimedQuestStatus.clear();
 
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT quest,time FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
 
     if (result)
     {
@@ -17051,60 +17323,44 @@ void Player::_LoadDailyQuestStatus(QueryResult_AutoPtr result)
 
         do
         {
-            if (quest_daily_idx >= PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
+            Field *fields = result->Fetch();
+
+            uint32 quest_id = fields[0].GetUInt32();
+
+            Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+            if (!pQuest)
             {
-                sLog.outError("Player (GUID: %u) have more 25 daily quest records in `charcter_queststatus_daily`",GetGUIDLow());
-                break;
+                sLog.outError("The player (GUID: %u) has a not existing quest (%u) within the table `character_queststatus_timed`!", GetGUIDLow(), quest_id);
+                sLog.outError("The quest %u for player GUID: %u will be deleted!", GetGUIDLow(), quest_id);
+
+                CharacterDatabase.DirectPExecute("DELETE FROM character_queststatus_timed WHERE guid='%u' AND quest='%u' LIMIT 1", GetGUIDLow(), quest_id);
+
+                continue;
             }
+            mTimedQuestStatus[quest_id].daily = fields[1].GetBool();
+            mTimedQuestStatus[quest_id].ltime = (time_t)fields[2].GetUInt64();
 
-            Field *fields = result->Fetch();
+            if (pQuest->IsDaily())
+            {
+                ++quest_daily_idx;
 
-            uint32 quest_id = fields[0].GetUInt32();
+                if (quest_daily_idx > PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
+                {
+                    sLog.outError("The player (GUID: %u) has more as 25 daily quest records in `character_queststatus_timed`!", GetGUIDLow());
+                    break;
+                }
 
-            // save _any_ from daily quest times (it must be after last reset anyway)
-            m_lastDailyQuestTime = (time_t)fields[1].GetUInt64();
+                SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
 
-            Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
-            if (!pQuest)
-                continue;
-
-            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,quest_id);
-            ++quest_daily_idx;
-
-            sLog.outDebug("Daily quest {%u} cooldown for player (GUID: %u)", quest_id, GetGUIDLow());
+                sLog.outDebug("Daily quest (%u) cooldown for player GUID: %u", quest_id, GetGUIDLow());
+            }
         }
         while (result->NextRow());
     }
 
-    m_DailyQuestChanged = false;
+    m_TimedQuestChanged = false;
 }
 
-void Player::_LoadWeeklyQuestStatus(QueryResult_AutoPtr result)
-{
-    m_weeklyquests.clear();
-
-    if (result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            uint32 quest_id = fields[0].GetUInt32();
-
-            Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
-
-            if (!pQuest)
-                continue;
-
-            m_weeklyquests.insert(quest_id);
-
-            sLog.outDebug("Weekly quest {%u} cooldown for player (GUID: %u)", quest_id, GetGUIDLow());
-        }
-        while (result->NextRow());
-    }
-
-    m_WeeklyQuestChanged = false;
-}
 
 void Player::_LoadSpells(QueryResult_AutoPtr result)
 {
@@ -17580,8 +17836,21 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 /***                   SAVE SYSTEM                     ***/
 /*********************************************************/
 
+// Saves the jail datas (added by WarHead).
+void Player::_SaveJail(void)
+{
+    CharacterDatabase.BeginTransaction();
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `guid` FROM `jail` WHERE `guid`='%u' LIMIT 1", m_jail_guid);
+    if (!result) CharacterDatabase.PExecute("INSERT INTO `jail` VALUES ('%u','%s','%u', '%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", m_jail_guid, m_jail_char.c_str(), m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration);
+    else CharacterDatabase.PExecute("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration, m_jail_guid);
+    CharacterDatabase.CommitTransaction();
+}
+
+
 void Player::SaveToDB()
 {
+	// Jail: Prevent saving of jailed players
+    if (m_jail_isjailed) return;
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -17747,8 +18016,10 @@ void Player::SaveToDB()
     _SaveBGData();
     _SaveInventory();
     _SaveQuestStatus();
-    _SaveDailyQuestStatus();
-    _SaveWeeklyQuestStatus();
+    
+    //if (m_TimedQuestChanged)
+    //    _SaveTimedQuestStatus();
+
     _SaveTalents();
     _SaveSpells();
     _SaveSpellCooldowns();
@@ -18030,39 +18301,19 @@ void Player::_SaveQuestStatus()
     }
 }
 
-void Player::_SaveDailyQuestStatus()
+void Player::_SaveTimedQuestStatus()
 {
-    if (!m_DailyQuestChanged)
-        return;
-
-    m_DailyQuestChanged = false;
-
-    // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
-
     // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
-                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
-}
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus_timed WHERE guid = '%u'", GetGUIDLow());
 
-void Player::_SaveWeeklyQuestStatus()
-{
-    if (!m_WeeklyQuestChanged || m_weeklyquests.empty())
-        return;
-
-    // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_weekly WHERE guid = '%u'",GetGUIDLow());
-
-    for (QuestSet::const_iterator iter = m_weeklyquests.begin(); iter != m_weeklyquests.end(); ++iter)
+    // Check the players quest cool downs...
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
     {
-        uint32 quest_id  = *iter;
-
-        CharacterDatabase.PExecute("INSERT INTO character_queststatus_weekly (guid,quest) VALUES ('%u', '%u')", GetGUIDLow(), quest_id);
+        CharacterDatabase.PExecute("INSERT INTO character_queststatus_timed (guid,quest,daily,time) VALUES ('%u', '%u', '%u','" UI64FMTD "')",
+            GetGUIDLow(),(*itr).first, ((*itr).second.daily)?1:0, (*itr).second.ltime);
     }
 
-    m_WeeklyQuestChanged = false;
+    m_TimedQuestChanged = false;
 }
 
 void Player::_SaveSkills()
@@ -21254,45 +21505,51 @@ void Player::SendAurasForTarget(Unit *target)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SetDailyQuestStatus(uint32 quest_id)
+void Player::SetTimedQuestStatus(uint32 quest_id)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    Quest const* quest = objmgr.GetQuestTemplate(quest_id);
+
+    if (quest)
     {
-        if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
+        time_t curTime = time(NULL);
+        tm localTm = *localtime(&curTime);
+        time_t now = mktime(&localTm);
+
+        if (quest->IsDaily())
         {
-            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,quest_id);
-            m_lastDailyQuestTime = time(NULL);              // last daily quest time
-            m_DailyQuestChanged = true;
-            break;
+            for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+                if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx))
+                {
+                    SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, quest_id);
+                    CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, time) VALUES ('%u', '%u','%lu')", GetGUIDLow(), quest_id, uint64(now));
+                    break;
+                }
         }
+        // Weekly
+        else
+           CharacterDatabase.DirectPExecute("REPLACE INTO character_queststatus_timed (guid, quest, daily, time) VALUES ('%u', '%u', '0', '%lu')", GetGUIDLow(), quest_id, uint64(now));
+
+        m_TimedQuestChanged = true;
+        mTimedQuestStatus[quest_id].daily = quest->IsDaily();
+        mTimedQuestStatus[quest_id].ltime = now;
     }
 }
 
-
-void Player::SetWeeklyQuestStatus(uint32 quest_id)
+void Player::ResetTimedQuestStatus(bool daily, time_t time)
 {
-    m_weeklyquests.insert(quest_id);
-    m_WeeklyQuestChanged = true;
-}
+    if (daily)
+        for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + quest_daily_idx, 0);
 
-void Player::ResetDailyQuestStatus()
-{
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
+    for (TimedQuestStatusMap::const_iterator itr = mTimedQuestStatus.begin(); itr != mTimedQuestStatus.end(); ++itr)
+    {
+        if (((*itr).second.daily == daily) && 
+            (*itr).second.ltime < time)
+            mTimedQuestStatus.erase((*itr).first);
+    }
 
     // DB data deleted in caller
-    m_DailyQuestChanged = false;
-    m_lastDailyQuestTime = 0;
-}
-
-void Player::ResetWeeklyQuestStatus()
-{
-    if (m_weeklyquests.empty())
-        return;
-
-    m_weeklyquests.clear();
-    // DB data deleted in caller
-    m_WeeklyQuestChanged = false;
+    m_TimedQuestChanged = false;
 }
 
 BattleGround* Player::GetBattleGround() const
@@ -23664,6 +23921,9 @@ void Player::ActivateSpec(uint8 spec)
     // HACK: this shouldn't be checked at such a low level function but rather at the moment the spell is casted
     if (GetMap()->IsBattleGround() && !HasAura(44521)) // In BattleGround with no Preparation buff
         return;
+
+    if (HasAura(28682)) // HackFix for remove Combustion
+        RemoveAurasDueToSpell(28682);
 
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
