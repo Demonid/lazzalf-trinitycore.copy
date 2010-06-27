@@ -95,7 +95,10 @@ uint32 GetItemEnchantMod(int32 entry)
 
     if (entry == -1)
     {
-        /* To do: Find randomproperty/suffix based on item level. */
+        tab = RandomItemEnch.begin();
+        entry = urand(1, RandomItemEnch.size()) - 1;
+        for (uint32 i = 0; i < entry; ++i)
+            ++tab;
     }
     else
         tab = RandomItemEnch.find(entry);
