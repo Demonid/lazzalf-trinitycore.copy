@@ -161,9 +161,27 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (!entry->IsDungeon())
         return true;
 
-    // Not an areatrigger teleporting from world into an instance, if it is same map
-    if (mapid == player->GetMapId())
-       return true;
+    InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
+    if (!instance)
+        return false;
+
+    //The player has a heroic mode and tries to enter into instance which has no a heroic mode
+    MapDifficulty const* mapDiff = GetMapDifficultyData(entry->MapID,player->GetDifficulty(entry->IsRaid()));
+    if (!mapDiff)
+    {
+        bool isNormalTargetMap = entry->IsRaid()
+        ? (player->GetRaidDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
+        : (player->GetDungeonDifficulty() == DUNGEON_DIFFICULTY_NORMAL);
+        
+        // Send aborted message
+        // FIX ME: what about absent normal/heroic mode with specific players limit...
+        player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY, isNormalTargetMap ? DUNGEON_DIFFICULTY_NORMAL : DUNGEON_DIFFICULTY_HEROIC);
+        return false;
+    }
+
+    //Bypass checks for GMs
+    if (player->isGameMaster())
+        return true;
 
     const char *mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
 
@@ -171,8 +189,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (entry->IsRaid())
     {
         // can only enter in a raid group
-        // GMs can avoid raid limitations
-        if ((!pGroup || !pGroup->isRaidGroup()) && !player->isGameMaster() && !sWorld.getConfig(CONFIG_INSTANCE_IGNORE_RAID))
+        if ((!pGroup || !pGroup->isRaidGroup()) && !sWorld.getConfig(CONFIG_INSTANCE_IGNORE_RAID))
         {
             // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
             // TODO: this is not a good place to send the message
@@ -180,20 +197,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             sLog.outDebug("MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), mapName);
             return false;
         }
-    }
-
-    //The player has a heroic mode and tries to enter into instance which has no a heroic mode
-    MapDifficulty const* mapDiff = GetMapDifficultyData(entry->MapID,player->GetDifficulty(entry->IsRaid()));
-    if (!mapDiff)
-    {
-        bool isNormalTargetMap = entry->IsRaid()
-            ? (player->GetRaidDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
-            : (player->GetDungeonDifficulty() == DUNGEON_DIFFICULTY_NORMAL);
-
-        // Send aborted message
-        // FIX ME: what about absent normal/heroic mode with specific players limit...
-        player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY, isNormalTargetMap ? DUNGEON_DIFFICULTY_NORMAL : DUNGEON_DIFFICULTY_HEROIC);
-        return false;
     }
 
     if (!player->isAlive())
@@ -225,20 +228,16 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             sLog.outDebug("Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
     }
 
-    InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
-    if (!instance)
-        return false;
-
     //Get instance where player's group is bound & its map
     if (pGroup)
     {
-        InstanceGroupBind* boundedInstance = pGroup->GetBoundInstance(player);
+        InstanceGroupBind* boundedInstance = pGroup->GetBoundInstance(entry);
         if (boundedInstance && boundedInstance->save)
         {
             if (Map *boundedMap = sMapMgr.FindMap(mapid,boundedInstance->save->GetInstanceId()))
             {
                 // Player permanently bounded to different instance than groups one
-                InstancePlayerBind* playerBoundedInstance = player->GetBoundInstance(mapid, player->GetDungeonDifficulty());
+                InstancePlayerBind* playerBoundedInstance = player->GetBoundInstance(mapid, player->GetDifficulty(entry->IsRaid()));
                 if (playerBoundedInstance && playerBoundedInstance->perm && playerBoundedInstance->save &&
                     boundedInstance->save->GetInstanceId() != playerBoundedInstance->save->GetInstanceId())
                 {

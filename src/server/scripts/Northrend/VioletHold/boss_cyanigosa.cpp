@@ -80,7 +80,6 @@ struct boss_cyanigosaAI : public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, me);
-        DoCast(me, SPELL_TRANSFORM);
 
         if (pInstance)
             pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);

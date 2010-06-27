@@ -129,6 +129,8 @@ struct instance_naxxramas : public InstanceData
     uint64 uiKelthuzadTrigger;
     uint64 uiPortals[4];
 
+    GOState gothikDoorState;
+
     time_t minHorsemenDiedTime;
     time_t maxHorsemenDiedTime;
 
@@ -181,7 +183,10 @@ struct instance_naxxramas : public InstanceData
                     pSapphiron->AI()->DoAction(DATA_SAPPHIRON_BIRTH);
                 return;
             }
-            case GO_GOTHIK_GATE: GothikGateGUID = add ? pGo->GetGUID() : 0; break;
+            case GO_GOTHIK_GATE:
+                GothikGateGUID = add ? pGo->GetGUID() : 0;
+                pGo->SetGoState(gothikDoorState);
+                break;
             case GO_HORSEMEN_CHEST: HorsemenChestGUID = add ? pGo->GetGUID() : 0; break;
             case GO_HORSEMEN_CHEST_HERO: HorsemenChestGUID = add ? pGo->GetGUID() : 0; break;
             case GO_KELTHUZAD_PORTAL01: uiPortals[0] = pGo->GetGUID(); break;
@@ -204,6 +209,7 @@ struct instance_naxxramas : public InstanceData
             case DATA_GOTHIK_GATE:
                 if (GameObject *pGothikGate = instance->GetGameObject(GothikGateGUID))
                     pGothikGate->SetGoState(GOState(value));
+                gothikDoorState = GOState(value);
                 break;
 
             case DATA_HORSEMEN0:
@@ -295,6 +301,7 @@ struct instance_naxxramas : public InstanceData
             }
         }
     }*/
+    
     void HeiganErupt(uint32 section)
     {
         for (uint32 i = 0; i < 4; ++i)
@@ -331,25 +338,26 @@ struct instance_naxxramas : public InstanceData
         }
         return false;
     }
+
+    std::string GetSaveData()
+    {
+        std::ostringstream saveStream;
+        saveStream << GetBossSaveData() << " " << gothikDoorState;
+        return saveStream.str();
+    }
+
+    void Load(const char * data)
+    {
+        std::istringstream loadStream(LoadBossState(data));
+        uint32 buff;
+        loadStream >> buff;
+        gothikDoorState = GOState(buff);
+    }
 };
 
 InstanceData* GetInstanceData_instance_naxxramas(Map* pMap)
 {
     return new instance_naxxramas(pMap);
-}
-
-bool AreaTrigger_at_naxxramas_frostwyrm_wing(Player* pPlayer, const AreaTriggerEntry *at)
-{
-    if (pPlayer->isGameMaster())
-        return false;
-
-    /*InstanceData *data = pPlayer->GetInstanceData();
-    if (data)
-        for (uint32 i = BOSS_ANUBREKHAN; i < BOSS_SAPPHIRON; ++i)
-            if (data->GetBossState(i) != DONE)
-                return true;*/
-
-    return false;
 }
 
 void AddSC_instance_naxxramas()
@@ -358,10 +366,5 @@ void AddSC_instance_naxxramas()
     newscript = new Script;
     newscript->Name = "instance_naxxramas";
     newscript->GetInstanceData = &GetInstanceData_instance_naxxramas;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "at_naxxramas_frostwyrm_wing";
-    newscript->pAreaTrigger = &AreaTrigger_at_naxxramas_frostwyrm_wing;
     newscript->RegisterSelf();
 }
