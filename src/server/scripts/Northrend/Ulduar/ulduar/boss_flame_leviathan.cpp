@@ -670,12 +670,20 @@ void SendDefaultMenu_ulduar_repair_npc(Player *player, Creature *_Creature, uint
         return;
 
     // Not allow in combat
-    if(!player->getAttackers().empty())
+    if (!player->getAttackers().empty())
     {
         player->CLOSE_GOSSIP_MENU();
         _Creature->MonsterSay("Sei in combat!", LANG_UNIVERSAL, 0);
         return;
     }
+
+    if (InstanceData *data = player->GetInstanceData())
+        if (data->GetBossState(BOSS_LEVIATHAN) == IN_PROGRESS)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            _Creature->MonsterSay("Sei in combat con il leviathan!", LANG_UNIVERSAL, 0);
+            return;            
+        }
 
     switch(action)
     {
