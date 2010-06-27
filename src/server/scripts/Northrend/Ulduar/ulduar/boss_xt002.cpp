@@ -485,7 +485,12 @@ struct boss_xt002_AI : public BossAI
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
 
         if (!hardMode)
-            me->ModifyHealth(-((int32)transferHealth));
+        {
+            if (me->GetHealth() > transferHealth)
+                me->ModifyHealth(-((int32)transferHealth));
+            else 
+                me->ModifyHealth(-((int32)me->GetHealth() - 1000));
+        }
 
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         me->SetReactState(REACT_AGGRESSIVE);
