@@ -351,15 +351,15 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 {
                     for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                         if (Creature* pSummon = instance->GetCreature(*itr))
-                                                {
+                        {
                             pSummon->RemoveFromWorld();
-                                                }
+                        }
                     if (Creature* pBoss =  instance->GetCreature(uiArgentChampionGUID))
                     {
                         pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                         pBoss->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
-                                                //fix faction
-                                                pBoss->setFaction(14);
+                        //fix faction
+                        pBoss->setFaction(14);
                         pBoss->SetReactState(REACT_AGGRESSIVE);
                     }
                     if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
