@@ -92,6 +92,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiVX001;
     uint64 uiAerialUnit;
     uint64 uiMagneticCore;
+    uint64 KeepersGateGUID;
     uint64 uiVezax;
         
     GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest,
@@ -117,6 +118,16 @@ struct instance_ulduar : public InstanceData
             case GO_Mimiron_ELEVATOR: MimironElevator = add ? pGo : NULL; break;
             case GO_Mimiron_CHEST_HERO: MimironChest = add ? pGo : NULL; break;
             case GO_Mimiron_CHEST: MimironChest = add ? pGo : NULL; break;
+            case GO_Keepers_DOOR: KeepersGateGUID = pGo->GetGUID();
+            {
+                InstanceData *data = pGo->GetInstanceData();
+                pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
+                if (data)
+                    for (uint32 i = BOSS_MIMIRON; i < BOSS_VEZAX; ++i)
+                        if (data->GetBossState(i) != DONE)
+                            pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
+                break;
+            }
         }
     }
 
@@ -306,20 +317,39 @@ struct instance_ulduar : public InstanceData
             case BOSS_HODIR:
                 if (state == DONE)
                     HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
+                CheckKeepersState();
                 break;
             case BOSS_THORIM:
                 if (state == IN_PROGRESS)
                     pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
                 if (state == DONE)
                     ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+                CheckKeepersState();
                 break;
             case BOSS_MIMIRON:
                 if (state == DONE)
                     MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
+                CheckKeepersState();
+                break;
+            case BOSS_FREYA:
+                CheckKeepersState();
                 break;
         }
         
         return true;
+    }
+    
+    void CheckKeepersState()
+    {
+        if (GameObject* pGo = instance->GetGameObject(KeepersGateGUID))
+        {
+            InstanceData *data = pGo->GetInstanceData();
+            pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
+            if (data)
+                for (uint32 i = BOSS_MIMIRON; i < BOSS_VEZAX; ++i)
+                    if (data->GetBossState(i) != DONE)
+                        pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
+        }
     }
 };
 

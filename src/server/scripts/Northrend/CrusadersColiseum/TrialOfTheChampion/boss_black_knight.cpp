@@ -413,8 +413,6 @@ struct boss_black_knightAI : public BossAI
 
     void JustDied(Unit* pKiller)
     {
-               
-        _JustDied();
         //uiState=ENABLE;
         DoScriptText(SAY_DEATH_3, me);
         if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
@@ -423,6 +421,7 @@ struct boss_black_knightAI : public BossAI
         if (pInstance)
         {
             pInstance->SetData(BOSS_BLACK_KNIGHT, DONE);
+            
             if (IsHeroic())
                 pInstance->DoCompleteAchievement(ACHIEV_WORSE);
         }
