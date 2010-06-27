@@ -91,6 +91,7 @@ struct boss_ichoronAI : public ScriptedAI
 
     uint32 uiBubbleCheckerTimer;
     uint32 uiWaterBoltVolleyTimer;
+    uint32 uiForceBubble;
 
     ScriptedInstance* pInstance;
 
@@ -103,6 +104,7 @@ struct boss_ichoronAI : public ScriptedAI
         bAchievement = true;
         uiBubbleCheckerTimer = 1000;
         uiWaterBoltVolleyTimer = urand(10000, 15000);
+        uiForceBubble = 30000;
 
         me->SetVisibility(VISIBILITY_ON);
         DespawnWaterElements();
@@ -191,7 +193,9 @@ struct boss_ichoronAI : public ScriptedAI
             DoCast(me, SPELL_PROTECTIVE_BUBBLE, true);
         }
 
-        me->SetVisibility(VISIBILITY_ON);
+        //me->SetVisibility(VISIBILITY_ON);
+        if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->GetMotionMaster()->MoveChase(me->getVictim());
     }
 
@@ -219,16 +223,18 @@ struct boss_ichoronAI : public ScriptedAI
                     if (!me->HasAura(SPELL_PROTECTIVE_BUBBLE, 0))
                     {
                         DoScriptText(SAY_SHATTER, me);
-                        DoCast(me, SPELL_WATER_BLAST);
+                        DoCast(me->getVictim(), SPELL_WATER_BLAST);
                         DoCast(me, SPELL_DRAINED);
                         bIsExploded = true;
                         me->AttackStop();
-                        me->SetVisibility(VISIBILITY_OFF);
+                        //me->SetVisibility(VISIBILITY_OFF);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         for (uint8 i = 0; i < 10; i++)
                         {
                             int tmp = urand(0, MAX_SPAWN_LOC-1);
                             me->SummonCreature(NPC_ICHOR_GLOBULE, SpawnLoc[tmp], TEMPSUMMON_CORPSE_DESPAWN);
                         }
+                        uiForceBubble = 30000;
                     }
                 }
                 else
@@ -244,9 +250,15 @@ struct boss_ichoronAI : public ScriptedAI
                                     break;
                                 }
                     }
-
+                    
                     if (!bIsWaterElementsAlive)
                         DoExplodeCompleted();
+                    else if (uiForceBubble <= uiDiff)
+                    {                        
+                        DespawnWaterElements();
+                        DoExplodeCompleted();
+                    }
+                    else uiForceBubble -= uiDiff;
                 }
                 uiBubbleCheckerTimer = 1000;
             }
