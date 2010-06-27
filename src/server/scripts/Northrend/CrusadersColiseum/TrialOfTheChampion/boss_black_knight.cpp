@@ -431,7 +431,8 @@ struct boss_black_knightAI : public BossAI
             Creature* npc = instance->GetCreature(pInstance->GetData64(DATA_ANNOUNCER));
             //fix brutale per il loot °O°
 
-			//pInstance->SetBossState(NPC_BLACK_KNIGHT,DONE);
+            if (pInstance)
+			    pInstance->SetBossState(NPC_BLACK_KNIGHT, DONE);
             // me->SummonGameObject(IsHeroic()? GO_BK_LOOT_H : GO_BK_LOOT, 746.59,618.49, 411.09, 1.42, 0, 0, 0, 0, 90000000);
             if(npc)
                 npc->RemoveFromWorld();

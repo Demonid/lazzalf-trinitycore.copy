@@ -33,21 +33,19 @@ EndScriptData */
 enum eEnums
 {
     SAY_START                               = -1999927,
-        SAY_START11                             = -1999953,
-        SAY_START_9                             = -1999950
+    SAY_START11                             = -1999953,
+    SAY_START_9                             = -1999950
 };
-
 
 //definizione della struttura instance
 struct instance_trial_of_the_champion : public ScriptedInstance
 {
-       
     instance_trial_of_the_champion(Map* pMap) : ScriptedInstance(pMap) {Initialize();}
-        //4 incontri
+    //4 incontri
     uint32 m_auiEncounter[MAX_ENCOUNTER];
        
-        uint8 uiAgroDone;
-        uint8 uiAggroDone;
+    uint8 uiAgroDone;
+    uint8 uiAggroDone;
     uint8 uiMovementDone;
     uint8 uiGrandChampionsDeaths;
     uint8 uiArgentSoldierDeaths;
@@ -68,7 +66,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 
 
     std::list<uint64> VehicleList;
-        std::list<uint64> VehicleListChampion;
+    std::list<uint64> VehicleListChampion;
 
     std::string str_data;
 
@@ -93,15 +91,14 @@ struct instance_trial_of_the_champion : public ScriptedInstance
         uiGrandChampion3GUID          = 0;
         uiChampionLootGUID            = 0;
         uiArgentChampionGUID          = 0;
-	uiBlackLootChestH			  = 0;
-	uiBlackLootChestN			  = 0;
+	    uiBlackLootChestH			  = 0;
+	    uiBlackLootChestN			  = 0;
 
         bDone = false;
 
-
         VehicleList.clear();
-                VehicleListChampion.clear();
-                //m_auiEncounter[i]=0 per ogni i compreso tra 0 e 3 estremi inclusi
+        VehicleListChampion.clear();
+        //m_auiEncounter[i]=0 per ogni i compreso tra 0 e 3 estremi inclusi
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
@@ -225,11 +222,11 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 uiMainGate1GUID = pGO->GetGUID();
                 break;
 	    case GO_BK_LOOT:
-		uiBlackLootChestN=pGO->GetGUID();
-		break;
+		        uiBlackLootChestN = pGO->GetGUID();
+		        break;
             case GO_BK_LOOT_H:
-		uiBlackLootChestH=pGO->GetGUID();
-		break;
+		        uiBlackLootChestH = pGO->GetGUID();
+		        break;
             case GO_CHAMPIONS_LOOT:
             case GO_CHAMPIONS_LOOT_H:
                 uiChampionLootGUID = pGO->GetGUID();
@@ -237,26 +234,24 @@ struct instance_trial_of_the_champion : public ScriptedInstance
         }
     }
 
-	 bool SetBossState(uint32 id, EncounterState state)
-    {
-         
+	bool SetBossState(uint32 id, EncounterState state)
+    {         
         if (id == NPC_BLACK_KNIGHT && state == DONE)
         {
 			if(instance) 
 			{
-				if(instance->IsHeroic() )
+				if (instance->IsHeroic())
 				{
-					if(GameObject* Bh=instance->GetGameObject(uiBlackLootChestH))
+					if(GameObject* Bh = instance->GetGameObject(uiBlackLootChestH))
 						Bh->SetRespawnTime(Bh->GetRespawnDelay());
-				}else
+				}
+                else
 				{
-					if(GameObject* Bn=instance->GetGameObject(uiBlackLootChestN))
+					if(GameObject* Bn = instance->GetGameObject(uiBlackLootChestN))
 						Bn->SetRespawnTime(Bn->GetRespawnDelay());
 				}
-			}
-			
-		}
-        
+			}			
+		}        
         return true;
     }
 
@@ -278,85 +273,77 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 {
                     for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                         if (Creature* pSummon = instance->GetCreature(*itr))
-                                                {
-                                                       
-                                                        Vehicle* pVehicle=pSummon->GetVehicleKit();
-                                                        if(pVehicle)
-                                                                pVehicle->Dismiss();
-                                                        pSummon->SetVisibility(VISIBILITY_OFF);
-                                                }
-                                }else if (uiData == DONE)
-                                        {
+                        {                               
+                            Vehicle* pVehicle=pSummon->GetVehicleKit();
+                            if (pVehicle)
+                                pVehicle->Dismiss();
+                            pSummon->SetVisibility(VISIBILITY_OFF);
+                        }
+                }
+                else if (uiData == DONE)
+                {
                     ++uiGrandChampionsDeaths;
                     if (uiGrandChampionsDeaths == 3)
-                    {
-                                       
+                    {                                       
                         if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
                         {
-                                                        DoScriptText(SAY_START, pAnnouncer);
+                            DoScriptText(SAY_START, pAnnouncer);
                             pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                             pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_CHAMPIONS_LOOT_H : GO_CHAMPIONS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
-                                                }
+                        }
                     }
-                }else if(uiData== FAIL)
-                                {
-                                        if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
-                                        {
-                                               
-                                                for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
-                                                        if (Creature* pSummon = instance->GetCreature(*itr))
-                                                                pSummon->SetVisibility(VISIBILITY_ON);
-                                                       
-                                       
+                }
+                else if (uiData == FAIL)
+                {
+                    if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
+                    {
+                       
+                        for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
+                            if (Creature* pSummon = instance->GetCreature(*itr))
+                                pSummon->SetVisibility(VISIBILITY_ON);
 
-                                                //rimuovo le eventuali mount
-                                                if(!VehicleListChampion.empty())
-                                                        for(std::list<uint64>::const_iterator itr = VehicleListChampion.begin(); itr != VehicleListChampion.end(); ++itr)
-                                                                if (Creature* pSummon = instance->GetCreature(*itr))
-                                                                        pSummon->RemoveFromWorld();
+                        //rimuovo le eventuali mount
+                        if (!VehicleListChampion.empty())
+                            for(std::list<uint64>::const_iterator itr = VehicleListChampion.begin(); itr != VehicleListChampion.end(); ++itr)
+                                if (Creature* pSummon = instance->GetCreature(*itr))
+                                    pSummon->RemoveFromWorld();
 
-                                                VehicleListChampion.clear();
-                                                //VehicleList.clear();
-                                                //rimuovo gli eventuali boss
-                                                if(Creature* boss1=instance->GetCreature(uiGrandChampion1GUID))
-                                                        boss1->RemoveFromWorld();
-                                                if(Creature* boss2=instance->GetCreature(uiGrandChampion2GUID))
-                                                        boss2->RemoveFromWorld();
-                                                if(Creature* boss3=instance->GetCreature(uiGrandChampion3GUID))
-                                                        boss3->RemoveFromWorld();
-                                                               
-                                               
-                                                uiAggroDone = 0;
-                                                uiMovementDone = 0;
-                                                uiGrandChampionsDeaths = 0;
-                                                uiArgentSoldierDeaths = 0;
+                        VehicleListChampion.clear();
+                        //VehicleList.clear();
 
-                                               
-                                               
-                                                uiGrandChampionVehicle1GUID   = 0;
-                                                uiGrandChampionVehicle2GUID   = 0;
-                                                uiGrandChampionVehicle3GUID   = 0;
-                                                uiGrandChampion1GUID          = 0;
-                                                uiGrandChampion2GUID          = 0;
-                                                uiGrandChampion3GUID          = 0;
-                                                uiChampionLootGUID            = 0;
-                                                uiArgentChampionGUID          = 0;
-                                                bDone = false;
-                                                memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
-                                                pAnnouncer->AI()->SetData(DATA_RESET,0);
-                                                //Initialize();
-                                               
-                                                //Creature* tmp=pAnnouncer->SummonCreature(35005, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 600000);
-                                                //tmp->AI()->SetData(DATA_START,0);
-                                                 //pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                                                //pAnnouncer->RemoveFromWorld();
-                                                //tmp->AI()->SetData(DATA_IN_POSITION,DONE);
-
-                                               
-                                               
-
-                                        }
-                                }
+                        //rimuovo gli eventuali boss
+                        if(Creature* boss1 = instance->GetCreature(uiGrandChampion1GUID))
+                            boss1->RemoveFromWorld();
+                        if(Creature* boss2 = instance->GetCreature(uiGrandChampion2GUID))
+                            boss2->RemoveFromWorld();
+                        if(Creature* boss3 = instance->GetCreature(uiGrandChampion3GUID))
+                            boss3->RemoveFromWorld();                                       
+                       
+                        uiAggroDone = 0;
+                        uiMovementDone = 0;
+                        uiGrandChampionsDeaths = 0;
+                        uiArgentSoldierDeaths = 0;                       
+                       
+                        uiGrandChampionVehicle1GUID   = 0;
+                        uiGrandChampionVehicle2GUID   = 0;
+                        uiGrandChampionVehicle3GUID   = 0;
+                        uiGrandChampion1GUID          = 0;
+                        uiGrandChampion2GUID          = 0;
+                        uiGrandChampion3GUID          = 0;
+                        uiChampionLootGUID            = 0;
+                        uiArgentChampionGUID          = 0;
+                        bDone = false;
+                        memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+                        pAnnouncer->AI()->SetData(DATA_RESET,0);
+                        //Initialize();
+                       
+                        //Creature* tmp=pAnnouncer->SummonCreature(35005, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 600000);
+                        //tmp->AI()->SetData(DATA_START,0);
+                         //pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        //pAnnouncer->RemoveFromWorld();
+                        //tmp->AI()->SetData(DATA_IN_POSITION,DONE);
+                    }
+                }
                 break;
             case DATA_ARGENT_SOLDIER_DEFEATED:
                 uiArgentSoldierDeaths = uiData;
@@ -377,57 +364,57 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                     }
                     if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
                     {
-                                                DoScriptText(SAY_START_9, pAnnouncer);
+                        DoScriptText(SAY_START_9, pAnnouncer);
                     }
                 }
                 break;
             case BOSS_ARGENT_CHALLENGE_E:
                 m_auiEncounter[1] = uiData;
-                                if (uiData == IN_PROGRESS)
+                if (uiData == IN_PROGRESS)
                 {
                     for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                         if (Creature* pSummon = instance->GetCreature(*itr))
                             pSummon->RemoveFromWorld();
-                }else if (uiData == DONE)                              
-                if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
-                {
-                                DoScriptText(SAY_START, pAnnouncer);
-
-                    pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                                        pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
-                    pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
                 }
+                else if (uiData == DONE)                              
+                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    {
+                        DoScriptText(SAY_START, pAnnouncer);
+                        pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
+                        pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+                    }
                 break;
             case DATA_AGGRO_DONE:
                 uiAgroDone = uiData;
                 if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
-                {  
-                                   
-                                DoScriptText(SAY_START11, pAnnouncer);                  
+                {                                     
+                    DoScriptText(SAY_START11, pAnnouncer);                  
                 }
                 break;
             case DATA_AGRO_DONE:
                 uiAggroDone = uiData;
                 if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
                 {  
-                                    pAnnouncer->SetVisibility(VISIBILITY_OFF);                          
+                    pAnnouncer->SetVisibility(VISIBILITY_OFF);                          
                 }
                 break;
             case BOSS_ARGENT_CHALLENGE_P:
                 m_auiEncounter[2] = uiData;
-                                if (uiData == IN_PROGRESS)
+                if (uiData == IN_PROGRESS)
                 {
                     for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                         if (Creature* pSummon = instance->GetCreature(*itr))
                             pSummon->RemoveFromWorld();
-                }else if (uiData == DONE)                              
-                if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
-                {
-                                DoScriptText(SAY_START, pAnnouncer);
-                    pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                                        pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
-                    pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
                 }
+                else if (uiData == DONE)                              
+                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    {
+                        DoScriptText(SAY_START, pAnnouncer);
+                        pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
+                        pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+                    }
                 break;
         }
 
@@ -442,12 +429,10 @@ struct instance_trial_of_the_champion : public ScriptedInstance
             case BOSS_GRAND_CHAMPIONS:  return m_auiEncounter[0];
             case BOSS_ARGENT_CHALLENGE_E: return m_auiEncounter[1];
             case BOSS_ARGENT_CHALLENGE_P: return m_auiEncounter[2];
-            case BOSS_BLACK_KNIGHT: return m_auiEncounter[3];
-                       
-                    case DATA_MOVEMENT_DONE: return uiMovementDone;
+            case BOSS_BLACK_KNIGHT: return m_auiEncounter[3];                       
+            case DATA_MOVEMENT_DONE: return uiMovementDone;
             case DATA_ARGENT_SOLDIER_DEFEATED: return uiArgentSoldierDeaths;
         }
-
 
         return 0;
     }
