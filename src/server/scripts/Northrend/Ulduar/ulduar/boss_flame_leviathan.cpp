@@ -256,7 +256,22 @@ struct boss_flame_leviathanAI : public BossAI
                 DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
-                    DoResetThreat();
+                    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+                    {
+                        sLog.outError("TSCR: DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
+                    }
+                    else
+                    {
+                        std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
+                        for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                        {
+                            Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+
+                            if (pUnit && DoGetThreat(pUnit))
+                                DoModifyThreatPercent(pUnit, -99);
+                        }
+                    }
+                    //DoResetThreat();
                     me->AddAura(SPELL_PURSUED, pTarget);
                     me->AddThreat(pTarget, 5000000.0f);
                     if (me->getVictim())
