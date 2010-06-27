@@ -19,8 +19,8 @@
 /* ScriptData
 SDName: Mimiron
 SDAuthor: PrinceCreed
-SD%Complete: 85
-SDComments: P3Wx2 Laser Barrage not works in phase 4. TODO: Hard Mode and Achievements.
+SD%Complete: 90
+SDComments: P3Wx2 Laser Barrage not works in phase 4. TODO: Achievements.
 EndScriptData */
 
 #include "ScriptPCH.h"
@@ -86,7 +86,18 @@ enum eSpells
     SPELL_MAGNETIC_CORE                         = 64436,
     SPELL_MAGNETIC_CORE_VISUAL                  = 64438,
     SPELL_BOOM_BOT                              = 63801,
-    SPELL_BERSERK                               = 47008
+    SPELL_MAGNETIC_FIELD                        = 64668,
+    SPELL_HOVER                                 = 57764, // Set Hover position
+    SPELL_BERSERK                               = 47008,
+    
+    // Hard Mode
+    SPELL_EMERGENCY_MODE                        = 64582,
+    SPELL_FLAME_SUPPRESSANT_1                   = 64570,
+    SPELL_FLAME_SUPPRESSANT_2                   = 65192,
+    SPELL_FLAME                                 = 64561,
+    SPELL_FROST_BOMB                            = 64624,
+    SPELL_WATER_SPRAY                           = 64619,
+    SPELL_SIREN                                 = 64616
 };
 
 enum eEvents
@@ -97,6 +108,7 @@ enum eEvents
     EVENT_NAPALM_SHELL,
     EVENT_PLASMA_BLAST,
     EVENT_SHOCK_BLAST,
+    EVENT_FLAME_SUPPRESSANT,
     
     // VX-001
     EVENT_RAPID_BURST,
@@ -106,6 +118,7 @@ enum eEvents
     EVENT_ROCKET_STRIKE,
     EVENT_HEAT_WAVE,
     EVENT_HAND_PULSE,
+    EVENT_FROST_BOMB,
     
     // Aerial Command Unit
     EVENT_PLASMA_BALL,
@@ -143,7 +156,20 @@ enum eActions
     DO_AERIAL_ASSEMBLED     = 10,
     DO_ACTIVATE_DEATH_TIMER = 11,
     DO_ENTER_ENRAGE         = 12,
+    DO_ACTIVATE_HARD_MODE   = 13
 };
+
+enum Npcs
+{
+    NPC_JUNK_BOT            = 33855,
+    NPC_ASSAULT_BOT         = 34057,
+    NPC_BOOM_BOT            = 33836,
+    NPC_EMERGENCY_BOT       = 34147,
+    NPC_FLAME               = 34363,
+    NPC_FROST_BOMB          = 34149
+};
+
+bool MimironHardMode;
 
 const Position SummonPos[9] =
 {
@@ -173,6 +199,7 @@ struct boss_mimironAI : public BossAI
     uint32 uiPhase_timer;
     uint32 uiStep;
     uint32 EnrageTimer;
+    uint32 FlameTimer;
     uint32 uiBotTimer;
     bool Enraged;
     bool checkBotAlive;
@@ -224,6 +251,7 @@ struct boss_mimironAI : public BossAI
         uiBotTimer = 0;
         checkBotAlive = true;
         Enraged = false;
+        MimironHardMode = false;
         DespawnCreatures(34362, 100);
         DespawnCreatures(34050, 100);
     }
@@ -239,7 +267,11 @@ struct boss_mimironAI : public BossAI
         _EnterCombat();
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         phase = PHASE_INTRO;
-        EnrageTimer = 15*60*1000; // Enrage in 15 min
+        if (MimironHardMode)
+            EnrageTimer = 8*60*1000; // Enrage in 8 min
+        else
+            EnrageTimer = 15*60*1000; // Enrage in 15 min
+        FlameTimer = 30000;
         JumpToNextStep(100);
     }
 
@@ -267,6 +299,19 @@ struct boss_mimironAI : public BossAI
             Enraged = true;
         }
         else EnrageTimer -= diff;
+        
+        if (MimironHardMode)
+        {
+            if (FlameTimer<= diff)
+            {
+                for (uint8 i = 0; i < 3; ++i)
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Creature* Flame = me->SummonCreature(NPC_FLAME, pTarget->GetPositionX() + irand(-6,6), pTarget->GetPositionY() + irand(-6,6), pTarget->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
+                            Flame->AI()->AttackStart(pTarget);
+                FlameTimer = 30000;
+            }
+            else FlameTimer -= diff;
+        }
             
         // All sections need to die within 10 seconds, else they respawn
         if (checkBotAlive)
@@ -311,7 +356,10 @@ struct boss_mimironAI : public BossAI
                 switch (uiStep)
                 {
                 case 1:
-                    DoScriptText(SAY_AGGRO, me);
+                    if (MimironHardMode)
+                        DoScriptText(SAY_HARDMODE_ON, me);
+                    else
+                        DoScriptText(SAY_AGGRO, me);
                     JumpToNextStep(10000);
                     break;
                 case 2:
@@ -422,7 +470,7 @@ struct boss_mimironAI : public BossAI
                     if (pInstance)
                         if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                         {
-                            pVX_001->AddAura(57764, pVX_001); // Hover
+                            pVX_001->AddAura(SPELL_HOVER, pVX_001); // Hover
                             pVX_001->AI()->DoAction(DO_START_VX001);
                             phase = PHASE_COMBAT;
                         }
@@ -577,6 +625,10 @@ struct boss_mimironAI : public BossAI
         case DO_ACTIVATE_DEATH_TIMER:
             checkBotAlive = false;
             break;
+        case DO_ACTIVATE_HARD_MODE:
+            MimironHardMode = true;
+            DoZoneInCombat();
+            break;
         }
     }
     
@@ -622,6 +674,8 @@ struct boss_leviathan_mkAI : public BossAI
         me->RemoveAllAuras();
         phase = PHASE_NULL;
         events.SetPhase(PHASE_NULL);
+        if (Creature *turret = CAST_CRE(me->GetVehicleKit()->GetPassenger(3)))
+            turret->AI()->EnterEvadeMode();
     }
 
     void KilledUnit(Unit *who)
@@ -677,6 +731,12 @@ struct boss_leviathan_mkAI : public BossAI
 
     void EnterCombat(Unit *who)
     {
+        if (MimironHardMode)
+        {
+            DoCast(me, SPELL_EMERGENCY_MODE);
+            events.ScheduleEvent(EVENT_FLAME_SUPPRESSANT, 60000, 0, PHASE_LEVIATHAN_SOLO);
+        }
+
         events.ScheduleEvent(EVENT_PROXIMITY_MINE, 1000);
         events.ScheduleEvent(EVENT_PLASMA_BLAST, 10000, 0, PHASE_LEVIATHAN_SOLO);
         
@@ -696,6 +756,8 @@ struct boss_leviathan_mkAI : public BossAI
                 DoZoneInCombat();
                 break;
             case DO_LEVIATHAN_ASSEMBLED:
+                if (MimironHardMode)
+                    DoCast(me, SPELL_EMERGENCY_MODE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->SetHealth(int32(me->GetMaxHealth() / 2));
@@ -707,7 +769,7 @@ struct boss_leviathan_mkAI : public BossAI
                 events.RescheduleEvent(EVENT_SHOCK_BLAST, 30000);
                 break;
             case DO_ENTER_ENRAGE:
-                DoCast(me, SPELL_BERSERK);
+                DoCast(me, SPELL_BERSERK, true);
                 break;
         }
     }
@@ -744,6 +806,15 @@ struct boss_leviathan_mkAI : public BossAI
                         DoCastAOE(SPELL_SHOCK_BLAST);
                         events.RescheduleEvent(EVENT_SHOCK_BLAST, 35000);
                         break;
+                    case EVENT_FLAME_SUPPRESSANT:
+                        DoCastAOE(SPELL_FLAME_SUPPRESSANT_1);
+                        std::list<Creature*> m_pCreatures;
+                        GetCreatureListWithEntryInGrid(m_pCreatures, me, NPC_FLAME, 100);
+                        if (!m_pCreatures.empty())
+                            for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                                (*iter)->ForcedDespawn(3000);
+                        events.CancelEvent(EVENT_FLAME_SUPPRESSANT);
+                        break;
                 }
             }
         }
@@ -772,6 +843,7 @@ struct boss_leviathan_mk_turretAI : public ScriptedAI
         uiNapalmShell = urand(8000, 10000);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
+        me->DeleteThreatList();
     }
     
     void EnterCombat(Unit *who)
@@ -889,6 +961,12 @@ struct boss_vx_001AI : public BossAI
 
     void EnterCombat(Unit *who)
     {
+        if (MimironHardMode)
+        {
+            DoCast(me, SPELL_EMERGENCY_MODE);
+            events.ScheduleEvent(EVENT_FROST_BOMB, 15000);
+        }
+            
         events.ScheduleEvent(EVENT_RAPID_BURST_ROTATE, 100, 0, PHASE_VX001_SOLO);
         events.ScheduleEvent(EVENT_PRE_LASER_BARRAGE, urand(35000, 40000), 0, PHASE_VX001_SOLO); // Not works in phase 4 :(
         events.ScheduleEvent(EVENT_ROCKET_STRIKE, 20000);
@@ -915,9 +993,14 @@ struct boss_vx_001AI : public BossAI
                 events.RescheduleEvent(EVENT_PRE_LASER_BARRAGE, urand(35000, 40000), 0, PHASE_VX001_SOLO); // not works in phase 4
                 events.RescheduleEvent(EVENT_ROCKET_STRIKE, 20000);
                 events.RescheduleEvent(EVENT_HAND_PULSE, 15000, 0, PHASE_VX001_ASSEMBLED);
+                if (MimironHardMode)
+                {
+                    DoCast(me, SPELL_EMERGENCY_MODE);
+                    events.RescheduleEvent(EVENT_FROST_BOMB, 15000);
+                }
                 break;
             case DO_ENTER_ENRAGE:
-                DoCast(me, SPELL_BERSERK);
+                DoCast(me, SPELL_BERSERK, true);
                 break;
         }
     }
@@ -1024,6 +1107,10 @@ struct boss_vx_001AI : public BossAI
                             DoCast(pTarget, RAID_MODE(SPELL_HAND_PULSE_10, SPELL_HAND_PULSE_25));
                         events.RescheduleEvent(EVENT_HAND_PULSE, urand(10000, 12000));
                         break;
+                    case EVENT_FROST_BOMB:
+                        me->SummonCreature(NPC_FROST_BOMB, SummonPos[rand()%9], TEMPSUMMON_MANUAL_DESPAWN);
+                        events.RescheduleEvent(EVENT_FROST_BOMB, 45000);
+                        break;
                 }
             }
         }
@@ -1096,6 +1183,9 @@ struct boss_aerial_unitAI : public BossAI
 
     void EnterCombat(Unit *who)
     {
+        if (MimironHardMode)
+            DoCast(me, SPELL_EMERGENCY_MODE);
+
         events.ScheduleEvent(EVENT_PLASMA_BALL, 1000);
         events.ScheduleEvent(EVENT_SUMMON_BOTS, 10000, 0, PHASE_AERIAL_SOLO);
     }
@@ -1114,6 +1204,7 @@ struct boss_aerial_unitAI : public BossAI
             case DO_DISABLE_AERIAL:
                 me->CastStop();
                 me->SetReactState(REACT_PASSIVE);
+                me->GetMotionMaster()->Clear(true);
                 DoCast(me, SPELL_MAGNETIC_CORE);
                 DoCast(me, SPELL_MAGNETIC_CORE_VISUAL);
                 if (Creature *pMagneticCore = Creature::GetCreature((*me), pInstance->GetData64(DATA_MAGNETIC_CORE)))
@@ -1124,6 +1215,8 @@ struct boss_aerial_unitAI : public BossAI
                 events.ScheduleEvent(EVENT_REACTIVATE_AERIAL, 20000, 0, PHASE_AERIAL_SOLO);
                 break;
             case DO_AERIAL_ASSEMBLED:
+                if (MimironHardMode)
+                    DoCast(me, SPELL_EMERGENCY_MODE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->SetHealth(int32(me->GetMaxHealth() / 2));
@@ -1133,7 +1226,7 @@ struct boss_aerial_unitAI : public BossAI
                 events.RescheduleEvent(EVENT_PLASMA_BALL, 2000);
                 break;
             case DO_ENTER_ENRAGE:
-                DoCast(me, SPELL_BERSERK);
+                DoCast(me, SPELL_BERSERK, true);
                 break;
         }
     }
@@ -1155,12 +1248,24 @@ struct boss_aerial_unitAI : public BossAI
                 switch(eventId)
                 {
                     case EVENT_PLASMA_BALL:
-                        DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
+                        if (phase == PHASE_AERIAL_SOLO && me->getVictim())
+                        {
+                            float x = me->getVictim()->GetPositionX();
+                            float y = me->getVictim()->GetPositionY();
+                            float z = me->getVictim()->GetPositionZ();
+                            if (me->IsWithinDist3d(x, y, z, 35))
+                            {
+                                me->GetMotionMaster()->Clear(true);
+                                DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
+                            }
+                            else me->GetMotionMaster()->MovePoint(0, x, y, 380.040);
+                        }
+                        else DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
                         events.RescheduleEvent(EVENT_PLASMA_BALL, 2000);
                         break;
                     case EVENT_REACTIVATE_AERIAL:
                         me->RemoveAurasDueToSpell(SPELL_MAGNETIC_CORE_VISUAL);
-                        me->NearTeleportTo(2744.65, 2569.46, 380.040, 3.14159, false);
+                        me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), 380.040, 3.14159, false);
                         me->SetReactState(REACT_AGGRESSIVE);
                         events.CancelEvent(EVENT_REACTIVATE_AERIAL);
                         break;
@@ -1179,13 +1284,16 @@ struct boss_aerial_unitAI : public BossAI
         {
             case 0:
                 for(uint8 n = 0; n < 2; n++)
-                    me->SummonCreature(33855, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                    me->SummonCreature(NPC_JUNK_BOT, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
             case 1:
-                me->SummonCreature(34057, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                me->SummonCreature(NPC_ASSAULT_BOT, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                if (MimironHardMode)
+                    for (uint8 i = 0; i < 2; ++i)
+                        me->SummonCreature(NPC_EMERGENCY_BOT, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
             case 2:
-                me->SummonCreature(33836, 2744.65, 2569.46, 364.397, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                me->SummonCreature(NPC_BOOM_BOT, 2744.65, 2569.46, 364.397, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
         }
 
@@ -1199,8 +1307,11 @@ struct boss_aerial_unitAI : public BossAI
     void JustSummoned(Creature *summon)
     {
         summons.Summon(summon);
-        summon->AI()->AttackStart(me->getVictim());
-        summon->AI()->DoZoneInCombat();
+        if (summon->GetEntry() != NPC_EMERGENCY_BOT)
+        {
+            summon->AI()->AttackStart(me->getVictim());
+            summon->AI()->DoZoneInCombat();
+        }
     }
     
     void DamageTaken(Unit *who, uint32 &damage)
@@ -1209,6 +1320,7 @@ struct boss_aerial_unitAI : public BossAI
             if (damage >= me->GetHealth())
             {
                 damage = 0;
+                me->GetMotionMaster()->Clear(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_PASSIVE);
                 me->AttackStop();
@@ -1254,7 +1366,7 @@ struct magnetic_coreAI : public ScriptedAI
         me->ForcedDespawn(21000);
         if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
             if (pAerialUnit->isAlive())
-                if (pAerialUnit->IsWithinDist2d(me->GetPositionX(), me->GetPositionY(), 10))
+                //if (pAerialUnit->IsWithinDist2d(me->GetPositionX(), me->GetPositionY(), 10))
                     pAerialUnit->AI()->DoAction(DO_DISABLE_AERIAL);
     }
     ScriptedInstance *pInstance;
@@ -1270,26 +1382,161 @@ struct mob_boom_botAI : public ScriptedAI
     mob_boom_botAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = pCreature->GetInstanceData();
+        if (MimironHardMode)
+            DoCast(me, SPELL_EMERGENCY_MODE);
     }
 
     ScriptedInstance* m_pInstance;
 
-    void DamageTaken(Unit *who, uint32 &damage)
+    void JustDied(Unit *victim)
     {
-        if (damage >= me->GetHealth())
-        {
-            damage = 0;
-            DoCast(me, SPELL_BOOM_BOT);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-            me->SetHealth(me->GetMaxHealth());
-            me->ForcedDespawn(1000);
-        }
+        DoCast(me, SPELL_BOOM_BOT);
     }
 };
 
 CreatureAI* GetAI_mob_boom_bot(Creature* pCreature)
 {
     return new mob_boom_botAI(pCreature);
+}
+
+struct mob_junk_botAI : public ScriptedAI
+{
+    mob_junk_botAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        if (MimironHardMode)
+            DoCast(me, SPELL_EMERGENCY_MODE);
+    }
+};
+
+CreatureAI* GetAI_mob_junk_bot(Creature* pCreature)
+{
+    return new mob_junk_botAI(pCreature);
+}
+
+struct mob_assault_botAI : public ScriptedAI
+{
+    mob_assault_botAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        if (MimironHardMode)
+            DoCast(me, SPELL_EMERGENCY_MODE);
+
+        uiFieldTimer = urand(4000, 6000);
+    }
+    
+    uint32 uiFieldTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (uiFieldTimer <= diff)
+        {
+            DoCastVictim(SPELL_MAGNETIC_FIELD);
+            uiFieldTimer = urand(15000, 20000);
+        }
+        else uiFieldTimer -= diff;
+        
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_assault_bot(Creature* pCreature)
+{
+    return new mob_assault_botAI(pCreature);
+}
+
+struct mob_emergency_botAI : public ScriptedAI
+{
+    mob_emergency_botAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        me->SetReactState(REACT_PASSIVE);
+        me->GetMotionMaster()->MoveRandom(15);
+        uiSprayTimer = 5000;
+    }
+    
+    uint32 uiSprayTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (uiSprayTimer <= diff)
+        {
+            DoCast(SPELL_WATER_SPRAY);
+            std::list<Creature*> m_pCreatures;
+            GetCreatureListWithEntryInGrid(m_pCreatures, me, NPC_FLAME, 12);
+            if (!m_pCreatures.empty())
+                for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                    (*iter)->ForcedDespawn();
+            uiSprayTimer = 5000;
+        }
+        else uiSprayTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_mob_emergency_bot(Creature* pCreature)
+{
+    return new mob_emergency_botAI(pCreature);
+}
+
+// DO NOT PUSH THIS BUTTON!
+bool GOHello_not_push_button(Player* pPlayer, GameObject* pGo)
+{
+    ScriptedInstance* pInstance = pGo->GetInstanceData();
+
+    if (!pInstance)
+        return false;
+
+    if (pInstance->GetBossState(BOSS_MIMIRON) == NOT_STARTED)
+        if (Creature *pMimiron = Creature::GetCreature((*pGo), pInstance->GetData64(DATA_MIMIRON)))
+            pMimiron->AI()->DoAction(DO_ACTIVATE_HARD_MODE);
+    
+    return true;
+}
+
+struct mob_mimiron_flameAI : public ScriptedAI
+{
+    mob_mimiron_flameAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        DoCast(me, SPELL_FLAME);
+    }
+};
+
+CreatureAI* GetAI_mob_mimiron_flame(Creature* pCreature)
+{
+    return new mob_mimiron_flameAI(pCreature);
+}
+
+struct mob_frost_bombAI : public ScriptedAI
+{
+    mob_frost_bombAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        DoCast(me, SPELL_FROST_BOMB);
+        uiFrostTimer = 10000;
+    }
+    
+    uint32 uiFrostTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (uiFrostTimer <= diff)
+        {
+            DoCastAOE(SPELL_FLAME_SUPPRESSANT_2);
+            std::list<Creature*> m_pCreatures;
+            GetCreatureListWithEntryInGrid(m_pCreatures, me, NPC_FLAME, 25);
+            if (!m_pCreatures.empty())
+                for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                    (*iter)->ForcedDespawn();
+            me->ForcedDespawn(1000);
+            uiFrostTimer = 10000;
+        }
+        else uiFrostTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_mob_frost_bomb(Creature* pCreature)
+{
+    return new mob_frost_bombAI(pCreature);
 }
 
 void AddSC_boss_mimiron()
@@ -1339,5 +1586,35 @@ void AddSC_boss_mimiron()
     newscript = new Script;
     newscript->Name = "mob_boom_bot";
     newscript->GetAI = &GetAI_mob_boom_bot;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_junk_bot";
+    newscript->GetAI = &GetAI_mob_junk_bot;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_assault_bot";
+    newscript->GetAI = &GetAI_mob_assault_bot;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_emergency_bot";
+    newscript->GetAI = &GetAI_mob_emergency_bot;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "not_push_button";
+    newscript->pGOHello = &GOHello_not_push_button;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_mimiron_flame";
+    newscript->GetAI = &GetAI_mob_mimiron_flame;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_frost_bomb";
+    newscript->GetAI = &GetAI_mob_frost_bomb;
     newscript->RegisterSelf();
 }
