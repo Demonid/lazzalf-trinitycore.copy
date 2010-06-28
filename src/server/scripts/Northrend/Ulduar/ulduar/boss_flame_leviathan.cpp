@@ -650,6 +650,25 @@ CreatureAI* GetAI_mob_colossus(Creature* pCreature)
     return new mob_colossusAI(pCreature);
 }
 
+#define SPELL_AUTO_REPAIR 62705
+#define EMOTE_REPAIR          "Automatic repair sequence initiated."
+
+bool AreaTrigger_at_RX_214_repair_o_matic_station(Player* pPlayer, const AreaTriggerEntry* pAt)
+{
+    if (!pPlayer)
+        return false;
+
+    if(Creature* vehicle = pPlayer->GetVehicleCreatureBase())
+    {
+        if(!vehicle->HasAura(SPELL_AUTO_REPAIR))
+        {
+            pPlayer->MonsterTextEmote(EMOTE_REPAIR, pPlayer->GetGUID(), true);
+            pPlayer->CastSpell(vehicle, SPELL_AUTO_REPAIR, true);
+        }
+    }
+    return true;
+}
+
 bool GossipHello_ulduar_repair_npc(Player *player, Creature *_Creature)
 {
     if (!player)
@@ -778,5 +797,10 @@ void AddSC_boss_flame_leviathan()
     newscript->Name="ulduar_repair_npc";
     newscript->pGossipHello = &GossipHello_ulduar_repair_npc;
     newscript->pGossipSelect = &GossipSelect_ulduar_repair_npc;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "at_RX_214_repair_o_matic_station";
+    newscript->pAreaTrigger = &AreaTrigger_at_RX_214_repair_o_matic_station;
     newscript->RegisterSelf();
 }
