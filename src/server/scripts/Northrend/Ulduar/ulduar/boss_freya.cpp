@@ -90,16 +90,20 @@ enum Spells
     SPELL_IRONBRANCHS_ESSENCE                   = 62387,
     SPELL_BRIGHTLEAFS_ESSENCE                   = 62385,
     SPELL_DRAINED_OF_POWER                      = 62467,
-    RAID_10_SPELL_FREYA_CHEST                   = 62950,
-    RAID_25_SPELL_FREYA_CHEST                   = 62952,
-    HARD_10_SPELL_FREYA_CHEST                   = 62954,
-    HARD_25_SPELL_FREYA_CHEST                   = 62955,
-    
+    RAID_10_0_SPELL_FREYA_CHEST                 = 62950,
+    RAID_10_1_SPELL_FREYA_CHEST                 = 62952,
+    RAID_10_2_SPELL_FREYA_CHEST                 = 62953,
+    RAID_10_3_SPELL_FREYA_CHEST                 = 62954,
+    RAID_25_0_SPELL_FREYA_CHEST                 = 62955,
+    RAID_25_1_SPELL_FREYA_CHEST                 = 62956,
+    RAID_25_2_SPELL_FREYA_CHEST                 = 62957,
+    RAID_25_3_SPELL_FREYA_CHEST                 = 62958,
+       
     // Detonating Lasher
     RAID_10_SPELL_DETONATE                      = 62598,
     RAID_25_SPELL_DETONATE                      = 62937,
     SPELL_FLAME_LASH                            = 62608,
-    
+        
     // Ancient Conservator
     SPELL_CONSERVATORS_GRIP                     = 62532,
     RAID_10_SPELL_NATURES_FURY                  = 62589,
@@ -210,7 +214,7 @@ struct boss_freyaAI : public BossAI
     {
         pInstance = pCreature->GetInstanceData();
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	    me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
     
     ScriptedInstance* pInstance;
@@ -260,10 +264,21 @@ struct boss_freyaAI : public BossAI
         }
         
         // Hard mode chest
-        if (EldersCount == 3)
-            DoCast(RAID_MODE(HARD_10_SPELL_FREYA_CHEST, HARD_25_SPELL_FREYA_CHEST));
-        else
-            DoCast(RAID_MODE(RAID_10_SPELL_FREYA_CHEST, RAID_25_SPELL_FREYA_CHEST));
+        switch (EldersCount)
+        {
+            case 0:
+                DoCast(RAID_MODE(RAID_10_0_SPELL_FREYA_CHEST, RAID_25_0_SPELL_FREYA_CHEST));
+                break;
+            case 1:
+                DoCast(RAID_MODE(RAID_10_1_SPELL_FREYA_CHEST, RAID_25_1_SPELL_FREYA_CHEST));
+                break;
+            case 2:
+                DoCast(RAID_MODE(RAID_10_2_SPELL_FREYA_CHEST, RAID_25_2_SPELL_FREYA_CHEST));
+                break;
+            case 3:
+                DoCast(RAID_MODE(RAID_10_3_SPELL_FREYA_CHEST, RAID_25_3_SPELL_FREYA_CHEST));
+                break;
+        }
     }
 
     void EnterCombat(Unit* pWho)
@@ -989,6 +1004,7 @@ struct creature_ancient_conservatorAI : public ScriptedAI
             //Prevent casting natures fury on a target that is already affected
             if(pTarget && !pTarget->HasAura(RAID_MODE(RAID_10_SPELL_NATURES_FURY, RAID_25_SPELL_NATURES_FURY)))
                 DoCast(pTarget, RAID_MODE(RAID_10_SPELL_NATURES_FURY, RAID_25_SPELL_NATURES_FURY));
+            me->AddAura(SPELL_CONSERVATORS_GRIP, me);
             uiNaturesFuryTimer = 5000;
         }
         else uiNaturesFuryTimer -= diff;

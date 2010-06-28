@@ -19,8 +19,8 @@
 /* ScriptData
 SDName: Mimiron
 SDAuthor: PrinceCreed
-SD%Complete: 90
-SDComments: P3Wx2 Laser Barrage not works in phase 4. TODO: Achievements.
+SD%Complete: 95
+SDComments: P3Wx2 Laser Barrage not works in phase 4.
 EndScriptData */
 
 #include "ScriptPCH.h"
@@ -171,6 +171,19 @@ enum Npcs
 
 bool MimironHardMode;
 
+// Achievements
+#define ACHIEVEMENT_FIREFIGHTER                 RAID_MODE(3180, 3189)
+#define ACHIEVEMENT_NOT_SO_FRIENDLY_FIRE        RAID_MODE(3138, 2995)
+#define ACHIEVEMENT_SET_UP_US_THE_BOMB          RAID_MODE(2989, 3237) // TODO
+
+enum MimironChests
+{
+    CACHE_OF_INNOVATION_10                      = 194789,
+    CACHE_OF_INNOVATION_HARDMODE_10             = 194790,
+    CACHE_OF_INNOVATION_25                      = 194956,
+    CACHE_OF_INNOVATION_HARDMODE_25             = 194957
+};
+
 const Position SummonPos[9] =
 {
 {2703.93, 2569.32, 364.397, 0},
@@ -260,6 +273,19 @@ struct boss_mimironAI : public BossAI
     {
         DoScriptText(SAY_V07TRON_DEATH, me);
         _JustDied();
+        
+        if (pInstance)
+        {
+            if (MimironHardMode)
+            {
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_FIREFIGHTER);
+                me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_HARDMODE_10, CACHE_OF_INNOVATION_HARDMODE_25), 2744.65, 2569.46, 364.314, 3.14159, 0, 0, 0.7, 0.7, 604800);
+            }
+            else
+            {
+                me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_10, CACHE_OF_INNOVATION_25), 2744.65, 2569.46, 364.314, 3.14159, 0, 0, 0.7, 0.7, 604800);
+            }
+        }
     }
 
     void EnterCombat(Unit *who)
@@ -1417,12 +1443,15 @@ struct mob_assault_botAI : public ScriptedAI
 {
     mob_assault_botAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
+        pInstance = pCreature->GetInstanceData();
+
         if (MimironHardMode)
             DoCast(me, SPELL_EMERGENCY_MODE);
 
         uiFieldTimer = urand(4000, 6000);
     }
     
+    ScriptedInstance* pInstance;
     uint32 uiFieldTimer;
     
     void UpdateAI(const uint32 diff)
@@ -1435,6 +1464,13 @@ struct mob_assault_botAI : public ScriptedAI
         else uiFieldTimer -= diff;
         
         DoMeleeAttackIfReady();
+    }
+    
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        // Achievement Not-So-Friendly Fire
+        if (spell->Id == 63041)
+            pInstance->DoCompleteAchievement(ACHIEVEMENT_NOT_SO_FRIENDLY_FIRE);
     }
 };
 

@@ -167,6 +167,14 @@ enum SifSpells
     SPELL_BLIZZARD_25                           = 62603
 };
 
+enum ThorimChests
+{
+    CACHE_OF_STORMS_10                          = 194312,
+    CACHE_OF_STORMS_HARDMODE_10                 = 194313,
+    CACHE_OF_STORMS_25                          = 194314,
+    CACHE_OF_STORMS_HARDMODE_25                 = 194315
+};
+
 const Position Pos[7] =
 {
 {2099.34, -286.61, 419.84, 0.564},
@@ -268,7 +276,14 @@ struct boss_thorimAI : public BossAI
         {
             // Lose Your Illusion
             if (HardMode)
+            {
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_LOSE_ILLUSION);
+                me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_HARDMODE_10, CACHE_OF_STORMS_HARDMODE_25), 2134.58, -286.908, 419.495, 1.55988, 0, 0, 0.7, 0.7, 604800);
+            }
+            else
+            {
+                me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58, -286.908, 419.495, 1.55988, 0, 0, 0.7, 0.7, 604800);
+            }
         }
     }
 
