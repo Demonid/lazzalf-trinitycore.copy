@@ -1775,20 +1775,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
-
-                          // Deadly Poison
-                        if (combatEntry->SpellFamilyName == SPELLFAMILY_ROGUE && combatEntry->SpellFamilyFlags[0] == 0x10000 && combatEntry->SpellFamilyFlags[1] == 0x80000) 
-                        {
-                            if (Aura * aur = unitTarget->GetAura(pEnchant->spellid[s], pCaster->GetGUID()))
-                                if (aur->GetStackAmount() == 5)
-                                    if (Item* Weapon = pCaster->GetWeaponForAttack(BASE_ATTACK))
-                                        if (SpellItemEnchantmentEntry const *Poison = sSpellItemEnchantmentStore.LookupEntry(Weapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))) 
-                                        {
-                                            SpellEntry const* poisonEntry = sSpellStore.LookupEntry(Poison->spellid[s]);
-                                            if (poisonEntry && poisonEntry->Dispel == DISPEL_POISON)
-                                                m_caster->CastSpell(unitTarget, poisonEntry, true, Weapon);
-                                        }
-                        }
+                       
                     m_caster->CastSpell(unitTarget, 5940, true);                  
                     return;
                 }
