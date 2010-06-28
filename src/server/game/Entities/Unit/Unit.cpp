@@ -3505,19 +3505,6 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
         {
             if (aura->GetSpellProto()->StackAmount)
                 aura->ModStackAmount(foundAura->GetStackAmount());
-            /*
-            if (aura->GetSpellProto()->StackAmount) 
-            {
-                aura->ModStackAmount(foundAura->GetStackAmount());
-                for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS ; ++effIndex)
-                    {
-                        if (!aura->HasEffect(effIndex))
-                            continue;
-                        if (aura->GetEffect(effIndex)->IsPeriodic())
-                            aura->GetEffect(effIndex)->SetPeriodic(foundAura->GetEffect(effIndex)->GetPeriodic());
-                    }
-            }
-            */
 
             // Use the new one to replace the old one
             // This is the only place where AURA_REMOVE_BY_STACK should be used
