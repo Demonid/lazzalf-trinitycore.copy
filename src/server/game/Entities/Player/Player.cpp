@@ -23923,7 +23923,7 @@ void Player::ActivateSpec(uint8 spec)
 
     // TODO:
     // HACK: this shouldn't be checked at such a low level function but rather at the moment the spell is casted
-    if (GetMap()->IsBattleGround() && !HasAura(44521)) // In BattleGround with no Preparation buff
+    if (GetMap()->IsBattleGround() && !HasAura(44521) && (GetMap()->GetId() != 30)) // In BattleGround with no Preparation buff (You can change spec in Alterac)
         return;
 
     if (HasAura(28682)) // HackFix for remove Combustion
