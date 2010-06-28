@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2009 - 2010 Trinity <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #include "ScriptPCH.h"
 #include "ScriptedEscortAI.h"
 #include "violet_hold.h"
@@ -521,7 +539,10 @@ struct npc_teleportation_portalAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (pInstance && pInstance->GetData(DATA_REMOVE_NPC) == 1)
+        if (!pInstance) //Massive usage of pInstance, global check
+            return;
+        
+        if (pInstance->GetData(DATA_REMOVE_NPC) == 1)
         {
             me->ForcedDespawn();
             pInstance->SetData(DATA_REMOVE_NPC, 0);
@@ -600,11 +621,15 @@ struct npc_teleportation_portalAI : public ScriptedAI
     void JustSummoned(Creature *pSummoned)
     {
         listOfMobs.Summon(pSummoned);
+        if (pSummoned)
+            pInstance->SetData64(DATA_ADD_TRASH_MOB,pSummoned->GetGUID());
     }
 
     void SummonedMobDied(Creature *pSummoned)
     {
         listOfMobs.Despawn(pSummoned);
+        if (pSummoned)
+            pInstance->SetData64(DATA_DEL_TRASH_MOB,pSummoned->GetGUID());
     }
 };
 

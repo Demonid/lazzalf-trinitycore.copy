@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2009 - 2010 Trinity <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #include "ScriptPCH.h"
 #include "violet_hold.h"
 
@@ -71,6 +89,10 @@ enum Spells
     CYANIGOSA_SPELL_TRANSFORM                     = 58668,
     CYANIGOSA_BLUE_AURA                           = 47759,
 };
+enum Achievements
+{
+    ACHIEV_DEFENSELESS                            = 1816
+};
 
 struct instance_violet_hold : public ScriptedInstance
 {
@@ -103,6 +125,8 @@ struct instance_violet_hold : public ScriptedInstance
     uint32 uiActivationTimer;
     uint32 uiCyanigosaEventTimer;
 
+    std::set<uint64> trashMobs; // to kill with crystal
+
     uint8 uiWaveCount;
     uint8 uiLocation;
     uint8 uiFirstBoss;
@@ -121,6 +145,7 @@ struct instance_violet_hold : public ScriptedInstance
     bool bActive;
     bool bWiped;
     bool bIsDoorSpellCasted;
+    bool bCrystalActivated;
 
     std::list<uint8> NpcAtDoorCastingList;
 
@@ -148,6 +173,8 @@ struct instance_violet_hold : public ScriptedInstance
         uiMainDoor = 0;
         uiTeleportationPortal = 0;
         uiSaboteurPortal = 0;
+
+        trashMobs.clear();
         
         uiRemoveNpc = 0;
 
@@ -168,6 +195,7 @@ struct instance_violet_hold : public ScriptedInstance
 
         bActive = false;
         bIsDoorSpellCasted = false;
+        bCrystalActivated = false;
 
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
@@ -284,6 +312,8 @@ struct instance_violet_hold : public ScriptedInstance
                     SaveToDB();
                     if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
                         pMainDoor->SetGoState(GO_STATE_ACTIVE);
+                    if (!bCrystalActivated && uiDoorIntegrity == 100)
+                        DoCompleteAchievement(ACHIEV_DEFENSELESS);
                 }
                 break;
             case DATA_WAVE_COUNT:
@@ -335,6 +365,28 @@ struct instance_violet_hold : public ScriptedInstance
                         StartBossEncounter(uiSecondBoss);
                         break;
                 }
+                break;
+            case DATA_ACTIVATE_CRYSTAL:
+                // Kill all mobs registered with SetData64(ADD_TRASH_MOB)
+                // TODO: All visual, spells etc
+                for (std::set<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
+                {
+                    Creature* pCreature = instance->GetCreature(*itr);
+                    if (pCreature && pCreature->isAlive())
+                        pCreature->Kill(pCreature);
+                }
+        }
+    }
+
+    void SetData64(uint32 type, uint64 data)
+    {
+        switch(type)
+        {
+            case DATA_ADD_TRASH_MOB:
+                trashMobs.insert(data);
+                break;
+            case DATA_DEL_TRASH_MOB:
+                trashMobs.erase(data);
                 break;
         }
     }
