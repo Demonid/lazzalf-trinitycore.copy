@@ -7985,7 +7985,7 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
             if (pvpWG && pvpWG->isWarTime())
 			{
                 unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
-                unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+                unitTarget->PlayDirectSound(9417, unitTarget->ToPlayer()); // Fel Reaver sound
                 unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
                 break;
             }
@@ -7994,7 +7994,7 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
         case 58600: // Restricted Flight Area
         {
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
-            unitTarget->PlayDirectSound(9417); // Fel Reaver sound
+            unitTarget->PlayDirectSound(9417, unitTarget->ToPlayer()); // Fel Reaver sound
             unitTarget->MonsterTextEmote("The air over Dalaran is protected. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
             break;
         }
