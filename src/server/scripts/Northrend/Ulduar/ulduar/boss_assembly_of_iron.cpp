@@ -23,7 +23,7 @@ SD%Complete: 100%
 SDComment:
 EndScriptData */
 
-#include "ScriptPCH.h"
+#include "ScriptedPch.h"
 #include "ulduar.h"
 
 // Any boss
@@ -328,7 +328,7 @@ struct boss_steelbreakerAI : public ScriptedAI
                 if(phase >= 3)
                 events.RescheduleEvent(EVENT_OVERWHELMING_POWER, urand(2000, 5000));
                 // Add HardMode Loot
-                me->AddLootMode(LOOT_MODE_HARD_MODE_2);
+                me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                 break;
         }
     }
@@ -766,6 +766,7 @@ struct mob_rune_of_powerAI : public ScriptedAI
     mob_rune_of_powerAI(Creature *c) : ScriptedAI(c)  
     {
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+        me->SetReactState(REACT_PASSIVE);
     }
     
     void Reset()

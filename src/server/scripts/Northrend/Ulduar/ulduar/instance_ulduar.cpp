@@ -46,15 +46,12 @@ enum eGameObjects
     GO_Kologarn_BRIDGE      = 194232,
     GO_Hodir_CHEST_HERO     = 194308,
     GO_Hodir_CHEST          = 194307,
+    GO_Hodir_Rare_CHEST     = 194200,
     GO_Runic_DOOR           = 194557,
     GO_Stone_DOOR           = 194558,
     GO_Thorim_LEVER         = 194265,
-    GO_Thorim_CHEST_HERO    = 194315,
-    GO_Thorim_CHEST         = 194314,
     GO_Mimiron_TRAM         = 194675,
     GO_Mimiron_ELEVATOR     = 194749,
-    GO_Mimiron_CHEST_HERO   = 194789,
-    GO_Mimiron_CHEST        = 194956,
     GO_Keepers_DOOR         = 194255
 };
 
@@ -95,8 +92,8 @@ struct instance_ulduar : public InstanceData
     uint64 KeepersGateGUID;
     uint64 uiVezax;
         
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *pRunicDoor, *pStoneDoor, *pThorimLever, *ThorimChest,
-        *MimironTram, *MimironElevator, *MimironChest;
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
+        *MimironTram, *MimironElevator;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
     {
@@ -109,15 +106,12 @@ struct instance_ulduar : public InstanceData
             case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
             case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
+            case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
             case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
             case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
             case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
-            case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
-            case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
             case GO_Mimiron_TRAM: MimironTram = add ? pGo : NULL; break;
             case GO_Mimiron_ELEVATOR: MimironElevator = add ? pGo : NULL; break;
-            case GO_Mimiron_CHEST_HERO: MimironChest = add ? pGo : NULL; break;
-            case GO_Mimiron_CHEST: MimironChest = add ? pGo : NULL; break;
             case GO_Keepers_DOOR: KeepersGateGUID = pGo->GetGUID();
             {
                 InstanceData *data = pGo->GetInstanceData();
@@ -297,6 +291,10 @@ struct instance_ulduar : public InstanceData
                 if (MimironElevator)
                     MimironElevator->SetGoState(GOState(value));
                 break;
+            case DATA_HODIR_RARE_CHEST:
+                if (HodirRareChest && value == GO_STATE_READY)
+                    HodirRareChest->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                break;
         }
     }
 
@@ -322,13 +320,9 @@ struct instance_ulduar : public InstanceData
             case BOSS_THORIM:
                 if (state == IN_PROGRESS)
                     pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
-                if (state == DONE)
-                    ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
                 CheckKeepersState();
                 break;
             case BOSS_MIMIRON:
-                if (state == DONE)
-                    MimironChest->SetRespawnTime(MimironChest->GetRespawnDelay());
                 CheckKeepersState();
                 break;
             case BOSS_FREYA:

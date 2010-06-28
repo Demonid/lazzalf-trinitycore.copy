@@ -68,7 +68,6 @@ enum Spells
 #define ACHIEVEMENT_COLD_IN_HERE              RAID_MODE(2967, 2968)
 #define ACHIEVEMENT_THIS_CACHE_WAS_RARE       RAID_MODE(3182, 3184)
 #define ACHIEVEMENT_COOLEST_FRIENDS           RAID_MODE(2963, 2965) // TODO
-#define MAX_ENCOUNTER_TIME                    3 * 60 * 1000
 
 enum NPCs
 {
@@ -104,6 +103,7 @@ enum Events
     EVENT_FLASH_EFFECT,
     EVENT_ICICLE,
     EVENT_BLOWS,
+    EVENT_RARE_CACHE,
     EVENT_BERSERK
 };
 
@@ -135,9 +135,9 @@ struct boss_hodir_AI : public BossAI
     ScriptedInstance* pInstance;
     
     Creature* Helper[8];
-    uint32 EncounterTime;
     uint32 uiCheckIntenseColdTimer;
     bool bMoreThanTwoIntenseCold;
+    bool RareCache;
         
     void Reset()
     {
@@ -146,25 +146,25 @@ struct boss_hodir_AI : public BossAI
         me->SetReactState(REACT_PASSIVE);
         
         // Spawn NPC Helpers
-        if (Helper[0] = me->SummonCreature(NPC_FIELD_MEDIC_PENNY, 1983.75, -243.36, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+        if (Helper[0] = me->SummonCreature(NPC_FIELD_MEDIC_PENNY, 1983.75, -243.36, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[0]->GetPositionX(), Helper[0]->GetPositionY(), Helper[0]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
             {
                 pIceBlock->CastSpell(Helper[0], SPELL_BLOCK_OF_ICE, true);
                 Helper[0]->AddThreat(me, 100);
             }
-        if (Helper[1] = me->SummonCreature(NPC_EIVI_NIGHTFEATHER, 1999.90, -230.49, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+        if (Helper[1] = me->SummonCreature(NPC_EIVI_NIGHTFEATHER, 1999.90, -230.49, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[1]->GetPositionX(), Helper[1]->GetPositionY(), Helper[1]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
             {
                 pIceBlock->CastSpell(Helper[1], SPELL_BLOCK_OF_ICE, true);
                 Helper[1]->AddThreat(me, 100);
             }
-        if (Helper[2] = me->SummonCreature(NPC_ELEMENTALIST_MAHFUUN, 2010.06, -243.45, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+        if (Helper[2] = me->SummonCreature(NPC_ELEMENTALIST_MAHFUUN, 2010.06, -243.45, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[2]->GetPositionX(), Helper[2]->GetPositionY(), Helper[2]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
             {
                 pIceBlock->CastSpell(Helper[2], SPELL_BLOCK_OF_ICE, true);
                 Helper[2]->AddThreat(me, 100);
             }
-        if (Helper[3] = me->SummonCreature(NPC_MISSY_FLAMECUFFS, 2021.12, -236.65, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+        if (Helper[3] = me->SummonCreature(NPC_MISSY_FLAMECUFFS, 2021.12, -236.65, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
             if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[3]->GetPositionX(), Helper[3]->GetPositionY(), Helper[3]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
             {
                 pIceBlock->CastSpell(Helper[3], SPELL_BLOCK_OF_ICE, true);
@@ -173,25 +173,25 @@ struct boss_hodir_AI : public BossAI
                 
         if (IsHeroic())
         {
-            if (Helper[4] = me->SummonCreature(NPC_FIELD_MEDIC_JESSY, 1976.60, -233.53, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[4] = me->SummonCreature(NPC_FIELD_MEDIC_JESSY, 1976.60, -233.53, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[4]->GetPositionX(), Helper[4]->GetPositionY(), Helper[4]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[4], SPELL_BLOCK_OF_ICE, true);
                     Helper[4]->AddThreat(me, 100);
                 }            
-            if (Helper[5] = me->SummonCreature(NPC_ELLIE_NIGHTFEATHER, 1992.90, -237.54, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[5] = me->SummonCreature(NPC_ELLIE_NIGHTFEATHER, 1992.90, -237.54, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[5]->GetPositionX(), Helper[5]->GetPositionY(), Helper[5]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[5], SPELL_BLOCK_OF_ICE, true);
                     Helper[5]->AddThreat(me, 100);
                 }            
-            if (Helper[6] = me->SummonCreature(NPC_ELEMENTALIST_AVUUN, 2014.18, -232.80, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[6] = me->SummonCreature(NPC_ELEMENTALIST_AVUUN, 2014.18, -232.80, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[6]->GetPositionX(), Helper[6]->GetPositionY(), Helper[6]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[6], SPELL_BLOCK_OF_ICE, true);
                     Helper[6]->AddThreat(me, 100);
                 }            
-            if (Helper[7] = me->SummonCreature(NPC_SISSY_FLAMECUFFS, 2028.10, -244.66, 432.767, 4.6, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[7] = me->SummonCreature(NPC_SISSY_FLAMECUFFS, 2028.10, -244.66, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[7]->GetPositionX(), Helper[7]->GetPositionY(), Helper[7]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[7], SPELL_BLOCK_OF_ICE, true);
@@ -211,8 +211,9 @@ struct boss_hodir_AI : public BossAI
         events.ScheduleEvent(EVENT_FREEZE, 25000);
         events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
         events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
+        events.ScheduleEvent(EVENT_RARE_CACHE, 180000);
         events.ScheduleEvent(EVENT_BERSERK, 480000);
-        EncounterTime = 0;
+        RareCache = true;
         uiCheckIntenseColdTimer = 2000;
         bMoreThanTwoIntenseCold = false;
     }
@@ -234,8 +235,11 @@ struct boss_hodir_AI : public BossAI
             if (!bMoreThanTwoIntenseCold)
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_COLD_IN_HERE);
             // I Could Say That This Cache Was Rare
-            if (EncounterTime <= MAX_ENCOUNTER_TIME)
+            if (RareCache)
+            {
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_THIS_CACHE_WAS_RARE);
+                pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
+            }
         }
     }
 
@@ -248,17 +252,16 @@ struct boss_hodir_AI : public BossAI
             me->Kill(me->getVictim());
 
         events.Update(diff);
-        EncounterTime += diff;
-
+        
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
                     
         if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
         {
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            std::list<HostileReference*> ThreatList = m_creature->getThreatManager().getThreatList();
             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                Unit *pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                 if (!pTarget || pTarget->GetTypeId() != TYPEID_PLAYER)
                     continue;
 
@@ -294,7 +297,7 @@ struct boss_hodir_AI : public BossAI
                             if (pTarget->isAlive())
                                 pTarget->CastSpell(pTarget, SPELL_ICICLE_SNOWDRIFT, true);
                     DoCast(SPELL_FLASH_FREEZE);
-                    events.DelayEvents(14000);
+                    events.RescheduleEvent(EVENT_ICICLE, 15000);
                     events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
                     events.ScheduleEvent(EVENT_FLASH_EFFECT, 9000);
                     break;
@@ -308,6 +311,11 @@ struct boss_hodir_AI : public BossAI
                     me->MonsterTextEmote(EMOTE_BLOWS, 0, true);
                     DoCast(me, RAID_MODE(SPELL_FROZEN_BLOWS_10, SPELL_FROZEN_BLOWS_25));
                     events.ScheduleEvent(EVENT_BLOWS, urand(60000, 65000));
+                    break;
+                case EVENT_RARE_CACHE:
+                    DoScriptText(SAY_HARD_MODE_MISSED, me);
+                    RareCache = false;
+                    events.CancelEvent(EVENT_RARE_CACHE);
                     break;
                 case EVENT_BERSERK:
                     DoCast(me, SPELL_BERSERK, true);
