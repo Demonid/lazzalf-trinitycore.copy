@@ -298,6 +298,7 @@ class ChatHandler
         bool HandleModifyGenderCommand(const char* args);
 
         //-----------------------Npc Commands-----------------------
+        bool HandleNpcAddGuildCommand(const char* args);
         bool HandleNpcAddCommand(const char* args);
         bool HandleNpcAddMoveCommand(const char* args);
         bool HandleNpcAddVendorItemCommand(const char* args);
