@@ -56,6 +56,16 @@ enum AzureSaboteurSpells
     SABOTEUR_SHIELD_EFFECT                          = 45775
 };
 
+enum CrystalSpells
+{
+    SPELL_ARCANE_LIGHTNING                          = 57912
+};
+
+enum Events
+{
+    EVENT_ACTIVATE_CRYSTAL                          = 20001
+};
+
 const Position PortalLocation[] =
 {
     {1877.51, 850.104, 44.6599, 4.7822 },     // WP 1
@@ -367,14 +377,8 @@ struct instance_violet_hold : public ScriptedInstance
                 }
                 break;
             case DATA_ACTIVATE_CRYSTAL:
-                // Kill all mobs registered with SetData64(ADD_TRASH_MOB)
-                // TODO: All visual, spells etc
-                for (std::set<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
-                {
-                    Creature* pCreature = instance->GetCreature(*itr);
-                    if (pCreature && pCreature->isAlive())
-                        pCreature->Kill(pCreature);
-                }
+                ActivateCrystal();
+                break;
         }
     }
 
@@ -753,6 +757,29 @@ struct instance_violet_hold : public ScriptedInstance
                 SetData(DATA_MAIN_DOOR,GO_STATE_ACTIVE);
         }
     }
+
+    void ActivateCrystal()
+    {
+        // Kill all mobs registered with SetData64(ADD_TRASH_MOB)
+        // TODO: All visual, spells etc
+        for (std::set<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
+        {
+            Creature* pCreature = instance->GetCreature(*itr);
+            if (pCreature && pCreature->isAlive())
+                pCreature->CastSpell(pCreature,SPELL_ARCANE_LIGHTNING,true);  // Who should cast the spell?
+        }
+    }
+
+    void ProcessEvent(GameObject* pGO, uint32 uiEventId)
+    {
+        switch(uiEventId)
+        {
+            case EVENT_ACTIVATE_CRYSTAL:
+                bCrystalActivated = true; // Activation by player's will throw event signal
+                ActivateCrystal();
+                break;
+        }
+}
 };
 
 InstanceData* GetInstanceData_instance_violet_hold(Map* pMap)

@@ -39,8 +39,10 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo) : me(unit), m_vehicleI
                     ++m_usableSeatNum;
             }
     }
-
-    switch (vehInfo->m_ID)
+    
+    // HACKY WAY, We must found a more generic way to handle this
+    // Set inmunities since db ones are rewritten with player's ones
+    switch (GetVehicleInfo()->m_ID)
     {
         case 244: // Wintergrasp Turret
         // case 116: // Wintergrasp Siege Turret        
