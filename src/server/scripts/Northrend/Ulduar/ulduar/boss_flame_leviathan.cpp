@@ -37,6 +37,7 @@ enum Spells
 
     SPELL_FLAME_CANNON                          = 62395,
     //SPELL_FLAME_CANNON                        = 64692 trigger the same spell
+    SPELL_AUTO_REPAIR                           = 62705,
 
     SPELL_OVERLOAD_CIRCUIT                      = 62399,
     SPELL_SEARING_FLAME                         = 62402,
@@ -178,7 +179,7 @@ struct boss_flame_leviathanAI : public BossAI
         events.ScheduleEvent(EVENT_VENT, 20000);
         events.ScheduleEvent(EVENT_SPEED, 2000);
         //events.ScheduleEvent(EVENT_SUMMON, 0);
-        events.ScheduleEvent(EVENT_SHUTDOWN, 60000);
+        events.ScheduleEvent(EVENT_SHUTDOWN, 80000);
         if (Creature *turret = CAST_CRE(vehicle->GetPassenger(7)))
             turret->AI()->DoZoneInCombat();
     }
@@ -186,33 +187,12 @@ struct boss_flame_leviathanAI : public BossAI
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, me);
-                    
-        events.Reset();
-        if (pInstance)
-        {
-            pInstance->SetBossState(BOSS_LEVIATHAN, DONE);
-            pInstance->SaveToDB();
-        }
+        _JustDied();
+        
+        DespawnCreatures(VEHICLE_SIEGE, 200);
+        DespawnCreatures(VEHICLE_DEMOLISHER, 200);
+        DespawnCreatures(VEHICLE_CHOPPER, 200);
     }
-    
-    void DamageTaken(Unit* pKiller, uint32 &damage)
- 	{
- 	    if(damage >= me->GetHealth())
- 	    {
- 	        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
-            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
-            {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-            
-                if (!pTarget)
-                    continue;
-
-                if (pTarget->GetTypeId() == TYPEID_PLAYER)
-                    continue;
-                else me->Kill(pTarget, false);
-            }
- 	    }
- 	}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -235,17 +215,8 @@ struct boss_flame_leviathanAI : public BossAI
 
         events.Update(diff);
 
-        if (me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
-        {
-            me->SetReactState(REACT_PASSIVE);
-            me->CastSpell(me, SPELL_STUN, true);
+        if (me->hasUnitState(UNIT_STAT_CASTING) || me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
             return;
-        }
-		else
-        {
-            me->SetReactState(REACT_AGGRESSIVE);
-            me->RemoveAurasDueToSpell(SPELL_STUN);
-        }
 
         while(uint32 eventId = events.ExecuteEvent())
         {
@@ -254,34 +225,42 @@ struct boss_flame_leviathanAI : public BossAI
             case 0: break;
             case EVENT_PURSUE:
                 DoScriptText(RAND(SAY_TARGET_1, SAY_TARGET_2, SAY_TARGET_3), me);
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
-                    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+                    DoZoneInCombat();
+                    Unit* pTarget;
+                    std::vector<Unit *> target_list;
+                    std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+                    for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                     {
-                        sLog.outError("TSCR: DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
+                        pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                        
+                        if (!pTarget)
+                            continue;
+                            
+                        if (pTarget->GetEntry() == VEHICLE_SIEGE || pTarget->GetEntry() == VEHICLE_DEMOLISHER)
+                            target_list.push_back(pTarget);
+                            
+                        pTarget = NULL;
                     }
+                    
+                    if (!target_list.empty())
+                        pTarget = *(target_list.begin()+rand()%target_list.size());
                     else
+                        pTarget = me->getVictim();
+                        
+                    if (pTarget && pTarget->isAlive())
                     {
-                        std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
-                        for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-                        {
-                            Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
-
-                            if (pUnit && DoGetThreat(pUnit))
-                                DoModifyThreatPercent(pUnit, -99);
-                        }
-                    }
-                    //DoResetThreat();
-                    me->AddAura(SPELL_PURSUED, pTarget);
-                    me->AddThreat(pTarget, 5000000.0f);
-                    if (me->getVictim())
-                        me->MonsterTextEmote(EMOTE_PURSUE, me->getVictim()->GetGUID(), true);
+                        DoResetThreat();
+                        me->AddThreat(pTarget, 5000000.0f);
+                        me->AddAura(SPELL_PURSUED, pTarget);
+                        me->MonsterTextEmote(EMOTE_PURSUE, pTarget->GetGUID(), true);
+                    }                        
                 }
                 events.RescheduleEvent(EVENT_PURSUE, 35000);
                 break;
             case EVENT_MISSILE:
                 DoCastAOE(SPELL_MISSILE_BARRAGE);
-                events.RescheduleEvent(EVENT_MISSILE, 1500);
+                events.RescheduleEvent(EVENT_MISSILE, 3000);
                 break;
             case EVENT_VENT:
                 DoCastAOE(SPELL_FLAME_VENTS);
@@ -303,7 +282,7 @@ struct boss_flame_leviathanAI : public BossAI
                 DoCast(SPELL_SYSTEMS_SHUTDOWN);
                 me->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
                 me->MonsterTextEmote(EMOTE_REPAIR, 0, true);
-                events.RescheduleEvent(EVENT_SHUTDOWN, 70000);
+                events.RescheduleEvent(EVENT_SHUTDOWN, 80000);
                 break;
             default:
                 events.PopEvent();
@@ -337,6 +316,19 @@ struct boss_flame_leviathanAI : public BossAI
             DoZoneInCombat();
         }
     }
+
+    void DespawnCreatures(uint32 entry, float distance, bool discs = false)
+    {
+        std::list<Creature*> m_pCreatures;
+        GetCreatureListWithEntryInGrid(m_pCreatures, me, entry, distance);
+ 
+        if (m_pCreatures.empty())
+            return;
+ 
+        for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+            (*iter)->ForcedDespawn();
+    }
+
 };
 
 //#define BOSS_DEBUG
@@ -545,7 +537,7 @@ bool GossipHello_keeper_norgannon(Player* pPlayer, Creature* pCreature)
     InstanceData *data = pPlayer->GetInstanceData();
     ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
     
-    if (data->GetBossState(BOSS_LEVIATHAN) != DONE && pInstance && pPlayer)
+    if (data->GetBossState(BOSS_LEVIATHAN) == NOT_STARTED && pInstance && pPlayer)
     {
         pPlayer->PrepareQuestMenu(pCreature->GetGUID());
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
@@ -558,15 +550,20 @@ bool GossipHello_keeper_norgannon(Player* pPlayer, Creature* pCreature)
 
 bool GossipSelect_keeper_norgannon(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
+    InstanceData *data = pPlayer->GetInstanceData();
     ScriptedInstance* pInstance = pCreature->GetInstanceData();
     switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF:
             if (pPlayer)
                 pPlayer->CLOSE_GOSSIP_MENU();
-            if(Creature* Norgannon = Unit::GetCreature(*pCreature, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
-                if(Norgannon->isAlive())
+            if (Creature* Norgannon = Unit::GetCreature(*pCreature, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
+                if (Norgannon->isAlive())
+                {
                     Norgannon->AI()->DoAction(ACTION_VEHICLE_RESPAWN);
+                    if (data)
+                        data->SetBossState(BOSS_LEVIATHAN, SPECIAL);
+                }
             break;
     }
     return true;
@@ -650,7 +647,6 @@ CreatureAI* GetAI_mob_colossus(Creature* pCreature)
     return new mob_colossusAI(pCreature);
 }
 
-#define SPELL_AUTO_REPAIR 62705
 #define EMOTE_REPAIR          "Automatic repair sequence initiated."
 
 bool AreaTrigger_at_RX_214_repair_o_matic_station(Player* pPlayer, const AreaTriggerEntry* pAt)
