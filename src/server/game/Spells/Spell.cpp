@@ -4650,10 +4650,10 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
             {
                 // Not allow banish not self target
-                if (m_spellInfo->Mechanic == MECHANIC_BANISH)
+                /*if (m_spellInfo->Mechanic == MECHANIC_BANISH)
                     if (target->GetTypeId() == TYPEID_UNIT &&
                         !m_caster->ToPlayer()->isAllowedToLoot(target->ToCreature()))
-                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;*/
 
                 if (m_customAttr & SPELL_ATTR_CU_PICKPOCKET)
                 {
