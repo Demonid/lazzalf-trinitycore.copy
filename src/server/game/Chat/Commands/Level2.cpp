@@ -1181,7 +1181,7 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map);
 
-    WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type) VALUES (%u, 0, %u, %u, '%s')", 
+    WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')", 
                            pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
 
     map->Add(pCreature);
