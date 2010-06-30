@@ -11,7 +11,8 @@ enum Locations
     WALKWAY                                     = 205,
     CONSERVATORY                                = 206,
     SPARK_IMAGINATION                           = 207,
-    DESCENT_MADNESS                             = 208
+    DESCENT_MADNESS                             = 208,
+    KOLOGARN                                    = 210
 };
 
 bool GoHello_ulduar_teleporter( Player *pPlayer, GameObject *pGO )
@@ -86,6 +87,31 @@ bool GOSelect_ulduar_teleporter( Player *pPlayer, GameObject *pGO, uint32 sender
     return true;
 }
 
+bool GoHello_kologarn_teleporter( Player *pPlayer, GameObject *pGO )
+{
+    if (!pPlayer)
+        return true;
+
+    pPlayer->ADD_GOSSIP_ITEM(0, "Risali", GOSSIP_SENDER_MAIN, KOLOGARN);
+    pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pGO->GetGUID());
+
+    return true;
+}
+
+bool GOSelect_kologarn_teleporter( Player *pPlayer, GameObject *pGO, uint32 sender, uint32 action )
+{
+    if(sender != GOSSIP_SENDER_MAIN) return true;
+
+    switch(action)
+    {
+        case KOLOGARN:
+            pPlayer->TeleportTo(603, 1765.40, -24.40, 449.00, 6.27);
+            pPlayer->CLOSE_GOSSIP_MENU(); break;
+    }
+
+    return true;
+}
+
 void AddSC_ulduar_teleporter()
 {
     Script *newscript;
@@ -93,5 +119,11 @@ void AddSC_ulduar_teleporter()
     newscript->Name = "ulduar_teleporter";
     newscript->pGOHello = &GoHello_ulduar_teleporter;
     newscript->pGOSelect = &GOSelect_ulduar_teleporter;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "kologarn_teleporter";
+    newscript->pGOHello = &GoHello_kologarn_teleporter;
+    newscript->pGOSelect = &GOSelect_kologarn_teleporter;
     newscript->RegisterSelf();
 }
