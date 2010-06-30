@@ -232,27 +232,25 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             itr2 =  itr->second.AddCre.begin();
             for (; itr2 != itr->second.AddCre.end(); itr2++)
             {                
-                if (CreatureData const* cre_data = objmgr.GetCreatureData(*itr2))
+                if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
                 {
-                    if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
-                    {
-                        objmgr.AddCreatureToGrid(*itr2, data);
+                    objmgr.AddCreatureToGrid(*itr2, data);
 
-                        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
-                        
-                        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+                    Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
+                    
+                    if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+                    {
+                        Creature* pCreature = new Creature;
+                        //sLog.outDebug("Spawning creature %u",itr2->first);
+                        if (!pCreature->LoadFromDB(*itr2, map))
+                            delete pCreature;
+                        else
                         {
-                            Creature* pCreature = new Creature;
-                            //sLog.outDebug("Spawning creature %u",itr2->first);
-                            if (!pCreature->LoadFromDB(*itr2, map))
-                                delete pCreature;
-                            else
-                                map->Add(pCreature);
-                        }                           
-                        if (((uint32)1 << (i-1)) == NPC_GUARD) //Guard
-                            UpdateGuardMap(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), guild);
-                    }
-                                              
+                            map->Add(pCreature);                        
+                            if (((uint32)1 << (i-1)) == NPC_GUARD) //Guard
+                                UpdateGuardMap(pCreature->GetGUID(), guild);
+                        }
+                    }                           
                 }
                 
             }
