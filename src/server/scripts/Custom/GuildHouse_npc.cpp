@@ -572,7 +572,7 @@ bool GossipSelectWithCode_guildmaster( Player *player, Creature *_creature,
 /*########
 # guild_guard
 #########*/
-#define SAY_AGGRO "Tu non fai parte di questa gilda!"
+#define SAY_AGGRO "Tu non fai parte di questa gilda! Muori!"
 struct guild_guardAI : public ScriptedAI
 {
     guild_guardAI(Creature *c) : ScriptedAI(c) {}
@@ -594,7 +594,7 @@ struct guild_guardAI : public ScriptedAI
         me->MonsterYell(SAY_AGGRO, LANG_UNIVERSAL, 0);
     }
 
-    void AttackStart(Unit *who) 
+    void MoveInLineOfSight(Unit *who)
     {
         if (!who)
             return;
@@ -606,15 +606,21 @@ struct guild_guardAI : public ScriptedAI
 
         uint32 guardguild = GHobj.GetGuildByGuardID(me->GetGUID());
 
-        if ( guardguild && guild != guardguild && me->Attack(who, true) )
+        if (guardguild && guild != guardguild && me->Attack(who, true))
         {
-            me->AddThreat(who, 0.0f);
+            me->AddThreat(who, 1);
 
             if (!me->isInCombat())
             {
                 me->SetInCombatWith(who);                
             }
-        }
+        }        
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void AttackStart(Unit *who) 
+    {
+        
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -625,6 +631,7 @@ struct guild_guardAI : public ScriptedAI
         if (Check_Timer <= uiDiff)
         {
             me->Kill(me->getVictim());
+            Check_Timer = 1000;
         } else Check_Timer -= uiDiff;
 
         DoMeleeAttackIfReady();
