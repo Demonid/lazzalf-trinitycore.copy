@@ -3017,6 +3017,15 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     // Extra conditions -- leaving the possibility add extra conditions...
     switch(spellId)
     {
+        case 48388:  //Call Wintergarde Gryphon
+            {
+                if (!player)
+                    return false;
+
+                AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
+                if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                    return false;
+            }break;
         case 58600: // No fly Zone - Dalaran (Krasus Landing exception)
             {
                 if (!player)
