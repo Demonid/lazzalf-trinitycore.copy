@@ -1359,8 +1359,7 @@ void Player::Update(uint32 p_time)
 			else
 			{
 				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING, m_jail_times , objmgr.m_jailconf_max_jails);
-			}
-		        
+			}		        
 		}
 		return;
 	}
