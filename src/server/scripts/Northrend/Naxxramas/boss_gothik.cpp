@@ -74,14 +74,14 @@ const Waves waves[] =
     {MOB_LIVE_KNIGHT, 10000, 1},
     {MOB_LIVE_TRAINEE, 10000, 0},
     {MOB_LIVE_RIDER, 10000, 2},
-    {MOB_LIVE_TRAINEE, 5000, 2},
-    {MOB_LIVE_RIDER, 10000, 1},
     {MOB_LIVE_TRAINEE, 0, 2},
-    {MOB_LIVE_KNIGHT, 15000, 1},
+    {MOB_LIVE_RIDER, 5000, 1},
+    {MOB_LIVE_TRAINEE, 0, 2},
+    {MOB_LIVE_KNIGHT, 5000, 1},
     {MOB_LIVE_RIDER, 0, 2},
     {MOB_LIVE_TRAINEE, 20000, 1},
     {MOB_LIVE_RIDER, 0, 1},
-    {MOB_LIVE_KNIGHT, 5000, 1},
+    {MOB_LIVE_KNIGHT, 0, 1},
     {MOB_LIVE_TRAINEE, 25000, 2},
     {MOB_LIVE_TRAINEE, 15000, 0},
     {MOB_LIVE_TRAINEE, 25000, 0},
@@ -134,22 +134,19 @@ const float PosGroundDeadSide[4] = {2693.5, -3334.6, 267.68, 4.67};
 const float PosPlatform[4] = {2640.5, -3360.6, 285.26, 0};
 
 // Predicate function to check that the r   efzr unit is NOT on the same side as the source.
-struct NotOnSameSide : public std::unary_function<Unit *, bool> {
+struct NotOnSameSide : public std::unary_function<Unit *, bool> 
+{
     bool m_inLiveSide;
     NotOnSameSide(Unit *pSource) : m_inLiveSide(IN_LIVE_SIDE(pSource)) {}
-    bool operator() (const Unit *pTarget) {
-      return (m_inLiveSide != IN_LIVE_SIDE(pTarget));
+    bool operator() (const Unit *pTarget) 
+    {
+        return (m_inLiveSide != IN_LIVE_SIDE(pTarget));
     }
 };
 
 struct boss_gothikAI : public BossAI
 {
-    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) 
-    {    
-        pInstance = c->GetInstanceData();
-    }
-
-    ScriptedInstance* pInstance;
+    boss_gothikAI(Creature *c) : BossAI(c, BOSS_GOTHIK) {}
 
     uint32 waveCount;
     typedef std::vector<Creature*> TriggerVct;
@@ -168,8 +165,8 @@ struct boss_gothikAI : public BossAI
 
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         me->SetReactState(REACT_PASSIVE);
-        if (pInstance)
-            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (instance)
+            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         _Reset();
         mergedSides = false;
         phaseTwo = false;
@@ -187,7 +184,7 @@ struct boss_gothikAI : public BossAI
 
         if (LiveTriggerGUID.size() < POS_LIVE || DeadTriggerGUID.size() < POS_DEAD)
         {
-            sLog.outError("Script Gothik: cannot summon triggers!");
+            error_log("Script Gothik: cannot summon triggers!");
             EnterEvadeMode();
             return;
         }
@@ -198,8 +195,8 @@ struct boss_gothikAI : public BossAI
         events.ScheduleEvent(EVENT_SUMMON, 30000);
         DoTeleportTo(PosPlatform);
         DoScriptText(SAY_SPEECH, me);
-        if (pInstance)
-            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
+        if (instance)
+            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_READY);
     }
 
     void JustSummoned(Creature *summon)
@@ -236,66 +233,33 @@ struct boss_gothikAI : public BossAI
         DeadTriggerGUID.clear();
         _JustDied();
         DoScriptText(SAY_DEATH, me);
-        if (pInstance)
-            pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+        if (instance)
+            instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
     }
 
     void DoGothikSummon(uint32 entry)
     {
-        if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+        switch(entry)
         {
-            switch(entry)
+            case MOB_LIVE_TRAINEE:
             {
-                case MOB_LIVE_TRAINEE:
-                {
-                    if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[0]))
-                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                    if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[1]))
-                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                    if (Creature *LiveTrigger2 = Unit::GetCreature(*me, LiveTriggerGUID[2]))
-                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger2, 1);
-                    break;
-                }
-                case MOB_LIVE_KNIGHT:
-                {
-                    if (Creature *LiveTrigger3 = Unit::GetCreature(*me, LiveTriggerGUID[3]))
-                        DoSummon(MOB_LIVE_KNIGHT, LiveTrigger3, 1);
-                    if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[5]))
-                        DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                    break;
-                }
-                case MOB_LIVE_RIDER:
-                {
-                    if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                        DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                    break;
-                }
+                if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                    DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
+                if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                    DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
+                break;
             }
-        }
-        else
-        {
-            switch(entry)
+            case MOB_LIVE_KNIGHT:
             {
-                case MOB_LIVE_TRAINEE:
-                {
-                    if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                    if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                    break;
-                }
-                case MOB_LIVE_KNIGHT:
-                {
-                    if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                        DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                    break;
-                }
-                case MOB_LIVE_RIDER:
-                {
-                    if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                        DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                    break;
-                }
+                if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                    DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
+                break;
+            }
+            case MOB_LIVE_RIDER:
+            {
+                if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                    DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
+                break;
             }
         }
     }
@@ -386,8 +350,8 @@ struct boss_gothikAI : public BossAI
         if (!thirtyPercentReached && HealthBelowPct(30) && phaseTwo)
         {
             thirtyPercentReached = true;
-            if (pInstance)
-                pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+            if (instance)
+                instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
         }
 
         if (me->hasUnitState(UNIT_STAT_CASTING))
@@ -412,8 +376,8 @@ struct boss_gothikAI : public BossAI
                         {
                             if (!CheckGroupSplitted())
                             {
-                                if (pInstance)
-                                    pInstance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
+                                if (instance)
+                                    instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
                                 summons.DoAction(0, 0);
                                 summons.DoZoneInCombat();
                                 mergedSides = true;
