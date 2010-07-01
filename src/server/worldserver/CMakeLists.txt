@@ -118,30 +118,32 @@ include_directories(
 set(worldserver_LINK_FLAGS "")
 
 add_executable(worldserver ${worldserver_SRCS})
-add_definitions(
-  -D_TRINITY_CORE_CONFIG='"${CONF_DIR}/worldserver.conf"'
-)
+
+if( NOT WIN32 )
+  add_definitions(-D_TRINITY_CORE_CONFIG='"${CONF_DIR}/worldserver.conf"')
+endif()
 
 add_dependencies(worldserver revision.h)
 
-set(worldserver_LINK_FLAGS
-  "-pthread ${worldserver_LINK_FLAGS}"
-)
+if( UNIX )
+  set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
+endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+if( CMAKE_SYSTEM_NAME MATCHES "Darwin" )
   set(worldserver_LINK_FLAGS "-framework Carbon ${worldserver_LINK_FLAGS}")
   set(SCRIPT_LIB "")
 endif()
 
 set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
-if(DO_SCRIPTS)
+if( DO_SCRIPTS )
   set(SCRIPT_LIB "scripts")
-else(DO_SCRIPTS)
+else()
   set(SCRIPT_LIB "")
-endif(DO_SCRIPTS)
-if(WIN32)
- target_link_libraries(
+endif()
+
+if( WIN32 )
+  target_link_libraries(
     worldserver
     game
     shared
@@ -152,11 +154,11 @@ if(WIN32)
     trinityconfig
     collision
     g3dlib
-    jemalloc
     ${SCRIPT_LIB}
-    ${ACE_LIBRARY}
+    ace
     ${MYSQL_LIBRARY}
     ${OPENSSL_LIBRARIES}
+    ${OPENSSL_EXTRA_LIBRARIES}
   )
 else()
   target_link_libraries(
@@ -181,7 +183,7 @@ else()
   )
 endif()
 
-########### install files ###############
-
-install(TARGETS worldserver DESTINATION bin)
-install(FILES   worldserver.conf.dist DESTINATION etc)
+if( UNIX )
+  install(TARGETS worldserver DESTINATION bin)
+  install(FILES   worldserver.conf.dist DESTINATION etc)
+endif()
