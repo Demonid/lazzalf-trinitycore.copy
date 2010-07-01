@@ -15,6 +15,29 @@ if( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
   set(OPENSSL_FOUND 1)
 else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
   set(OPENSSL_FOUND 0)
+
+  if(WIN32)
+    if(PLATFORM MATCHES X64)
+      set(TMP_OPENSSL_INCLUDE_DIR
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/include/openssl"
+      )
+      set(TMP_OPENSSL_LIBRARIES
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/lib"
+      )
+    else()
+      set(TMP_OPENSSL_INCLUDE_DIR
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
+      )
+      set(TMP_OPENSSL_LIBRARIES
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+      )
+    endif()
+  endif()
+
   find_path(OPENSSL_INCLUDE_DIR
     NAMES
       ssl.h
@@ -24,9 +47,7 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
       /usr/local/include
       /usr/local/include/openssl
       /usr/local/openssl/include
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/include/openssl"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/include/openssl"
+      ${TMP_OPENSSL_INCLUDE_DIR}
     DOC
       "Specify the directory containing openssl.h."
   )
@@ -41,9 +62,7 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
       /usr/local/lib
       /usr/local/lib/ssl
       /usr/local/ssl/lib
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/lib"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+      ${TMP_OPENSSL_LIBRARIES}
     DOC "Specify the OpenSSL library here."
   )
 
@@ -52,9 +71,7 @@ else( OPENSSL_INCLUDE_DIR AND OPENSSL_LIBRARIES )
     NAMES
       libeay32
     PATHS
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (64-bit)_is1;InstallLocation]/lib"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
-      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (32-bit)_is1;InstallLocation]/lib"
+      ${TMP_OPENSSL_LIBRARIES}
     DOC
       "if more libraries are necessary to link in a OpenSSL client, specify them here."
   )

@@ -14,6 +14,17 @@ project(Trinity)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
+#
+# Override configuration-types - we don't use anything else than debug and release
+#
+
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_CONFIGURATION_TYPES Debug Release)
+  set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
+    "Reset the configurations to what we need"
+    FORCE)
+endif()
+
 # Force out-of-source build
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" BUILDING_IN_SOURCE)
 
@@ -30,7 +41,13 @@ endif()
 #
 
 include(CheckIncludeFiles)
+include(cmake/FindPlatform.cmake)
 include(cmake/FindPCHSupport.cmake)
+
+if(WIN32)
+  set(ACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/externals)
+endif()
+
 include(cmake/FindACE.cmake)
 include(cmake/FindMySQL.cmake)
 include(cmake/FindOpenSSL.cmake)
@@ -51,6 +68,7 @@ if( NOT CMAKE_BUILD_TYPE )
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+if( UNIX )
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
@@ -60,6 +78,7 @@ configure_file(
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 )
+endif()
 
 option(DO_AUTHSERVER "Build authserver" 1)
 option(DO_WORLDSERVER "Build worldserver" 1)
@@ -70,10 +89,10 @@ option(DO_RA "With RA" 0)
 option(DO_SCRIPTS "With trinityscripts" 1)
 option(DO_SQL "Copy SQL files" 0)
 option(DO_TOOLS "Build tools" 0)
-option(CENTOS "CENTOS" 0)
 option(DO_WARN "Enable all compile warnings" 0)
 
 if( UNIX )
+  option(CENTOS "CENTOS" 0)
   if( CENTOS )
     add_definitions(-DCENTOS)
     find_termcap()
@@ -94,21 +113,23 @@ set(GENREV_SRC
 # Handle debugmode compiles (this will require further work for proper WIN32-setups)
 if( DO_DEBUG )
   set(CMAKE_BUILD_TYPE Debug)
-  add_executable(genrev
-    ${GENREV_SRC}
-  )
+endif()
 
+#
+# Generate revision-extractor
+#
+add_executable(genrev
+  ${GENREV_SRC}
+)
+
+if( CMAKE_GENERATOR MATCHES "Visual Studio" )
   add_custom_target("revision.h" ALL
-    COMMAND "${CMAKE_BINARY_DIR}/genrev"
+    COMMAND "${CMAKE_BINARY_DIR}/$(ConfigurationName)/genrev"
     ${CMAKE_SOURCE_DIR}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
     DEPENDS genrev
   )
 else()
-  add_executable(genrev
-    ${GENREV_SRC}
-  )
-
   add_custom_target("revision.h" ALL
     COMMAND "${CMAKE_BINARY_DIR}/genrev"
     ${CMAKE_SOURCE_DIR}
@@ -201,6 +222,13 @@ else()
   if( UNIX )
     add_definitions(--no-warnings) # makes build look nice, no warnings shown at all, only errors
   elseif( WIN32 )
+    # Disable warnings in Visual Studio 8 and above
+    if(MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio 7")
+      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267")
+      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4267")
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267")
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267")
+    endif()
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   endif()
 endif()
@@ -222,6 +250,14 @@ if( CMAKE_SYSTEM_NAME MATCHES "Darwin" )
   add_definitions(-D__ASSERTMACROS__)
 endif()
 
+# Some small tweaks for Visual Studio 7 and above.  
+if( MSVC )
+  # Mark 32 bit executables large address aware so they can use > 2GB address space
+  if(CMAKE_SIZEOF_VOID_P MATCHES 4)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
+  endif()
+endif()
+
 set(CMAKE_SKIP_BUILD_RPATH 0)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH 0)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
@@ -232,3 +268,4 @@ add_subdirectory(src)
 if( DO_SQL )
   add_subdirectory(sql)
 endif()
+
