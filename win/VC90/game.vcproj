@@ -711,6 +711,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\server\scripts\Custom\npc_teleport.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\server\scripts\Custom\npc_wyrmresttempel_taxi.cpp"
 					>
 				</File>
