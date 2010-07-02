@@ -273,6 +273,8 @@ struct boss_mimironAI : public BossAI
     {
         DoScriptText(SAY_V07TRON_DEATH, me);
         _JustDied();
+
+        me->setFaction(35);
         
         if (pInstance)
         {

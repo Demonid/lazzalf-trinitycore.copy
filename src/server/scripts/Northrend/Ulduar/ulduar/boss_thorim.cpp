@@ -270,6 +270,8 @@ struct boss_thorimAI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
         _JustDied();
+
+        me->setFaction(35);
         
         // Achievements
         if (pInstance)
@@ -788,8 +790,8 @@ struct thorim_phase_triggerAI : public Scripted_NoMovementAI
                             if (me->IsWithinDistInMap(who, 10.0f) && who->GetTypeId() == TYPEID_PLAYER)
                             {
                                 if (Creature* pThorim = Unit::GetCreature(*me, pInstance->GetData64(DATA_THORIM)))
-                                if (pThorim->AI())
-                                pThorim->AI()->DoAction(ACTION_CHANGE_PHASE);
+                                    if (pThorim->AI())
+                                        pThorim->AI()->DoAction(ACTION_CHANGE_PHASE);
                                 me->ForcedDespawn();
                             }
         ScriptedAI::MoveInLineOfSight(who);
