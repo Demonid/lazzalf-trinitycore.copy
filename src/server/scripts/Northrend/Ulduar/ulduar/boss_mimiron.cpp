@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 - 2010 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008 - 2009 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -273,7 +273,7 @@ struct boss_mimironAI : public BossAI
     {
         DoScriptText(SAY_V07TRON_DEATH, me);
         _JustDied();
-
+        
         me->setFaction(35);
         
         if (pInstance)
@@ -372,6 +372,8 @@ struct boss_mimironAI : public BossAI
                                         pAerialUnit->DisappearAndDie();
                                         DespawnCreatures(34050, 100);
                                         me->Kill(me, false);
+                                        if (Player* pTarget = me->SelectNearestTarget()->ToPlayer())
+                                            pTarget->RewardPlayerAndGroupAtKill(pLeviathan);
                                         checkBotAlive = true;
                                     }
             }
