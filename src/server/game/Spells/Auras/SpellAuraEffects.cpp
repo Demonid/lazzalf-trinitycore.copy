@@ -1327,11 +1327,8 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
             bool crit = IsPeriodicTickCrit(target, caster);
             if (crit)
-            {
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
-                //damage -= target->GetSpellCritDamageReduction(damage);
-            }
-            
+
             // Reduce damage from resilience for players and pets only.
             // As of patch 3.3 pets inherit 100% of master resilience.
             if (caster->GetSpellModOwner())
@@ -1339,7 +1336,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 {
                     if (crit)
                         damage -= modOwner->GetSpellCritDamageReduction(damage);
-                    damage -= modOwner->GetSpellDamageReduction(damage);
+                        damage -= modOwner->GetSpellDamageReduction(damage);
                 }
 
             caster->CalcAbsorbResist(target, GetSpellSchoolMask(GetSpellProto()), DOT, damage, &absorb, &resist, m_spellProto);
@@ -1398,10 +1395,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
             bool crit = IsPeriodicTickCrit(target, caster);
             if (crit)
-            {
                 damage = caster->SpellCriticalDamageBonus(m_spellProto, damage, target);
-                //damage -= target->GetSpellCritDamageReduction(damage);
-            }
 
             //Calculate armor mitigation if it is a physical spell
             if (GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL)
