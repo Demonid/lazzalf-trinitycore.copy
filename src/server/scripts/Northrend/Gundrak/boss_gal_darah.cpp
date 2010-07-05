@@ -30,7 +30,7 @@ enum Spells
     H_SPELL_STOMP                                 = 59829,
     SPELL_PUNCTURE                                = 55276,
     H_SPELL_PUNCTURE                              = 59826,
-    SPELL_STAMPEDE                                = 55218,
+    SPELL_STAMPEDE                                = 55218,   
     SPELL_WHIRLING_SLASH                          = 55250,
     H_SPELL_WHIRLING_SLASH                        = 59824,
     SPELL_ECK_RESIDUE                             = 55817
@@ -71,7 +71,7 @@ enum CombatPhase
 
 struct boss_gal_darahAI : public ScriptedAI
 {
-    boss_gal_darahAI(Creature *c) : ScriptedAI(c)
+    boss_gal_darahAI(Creature *c) : ScriptedAI(c), lSummons(me)
     {
         pInstance = c->GetInstanceData();
     }
@@ -90,6 +90,7 @@ struct boss_gal_darahAI : public ScriptedAI
     uint8 uiPhaseCounter;
 
     bool bStartOfTransformation;
+    SummonList lSummons;
 
     ScriptedInstance* pInstance;
 
@@ -105,6 +106,7 @@ struct boss_gal_darahAI : public ScriptedAI
         uiPhaseCounter = 0;
 
         lImpaledPlayers.clear();
+        lSummons.DespawnAll();
 
         bStartOfTransformation = true;
 
@@ -169,7 +171,7 @@ struct boss_gal_darahAI : public ScriptedAI
 
                     if (uiWhirlingSlashTimer <= diff)
                     {
-                        DoCast(me->getVictim(), SPELL_WHIRLING_SLASH);
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_WHIRLING_SLASH, H_SPELL_WHIRLING_SLASH));
                         uiWhirlingSlashTimer = 21*IN_MILISECONDS;
                         ++uiPhaseCounter;
                     } else uiWhirlingSlashTimer -= diff;
@@ -205,19 +207,19 @@ struct boss_gal_darahAI : public ScriptedAI
                 {
                     if (uiPunctureTimer <= diff)
                     {
-                        DoCast(me->getVictim(), SPELL_PUNCTURE);
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_PUNCTURE, H_SPELL_PUNCTURE));
                         uiPunctureTimer = 8*IN_MILISECONDS;
                     } else uiPunctureTimer -= diff;
 
                     if (uiEnrageTimer <= diff)
                     {
-                        DoCast(me->getVictim(), SPELL_ENRAGE);
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_ENRAGE, H_SPELL_ENRAGE));
                         uiEnrageTimer = 20*IN_MILISECONDS;
                     } else uiEnrageTimer -= diff;
 
                     if (uiStompTimer <= diff)
                     {
-                        DoCast(me->getVictim(), SPELL_STOMP);
+                        DoCast(me->getVictim(), DUNGEON_MODE(SPELL_STOMP, H_SPELL_STOMP));
                         uiStompTimer = 20*IN_MILISECONDS;
                     } else uiStompTimer -= diff;
 
@@ -225,7 +227,7 @@ struct boss_gal_darahAI : public ScriptedAI
                     {
                         if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         {
-                            DoCast(pTarget, SPELL_IMPALING_CHARGE);
+                            DoCast(pTarget, DUNGEON_MODE(SPELL_IMPALING_CHARGE, H_SPELL_IMPALING_CHARGE));
                             lImpaledPlayers.insert(pTarget->GetGUID());
                         }
                         uiImpalingChargeTimer = 31*IN_MILISECONDS;
@@ -260,6 +262,7 @@ struct boss_gal_darahAI : public ScriptedAI
             }
 
             pInstance->SetData(DATA_GAL_DARAH_EVENT, DONE);
+            lSummons.DespawnAll();
         }
     }
 
@@ -269,6 +272,12 @@ struct boss_gal_darahAI : public ScriptedAI
             return;
 
         DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2,SAY_SLAY_3), me);
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        summon->AI()->DoZoneInCombat();
+        lSummons.Summon(summon);
     }
 };
 

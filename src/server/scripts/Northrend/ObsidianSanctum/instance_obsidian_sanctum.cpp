@@ -1,19 +1,3 @@
-/* Copyright (C) 2009 - 2010 TrinityCore <http://www.trinitycore.org/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "ScriptPCH.h"
 #include "obsidian_sanctum.h"
 
@@ -32,6 +16,7 @@ struct instance_obsidian_sanctum : public ScriptedInstance
     uint64 m_uiTenebronGUID;
     uint64 m_uiShadronGUID;
     uint64 m_uiVesperonGUID;
+    uint64 m_uiDiscipleOfVesperonGUID;
 
     bool m_bTenebronKilled;
     bool m_bShadronKilled;
@@ -51,7 +36,7 @@ struct instance_obsidian_sanctum : public ScriptedInstance
         m_bVesperonKilled = false;
     }
 
-    void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+    void OnCreatureCreate(Creature* pCreature, bool add)
     {
         switch(pCreature->GetEntry())
         {
@@ -70,6 +55,10 @@ struct instance_obsidian_sanctum : public ScriptedInstance
                 break;
             case NPC_VESPERON:
                 m_uiVesperonGUID = pCreature->GetGUID();
+                pCreature->setActive(true);
+                break;
+            case NPC_DISCIPLE_OF_VESPERON:
+                m_uiDiscipleOfVesperonGUID = pCreature->GetGUID();
                 pCreature->setActive(true);
                 break;
         }
@@ -113,6 +102,8 @@ struct instance_obsidian_sanctum : public ScriptedInstance
                 return m_uiShadronGUID;
             case DATA_VESPERON:
                 return m_uiVesperonGUID;
+            case DATA_DISCIPLE_OF_VESPERON:
+                return m_uiDiscipleOfVesperonGUID;
         }
         return 0;
     }
