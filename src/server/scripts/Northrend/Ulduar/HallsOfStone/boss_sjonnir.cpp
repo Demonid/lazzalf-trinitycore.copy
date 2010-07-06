@@ -184,10 +184,11 @@ struct boss_sjonnirAI : public ScriptedAI
     }
 
     void JustSummoned(Creature* summon)
-    {
-        summon->GetMotionMaster()->MovePoint(0, CenterPoint.x, CenterPoint.y, CenterPoint.z);
-        /*if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-            summon->AI()->AttackStart(pTarget);*/
+    {        
+        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+            summon->AI()->AttackStart(pTarget);
+        else
+            summon->GetMotionMaster()->MovePoint(0, CenterPoint.x, CenterPoint.y, CenterPoint.z);
         lSummons.Summon(summon);
     }
 
