@@ -1267,15 +1267,15 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
         uiShiftEffectTimer = 1000;
         shield = false;
         me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
-        me->SetPhaseMask(2, true);
+        me->SetPhaseMask(16, true);
     }
 
     void JustDied(Unit* killer)
     {
         if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
         {
-            if (Creature* pTenebron = me->GetCreature(*me, pInstance->GetData64(DATA_TENEBRON)))
-                pTenebron->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
+            if (Creature* pSartharion = me->GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))
+               pSartharion->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
         }
         else
         {
@@ -1399,8 +1399,8 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
 
            if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             {
-                if (Creature* pTenebron = me->GetCreature(*me, pInstance->GetData64(DATA_TENEBRON)))
-                    pTenebron->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
+                if (Creature* pSartharion = me->GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))
+                    pSartharion->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
             }
             else
             {
