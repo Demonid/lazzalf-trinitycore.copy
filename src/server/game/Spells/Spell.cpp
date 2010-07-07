@@ -2566,7 +2566,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     case 49821: // Mind Sear proc spell Rank 1
                     case 53022: // Mind Sear proc spell Rank 2
                     case 63025: // Gravity Bomb Normal
- 	            case 64233: // Gravity Bomb Hero
+ 	                case 64233: // Gravity Bomb Hero
                         unitList.remove(m_targets.getUnitTarget());
                         break;
                     case 55789: // Improved Icy Talons
