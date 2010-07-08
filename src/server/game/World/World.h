@@ -252,6 +252,25 @@ enum WorldConfigs
     CONFIG_PVP_TOKEN_MAP_TYPE,
     CONFIG_PVP_TOKEN_ID,
     CONFIG_PVP_TOKEN_COUNT,
+    CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,
+    CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
+    CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,
+    CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
+	CONFIG_ARENAMOD_ENABLE,
+	CONFIG_ARENAMOD_MODE,
+    CONFIG_ARENAMOD_MAX_TEAM_WIN,	
+	CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM,
+    CONFIG_ARENAMOD_MAX_PLAYER_WIN,
+    CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM,
+    CONFIG_ARENAMOD_TIME_RESET,
+    CONFIG_ARENAMOD_CONTROLL_IP,
     CONFIG_NO_RESET_TALENT_COST,
     CONFIG_SHOW_KICK_IN_WORLD,
     CONFIG_INTERVAL_LOG_UPDATE,
@@ -423,6 +442,18 @@ enum WorldStates
     WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
 };
 
+// Daily/Weekly quest last time entries within the worldstates table
+enum LastTimesPoolQuest
+{
+    NEXT_TIME_DAILY     = 90101,
+    NEXT_TIME_WEEKLY    = 90102
+};
+
+enum ArenaModSystem
+{
+    LAST_TIME_MOD_RESET = 80001
+};
+
 // DB scripting commands
 #define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong (0=say, 1=whisper, 2=yell, 3=emote text, 4=boss emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
@@ -568,7 +599,7 @@ class World
         time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
         time_t GetNextWeeklyQuestsResetTime() const { return m_NextWeeklyQuestReset; }
         time_t GetNextRandomBGResetTime() const { return m_NextRandomBGReset; }
-
+ 
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
         {
@@ -652,6 +683,42 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
+        // movement anticheat
+        static bool GetEnableMvAnticheat()           { return m_EnableMvAnticheat;         }
+        static bool GetEnableMistiming()             { return m_EnableMistiming;           }
+        static bool GetEnableMistimingBlock()        { return m_EnableMistimingBlock;      }
+        static bool GetEnableAntiGravity()           { return m_EnableAntiGravity;         }
+        static bool GetEnableAntiMultiJump()         { return m_EnableAntiMultiJump;       }
+        static bool GetEnableAntiSpeedTele()         { return m_EnableAntiSpeedTele;       }
+        static bool GetEnableAntiMountainHack()      { return m_EnableAntiMountainHack;    }
+        static bool GetEnableAntiFlyHack()           { return m_EnableAntiFlyHack;         }
+        static bool GetEnableAntiWaterwalk()         { return m_EnableAntiWaterwalk;       }
+        static bool GetEnableTeleportToPlane()       { return m_EnableTeleportToPlane;     }
+        static bool GetEnableAntiGravityBlock()      { return m_EnableAntiGravityBlock;         }
+        static bool GetEnableAntiMultiJumpBlock()    { return m_EnableAntiMultiJumpBlock;       }
+        static bool GetEnableAntiSpeedTeleBlock()    { return m_EnableAntiSpeedTeleBlock;       }
+        static bool GetEnableAntiMountainHackBlock() { return m_EnableAntiMountainHackBlock;    }
+        static bool GetEnableAntiFlyHackBlock()      { return m_EnableAntiFlyHackBlock;         }
+        static bool GetEnableAntiWaterwalkBlock()    { return m_EnableAntiWaterwalkBlock;       }
+        static bool GetEnableTeleportToPlaneBlock()  { return m_EnableTeleportToPlaneBlock;     }
+        static uint32 GetTeleportToPlaneAlarms()     { return m_TeleportToPlaneAlarms;     }
+        static uint32 GetMistimingDelta()            { return m_MistimingDelta;            }
+        static uint32 GetMistimingAlarms()           { return m_MistimingAlarms;           }
+        static uint32 GetLogCheatDeltaTime()         { return m_LogCheatDeltaTime;         }
+        // end movement anticheat
+
+     void SetWintergrapsTimer(uint32 timer, uint32 state)
+     {
+         m_WintergrapsTimer = timer;
+         m_WintergrapsState = state;
+     }
+
+     uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }
+     uint32 GetWintergrapsState() { return m_WintergrapsState; }
+
+     uint32 m_WintergrapsTimer;
+     uint32 m_WintergrapsState;
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder::Print* zprintf, char const* input) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
 
@@ -687,11 +754,9 @@ class World
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId);
 
-        void InitDailyQuestResetTime();
-        void InitWeeklyQuestResetTime();
+        void InitTimedQuestResetTime();
+        void ResetTimedQuests(bool daily);
         void InitRandomBGResetTime();
-        void ResetDailyQuests();
-        void ResetWeeklyQuests();
         void ResetRandomBG();
     private:
         static volatile bool m_stopEvent;
@@ -754,13 +819,38 @@ class World
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
 
+        // movement anticheat enable flag
+        static bool m_EnableMvAnticheat;
+        static bool m_EnableMistiming;
+        static bool m_EnableMistimingBlock;  
+        static bool m_EnableAntiGravity;
+        static bool m_EnableAntiMultiJump;
+        static bool m_EnableAntiSpeedTele;
+        static bool m_EnableAntiMountainHack;
+        static bool m_EnableAntiFlyHack;
+        static bool m_EnableAntiWaterwalk;
+        static bool m_EnableTeleportToPlane;
+        static bool m_EnableAntiGravityBlock;
+        static bool m_EnableAntiMultiJumpBlock;
+        static bool m_EnableAntiSpeedTeleBlock;
+        static bool m_EnableAntiMountainHackBlock;
+        static bool m_EnableAntiFlyHackBlock;
+        static bool m_EnableAntiWaterwalkBlock;
+        static bool m_EnableTeleportToPlaneBlock;
+        static uint32 m_TeleportToPlaneAlarms;
+        static uint32 m_MistimingDelta;
+        static uint32 m_MistimingAlarms;
+        static uint32 m_LogCheatDeltaTime;
+
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
         SqlResultQueue *m_resultQueue;
 
-        // next daily quests and random bg reset time
-        time_t m_NextDailyQuestReset;
+        // Next daily quest reset time
+         time_t m_NextDailyQuestReset;
+        // Next weekly quest reset time
         time_t m_NextWeeklyQuestReset;
+        // Next random BG reset time
         time_t m_NextRandomBGReset;
 
         //Player Queue
@@ -781,4 +871,3 @@ extern uint32 realmID;
 
 #define sWorld (*ACE_Singleton<World, ACE_Null_Mutex>::instance())
 #endif
-/// @}

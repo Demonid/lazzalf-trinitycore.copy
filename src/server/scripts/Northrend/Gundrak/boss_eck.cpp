@@ -64,6 +64,18 @@ struct boss_eckAI : public ScriptedAI
             pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
     }
 
+    void DeleteFromThreatList(uint64 TargetGUID)
+    {
+        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+        {
+            if ((*itr)->getUnitGuid() == TargetGUID)
+            {
+                (*itr)->removeReference();
+                break;
+            }
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
@@ -79,7 +91,7 @@ struct boss_eckAI : public ScriptedAI
         if (uiSpitTimer <= diff)
         {
             DoCast(me->getVictim(), SPELL_ECK_SPIT);
-            uiSpitTimer = urand(6*IN_MILISECONDS,14*IN_MILISECONDS);
+            uiSpitTimer = urand(12*IN_MILISECONDS,14*IN_MILISECONDS);
         } else uiSpitTimer -= diff;
 
         if (uiSpringTimer <= diff)
@@ -88,6 +100,7 @@ struct boss_eckAI : public ScriptedAI
             if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
             {
                 DoCast(pTarget, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
+                CAST_AI(boss_eckAI, me->AI())->DeleteFromThreatList(me->GetGUID());
                 uiSpringTimer = urand(5*IN_MILISECONDS,10*IN_MILISECONDS);
             }
         } else uiSpringTimer -= diff;
