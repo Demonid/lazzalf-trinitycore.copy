@@ -35,6 +35,9 @@ enum Spells
     H_SPELL_MOJO_WAVE                             = 58993
 };
 
+bool CheckElemental;
+
+
 struct boss_drakkari_colossusAI : public ScriptedAI
 {
     boss_drakkari_colossusAI(Creature* pCreature) : ScriptedAI(pCreature)
@@ -44,7 +47,7 @@ struct boss_drakkari_colossusAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    bool bHealth;
+    bool bHealth; 
     bool bHealth1;
 
     uint32 MightyBlowTimer;
@@ -61,6 +64,7 @@ struct boss_drakkari_colossusAI : public ScriptedAI
         MightyBlowTimer = 10*IN_MILISECONDS;
         bHealth = false;
         bHealth1 = false;
+        CheckElemental = false;
     }
 
     void EnterCombat(Unit* /*who*/)
@@ -108,6 +112,7 @@ struct boss_drakkari_colossusAI : public ScriptedAI
             DoCast(me,SPELL_EMERGE);
             CreatureState(me, false);
             bHealth1 = true;
+            CheckElemental = true;
             me->RemoveAllAuras();
         }
 
@@ -145,6 +150,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 uiSurgeTimer;
+    uint32 uiMojoWaveTimer;
 
     bool bGoToColossus;
 
@@ -153,7 +159,8 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
             CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->CreatureState(me, true);
         uiSurgeTimer = 7*IN_MILISECONDS;
-        bGoToColossus = false;
+        uiMojoWaveTimer = 5*IN_MILISECONDS;
+        bGoToColossus = false;        
     }
 
     void EnterEvadeMode()
@@ -168,7 +175,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
         {
             CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->CreatureState(pColossus, true);
-            CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->bHealth1 = false;
+            //CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->bHealth1 = false;
         }
         me->RemoveFromWorld();
     }
@@ -183,8 +190,8 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         {
             if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
             {
-                if (!CAST_AI(boss_drakkari_colossusAI,pColossus->AI())->HealthBelowPct(6))
-                {
+                if (!CheckElemental)
+                {                    
                     me->InterruptNonMeleeSpells(true);
                     DoCast(pColossus, SPELL_MERGE);
                     bGoToColossus = true;
@@ -197,6 +204,13 @@ struct boss_drakkari_elementalAI : public ScriptedAI
             DoCast(me->getVictim(), SPELL_SURGE);
             uiSurgeTimer = 7*IN_MILISECONDS;
         } else uiSurgeTimer -= diff;
+
+        if (uiMojoWaveTimer <= diff)
+        {
+            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                DoCast(pTarget, SPELL_MOJO_WAVE);
+            uiMojoWaveTimer = 3*IN_MILISECONDS;
+        } else uiMojoWaveTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
