@@ -38,6 +38,7 @@
 #include "CellImpl.h"
 #include "ScriptMgr.h"
 #include "OutdoorPvPWG.h"
+#include "CreatureAIImpl.h"
 
 class Aura;
 //
@@ -1906,6 +1907,12 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 {
                     target->CastSpell(target, 64774, true, NULL, NULL, GetCasterGUID());
                     target->RemoveAura(64821);
+                }
+                break;
+                case 63382: // Rapid Burst
+                {
+                    if (target->GetMap())
+                        caster->CastSpell(target, (target->GetMap()->IsHeroic() ? RAND(64531, 64532) : RAND(63387, 64019)), true);
                 }
                 break;
         }
