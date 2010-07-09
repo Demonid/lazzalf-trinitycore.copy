@@ -1377,14 +1377,14 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
                 {
                     plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                     plr->RemoveAurasByType(SPELL_AURA_FLY);
-                    plr->CastSpell(target, 61286, true);
+                    plr->CastSpell(plr, 61286, true);
                     plr->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
                 {
                 else
                 {
                     plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                     plr->RemoveAurasByType(SPELL_AURA_FLY);
-                    plr->CastSpell(target, 61286, true);
+                    plr->CastSpell(plr, 61286, true);
                     plr->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
                 }
                 //plr->CastSpell(plr, 58730, true);
@@ -1846,7 +1846,7 @@ void OutdoorPvPWG::StartBattle()
 
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
-        (*itr)->CastSpell(target, 61286, true);
+        (*itr)->CastSpell((*itr), 61286, true);
         (*itr)->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
        
         //(*itr)->CastSpell((*itr), 58730, true);        
@@ -1870,7 +1870,7 @@ void OutdoorPvPWG::StartBattle()
         
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
-        (*itr)->CastSpell(target, 61286, true);
+        (*itr)->CastSpell((*itr), 61286, true);
         (*itr)->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
         //(*itr)->CastSpell((*itr), 58730, true); 
     }
