@@ -91,6 +91,7 @@ enum
     ITEM_KEY_TO_FOCUSING_IRIS      = 44582,
     ITEM_KEY_TO_FOCUSING_IRIS_H    = 44581,
     GO_FOCUSING_IRIS               = 193958,
+	GO_FOCUSING_IRIS_H			   = 193960,
     GO_EXIT_PORTAL                 = 193908,
     //////////////// PHASE 1 ////////////////
     NPC_AOE_TRIGGER                = 22517,
@@ -252,6 +253,7 @@ struct boss_malygosAI : public ScriptedAI
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         me->setActive(true);
+		me->setFaction(35);
         Reset();
         m_uiIs10Man = RAID_MODE(true, false);
     }
@@ -270,6 +272,7 @@ struct boss_malygosAI : public ScriptedAI
     bool m_uiIsDown;
     bool m_uiIsMounted; 
     bool m_uiIs10Man;
+	bool m_iris_on;
     
     uint32 m_uiFallToMountTimer;
     uint32 m_uiIsDownTimer;
@@ -298,6 +301,7 @@ struct boss_malygosAI : public ScriptedAI
 
         me->SetFlying(true);
         me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE);
+		me->setFaction(35);
 
         m_uiPhase = PHASE_NOSTART;
         m_uiSubPhase = 0;
@@ -306,6 +310,7 @@ struct boss_malygosAI : public ScriptedAI
         m_lDiscGUIDList.clear();
         m_uiMounts.clear();
         
+		m_iris_on=false;
         m_uiIsDown = false;        
         m_uiIsMounted = false; 
             
@@ -363,10 +368,10 @@ struct boss_malygosAI : public ScriptedAI
             me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
  
         //Summon focusing iris
-        if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_FOCUSING_IRIS, 200.0f))
+		if(GameObject* pGo = GetClosestGameObjectWithEntry(me, m_uiIs10Man ? GO_FOCUSING_IRIS : GO_FOCUSING_IRIS_H, 200.0f))
             pGo->Respawn();
         else
-            me->SummonGameObject(GO_FOCUSING_IRIS, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
+            me->SummonGameObject(m_uiIs10Man ? GO_FOCUSING_IRIS : GO_FOCUSING_IRIS_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
  
         //Summon exit portal
         if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_EXIT_PORTAL, 200.0f))
@@ -811,10 +816,10 @@ struct boss_malygosAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_uiPhase == PHASE_NOSTART)
+        if (m_uiPhase == PHASE_NOSTART && m_iris_on)
         {
             //TODO: This is wrong, the event starts when players klick on Focusing Iris! This is just the event begin
-            if (!m_uiIsDown && m_uiIsDownTimer <= uiDiff)       
+            if (!m_uiIsDown && m_uiIsDownTimer <= uiDiff )       
             {
                m_uiSubPhase = SUBPHASE_FLY_DOWN1;
                m_uiIsDown = true;
@@ -834,6 +839,8 @@ struct boss_malygosAI : public ScriptedAI
             {
                 if(m_uiTimer <= uiDiff)
                 {
+					me->NearTeleportTo(OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5,0,false);
+					me->setFaction(16);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     m_uiSubPhase = 0;
                     m_uiPhase = PHASE_FLOOR;
@@ -867,7 +874,7 @@ struct boss_malygosAI : public ScriptedAI
                 if(m_uiTimer <= uiDiff)
                 {
                     uint8 tmp = urand(0,3);
-                    me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
+                    me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x-10, SparkLoc[tmp].y-10, AIR_Z);
                     m_uiTimer = 25000;
                 }else m_uiTimer -= uiDiff;
             }
@@ -1691,13 +1698,12 @@ struct mob_nexus_lordAI : public ScriptedAI
 ######*/
 bool GOHello_go_focusing_iris(Player* pPlayer, GameObject* pGo)
 {
-    Creature *pMalygos = ((Creature*)Unit::GetUnit(*pGo, pGo->GetInstanceData()->GetData64(NPC_MALYGOS)));
-    if(!pMalygos)
-       Creature *pMalygos = GetClosestCreatureWithEntry(pGo, NPC_MALYGOS, 150.0f);
+    //Creature *pMalygos = ((Creature*)Unit::GetUnit(*pGo, pGo->GetInstanceData()->GetData64(NPC_MALYGOS)));
+    Creature *pMalygos = GetClosestCreatureWithEntry(pGo, NPC_MALYGOS, 1550.0f);
     if(pMalygos)
     {
-        ((boss_malygosAI*)pMalygos->AI())->m_uiSubPhase = SUBPHASE_FLY_DOWN2;
-        //pGo->Delete();
+        ((boss_malygosAI*)pMalygos->AI())->m_iris_on = true;
+        pGo->Delete();
     }
     return true;
 }
