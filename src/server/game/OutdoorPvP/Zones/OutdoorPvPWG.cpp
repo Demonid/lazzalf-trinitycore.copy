@@ -1372,21 +1372,23 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
     if (isWarTime())
     {
         if (plr->IsFlying() || plr->HasAura(SPELL_AURA_FLY) || plr->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)) //Restricted Flight Area
+        {
             if ((plr->GetTeam() == ALLIANCE && getDefenderTeamId() == TEAM_ALLIANCE)
                 || (plr->GetTeam() == TEAM_HORDE && getDefenderTeamId() == TEAM_HORDE))
-                {
-                    plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
-                    plr->RemoveAurasByType(SPELL_AURA_FLY);
-                    plr->CastSpell(plr, 61286, true);
-                    plr->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
-                {
-                else
-                {
-                    plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
-                    plr->RemoveAurasByType(SPELL_AURA_FLY);
-                    plr->CastSpell(plr, 61286, true);
-                    plr->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
-                }
+            {
+                plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                plr->RemoveAurasByType(SPELL_AURA_FLY);
+                plr->CastSpell(plr, 61286, true);
+                plr->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
+            }
+            else
+            {
+                plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+                plr->RemoveAurasByType(SPELL_AURA_FLY);
+                plr->CastSpell(plr, 61286, true);
+                plr->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+            }
+        }
                 //plr->CastSpell(plr, 58730, true);
 
         if (plr->getLevel() > 69)
