@@ -56,11 +56,14 @@ struct boss_drakkari_colossusAI : public ScriptedAI
     {
         if (pInstance)
             pInstance->SetData(DATA_DRAKKARI_COLOSSUS_EVENT, NOT_STARTED);
-        if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE))
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        //if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE))
+        //    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->clearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
-        me->SetReactState(REACT_PASSIVE);
+        //me->SetReactState(REACT_PASSIVE);
+        me->RemoveAura(SPELL_FREEZE_ANIM);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        me->SetReactState(REACT_AGGRESSIVE);
         MightyBlowTimer = 10*IN_MILISECONDS;
         bHealth = false;
         bHealth1 = false;
