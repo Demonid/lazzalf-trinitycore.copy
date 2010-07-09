@@ -1,21 +1,20 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008 - 2009 Trinity <http://www.trinitycore.org/>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-
  
 /* ScriptData
 SDName: Mimiron
@@ -67,11 +66,7 @@ enum eSpells
     SPELL_EXPLOSION_25                          = 63009,
     
     // VX-001
-    SPELL_RAPID_BURST_TURN                      = 63382,
-    SPELL_RAPID_BURST_L_10                      = 63387,
-    SPELL_RAPID_BURST_L_25                      = 64531,
-    SPELL_RAPID_BURST_R_10                      = 64019,
-    SPELL_RAPID_BURST_R_25                      = 64532,
+    SPELL_RAPID_BURST                           = 63382,
     SPELL_ROCKET_STRIKE                         = 63036,
     SPELL_ROCKET_STRIKE_AURA                    = 64064,
     SPELL_LASER_BARRAGE                         = 63274,
@@ -113,7 +108,6 @@ enum eEvents
     
     // VX-001
     EVENT_RAPID_BURST,
-    EVENT_RAPID_BURST_ROTATE,
     EVENT_PRE_LASER_BARRAGE,
     EVENT_LASER_BARRAGE,
     EVENT_ROCKET_STRIKE,
@@ -162,6 +156,7 @@ enum eActions
 
 enum Npcs
 {
+    NPC_BURST_TARGET        = 34211,
     NPC_JUNK_BOT            = 33855,
     NPC_ASSAULT_BOT         = 34057,
     NPC_BOOM_BOT            = 33836,
@@ -998,7 +993,7 @@ struct boss_vx_001AI : public BossAI
             events.ScheduleEvent(EVENT_FROST_BOMB, 15000);
         }
             
-        events.ScheduleEvent(EVENT_RAPID_BURST_ROTATE, 100, 0, PHASE_VX001_SOLO);
+        events.ScheduleEvent(EVENT_RAPID_BURST, 500, 0, PHASE_VX001_SOLO);
         events.ScheduleEvent(EVENT_PRE_LASER_BARRAGE, urand(35000, 40000), 0, PHASE_VX001_SOLO); // Not works in phase 4 :(
         events.ScheduleEvent(EVENT_ROCKET_STRIKE, 20000);
         events.ScheduleEvent(EVENT_HEAT_WAVE, urand(8000, 10000), 0, PHASE_VX001_SOLO);
@@ -1086,37 +1081,22 @@ struct boss_vx_001AI : public BossAI
             {
                 switch(eventId)
                 {
-                    case EVENT_RAPID_BURST_ROTATE:
-                        me->GetMotionMaster()->MoveRotate(urand(1000,3000), rand()%2 ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
-                        events.RescheduleEvent(EVENT_RAPID_BURST_ROTATE, 6000, 0, PHASE_VX001_SOLO);
-                        events.RescheduleEvent(EVENT_RAPID_BURST, 500, 0, PHASE_VX001_SOLO);
-                        break;
                     case EVENT_RAPID_BURST:
-                        // HACK for hands alternation (real spell not works)
                         me->GetMotionMaster()->Initialize();
-                        switch(RapidBurst)
-                        {
-                            case 0:
-                                DoCast(RAID_MODE(SPELL_RAPID_BURST_L_10, SPELL_RAPID_BURST_L_25));
-                                break;
-                            case 1:
-                                DoCast(RAID_MODE(SPELL_RAPID_BURST_R_10, SPELL_RAPID_BURST_R_25));
-                                break;
-                        }
-                        RapidBurst++;
-                        if(RapidBurst > 1)
-                            RapidBurst = 0;
-                        events.RescheduleEvent(EVENT_RAPID_BURST, 500, 0, PHASE_VX001_SOLO);
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            if (Creature *BurstTarget = me->SummonCreature(NPC_BURST_TARGET, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 3000))
+                                DoCast(BurstTarget, SPELL_RAPID_BURST);
+                        events.RescheduleEvent(EVENT_RAPID_BURST, 3000, 0, PHASE_VX001_SOLO);
                         break;
                     case EVENT_PRE_LASER_BARRAGE:
                         DoCast(SPELL_SPINNING_UP);
+                        me->GetMotionMaster()->MoveRotate(40000, rand()%2 ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
                         events.DelayEvents(14000);
                         events.RescheduleEvent(EVENT_PRE_LASER_BARRAGE, 40000, 0, PHASE_VX001_SOLO);
                         events.RescheduleEvent(EVENT_LASER_BARRAGE, 3000);
                         break;
                     case EVENT_LASER_BARRAGE:
                         DoCastAOE(SPELL_LASER_BARRAGE);
-                        me->GetMotionMaster()->MoveRotate(40000, rand()%2 ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
                         events.CancelEvent(EVENT_LASER_BARRAGE);
                         break;
                     case EVENT_ROCKET_STRIKE:
