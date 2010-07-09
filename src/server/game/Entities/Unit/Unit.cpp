@@ -11263,7 +11263,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
     // ..done (base at attack power for marked target and base at attack power for creature type)
     int32 APbonus = 0;
 
-    if (attType == RANGED_ATTACK && pVictim->GetTypeId() == TYPEID_UNIT)
+    /*if (attType == RANGED_ATTACK && pVictim->GetTypeId() == TYPEID_UNIT)
     {
         //APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_AP_ATTACKER_CREATURES_BONUS);
 
@@ -11273,7 +11273,8 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             if (creatureTypeMask & uint32((*i)->GetMiscValue()))
                 APbonus += (*i)->GetAmount();
     }
-    else if (attType == RANGED_ATTACK)
+    else */
+    if (attType == RANGED_ATTACK)
     {
         APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
 
