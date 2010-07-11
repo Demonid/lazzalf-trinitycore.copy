@@ -1830,9 +1830,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                     if (RemainingDamage < currentAbsorb)
                         currentAbsorb = RemainingDamage;
 
-                    // don't use up the aura if we don't absorb anything
-                    if (currentAbsorb > 0)
-                        (*i)->GetBase()->DropCharge();
+                    (*i)->SetAmount(0);     // guarantee removal
+                    existExpired = true;    // maybe hacky but not crashy
 
                     RemainingDamage -= currentAbsorb;
                     continue;
