@@ -5007,6 +5007,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             switch(m_spellInfo->Id)
             {
+                //Teleport to Lake Wintergrasp
+                case 58622:
+                {
+                    if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))
+                        if(pvpWG->isWarTime())
+                        {
+                            if(unitTarget->ToPlayer()->GetTeam() == pvpWG->getDefenderTeam())
+                                unitTarget->CastSpell(unitTarget, 60035, true);
+                            else unitTarget->CastSpell(unitTarget, 59096, true);
+                        }
+                    break;
+                }
                 case 6962:
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
