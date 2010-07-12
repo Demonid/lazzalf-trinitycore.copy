@@ -263,7 +263,7 @@ struct boss_sartharionAI : public BossAI
         events.ScheduleEvent(EVENT_TAIL_SWEEP, 20000);
         events.ScheduleEvent(EVENT_CLEAVE, 7000);
         events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
-        events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILISECONDS);
+        events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILLISECONDS);
     }
 
     void DoAction(const int32 action)
@@ -1527,7 +1527,7 @@ struct npc_flame_tsunamiAI : public ScriptedAI
 
     void Reset()
     {
-        uiStartMove = 3 * IN_MILISECONDS;
+        uiStartMove = 3 * IN_MILLISECONDS;
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         me->SetReactState(REACT_PASSIVE);
         bMoved = false;

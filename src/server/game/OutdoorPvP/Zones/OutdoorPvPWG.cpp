@@ -508,7 +508,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
 
     if (!m_timer)
-        m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILISECONDS;
+        m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILLISECONDS;
 
     m_saveinterval = WG_MIN_SAVE;
 
@@ -1750,7 +1750,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
                 StartBattle();
             else
             {
-                m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILISECONDS;
+                m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
                 sWorld.SendZoneText(NORTHREND_WINTERGRASP, objmgr.GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
 
                 if (m_players[getDefenderTeamId()].empty())
@@ -1808,7 +1808,7 @@ void OutdoorPvPWG::forceChangeTeam()
 void OutdoorPvPWG::StartBattle()
 {
     m_wartime = true;
-    m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILISECONDS;
+    m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILLISECONDS;
 
     // destroyed all vehicles
     for (uint32 team = 0; team < 2; ++team)
@@ -2073,7 +2073,7 @@ void OutdoorPvPWG::EndBattle()
         }
     }
 
-    m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILISECONDS;
+    m_timer = sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
 
     // Teleport all attackers (except accs with sec. >= SEC_GAMEMASTER) to Dalaran
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)

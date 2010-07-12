@@ -248,7 +248,7 @@ struct npc_planar_anomalyAI : public ScriptedAI
         if (uiDeathTimer <= uiDiff)
         {
             DoCast(SPELL_PLANAR_BLAST);
-            uiDeathTimer = 15*IN_MILISECONDS;
+            uiDeathTimer = 15*IN_MILLISECONDS;
         } else uiDeathTimer -= uiDiff;
 
         if (uiDeathTimer <= uiDiff)
