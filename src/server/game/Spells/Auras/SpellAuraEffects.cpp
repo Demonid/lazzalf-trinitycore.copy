@@ -1909,7 +1909,27 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->RemoveAura(64821);
                 }
                 break;
-                case 63382: // Rapid Burst
+            case 63276: // Mark of the Faceless
+                if (caster) 
+                {
+                    uint32 count = 0;
+                    Position *pos = target;
+                    std::list<Unit*> unitList;
+                    Trinity::SpellNotifierCreatureAndPlayer notifier(caster, unitList, 15, PUSH_DST_CENTER, SPELL_TARGETS_ENEMY, pos, 0);
+                    caster->GetMap()->VisitAll(pos->m_positionX, pos->m_positionY, 15, notifier);
+                    int32 bp = GetAmount();
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        if (*itr == target)
+                            continue;
+                        caster->CastCustomSpell(*itr, 63278, NULL, &bp, NULL, true, NULL);
+                        count++;
+                    }
+                    if (count > 0 && caster->isAlive()) // prevent healing after death
+                        caster->DealHeal(caster, bp * 20, GetSpellProto());
+                }
+                break;
+            case 63382: // Rapid Burst
                 {
                     if (target->GetMap())
                         caster->CastSpell(target, (target->GetMap()->IsHeroic() ? RAND(64531, 64532) : RAND(63387, 64019)), true);
