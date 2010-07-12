@@ -144,7 +144,7 @@ void BossSpellWorker::_resetTimer(uint8 m_uiSpellIdx)
         m_uiSpell_Timer[m_uiSpellIdx] = m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty];
 
     if (m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMin[currentDifficulty] == 0 
-        && m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILISECONDS)
+        && m_BossSpell[m_uiSpellIdx].m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILLISECONDS)
             m_uiSpell_Timer[m_uiSpellIdx] = 0;
 };
 
@@ -226,8 +226,8 @@ bool BossSpellWorker::_QuerySpellPeriod(uint8 m_uiSpellIdx, uint32 diff)
 
     if (m_uiSpell_Timer[m_uiSpellIdx] < diff) 
     {
-        if (pSpell->m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILISECONDS) 
-            m_uiSpell_Timer[m_uiSpellIdx] = HOUR*IN_MILISECONDS;
+        if (pSpell->m_uiSpellTimerMax[currentDifficulty] >= HOUR*IN_MILLISECONDS) 
+            m_uiSpell_Timer[m_uiSpellIdx] = HOUR*IN_MILLISECONDS;
         else 
             m_uiSpell_Timer[m_uiSpellIdx] = urand(pSpell->m_uiSpellTimerMin[currentDifficulty],pSpell->m_uiSpellTimerMax[currentDifficulty]);
         return true;

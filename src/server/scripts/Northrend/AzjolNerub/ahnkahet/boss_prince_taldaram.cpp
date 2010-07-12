@@ -342,7 +342,7 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
         DoCast(me, SPELL_FLAME_SPHERE_SPAWN_EFFECT);
         //DoCast(me, SPELL_FLAME_SPHERE_PERIODIC);
         uiDespawnTimer = 10*IN_MILLISECONDS;
-        uiSpellFlameSphere = 1*IN_MILISECONDS;
+        uiSpellFlameSphere = 1*IN_MILLISECONDS;
     }
 
     void EnterCombat(Unit * /*who*/) {}
@@ -358,7 +358,7 @@ struct mob_taldaram_flamesphereAI : public ScriptedAI
         /*if (uiSpellFlameSphere <= diff)
         {
             DoCast(me, DUNGEON_MODE(SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED, H_SPELL_FLAME_SPHERE_PERIODIC_TRIGGERED));
-            uiSpellFlameSphere = 5*IN_MILISECONDS;
+            uiSpellFlameSphere = 5*IN_MILLISECONDS;
         } else uiSpellFlameSphere -= diff;
         */
         if (uiDespawnTimer <= diff)

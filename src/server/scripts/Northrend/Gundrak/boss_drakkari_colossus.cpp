@@ -162,7 +162,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
             CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->CreatureState(me, true);
         uiSurgeTimer = 7*IN_MILLISECONDS;
-        uiMojoWaveTimer = 5*IN_MILISECONDS;
+        uiMojoWaveTimer = 5*IN_MILLISECONDS;
         bGoToColossus = false;        
     }
 
@@ -212,7 +212,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         {
             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                 DoCast(pTarget, SPELL_MOJO_WAVE);
-            uiMojoWaveTimer = 3*IN_MILISECONDS;
+            uiMojoWaveTimer = 3*IN_MILLISECONDS;
         } else uiMojoWaveTimer -= diff;
 
         DoMeleeAttackIfReady();
