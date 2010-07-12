@@ -790,6 +790,16 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     break;
             }
             break;
+        case SPELLFAMILY_SHAMAN:
+            switch (spellId)
+            {                
+                case 51466: // Elemental Oath Rank 1
+                case 51470: // Elemental Oath Rank 2
+                    return true;
+                default:
+                    break;
+            }
+            break;
         case SPELLFAMILY_HUNTER:
             // Aspect of the Viper
             if (spellId == 34074)
