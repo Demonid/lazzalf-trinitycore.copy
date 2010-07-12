@@ -599,12 +599,12 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                 case EVENT_OVERLOAD:
                     me->MonsterTextEmote(EMOTE_OVERLOAD, 0, true);
                     DoScriptText(SAY_BRUNDIR_SPECIAL, me);
-                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->Initialize();
                     DoCast(SPELL_OVERLOAD);
                     events.ScheduleEvent(EVENT_OVERLOAD, urand(60000, 120000));
                 break;
                 case EVENT_LIGHTNING_WHIRL:
-                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->Initialize();
                     DoCast(SPELL_LIGHTNING_WHIRL);
                     events.ScheduleEvent(EVENT_LIGHTNING_WHIRL, urand(15000, 20000));
                 break;
@@ -614,7 +614,7 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     me->AttackStop();
                     me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
                     DoCast(SPELL_LIGHTNING_TENDRILS_SELF_VISUAL);
-                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->Initialize();
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 440);
                     events.DelayEvents(35000);
                     events.ScheduleEvent(EVENT_FLIGHT, 2500);
@@ -627,14 +627,14 @@ struct boss_stormcaller_brundirAI : public ScriptedAI
                     events.ScheduleEvent(EVENT_FLIGHT, 6000);
                 break;
                 case EVENT_ENDFLIGHT:
-                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->Initialize();
                     me->GetMotionMaster()->MovePoint(0, 1586.920166, 119.848984, 440);
                     events.CancelEvent(EVENT_FLIGHT);
                     events.CancelEvent(EVENT_ENDFLIGHT);
                     events.ScheduleEvent(EVENT_LAND, 4000);
                 break;
                 case EVENT_LAND:
-                    me->GetMotionMaster()->Clear(true);
+                    me->GetMotionMaster()->Initialize();
                     me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28);
                     events.CancelEvent(EVENT_LAND);
                     events.ScheduleEvent(EVENT_GROUND, 2500);

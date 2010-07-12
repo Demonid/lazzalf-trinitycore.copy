@@ -1264,14 +1264,20 @@ struct boss_aerial_unitAI : public BossAI
                             float x = me->getVictim()->GetPositionX();
                             float y = me->getVictim()->GetPositionY();
                             float z = me->getVictim()->GetPositionZ();
-                            if (me->IsWithinDist3d(x, y, z, 35))
+                            if (me->IsWithinDist3d(x, y, z, 30))
                             {
-                                me->GetMotionMaster()->Clear(true);
+                                me->GetMotionMaster()->Initialize();
                                 DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
                             }
                             else me->GetMotionMaster()->MovePoint(0, x, y, 380.040);
                         }
-                        else DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
+                        else if (phase == PHASE_AERIAL_ASSEMBLED && me->getVictim())
+                        {
+                            if (me->getVictim()->IsWithinDist3d(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 35))
+                                DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
+                            else if (Unit *pTarget = SelectUnit(SELECT_TARGET_NEAREST, 0))
+                                DoCast(pTarget, RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
+                        }
                         events.RescheduleEvent(EVENT_PLASMA_BALL, 2000);
                         break;
                     case EVENT_REACTIVATE_AERIAL:
