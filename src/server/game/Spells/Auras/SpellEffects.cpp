@@ -5011,9 +5011,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 58622:
                 {
                     if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))
-                        if(pvpWG->isWarTime())
+                        if (pvpWG->isWarTime() && unitTarget->ToPlayer())
                         {
-                            if(unitTarget->ToPlayer()->GetTeam() == pvpWG->getDefenderTeam())
+                            if(unitTarget->ToPlayer()->GetTeam() == pvpWG->getDefenderTeamId())
                                 unitTarget->CastSpell(unitTarget, 60035, true);
                             else unitTarget->CastSpell(unitTarget, 59096, true);
                         }
