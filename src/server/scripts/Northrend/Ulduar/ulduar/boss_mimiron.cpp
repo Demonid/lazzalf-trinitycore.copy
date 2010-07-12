@@ -363,13 +363,13 @@ struct boss_mimironAI : public BossAI
                                 if (pVX_001->getStandState() == UNIT_STAND_STATE_DEAD)
                                     if (pAerialUnit->getStandState() == UNIT_STAND_STATE_DEAD)
                                     {
+                                        if (Unit* pTarget = me->SelectNearestTarget())
+                                            pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(pLeviathan);
                                         pLeviathan->DisappearAndDie();
                                         pVX_001->DisappearAndDie();
                                         pAerialUnit->DisappearAndDie();
                                         DespawnCreatures(34050, 100);
                                         me->Kill(me, false);
-                                        if (Player* pTarget = me->SelectNearestTarget()->ToPlayer())
-                                            pTarget->RewardPlayerAndGroupAtKill(pLeviathan);
                                         checkBotAlive = true;
                                     }
             }
