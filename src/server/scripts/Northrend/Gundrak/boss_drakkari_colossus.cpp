@@ -64,7 +64,7 @@ struct boss_drakkari_colossusAI : public ScriptedAI
         me->RemoveAura(SPELL_FREEZE_ANIM);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         me->SetReactState(REACT_AGGRESSIVE);
-        MightyBlowTimer = 10*IN_MILISECONDS;
+        MightyBlowTimer = 10*IN_MILLISECONDS;
         bHealth = false;
         bHealth1 = false;
         CheckElemental = false;
@@ -122,7 +122,7 @@ struct boss_drakkari_colossusAI : public ScriptedAI
         if (MightyBlowTimer <= diff)
         {
             DoCast(me->getVictim(), SPELL_MIGHTY_BLOW, true);
-            MightyBlowTimer = 10*IN_MILISECONDS;
+            MightyBlowTimer = 10*IN_MILLISECONDS;
         } else MightyBlowTimer -= diff;
 
         if (!me->hasUnitState(UNIT_STAT_STUNNED))
@@ -161,7 +161,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
     {
         if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
             CAST_AI(boss_drakkari_colossusAI, pColossus->AI())->CreatureState(me, true);
-        uiSurgeTimer = 7*IN_MILISECONDS;
+        uiSurgeTimer = 7*IN_MILLISECONDS;
         uiMojoWaveTimer = 5*IN_MILISECONDS;
         bGoToColossus = false;        
     }
@@ -205,7 +205,7 @@ struct boss_drakkari_elementalAI : public ScriptedAI
         if (uiSurgeTimer <= diff)
         {
             DoCast(me->getVictim(), SPELL_SURGE);
-            uiSurgeTimer = 7*IN_MILISECONDS;
+            uiSurgeTimer = 7*IN_MILLISECONDS;
         } else uiSurgeTimer -= diff;
 
         if (uiMojoWaveTimer <= diff)
@@ -239,8 +239,8 @@ struct npc_living_mojoAI : public ScriptedAI
 
     void Reset()
     {
-        uiMojoWaveTimer = 2*IN_MILISECONDS;
-        uiMojoPuddleTimer = 7*IN_MILISECONDS;
+        uiMojoWaveTimer = 2*IN_MILLISECONDS;
+        uiMojoPuddleTimer = 7*IN_MILLISECONDS;
     }
 
     void EnterCombat(Unit* /*who*/)
@@ -284,13 +284,13 @@ struct npc_living_mojoAI : public ScriptedAI
         if (uiMojoWaveTimer <= diff)
         {
             DoCast(me->getVictim(), SPELL_MOJO_WAVE);
-            uiMojoWaveTimer = 15*IN_MILISECONDS;
+            uiMojoWaveTimer = 15*IN_MILLISECONDS;
         } else uiMojoWaveTimer -= diff;
 
         if (uiMojoPuddleTimer <= diff)
         {
             DoCast(me->getVictim(), SPELL_MOJO_PUDDLE);
-            uiMojoPuddleTimer = 18*IN_MILISECONDS;
+            uiMojoPuddleTimer = 18*IN_MILLISECONDS;
         } else uiMojoPuddleTimer -= diff;
 
         DoMeleeAttackIfReady();

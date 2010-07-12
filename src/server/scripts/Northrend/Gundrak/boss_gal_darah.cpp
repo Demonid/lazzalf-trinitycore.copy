@@ -95,13 +95,13 @@ struct boss_gal_darahAI : public ScriptedAI
 
     void Reset()
     {
-        uiStampedeTimer = 10*IN_MILISECONDS;
-        uiWhirlingSlashTimer = 21*IN_MILISECONDS;
-        uiPunctureTimer = 10*IN_MILISECONDS;
-        uiEnrageTimer = 15*IN_MILISECONDS;
-        uiImpalingChargeTimer = 21*IN_MILISECONDS;
-        uiStompTimer = 25*IN_MILISECONDS;
-        uiTransformationTimer = 9*IN_MILISECONDS;
+        uiStampedeTimer = 10*IN_MILLISECONDS;
+        uiWhirlingSlashTimer = 21*IN_MILLISECONDS;
+        uiPunctureTimer = 10*IN_MILLISECONDS;
+        uiEnrageTimer = 15*IN_MILLISECONDS;
+        uiImpalingChargeTimer = 21*IN_MILLISECONDS;
+        uiStompTimer = 25*IN_MILLISECONDS;
+        uiTransformationTimer = 9*IN_MILLISECONDS;
         uiPhaseCounter = 0;
 
         lImpaledPlayers.clear();
@@ -142,7 +142,7 @@ struct boss_gal_darahAI : public ScriptedAI
                         Phase = RHINO;
                         uiPhaseCounter = 0;
                         DoScriptText(SAY_TRANSFORM_1, me);
-                        uiTransformationTimer = 5*IN_MILISECONDS;
+                        uiTransformationTimer = 5*IN_MILLISECONDS;
                         bStartOfTransformation = true;
                         me->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
                         me->SetReactState(REACT_AGGRESSIVE);
@@ -165,13 +165,13 @@ struct boss_gal_darahAI : public ScriptedAI
                     {
                         DoCast(me, SPELL_STAMPEDE);
                         DoScriptText(RAND(SAY_SUMMON_RHINO_1,SAY_SUMMON_RHINO_2,SAY_SUMMON_RHINO_3),me);
-                        uiStampedeTimer = 15*IN_MILISECONDS;
+                        uiStampedeTimer = 15*IN_MILLISECONDS;
                     } else uiStampedeTimer -= diff;
 
                     if (uiWhirlingSlashTimer <= diff)
                     {
                         DoCast(me->getVictim(), DUNGEON_MODE(SPELL_WHIRLING_SLASH, H_SPELL_WHIRLING_SLASH));
-                        uiWhirlingSlashTimer = 21*IN_MILISECONDS;
+                        uiWhirlingSlashTimer = 21*IN_MILLISECONDS;
                         ++uiPhaseCounter;
                     } else uiWhirlingSlashTimer -= diff;
                 }
@@ -185,7 +185,7 @@ struct boss_gal_darahAI : public ScriptedAI
                         Phase = TROLL;
                         uiPhaseCounter = 0;
                         DoScriptText(SAY_TRANSFORM_2, me);
-                        uiTransformationTimer = 9*IN_MILISECONDS;
+                        uiTransformationTimer = 9*IN_MILLISECONDS;
                         bStartOfTransformation = true;
                         me->clearUnitState(UNIT_STAT_STUNNED|UNIT_STAT_ROOT);
                         me->SetReactState(REACT_AGGRESSIVE);
@@ -207,19 +207,19 @@ struct boss_gal_darahAI : public ScriptedAI
                     if (uiPunctureTimer <= diff)
                     {
                         DoCast(me->getVictim(), DUNGEON_MODE(SPELL_PUNCTURE, H_SPELL_PUNCTURE));
-                        uiPunctureTimer = 8*IN_MILISECONDS;
+                        uiPunctureTimer = 8*IN_MILLISECONDS;
                     } else uiPunctureTimer -= diff;
 
                     if (uiEnrageTimer <= diff)
                     {
                         DoCast(me->getVictim(), DUNGEON_MODE(SPELL_ENRAGE, H_SPELL_ENRAGE));
-                        uiEnrageTimer = 20*IN_MILISECONDS;
+                        uiEnrageTimer = 20*IN_MILLISECONDS;
                     } else uiEnrageTimer -= diff;
 
                     if (uiStompTimer <= diff)
                     {
                         DoCast(me->getVictim(), DUNGEON_MODE(SPELL_STOMP, H_SPELL_STOMP));
-                        uiStompTimer = 20*IN_MILISECONDS;
+                        uiStompTimer = 20*IN_MILLISECONDS;
                     } else uiStompTimer -= diff;
 
                     if (uiImpalingChargeTimer <= diff)
@@ -229,7 +229,7 @@ struct boss_gal_darahAI : public ScriptedAI
                             DoCast(pTarget, DUNGEON_MODE(SPELL_IMPALING_CHARGE, H_SPELL_IMPALING_CHARGE));
                             lImpaledPlayers.insert(pTarget->GetGUID());
                         }
-                        uiImpalingChargeTimer = 31*IN_MILISECONDS;
+                        uiImpalingChargeTimer = 31*IN_MILLISECONDS;
                         ++uiPhaseCounter;
                     } else uiImpalingChargeTimer -= diff;
                 }
