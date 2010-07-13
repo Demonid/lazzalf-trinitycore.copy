@@ -48,7 +48,7 @@
 RealmID = 1
 DataDir = "."
 LogsDir = ""
-LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
+LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 MaxPingTime = 30
@@ -816,6 +816,11 @@ ChatLogTimestamp = 0
 #        Default: 7
 #                -1 (show all available quests marks)
 #
+#    Quests.IgnoreRaid
+#        Allow non-raid quests to be completed when in raid group
+#        Default: 0 (false)
+#                 1 (true)
+#
 #    Hour when daily quests reset (0..23)
 #        Quest.Daily.ResetHour
 #        Default: 4
@@ -945,6 +950,7 @@ Instance.ResetTimeHour = 4
 Instance.UnloadDelay = 1800000
 Quests.LowLevelHideDiff = 4
 Quests.HighLevelHideDiff = 7
+Quests.IgnoreRaid = 0
 Quest.Daily.ResetHour = 4
 Quest.Weekly.ResetHour = 4
 Quest.Weekly.ResetDay = 3
