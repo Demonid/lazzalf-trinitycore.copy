@@ -1,25 +1,26 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008 - 2009 Trinity <http://www.trinitycore.org/>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
  /* ScriptData
 SDName: Kologarn
 SDAuthor: PrinceCreed
-SD%Complete: 95
-SD%Comments: TODO: EyeBeam Visual Effect
+SD%Complete: 100%
+SD%Comments:
 EndScriptData */
 
 #include "ScriptPCH.h"
@@ -36,7 +37,10 @@ EndScriptData */
 #define SPELL_STONE_GRIP        RAID_MODE(64290,64292)
 #define SPELL_STONE_GRIP_STUN   RAID_MODE(62056,63985)
 #define SPELL_ARM_SWEEP         RAID_MODE(63766,63983)
-#define SPELL_EYE_BEAM          RAID_MODE(63347,63977)
+#define SPELL_FOCUSED_EYEBEAM   RAID_MODE(63347,63977)
+#define SPELL_EYEBEAM_VISUAL_1  63676
+#define SPELL_EYEBEAM_VISUAL_2  63702
+#define SPELL_EYEBEAM_IMMUNITY  64722
 #define SPELL_ARM_RESPAWN       64753
 #define SPELL_SHOCKWAVE_VISUAL  63788
 #define ARM_DEAD_DAMAGE         RAID_MODE(543855,2300925)
@@ -56,14 +60,19 @@ enum Events
 
 enum Actions
 {
-    ACTION_RESPAWN_RIGHT                         = 0,
-    ACTION_RESPAWN_LEFT                          = 1,
-    ACTION_GRIP                                  = 2
+    ACTION_RESPAWN_RIGHT                        = 0,
+    ACTION_RESPAWN_LEFT                         = 1,
+    ACTION_GRIP                                 = 2
 };
 
-#define NPC_EYEBEAM_1                              33632
-#define NPC_EYEBEAM_2                              33802
-#define NPC_RUBBLE                                 33768
+enum Npcs
+{
+    NPC_EYEBEAM_1                               = 33632,
+    NPC_EYEBEAM_2                               = 33802,
+    NPC_RUBBLE                                  = 33768,
+    NPC_LEFT_ARM                                = 32933,
+    NPC_RIGHT_ARM                               = 32934
+};
 
 enum Yells
 {
@@ -160,9 +169,9 @@ struct boss_kologarnAI : public BossAI
     {
         if(who->GetTypeId() == TYPEID_UNIT)
         {
-            if(who->GetEntry() == 32933)
+            if(who->GetEntry() == NPC_LEFT_ARM)
                 left = apply;
-            else if(who->GetEntry() == 32934)
+            else if(who->GetEntry() == NPC_RIGHT_ARM)
                 right = apply;
             who->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             CAST_CRE(who)->SetReactState(REACT_AGGRESSIVE);
@@ -269,13 +278,19 @@ struct boss_kologarnAI : public BossAI
                 }
                 events.RescheduleEvent(EVENT_SHOCKWAVE, urand(15000, 25000));
                 break;
-            case EVENT_EYEBEAM: // TODO: Add Eye Beam spell visual
+            case EVENT_EYEBEAM:
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                 {
                     if (EyeBeam[0] = me->SummonCreature(NPC_EYEBEAM_1, pTarget->GetPositionX(), pTarget->GetPositionY() + 3, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
-                    EyeBeam[0]->AI()->AttackStart(pTarget);
+                    {
+                        EyeBeam[0]->CastSpell(me, SPELL_EYEBEAM_VISUAL_1, true);
+                        EyeBeam[0]->AI()->AttackStart(pTarget);
+                    }
                     if (EyeBeam[1] = me->SummonCreature(NPC_EYEBEAM_2, pTarget->GetPositionX(), pTarget->GetPositionY() - 3, pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
-                    EyeBeam[1]->AI()->AttackStart(pTarget);
+                    {
+                        EyeBeam[1]->CastSpell(me, SPELL_EYEBEAM_VISUAL_2, true);
+                        EyeBeam[1]->AI()->AttackStart(pTarget);
+                    }
                 }
                 events.RescheduleEvent(EVENT_EYEBEAM, 20000);
                 break;
@@ -335,7 +350,23 @@ struct mob_focused_eyebeamAI : public ScriptedAI
     {
         me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-        DoCast(me, SPELL_EYE_BEAM);
+        DoCast(me, SPELL_EYEBEAM_IMMUNITY);
+        DoCast(me, SPELL_FOCUSED_EYEBEAM);
+        checkTimer = 1500;
+    }
+    
+    uint32 checkTimer;
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if(checkTimer <= diff)
+        {
+            if (me->getVictim() && me->getVictim()->isAlive())
+                me->GetMotionMaster()->MovePoint(0, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ());
+            
+            checkTimer = 500;
+        }
+        else checkTimer -= diff;
     }
 };
 

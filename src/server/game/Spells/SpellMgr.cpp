@@ -3850,6 +3850,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectBasePoints[0] = 519;           // Some suggest a global multiplier is used for rep gain
             count++;                                        // but basepoints * 1,3 hard coded in the tooltip says
             break;                                          // otherwise.
+        case 63676:     // Focused Eyebeam Visual 2
+        case 63702:     // Focused Eyebeam Visual Right Eye
+            spellInfo->EffectImplicitTargetA[0] = 92;
+            count++;
+            break;
         default:
             break;
         }
