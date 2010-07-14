@@ -1120,7 +1120,7 @@ struct creature_snaplasherAI : public ScriptedAI
     creature_snaplasherAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = pCreature->GetInstanceData();
-        DoCast(me, 62664);
+        //DoCast(me, 62664);
     }
 
     ScriptedInstance* m_pInstance;
