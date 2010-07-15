@@ -489,7 +489,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 2;
                     break;
                 case 2:
-                    engineer[0] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    engineer[0] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000);
                     if (engineer[0])
                     {
                         engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -497,7 +497,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                         engineer[0]->SetHomePosition(posEng1);
                         engineer[0]->GetMotionMaster()->MoveTargetedHome();
                     }
-                    engineer[1] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    engineer[1] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000);
                     if (engineer[1])
                     {
                         engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -568,7 +568,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     if (Creature *pRazorscale = me->GetCreature(*me, pInstance->GetData64(DATA_RAZORSCALE)))
                         if (pRazorscale->AI())
                             pRazorscale->AI()->DoAction(ACTION_EVENT_START);
-                    if (engineer[0])
+                    if (engineer[0] && engineer[0]->IsInWorld() && engineer[0]->isAlive())
                         engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
                     uiPhase =7;
                     break;
