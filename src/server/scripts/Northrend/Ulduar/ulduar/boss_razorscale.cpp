@@ -439,6 +439,12 @@ struct npc_expedition_commanderAI : public ScriptedAI
     void Reset()
     {
         uiTimer = 0;
+        engineer[0] = 0;
+        engineer[1] = 0;
+        defender[0] = 0;
+        defender[1] = 0;
+        defender[2] = 0;
+        defender[3] = 0;
         greet = false;
     }
     
@@ -489,7 +495,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                     uiPhase = 2;
                     break;
                 case 2:
-                    engineer[0] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000);
+                    engineer[0] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (engineer[0])
                     {
                         engineer[0]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -497,7 +503,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                         engineer[0]->SetHomePosition(posEng1);
                         engineer[0]->GetMotionMaster()->MoveTargetedHome();
                     }
-                    engineer[1] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000);
+                    engineer[1] = me->SummonCreature(NPC_ENGINEER, 591.951477, -95.968292, 391.516998, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                     if (engineer[1])
                     {
                         engineer[1]->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -570,7 +576,7 @@ struct npc_expedition_commanderAI : public ScriptedAI
                             pRazorscale->AI()->DoAction(ACTION_EVENT_START);
                     if (engineer[0] && engineer[0]->IsInWorld() && engineer[0]->isAlive())
                         engineer[0]->MonsterYell(SAY_AGGRO_3, LANG_UNIVERSAL, 0);
-                    uiPhase =7;
+                    uiPhase = 7;
                     break;
             }
             if (!UpdateVictim())
