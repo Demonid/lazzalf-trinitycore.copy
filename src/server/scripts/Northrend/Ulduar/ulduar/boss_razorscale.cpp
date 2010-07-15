@@ -146,7 +146,6 @@ struct boss_razorscaleAI : public BossAI
         me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         pInstance = pCreature->GetInstanceData();
         pMap = me->GetMap();
-        PermaGround = false;
     }
 
     Phases phase;
@@ -166,7 +165,8 @@ struct boss_razorscaleAI : public BossAI
         _Reset();
         me->SetFlying(true);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        me->SetReactState(REACT_PASSIVE);
+        me->SetReactState(REACT_PASSIVE);        
+        PermaGround = false;
     }
 
     void EnterCombat(Unit* who)
