@@ -562,21 +562,6 @@ void Unit::DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellEntry const *spellProto, bool durabilityLoss)
 {
-    // if attacker is a player and spell is not empty/fail
-    if (GetTypeId() == TYPEID_PLAYER && spellProto)
-    {
-        // on divine storm dealed damage - heal
-        if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && spellProto->SpellFamilyFlags[1] & 0x20000)
-        {
-            Unit *pRaidGrpMember = GetNextRandomRaidMemberOrPet(30.0f);
-
-            int32 divineDmg = damage * (25 + (HasAura(63220) ? 15 : 0)) / 100; //25%, if has Glyph of Divine Storm -> 40%
-
-            if (!pRaidGrpMember)
-                pRaidGrpMember = this;
-
-            CastCustomSpell(pRaidGrpMember, 54172, &divineDmg, 0, 0, true);
-        }
         // Scourge Strike
         /*if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
         {
@@ -584,8 +569,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
               if (shadowdmg > 0)
                   CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
         }*/
-    }
-
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
 
@@ -8289,6 +8272,24 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                         target = pVictim;
                         break;
                     }
+                    //Item - Coliseum 25 Heroic Caster Trinket
+                    case 67758:
+                    {
+                        if(!pVictim || !pVictim->isAlive())
+                            return false;
+                        // stacking
+                        CastSpell(this, 67759, true, NULL, triggeredByAura);
+
+                        Aura * dummy = GetAura(67759);
+                        // release at 3 aura in stack (cont contain in basepoint of trigger aura)
+                        if(!dummy || dummy->GetStackAmount() < triggerAmount)
+                            return false;
+
+                        RemoveAurasDueToSpell(67759);
+                        trigger_spell_id = 67760;
+                        target = pVictim;
+                        break;
+                    }
                     default:
                         // Illumination
                         if (auraSpellInfo->SpellIconID == 241)
@@ -12803,10 +12804,10 @@ void Unit::IncrDiminishing(DiminishingGroup group)
     m_Diminishing.push_back(DiminishingReturn(group,getMSTime(),DIMINISHING_LEVEL_2));
 }
 
-void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, int32 limitduration)
+float Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, int32 limitduration)
 {
     if (duration == -1 || group == DIMINISHING_NONE || caster->IsFriendlyTo(this))
-        return;
+        return 1.0f;
 
     // test pet/charm masters instead pets/charmeds
     Unit const* targetOwner = GetCharmerOrOwner();
@@ -12860,6 +12861,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     }
 
     duration = int32(duration * mod);
+    return mod;
 }
 
 void Unit::ApplyDiminishingAura(DiminishingGroup group, bool apply)
