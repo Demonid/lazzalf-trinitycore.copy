@@ -273,7 +273,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //214 Tamed Pet Passive
     &AuraEffect::HandleArenaPreparation,                          //215 SPELL_AURA_ARENA_PREPARATION
     &AuraEffect::HandleModCastingSpeed,                           //216 SPELL_AURA_HASTE_SPELLS
-    &AuraEffect::HandleUnused,                                    //217 unused (3.2.0)
+    &AuraEffect::HandleNULL,                                      //217 69106 - killing spree helper - unknown use
     &AuraEffect::HandleAuraModRangedHaste,                        //218 SPELL_AURA_HASTE_RANGED
     &AuraEffect::HandleModManaRegen,                              //219 SPELL_AURA_MOD_MANA_REGEN_FROM_STAT
     &AuraEffect::HandleModRatingFromStat,                         //220 SPELL_AURA_MOD_RATING_FROM_STAT
@@ -349,30 +349,29 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraModCritPct,                            //290 SPELL_AURA_MOD_CRIT_PCT
     &AuraEffect::HandleNoImmediateEffect,                         //291 SPELL_AURA_MOD_XP_QUEST_PCT  implemented in Player::RewardQuest
     &AuraEffect::HandleNULL,                                      //292 call stabled pet
-    &AuraEffect::HandleNULL,                                      //293 2 test spells
+    &AuraEffect::HandleNULL,                                      //293 auras which probably add set of abilities to their target based on it's miscvalue
     &AuraEffect::HandleNoImmediateEffect,                         //294 SPELL_AURA_PREVENT_REGENERATE_POWER implemented in Player::Regenerate(Powers power)
-    &AuraEffect::HandleNULL,                                      //296 2 spells
-    &AuraEffect::HandleNULL,                                      //297 1 spell (counter spell school?)
-    &AuraEffect::HandleNULL,                                      //298 unused
+    &AuraEffect::HandleNULL,                                      //296 6 spells, something vehicle or character display related
+    &AuraEffect::HandleNULL,                                      //297 Spirit Burst spells
+    &AuraEffect::HandleNULL,                                      //298 70569 - Strangulating, maybe prevents talk or cast
     &AuraEffect::HandleNULL,                                      //299 unused
-    &AuraEffect::HandleNULL,                                      //300 3 spells (share damage?)
+    &AuraEffect::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT implemented in Unit::DealDamage
     &AuraEffect::HandleNoImmediateEffect,                         //301 SPELL_AURA_SCHOOL_HEAL_ABSORB implemented in Unit::CalcHealAbsorb
-    &AuraEffect::HandleNULL,                                      //302 unused
-    &AuraEffect::HandleNULL,                                      //303 17 spells
-    &AuraEffect::HandleNULL,                                      //304 2 spells (alcohol effect?)
+    &AuraEffect::HandleNULL,                                      //302 0 spells in 3.3.5
+    &AuraEffect::HandleNULL,                                      //303 SPELL_AURA_MOD_DMG_VESRUS_AURASTATE_PCT? - 22 and 19 look like serverside aurastates (22 - dark, gas cloud, 19 light, ooze)
+    &AuraEffect::HandleUnused,                                    //304 clientside
     &AuraEffect::HandleAuraModIncreaseSpeed,                      //305 SPELL_AURA_MOD_MINIMUM_SPEED
-    &AuraEffect::HandleNULL,                                      //306 1 spell
-    &AuraEffect::HandleNULL,                                      //307 absorb healing?
+    &AuraEffect::HandleNULL,                                      //306 0 spells in 3.3.5
+    &AuraEffect::HandleNULL,                                      //307 0 spells in 3.3.5
     &AuraEffect::HandleNULL,                                      //308 new aura for hunter traps
-    &AuraEffect::HandleNULL,                                      //309 absorb healing?
-    &AuraEffect::HandleNoImmediateEffect,                         //310 SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE
-    &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3
-    &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3
-    &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3
-    &AuraEffect::HandleNULL,                                      //314 1 test spell (reduce duration of silince/magic)
-    &AuraEffect::HandleNULL,                                      //315 underwater walking
+    &AuraEffect::HandleNULL,                                      //309 0 spells in 3.3.5
+    &AuraEffect::HandleNoImmediateEffect,                         //310 SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE implemented in Spell::CalculateDamageDone
+    &AuraEffect::HandleNULL,                                      //311 0 spells in 3.3.5
+    &AuraEffect::HandleNULL,                                      //312 0 spells in 3.3.5
+    &AuraEffect::HandleNULL,                                      //313 0 spells in 3.3.5
+    &AuraEffect::HandleNoImmediateEffect,                         //314 SPELL_AURA_PREVENT_RESSURECTION todo
+    &AuraEffect::HandleNoImmediateEffect,                         //315 SPELL_AURA_UNDERWATER_WALKING todo
     &AuraEffect::HandleNoImmediateEffect,                         //316 SPELL_AURA_PERIODIC_HASTE implemented in AuraEffect::CalculatePeriodic
-    &AuraEffect::HandleNULL
 };
 
 AuraEffect::AuraEffect(Aura * base, uint8 effIndex, int32 *baseAmount, Unit * caster) :
@@ -792,7 +791,8 @@ void AuraEffect::CalculatePeriodic(Unit * caster, bool create)
             modOwner->ModSpellCastTime(m_spellProto, m_amplitude);
         }
         // For spells that can benefit from haste
-        else if (modOwner->HasAuraType(SPELL_AURA_PERIODIC_HASTE)) {
+        else if (modOwner->HasAuraType(SPELL_AURA_PERIODIC_HASTE)) 
+        {
             const Unit::AuraEffectList &effList = modOwner->GetAuraEffectsByType(SPELL_AURA_PERIODIC_HASTE);
             for (Unit::AuraEffectList::const_iterator itr = effList.begin(), end = effList.end(); itr != end; ++itr)
             {
