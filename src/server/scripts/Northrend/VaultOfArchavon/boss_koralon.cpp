@@ -72,24 +72,46 @@ struct boss_koralonAI : public ScriptedAI
 
     ScriptedInstance *pInstance;
     EventMap events;
+    uint32 checktimer;
 
     void Reset()
     {
         events.Reset();
 
+        CheckForVoA();
+
+        checktimer = 10000;
+
         if (pInstance)
             pInstance->SetData(DATA_KORALON_EVENT, NOT_STARTED);
     }
 
-    void KilledUnit(Unit* /*Victim*/) {}
+    void CheckForVoA()
+    {
+        if (!sOutdoorPvPMgr.CanBeAttacked(me))
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+        }
+        else
+        {
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+    }
+
+    void KilledUnit(Unit* Victim) {}
 
     void JustDied(Unit* /*Killer*/)
     {
         if (pInstance)
+        {
             pInstance->SetData(DATA_KORALON_EVENT, DONE);
+            pInstance->SaveToDB();
+        }
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
 
@@ -107,7 +129,15 @@ struct boss_koralonAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
+        {
+            if (checktimer <= diff)
+            {
+                CheckForVoA();
+                checktimer = 10000;
+            } else checktimer -= diff;
+
             return;
+        }
 
         events.Update(diff);
 
@@ -158,7 +188,7 @@ struct mob_flame_warderAI : public ScriptedAI
         events.Reset();
     }
 
-    void EnterCombat(Unit * /*who*/)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
 
