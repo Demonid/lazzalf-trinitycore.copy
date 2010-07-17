@@ -73,7 +73,7 @@ struct boss_drakosAI : public ScriptedAI
         lSummons.DespawnAll();
         uiMagicPullTimer = 15000;
         uiStompTimer = 17000;
-        uiBombSummonTimer = 6000;
+        uiBombSummonTimer = 2000;
 
         bPostPull = false;
 
@@ -119,7 +119,7 @@ struct boss_drakosAI : public ScriptedAI
                 me->SummonCreature(NPC_UNSTABLE_SPHERE, pPosition);
             }
 
-            uiBombSummonTimer = 6000;
+            uiBombSummonTimer = 2000;
         } else uiBombSummonTimer -= uiDiff;
 
         if (uiMagicPullTimer <= uiDiff)
@@ -149,7 +149,7 @@ struct boss_drakosAI : public ScriptedAI
         {
             pInstance->SetData(DATA_DRAKOS_EVENT, DONE);
             // start achievement timer (kill Eregos within 20 min)
-            //pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
+            pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
         }
 
         lSummons.DespawnAll();
