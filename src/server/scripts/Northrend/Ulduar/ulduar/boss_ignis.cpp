@@ -196,11 +196,11 @@ struct boss_ignis_AI : public BossAI
 
         events.Update(diff);
 
-        if (me->hasUnitState(UNIT_STAT_CASTING))
-            return;
-
         EncounterTime += diff;
         ConstructTimer += diff;
+
+        if (me->hasUnitState(UNIT_STAT_CASTING))
+            return;
 
         while(uint32 eventId = events.ExecuteEvent())
         {
