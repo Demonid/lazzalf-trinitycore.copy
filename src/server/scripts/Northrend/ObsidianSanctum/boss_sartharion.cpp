@@ -926,7 +926,7 @@ struct mob_tenebronAI : public dummy_dragonAI
         m_bHasPortalOpen = false;
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         DoScriptText(SAY_TENEBRON_AGGRO, me);
         DoZoneInCombat();
@@ -1060,7 +1060,7 @@ struct mob_shadronAI : public dummy_dragonAI
             me->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         DoScriptText(SAY_SHADRON_AGGRO,me);
         DoZoneInCombat();
@@ -1174,7 +1174,7 @@ struct mob_vesperonAI : public dummy_dragonAI
         lSummons.DespawnAll();
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         DoScriptText(SAY_VESPERON_AGGRO,me);
         DoZoneInCombat();
