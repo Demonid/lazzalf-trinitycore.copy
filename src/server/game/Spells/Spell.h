@@ -304,7 +304,8 @@ class Spell
         void EffectAddFarsight(uint32 i);
         void EffectHealMechanical(uint32 i);
         void EffectJump(uint32 i);
-        void EffectJump2(uint32 i);
+        void EffectJumpDest(uint32 i);
+        void EffectLeapBack(uint32 i);
         void EffectQuestClear(uint32 i);
         void EffectTeleUnitsFaceCaster(uint32 i);
         void EffectLearnSkill(uint32 i);
@@ -317,6 +318,7 @@ class Spell
         void EffectLearnPetSpell(uint32 i);
         void EffectWeaponDmg(uint32 i);
         void EffectForceCast(uint32 i);
+        void EffectForceCastWithValue(uint32 i);
         void EffectTriggerSpell(uint32 i);
         void EffectTriggerMissileSpell(uint32 i);
         void EffectThreat(uint32 i);
@@ -347,7 +349,7 @@ class Spell
         void EffectSelfResurrect(uint32 i);
         void EffectSkinning(uint32 i);
         void EffectCharge(uint32 i);
-        void EffectCharge2(uint32 i);
+        void EffectChargeDest(uint32 i);
         void EffectProspecting(uint32 i);
         void EffectMilling(uint32 i);
         void EffectRenamePet(uint32 i);
@@ -644,8 +646,10 @@ class Spell
         void SpellDamageWeaponDmg(uint32 i);
         void SpellDamageHeal(uint32 i);
 
+        // effect helpers
         void GetSummonPosition(uint32 i, Position &pos, float radius = 0.0f, uint32 count = 0);
         void SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const *properties);
+        void CalculateJumpSpeeds(uint8 i, float dist, float & speedxy, float & speedz);
 
         SpellCastResult CanOpenLock(uint32 effIndex, uint32 lockid, SkillType& skillid, int32& reqSkillValue, int32& skillValue);
         // -------------------------------------------
