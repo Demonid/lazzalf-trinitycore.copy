@@ -161,6 +161,10 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (!entry->IsDungeon())
         return true;
 
+    // Not an areatrigger teleporting from world into an instance, if it is same map
+    if (mapid == player->GetMapId())
+       return true;
+
     InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
     if (!instance)
         return false;
