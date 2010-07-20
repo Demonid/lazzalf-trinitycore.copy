@@ -4500,7 +4500,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\server\game\Spells\Auras\SpellEffects.cpp"
+				RelativePath="..\..\src\server\game\Spells\SpellEffects.cpp"
 				>
 			</File>
 			<File
