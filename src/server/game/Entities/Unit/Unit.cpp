@@ -15308,11 +15308,12 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
     if (!charmer)
         return false;
 
-    if ((type == CHARM_TYPE_VEHICLE) && !IsVehicle())
-        return false;
+    // unmount players when charmed
+    if (GetTypeId() == TYPEID_PLAYER)
+        Unmount();
 
     assert(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    // assert((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+    assert((type == CHARM_TYPE_VEHICLE) == IsVehicle());
 
     sLog.outDebug("SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
 

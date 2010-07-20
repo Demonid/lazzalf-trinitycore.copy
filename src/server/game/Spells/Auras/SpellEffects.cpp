@@ -155,7 +155,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectActivateObject,                           // 86 SPELL_EFFECT_ACTIVATE_OBJECT
     &Spell::EffectWMODamage,                                // 87 SPELL_EFFECT_WMO_DAMAGE
     &Spell::EffectWMORepair,                                // 88 SPELL_EFFECT_WMO_REPAIR
-    &Spell::EffectUnused,                                   // 89 SPELL_EFFECT_WMO_CHANGE
+    &Spell::EffectUnused,                                   // 89 SPELL_EFFECT_WMO_CHANGE // 0 intact // 1 damaged // 2 destroyed // 3 rebuilding
     &Spell::EffectKillCreditPersonal,                       // 90 SPELL_EFFECT_KILL_CREDIT              Kill credit but only for single person
     &Spell::EffectUnused,                                   // 91 SPELL_EFFECT_THREAT_ALL               one spell: zzOLDBrainwash
     &Spell::EffectEnchantHeldItem,                          // 92 SPELL_EFFECT_ENCHANT_HELD_ITEM
@@ -210,7 +210,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectForceCastWithValue,                       //141 SPELL_EFFECT_FORCE_CAST_WITH_VALUE
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
-    &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_2             Spectral Blast
+    &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_DEST
     &Spell::EffectPlayerPull,                               //145 SPELL_EFFECT_145                      Black Hole Effect
     &Spell::EffectActivateRune,                             //146 SPELL_EFFECT_ACTIVATE_RUNE
     &Spell::EffectQuestFail,                                //147 SPELL_EFFECT_QUEST_FAIL               quest fail
@@ -230,7 +230,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectSpecCount,                                //161 SPELL_EFFECT_TALENT_SPEC_COUNT        second talent spec (learn/revert)
     &Spell::EffectActivateSpec,                             //162 SPELL_EFFECT_TALENT_SPEC_SELECT       activate primary/secondary spec
     &Spell::EffectNULL,                                     //163
-    &Spell::EffectNULL,                                     //164 cancel's some aura...
+    &Spell::EffectRemoveAura,                               //164 SPELL_EFFECT_REMOVE_AURA
 };
 
 void Spell::EffectNULL(uint32 /*i*/)
@@ -7295,10 +7295,17 @@ void Spell::EffectKnockBack(uint32 i)
         return;
 
     float x, y;
-    if (m_targets.HasDst() && !m_targets.HasTraj())
-        m_targets.m_dstPos.GetPosition(x, y);
-    else
+    if (m_spellInfo->Effect[i] == SPELL_EFFECT_KNOCK_BACK_DEST)
+    {
+        if (m_targets.HasDst())
+            m_targets.m_dstPos.GetPosition(x, y);
+        else
+            return;
+    }
+    else //if (m_spellInfo->Effect[i] == SPELL_EFFECT_KNOCK_BACK)
+    {
         m_caster->GetPosition(x, y);
+    } 
 
     unitTarget->KnockbackFrom(x, y, speedxy, speedz);
 }
@@ -8124,7 +8131,7 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
         case 58730: // Restricted Flight Area
         {
             if (pvpWG && pvpWG->isWarTime())
-			{
+            {
                 unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
                 unitTarget->PlayDirectSound(9417, unitTarget->ToPlayer()); // Fel Reaver sound
                 unitTarget->MonsterTextEmote("The air is too thin in Wintergrasp for normal flight. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
@@ -8139,7 +8146,15 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
             unitTarget->MonsterTextEmote("The air over Dalaran is protected. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
             break;
         }
-    }
+    }   
+}
+
+void Spell::EffectRemoveAura(uint32 i)
+{
+    if (!unitTarget)
+        return;
+    // there may be need of specifying casterguid of removed auras
+    unitTarget->RemoveAurasDueToSpell(m_spellInfo->EffectTriggerSpell[i]);
 }
 
 void Spell::EffectCastButtons(uint32 i)
