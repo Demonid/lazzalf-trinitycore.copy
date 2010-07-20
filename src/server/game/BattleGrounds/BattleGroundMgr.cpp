@@ -336,7 +336,8 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, Group* grp, BattleG
     {
         ArenaTeam *Team = objmgr.GetArenaTeamById(arenateamid);
         if (Team)
-            sWorld.SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, Team->GetName().c_str(), ginfo->ArenaType, ginfo->ArenaType, ginfo->ArenaTeamRating);
+            sWorld.SendWorldText(CUSTOM_ARENA_JOIN, ginfo->ArenaType, ginfo->ArenaType);
+            //sWorld.SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, Team->GetName().c_str(), ginfo->ArenaType, ginfo->ArenaType, ginfo->ArenaTeamRating);
     }
 
     //add players from group to ginfo
@@ -531,7 +532,8 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     {
         ArenaTeam *Team = objmgr.GetArenaTeamById(group->ArenaTeamId);
         if (Team)
-            sWorld.SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, Team->GetName().c_str(), group->ArenaType, group->ArenaType, group->ArenaTeamRating);
+            sWorld.SendWorldText(CUSTOM_ARENA_EXIT, group->ArenaType, group->ArenaType);
+            //sWorld.SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, Team->GetName().c_str(), group->ArenaType, group->ArenaType, group->ArenaTeamRating);
     }
 
     //if player leaves queue and he is invited to rated arena match, then he have to loose
