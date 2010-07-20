@@ -1,0 +1,15 @@
+Come disse un mio Prof ad Ingegneria, l'Ingegnere non reinventa la ruota
+ma usa quello che ha disposizione implementandolo e migliorandolo. Ovviamente
+nella rete di roba che c'è già ne è piena e molto spesso la userò
+implementandola con più o meno modifiche.
+So già che mi dimenticherò di citare i vari crediti e quindi faccio questo file dove elencherò
+i gruppi o le persone che hanno contribuito anche solo per ispirazione alla
+programmazione di questa piccola Fork.
+THX to:
+- TrinityCore team, senza di loro non ci sarebbe la base su cui lavorare. Non ringrazio tutti singolarmente
+ma ringrazio tutti i Dev e le persone che ogni giorno postano anche, se piccole, patch o bug sul
+forum/sito.
+- Warhead, so che è tedesco e quindi non leggerà mai questo file ma lo ringrazio comununque
+- n0n4m3 e la community Russa di Trinity
+- BloodyCore e il suo team tra cui ricordo PrinceCreed, A Metaphysical Drama, Ouden. E' altra fork di Trinity fatta da Italiani 
+e li ringrazio per mantenere un progetto Open e contribuire attivamente allo sviluppo di TrinityCore.
