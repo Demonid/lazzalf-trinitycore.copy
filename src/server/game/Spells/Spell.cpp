@@ -50,7 +50,9 @@
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
 #include "ConditionMgr.h"
+#include "OutdoorPvPWG.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL (1 * IN_MILLISECONDS)
 
@@ -826,6 +828,10 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     // Check for effect immune skip if immuned
     bool immuned = pVictim->IsImmunedToSpellEffect(m_spellInfo, effIndex);
 
+    // Saronite Vapors Hack
+    if (m_spellInfo->Id == 63337)
+        immuned = false;
+
     uint64 targetGUID = pVictim->GetGUID();
 
     // Lookup target in already in list
@@ -1231,6 +1237,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     // Recheck immune (only for delayed spells)
     if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
+    // Deterrence Hack for delayed spells
+    if (m_spellInfo->speed && unit->HasAura(19263))
+        return SPELL_MISS_DEFLECT;
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -1261,7 +1270,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
             // I do not think this is a correct way to fix it. Sanctuary effect should make all delayed spells invalid
             // for delayed spells ignore not visible explicit target
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
-                && (unit->m_invisibilityMask || m_caster->m_invisibilityMask)
+                && (unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH) 
+                || (unit->m_invisibilityMask || m_caster->m_invisibilityMask))
                 && !m_caster->canSeeOrDetect(unit, true))
             {
                 // that was causing CombatLog errors
@@ -2256,6 +2266,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
         radius *= m_spellValue->RadiusMod;
 
         std::list<Unit*> unitList;
+
         if (targetType == SPELL_TARGETS_ENTRY)
         {
             ConditionList conditions = sConditionMgr.GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_SCRIPT_TARGET, m_spellInfo->Id);
@@ -2314,6 +2325,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                                 finish(false);
                             }
                         }
+                        break;
+ 	                case 62834: // Boom (Boombot)
+                    case 64320: // Rune of Power (Assembly of Iron)
+                        SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
                         break;
 
                     default:
@@ -2549,6 +2564,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 switch (m_spellInfo->Id)
                 {
                     case 27285: // Seed of Corruption proc spell
+                    case 49821: // Mind Sear proc spell Rank 1
+                    case 53022: // Mind Sear proc spell Rank 2
+                    case 63025: // Gravity Bomb Normal
+ 	                case 64233: // Gravity Bomb Hero
                         unitList.remove(m_targets.getUnitTarget());
                         break;
                     case 55789: // Improved Icy Talons
@@ -2971,6 +2990,10 @@ void Spell::cast(bool skipCheck)
         {
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
                 m_preCastSpell = 11196;                                // Recently Bandaged
+            else if (m_spellInfo->Id == 7744)              // Will of the Forsaken
+                m_caster->CastSpell(m_caster, 72757, false);           // PvP Trinket cooldown
+            else if(m_spellInfo->Id == 42292)              // PvP Trinket
+                m_caster->CastSpell(m_caster, 72752, false);           // Will of the Forsaken cooldown
             break;
         }
     case SPELLFAMILY_MAGE:
@@ -4629,10 +4652,10 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
             {
                 // Not allow banish not self target
-                if (m_spellInfo->Mechanic == MECHANIC_BANISH)
+                /*if (m_spellInfo->Mechanic == MECHANIC_BANISH)
                     if (target->GetTypeId() == TYPEID_UNIT &&
                         !m_caster->ToPlayer()->isAllowedToLoot(target->ToCreature()))
-                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;*/
 
                 if (m_customAttr & SPELL_ATTR_CU_PICKPOCKET)
                 {
@@ -4944,7 +4967,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }*/
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell || m_spellInfo->Id == 33395) // Water Elemental's Freeze should be checked even if it's a triggered spell
     {
         SpellCastResult castResult = CheckRange(strict);
         if (castResult != SPELL_CAST_OK)
@@ -5291,6 +5314,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(m_spellInfo->Id == 698) //ritual of summoning
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleGround())
+                            return SPELL_FAILED_NOT_HERE;
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -5397,6 +5430,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (target->GetCharmerGUID())
                         return SPELL_FAILED_CHARMED;
 
+                    if (target->IsMounted())
+                        return SPELL_FAILED_NOT_ON_MOUNTED;
+
                     int32 damage = CalculateDamage(i, target);
                     if (damage && int32(target->getLevel()) > damage)
                         return SPELL_FAILED_HIGHLEVEL;
@@ -5416,7 +5452,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattleGroundOrArena();
                 InstanceTemplate const *it = objmgr.GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount |= it->allowMount;
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
@@ -5447,8 +5483,15 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // allow always ghost flight spells
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
+                    
+	                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP); 
+
+                    // Wintergrasp
+                    if ((m_originalCaster->GetZoneId() == NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime()))
+                            return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
+                            
                     if (AreaTableEntry const* pArea = GetAreaEntryByAreaID(m_originalCaster->GetAreaId()))
-                        if (pArea->flags & AREA_FLAG_NO_FLY_ZONE)
+                    	if (pArea->flags & AREA_FLAG_NO_FLY_ZONE)
                             return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;
@@ -5569,6 +5612,10 @@ SpellCastResult Spell::CheckCasterAuras() const
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
             mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     }
+
+    // Caster with Cyclone can only use PvP trinket
+    if (m_caster->HasAura(33786) && mechanic_immune != IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK)
+        return SPELL_FAILED_STUNNED;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;
