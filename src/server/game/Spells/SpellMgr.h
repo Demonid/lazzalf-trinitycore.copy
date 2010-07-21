@@ -408,6 +408,14 @@ inline bool IsAreaAuraEffect(uint32 effect)
     return false;
 }
 
+inline bool HasAreaAuraEffect(SpellEntry const *spellInfo)
+{
+    for (uint8 i=0;i<MAX_SPELL_EFFECTS;++i)
+        if (IsAreaAuraEffect(spellInfo->Effect[i]))
+            return true;
+    return false;
+}
+
 inline bool IsUnitOwnedAuraEffect(uint32 effect)
 {
     return (IsAreaAuraEffect(effect) || effect == SPELL_EFFECT_APPLY_AURA);
@@ -484,7 +492,7 @@ inline uint32 GetAllSpellMechanicMask(SpellEntry const* spellInfo)
     if (spellInfo->Mechanic)
         mask |= 1<<spellInfo->Mechanic;
     for (int i=0; i< 3; ++i)
-        if (spellInfo->EffectMechanic[i])
+        if (spellInfo->Effect[i] && spellInfo->EffectMechanic[i])
             mask |= 1<<spellInfo->EffectMechanic[i];
     return mask;
 }
