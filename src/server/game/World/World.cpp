@@ -70,6 +70,7 @@
 #include "AddonMgr.h"
 #include "LFGMgr.h"
 #include "ConditionMgr.h"
+#include "DisableMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1273,8 +1274,8 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", 0);
-    bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", false);
-    bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
+    bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", true);
+    bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", true);
     std::string ignoreMapIds = sConfig.GetStringDefault("vmap.ignoreMapIds", "");
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
@@ -1286,7 +1287,7 @@ void World::LoadConfigSettings(bool reload)
     sLog.outString("WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
-    m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", false);
+    m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", true);
     m_configs[CONFIG_BG_START_MUSIC] = sConfig.GetBoolDefault("MusicInBattleground", false);
     m_configs[CONFIG_START_ALL_SPELLS] = sConfig.GetBoolDefault("PlayerStart.AllSpells", false);
     m_configs[CONFIG_HONOR_AFTER_DUEL] = sConfig.GetIntDefault("HonorPointsAfterDuel", 0);
@@ -1328,20 +1329,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfig.GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads", 1);
-
-    std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
-    char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
-    forbiddenMaps[forbiddenmaps.length()] = 0;
-    strncpy(forbiddenMaps, forbiddenmaps.c_str(), forbiddenmaps.length());
-    const char * delim = ",";
-    char * token = strtok(forbiddenMaps, delim);
-    while (token != NULL)
-    {
-        int32 mapid = strtol(token, NULL, 10);
-        m_forbiddenMapIds.insert(mapid);
-        token = strtok(NULL,delim);
-    }
-    delete[] forbiddenMaps;
 
     // chat logging
     m_configs[CONFIG_CHATLOG_CHANNEL] = sConfig.GetBoolDefault("ChatLogs.Channel", false);
@@ -1535,9 +1522,15 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Weather Data...");
     objmgr.LoadWeatherZoneChances();
 
+    sLog.outString("Loading Disables");
+    sDisableMgr.LoadDisables();                             // must be before loading quests
+
     sLog.outString("Loading Quests...");
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
+    sLog.outString("Checking Quest Disables");
+    sDisableMgr.CheckQuestDisables();                       // must be after loading quests
+    
     sLog.outString();
     sLog.outString("Loading Quest Pool...");
     objmgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
@@ -1607,9 +1600,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading Player level dependent mail rewards...");
     objmgr.LoadMailLevelRewards();
-
-    sLog.outString("Loading Disabled Spells...");
-    objmgr.LoadSpellDisabledEntrys();
 
     // Loot tables
     LoadLootTables();

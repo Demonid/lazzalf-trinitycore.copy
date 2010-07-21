@@ -63,10 +63,11 @@ set(game_STAT_SRCS
   Combat/HostileRefManager.cpp
   Combat/ThreatManager.cpp
   Conditions/ConditionMgr.cpp
-   Custom/GuildHouse.cpp
-   Custom/GuildHouse.h
-   Custom/sc_npc_teleport.cpp
-   Custom/sc_npc_teleport.h
+  Conditions/DisableMgr.cpp
+  Custom/GuildHouse.cpp
+  Custom/GuildHouse.h
+  Custom/sc_npc_teleport.cpp
+  Custom/sc_npc_teleport.h
   DataStores/DBCStores.cpp
   DungeonFinding/LFGMgr.cpp
   Entities/Corpse/Corpse.cpp
