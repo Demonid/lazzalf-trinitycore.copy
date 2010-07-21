@@ -88,6 +88,8 @@ static bool InitTriggerAuraData();
 static bool isTriggerAura[TOTAL_AURAS];
 // Define can`t trigger auras (need for disable second trigger)
 static bool isNonTriggerAura[TOTAL_AURAS];
+// Triggered always, even from triggered spells
+static bool isAlwaysTriggeredAura[TOTAL_AURAS];
 // Prepare lists
 static bool procPrepared = InitTriggerAuraData();
 
@@ -5964,16 +5966,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                             return false;
                     }
 
-                    AuraEffectList const& DoTAuras = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    for (Unit::AuraEffectList::const_iterator i = DoTAuras.begin(); i != DoTAuras.end(); ++i)
-                    {
-                        if ((*i)->GetCasterGUID() != GetGUID() || (*i)->GetId() != 12654 || (*i)->GetEffIndex() != 0)
-                            continue;
-                        basepoints0 += ((*i)->GetAmount() * ((*i)->GetTotalTicks() - ((*i)->GetTickNumber()))) / 2;
-                        break;
-                    }
-
                     triggered_spell_id = 12654;
+                    basepoints0 += GetRemainingDotDamage(GetGUID(), triggered_spell_id);
                     break;
                 }
                 // Glyph of Ice Block
@@ -6808,6 +6802,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // 4 damage tick
                 basepoints0 = triggerAmount*damage/400;
                 triggered_spell_id = 61840;
+                // Add remaining ticks to damage done
+                basepoints0 += GetRemainingDotDamage(GetGUID(), triggered_spell_id);
                 break;
             }
             // Sheath of Light
@@ -8212,8 +8208,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                     SpellEntry const *TriggerPS = sSpellStore.LookupEntry(trigger_spell_id);
                     if (!TriggerPS)
                         return false;
+
                     basepoints0 = int32(damage * triggerAmount / 100 / (GetSpellMaxDuration(TriggerPS) / TriggerPS->EffectAmplitude[0]));
-                    target = pVictim;
+                    basepoints0 += GetRemainingDotDamage(GetGUID(), trigger_spell_id);
+                    break;
                 }
                 break;
             }
@@ -13736,6 +13734,7 @@ bool InitTriggerAuraData()
     {
         isTriggerAura[i]=false;
         isNonTriggerAura[i] = false;
+        isAlwaysTriggeredAura[i] = false;
     }
     isTriggerAura[SPELL_AURA_DUMMY] = true;
     isTriggerAura[SPELL_AURA_MOD_CONFUSE] = true;
@@ -13775,6 +13774,15 @@ bool InitTriggerAuraData()
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK]=true;
+
+    isAlwaysTriggeredAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_MOD_FEAR] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_MOD_ROOT] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_MOD_STUN] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_TRANSFORM] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_SPELL_MAGNET] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_SCHOOL_ABSORB] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
 
     return true;
 }
@@ -13897,9 +13905,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
             continue;
         ProcTriggeredData triggerData(itr->second->GetBase());
         // Defensive procs are active on absorbs (so absorption effects are not a hindrance)
-        bool active = (damage > 0) || ((procExtra & PROC_EX_ABSORB) && isVictim);
-        if (!IsTriggeredAtSpellProcEvent(pTarget, triggerData.aura, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent))
+        bool active = (damage > 0) || (procExtra & (PROC_EX_ABSORB|PROC_EX_BLOCK) && isVictim);
+        if (isVictim)
+            procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
+        SpellEntry const* spellProto = itr->second->GetBase()->GetSpellProto();
+        if(!IsTriggeredAtSpellProcEvent(pTarget, triggerData.aura, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent))
             continue;
+
+        // Triggered spells not triggering additional spells
+        bool triggered= !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CAN_PROC_TRIGGERED) ?
+            (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_ON_TRAP_ACTIVATION)) : false;
 
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -13921,7 +13936,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                                 IsPositiveSpell(triggered_spell_id);
                 if (!damage && (procExtra & PROC_EX_ABSORB) && isVictim && positive)
                     continue;
-                triggerData.effMask |= 1<<i;
+                // Some spells must always trigger
+                if (!triggered || isAlwaysTriggeredAura[aurEff->GetAuraType()])
+                    triggerData.effMask |= 1<<i;
             }
         }
         if (triggerData.effMask)
@@ -16651,6 +16668,21 @@ void Unit::OutDebugInfo() const
 
     if (GetVehicle())
         sLog.outString("On vehicle %u.", GetVehicleBase()->GetEntry());
+}
+
+uint32 Unit::GetRemainingDotDamage(uint64 caster, uint32 spellId, uint8 effectIndex) const
+{
+    uint32 amount = 0;
+    AuraEffectList const& DoTAuras = GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+    for (AuraEffectList::const_iterator i = DoTAuras.begin(); i != DoTAuras.end(); ++i)
+    {
+        if ((*i)->GetCasterGUID() != caster || (*i)->GetId() != spellId || (*i)->GetEffIndex() != effectIndex)
+            continue;
+        amount += ((*i)->GetAmount() * ((*i)->GetTotalTicks() - ((*i)->GetTickNumber()))) / (*i)->GetTotalTicks();
+        break;
+    }
+
+    return amount;
 }
 
 void CharmInfo::SetIsCommandAttack(bool val)
