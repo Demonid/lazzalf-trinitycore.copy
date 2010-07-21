@@ -839,6 +839,13 @@ struct AccessRequirement
     std::string heroicQuestFailedText;
 };
 
+enum CharDeleteMethod
+{
+    CHAR_DELETE_REMOVE = 0,                      // Completely remove from the database
+    CHAR_DELETE_UNLINK = 1                       // The character gets unlinked from the account, 
+                                                 // the name gets freed up and appears as deleted ingame
+};
+
 class PlayerTaxi
 {
     public:
@@ -1171,7 +1178,7 @@ class Player : public Unit, public GridObject<Player>
         uint8 CanBankItem(uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap, bool not_loading = true) const;
         uint8 CanUseItem(Item *pItem, bool not_loading = true) const;
         bool HasItemTotemCategory(uint32 TotemCategory) const;
-        bool CanUseItem(ItemPrototype const *pItem);
+        uint8 CanUseItem(ItemPrototype const *pItem) const;
         uint8 CanUseAmmo(uint32 item) const;
         Item* StoreNewItem(ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0);
         Item* StoreItem(ItemPosCountVec const& pos, Item *pItem, bool update);
@@ -1414,6 +1421,10 @@ class Player : public Unit, public GridObject<Player>
         static void SetFloatValueInArray(Tokens& data,uint16 index, float value);
         static void Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair);
         static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid);
+
+        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
+        static void DeleteOldCharacters();
+        static void DeleteOldCharacters(uint32 keepDays);
 
         bool m_mailsLoaded;
         bool m_mailsUpdated;
@@ -1835,8 +1846,6 @@ class Player : public Unit, public GridObject<Player>
 
         void SendTeleportPacket(Position &oldPos);
         void SendTeleportAckPacket();
-
-        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
 
         Corpse *GetCorpse() const;
         void SpawnCorpseBones();
