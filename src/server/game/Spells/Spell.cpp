@@ -792,6 +792,50 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const * /*triggeredByAura*/)
         to prevent chain proc of these spells
     */
 
+    switch (m_spellInfo->SpellFamilyName)
+    {
+        case SPELLFAMILY_MAGE:
+        {
+            // Blizzard - trigger as DOT
+            if (m_spellInfo->SpellFamilyFlags[0] & 0x80)
+            {
+                m_procAttacker = PROC_FLAG_ON_DO_PERIODIC;
+                m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
+            }
+            break;
+        }
+        case SPELLFAMILY_WARLOCK: 
+        {
+            // For Hellfire Effect / Rain of Fire - trigger as DOT
+            if (m_spellInfo->SpellFamilyFlags[0] & 0x60)
+            {
+                m_procAttacker = PROC_FLAG_ON_DO_PERIODIC;
+                m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
+            }
+            break;
+        }
+        case SPELLFAMILY_HUNTER:
+        {
+            // Volley - trigger as DOT
+            if (m_spellInfo->SpellFamilyFlags[0] & 0x0002000)
+            {
+                m_procAttacker = PROC_FLAG_ON_DO_PERIODIC;
+                m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
+            }
+            break;
+        }
+        case SPELLFAMILY_DRUID:
+        {
+            // Hurricane - trigger as DOT
+            if (m_spellInfo->SpellFamilyFlags[0] & 0x0400000)
+            {
+                m_procAttacker = PROC_FLAG_ON_DO_PERIODIC;
+                m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
+            }
+            break;
+        }
+    }
+
     // Ranged autorepeat attack is set as triggered spell - ignore it
     if (!(m_procAttacker & PROC_FLAG_SUCCESSFUL_RANGED_HIT))
     {
@@ -1971,6 +2015,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
             float objSize = m_caster->GetObjectSize();
             dist = GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+            if (modOwner) modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, dist, this);
             if (dist < objSize)
                 dist = objSize;
             else if (cur == TARGET_DEST_CASTER_RANDOM)
@@ -1992,7 +2037,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
             }
 
             Position pos;
-            m_caster->GetNearPosition(pos, dist, angle);
+            if (cur == TARGET_DEST_CASTER_FRONT_LEAP)
+                m_caster->GetFirstCollisionPosition(pos, dist, angle);
+            else
+                m_caster->GetNearPosition(pos, dist, angle);
             m_targets.setDst(&pos); // also flag
             break;
         }
@@ -5238,6 +5286,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (m_caster->GetCharmGUID())
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
                         break;
+                }
+                break;
+            }
+            case SPELL_EFFECT_CREATE_TAMED_PET:
+            {
+                if (m_targets.getUnitTarget())
+                {
+                    if (m_targets.getUnitTarget()->GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_TARGETS;
+                    if (m_targets.getUnitTarget()->GetPetGUID())
+                        return SPELL_FAILED_ALREADY_HAVE_SUMMON;
                 }
                 break;
             }

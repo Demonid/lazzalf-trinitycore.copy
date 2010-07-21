@@ -338,7 +338,7 @@ class Spell
         void EffectResurrect(uint32 i);
         void EffectParry(uint32 i);
         void EffectBlock(uint32 i);
-        void EffectLeapForward(uint32 i);
+        void EffectLeap(uint32 i);
         void EffectTransmitted(uint32 i);
         void EffectDisEnchant(uint32 i);
         void EffectInebriate(uint32 i);
@@ -378,10 +378,13 @@ class Spell
         void EffectKillCreditPersonal(uint32 i);
         void EffectKillCredit(uint32 i);
         void EffectQuestFail(uint32 i);
+        void EffectQuestStart(uint32 i);
         void EffectRedirectThreat(uint32 i);
         void EffectWMODamage(uint32 i);
         void EffectWMORepair(uint32 i);
         void EffectActivateRune(uint32 i);
+        void EffectCreateTamedPet(uint32 i);
+        void EffectDiscoverTaxi(uint32 i);
         void EffectTitanGrip(uint32 i);
         void EffectEnchantItemPrismatic(uint32 i);
         void EffectPlayMusic(uint32 i);
