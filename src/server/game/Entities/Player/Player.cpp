@@ -20732,10 +20732,10 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     // Arena Preparation Visibility
-    if (GetMap()->IsBattleArena() && u->GetMap()->IsBattleArena())
+    if (GetTypeId() == TYPEID_PLAYER && u->GetTypeId() == TYPEID_PLAYER)
     {
-        if (GetTypeId() == TYPEID_PLAYER && u->GetTypeId() == TYPEID_PLAYER)
-        {
+        if (GetMap()->IsBattleArena() && u->GetMap()->IsBattleArena())
+        {        
   	        if (HasAura(SPELL_ARENA_PREPARATION) || u->HasAura(SPELL_ARENA_PREPARATION))
             {
  	            if ((HasAura(SPELL_ALLIANCE_GOLD_FLAG) || HasAura(SPELL_HORDE_GOLD_FLAG)) && (u->HasAura(SPELL_ALLIANCE_GOLD_FLAG) || u->HasAura(SPELL_HORDE_GOLD_FLAG)))
