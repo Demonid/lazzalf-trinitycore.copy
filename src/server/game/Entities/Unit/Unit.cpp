@@ -2926,8 +2926,24 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     tmp += resist_chance;
 
     // Chance resist debuff
-    tmp += pVictim->GetMaxPositiveAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
-    tmp += pVictim->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
+    if (!IsPositiveSpell(spell->Id))
+    {
+        bool bNegativeAura = false;
+        for (uint8 I = 0; I < 3; I++)
+        {
+            if (spell->EffectApplyAuraName[I] != 0)
+            {
+                bNegativeAura = true;
+                break;
+            }
+        }
+
+        if (bNegativeAura)
+        {
+            tmp += pVictim->GetMaxPositiveAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
+            tmp += pVictim->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel)) * 100;
+        }
+    }
 
    // Roll chance
     if (rand < tmp)
@@ -16191,6 +16207,89 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             return 864;
         case FORM_SPIRITOFREDEMPTION:
             return 16031;
+    }
+    return 0;
+}
+
+uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
+{
+    switch(getRace())
+    {
+        case RACE_ORC:
+        {
+            switch(totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    //fire
+                    return 30758;
+                case SUMMON_TYPE_TOTEM_EARTH:   //earth
+                    return 30757;
+                case SUMMON_TYPE_TOTEM_WATER:   //water
+                    return 30759;
+                case SUMMON_TYPE_TOTEM_AIR:     //air
+                    return 30756;
+            }
+            break;
+        }
+        case RACE_DWARF:
+        {
+            switch(totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    //fire
+                    return 30754;
+                case SUMMON_TYPE_TOTEM_EARTH:   //earth
+                    return 30753;
+                case SUMMON_TYPE_TOTEM_WATER:   //water
+                    return 30755;
+                case SUMMON_TYPE_TOTEM_AIR:     //air
+                    return 30736;
+            }
+            break;
+        }
+        case RACE_TROLL:
+        {
+            switch(totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    //fire
+                    return 30762;
+                case SUMMON_TYPE_TOTEM_EARTH:   //earth
+                    return 30761;
+                case SUMMON_TYPE_TOTEM_WATER:   //water
+                    return 30763;
+                case SUMMON_TYPE_TOTEM_AIR:     //air
+                    return 30760;
+            }
+            break;
+        }
+        case RACE_TAUREN:
+        {
+            switch(totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    //fire
+                    return 4589;
+                case SUMMON_TYPE_TOTEM_EARTH:   //earth
+                    return 4588;
+                case SUMMON_TYPE_TOTEM_WATER:   //water
+                    return 4587;
+                case SUMMON_TYPE_TOTEM_AIR:     //air
+                    return 4590;
+            }
+            break;
+        }
+        case RACE_DRAENEI:
+        {
+            switch(totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    //fire
+                    return 19074;
+                case SUMMON_TYPE_TOTEM_EARTH:   //earth
+                    return 19073;
+                case SUMMON_TYPE_TOTEM_WATER:   //water
+                    return 19075;
+                case SUMMON_TYPE_TOTEM_AIR:     //air
+                    return 19071;
+            }
+            break;
+        }
     }
     return 0;
 }
