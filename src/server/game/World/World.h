@@ -447,13 +447,6 @@ enum WorldStates
     WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
 };
 
-// Daily/Weekly quest last time entries within the worldstates table
-enum LastTimesPoolQuest
-{
-    NEXT_TIME_DAILY     = 90101,
-    NEXT_TIME_WEEKLY    = 90102
-};
-
 enum ArenaModSystem
 {
     LAST_TIME_MOD_RESET = 80001
@@ -757,8 +750,10 @@ class World
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId);
 
-        void InitTimedQuestResetTime();
-        void ResetTimedQuests(bool daily);
+        void InitDailyQuestResetTime();
+        void InitWeeklyQuestResetTime();
+        void ResetDailyQuests();
+        void ResetWeeklyQuests();
         void InitRandomBGResetTime();
         void ResetRandomBG();
     private:
@@ -848,11 +843,9 @@ class World
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
         SqlResultQueue *m_resultQueue;
 
-        // Next daily quest reset time
-         time_t m_NextDailyQuestReset;
-        // Next weekly quest reset time
+        // next daily quests and random bg reset time
+        time_t m_NextDailyQuestReset;
         time_t m_NextWeeklyQuestReset;
-        // Next random BG reset time
         time_t m_NextRandomBGReset;
 
         //Player Queue

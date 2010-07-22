@@ -504,7 +504,6 @@ enum AtLoginFlags
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
-typedef std::map<uint32, TimedQuestStatusData> TimedQuestStatusMap;
 
 enum QuestSlotOffsets
 {
@@ -765,7 +764,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
     PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOADTIMEDQUESTSTATUS     = 6,
+    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
     PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
     PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
     PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
@@ -785,6 +784,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADTALENTS              = 23,
     PLAYER_LOGIN_QUERY_LOADACCOUNTDATA          = 24,
     PLAYER_LOGIN_QUERY_LOADSKILLS               = 25,
+    PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS     = 26,
     PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 27,
     MAX_PLAYER_LOGIN_QUERY                      = 28
 };
@@ -1316,14 +1316,17 @@ class Player : public Unit, public GridObject<Player>
         bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
         bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
         bool SatisfyQuestDay(Quest const* qInfo, bool msg);
+        bool SatisfyQuestWeek(Quest const* qInfo, bool msg);
         bool GiveQuestSourceItem(Quest const *pQuest);
         bool TakeQuestSourceItem(uint32 quest_id, bool msg);
         bool GetQuestRewardStatus(uint32 quest_id) const;
         QuestStatus GetQuestStatus(uint32 quest_id) const;
         void SetQuestStatus(uint32 quest_id, QuestStatus status);
 
-        void SetTimedQuestStatus(uint32 quest_id);
-        void ResetTimedQuestStatus(bool daily, time_t time);
+        void SetDailyQuestStatus(uint32 quest_id);
+        void SetWeeklyQuestStatus(uint32 quest_id);
+        void ResetDailyQuestStatus();
+        void ResetWeeklyQuestStatus();
 
         uint16 FindQuestSlot(uint32 quest_id) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
@@ -1468,7 +1471,6 @@ class Player : public Unit, public GridObject<Player>
         }
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
-        TimedQuestStatusMap& GetTimedQuestStatusMap() { return mTimedQuestStatus; };
  
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
@@ -2395,6 +2397,7 @@ class Player : public Unit, public GridObject<Player>
         //We allow only one timed quest active at the same time. Below can then be simple value instead of set.
         typedef std::set<uint32> QuestSet;
         QuestSet m_timedquests;
+        QuestSet m_weeklyquests;
 
         uint64 m_divider;
         uint32 m_ingametime;
@@ -2412,7 +2415,8 @@ class Player : public Unit, public GridObject<Player>
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
         void _LoadQuestStatus(QueryResult_AutoPtr result);
-        void _LoadTimedQuestStatus(QueryResult_AutoPtr result);
+        void _LoadDailyQuestStatus(QueryResult_AutoPtr result);
+        void _LoadWeeklyQuestStatus(QueryResult_AutoPtr result);
         void _LoadRandomBGStatus(QueryResult_AutoPtr result);
         void _LoadGroup(QueryResult_AutoPtr result);
         void _LoadSkills(QueryResult_AutoPtr result);
@@ -2436,7 +2440,8 @@ class Player : public Unit, public GridObject<Player>
         void _SaveInventory();
         void _SaveMail();
         void _SaveQuestStatus();
-        void _SaveTimedQuestStatus();
+        void _SaveDailyQuestStatus();
+        void _SaveWeeklyQuestStatus();
         void _SaveSkills();
         void _SaveSpells();
         void _SaveEquipmentSets();
@@ -2487,7 +2492,6 @@ class Player : public Unit, public GridObject<Player>
         int8 m_comboPoints;
 
         QuestStatusMap mQuestStatus;
-        TimedQuestStatusMap mTimedQuestStatus;
 
         SkillStatusMap mSkillStatus;
 
@@ -2538,7 +2542,9 @@ class Player : public Unit, public GridObject<Player>
 
         TradeData* m_trade;
 
-        bool   m_TimedQuestChanged;
+        bool   m_DailyQuestChanged;
+        bool   m_WeeklyQuestChanged;
+        time_t m_lastDailyQuestTime;
 
         uint32 m_drunkTimer;
         uint16 m_drunk;
