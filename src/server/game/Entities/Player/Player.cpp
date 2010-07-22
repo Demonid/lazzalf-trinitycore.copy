@@ -4636,10 +4636,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
-            CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'",guid);
-            CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid = '%u'",guid);
-            CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid = '%u' OR memberGuid = '%u'",guid,guid);
-            CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
@@ -8102,7 +8098,7 @@ void Player::CastItemUseSpell(Item *item,SpellCastTargets const& targets,uint8 c
         Spell *spell = new Spell(this, spellInfo,false);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;                   //set count of casts
-        spell->m_currentBasePoints[0] = SpellMgr::CalculateSpellEffectBaseAmount(learning_spell_id);
+        spell->m_currentBasePoints[0] = SpellMgr::CalculateSpellEffectBaseAmount(learning_spell_id, spellInfo, 0);
         spell->prepare(&targets);
         return;
     }
