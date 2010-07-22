@@ -4659,9 +4659,9 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             CharacterDatabase.PExecute("DELETE FROM character_equipmentsets WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE PlayerGuid1 = '%u' OR PlayerGuid2 = '%u'",guid, guid);
             CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE PlayerGuid = '%u'",guid);
-	    CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_battleground_data WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_glyphs WHERE guid = '%u'",guid);
+            CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_queststatus_timed WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_talent WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
