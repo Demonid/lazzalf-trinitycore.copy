@@ -10,6 +10,8 @@
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
+#include "Custom/sc_npc_teleport.h"
+#include "Custom/GuildHouse.h"
 
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];
@@ -53,6 +55,10 @@ void ScriptMgr::ScriptsInit()
 
     //Load database (must be called after SD2Config.SetSource).
     LoadDatabase();
+	// Load TeleNPC2 - maybe not the best place to load it ...
+    LoadNpcTele();
+    //GuildHouse System
+    LoadGuildHouseSystem();
 
     sLog.outString("Loading C++ scripts");
     barGoLink bar(1);
