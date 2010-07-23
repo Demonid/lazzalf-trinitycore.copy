@@ -736,6 +736,9 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     obj->Delete();
     obj->DeleteFromDB();
 
+    // GuidHouse
+    WorldDatabase.PExecuteLog("DELETE FROM guildhouses_add WHERE guid = %u AND type = 1", obj->GetDBTableGUIDLow());   
+
     PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, obj->GetGUIDLow());
 
     return true;
@@ -928,6 +931,99 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
 
     map->Add(pGameObj);
+
+    // TODO: is it really necessary to add both the real and DB table guid here ?
+    objmgr.AddGameobjectToGrid(db_lowGUID, objmgr.GetGOData(db_lowGUID));
+
+    PSendSysMessage(LANG_GAMEOBJECT_ADD,id,gInfo->name,db_lowGUID,x,y,z);
+    return true;
+}
+
+//spawn go
+bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+    char* cId = extractKeyFromLink((char*)args,"Hgameobject_entry");
+    if (!cId)
+        return false;
+
+    char* guildhouse = strtok(NULL, " ");
+    if (!guildhouse)
+        return false;
+
+    char* guildhouseadd = strtok(NULL, " ");
+    if (!guildhouseadd)
+        return false;
+
+    uint32 id = atol(cId);
+    uint32 guildhouseid = atoi(guildhouse);
+    uint32 guildhouseaddid = atoi(guildhouseadd);
+
+    if (!id || !guildhouseid || !guildhouseaddid)
+        return false;
+
+    char* spawntimeSecs = strtok(NULL, " ");
+
+    const GameObjectInfo *gInfo = objmgr.GetGameObjectInfo(id);
+
+    if (!gInfo)
+    {
+        PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+    {
+        // report to DB errors log as in loading case
+        sLog.outErrorDb("Gameobject (Entry %u GoType: %u) have invalid displayId (%u), not spawned.",id, gInfo->type, gInfo->displayId);
+        PSendSysMessage(LANG_GAMEOBJECT_HAVE_INVALID_DATA,id);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player *chr = m_session->GetPlayer();
+    float x = float(chr->GetPositionX());
+    float y = float(chr->GetPositionY());
+    float z = float(chr->GetPositionZ());
+    float o = float(chr->GetOrientation());
+    Map *map = chr->GetMap();
+
+    GameObject* pGameObj = new GameObject;
+    uint32 db_lowGUID = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+
+    if (!pGameObj->Create(db_lowGUID, gInfo->id, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    if (spawntimeSecs)
+    {
+        uint32 value = atoi((char*)spawntimeSecs);
+        pGameObj->SetRespawnTime(value);
+        //sLog.outDebug("*** spawntimeSecs: %d", value);
+    }
+
+    // fill the gameobject data and save to the db
+    pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()),chr->GetPhaseMaskForSpawn());
+
+    // this will generate a new guid if the object is in an instance
+    if (!pGameObj->LoadFromDB(db_lowGUID, map))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
+
+    map->Add(pGameObj);
+
+    WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')", 
+                              pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
 
     // TODO: is it really necessary to add both the real and DB table guid here ?
     objmgr.AddGameobjectToGrid(db_lowGUID, objmgr.GetGOData(db_lowGUID));
