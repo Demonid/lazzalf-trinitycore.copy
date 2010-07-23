@@ -828,18 +828,6 @@ ChatLogTimestamp = 0
 #        Default: 0 (false)
 #                 1 (true)
 #
-#    Hour when daily quests reset (0..23)
-#        Quest.Daily.ResetHour
-#        Default: 4
-#
-#    Hour in one from weekly days when weekly quests reset (0..23)
-#        Quest.Weekly.ResetHour
-#        Default: 4
-#
-#    Week day when daily quests reset (0..6) 0 == Sunday
-#        Quest.Weekly.ResetDay
-#        Default: 3 - Wednesday since 3.3.3.11723
-#
 #    Guild.EventLogRecordsCount
 #        Count of guild event log records stored in guild_eventlog table
 #         Increase to store more guild events in table, minimum is 100
@@ -958,9 +946,6 @@ Instance.UnloadDelay = 1800000
 Quests.LowLevelHideDiff = 4
 Quests.HighLevelHideDiff = 7
 Quests.IgnoreRaid = 0
-Quest.Daily.ResetHour = 4
-Quest.Weekly.ResetHour = 4
-Quest.Weekly.ResetDay = 3
 Guild.EventLogRecordsCount = 100
 Guild.BankEventLogRecordsCount = 25
 MaxPrimaryTradeSkill = 2
