@@ -853,7 +853,7 @@ void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 acti
             break;
         case 1025: // Darnassus
             player->CLOSE_GOSSIP_MENU();
-            player->TeleportTo(1, 966.80, 2513.63, 1331.66, 0);
+            player->TeleportTo(1, 9952.13, 2283.35, 1341.40, 0);
             break;
         case 1030: // Exodar
             player->CLOSE_GOSSIP_MENU();
