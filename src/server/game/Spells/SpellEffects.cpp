@@ -6380,12 +6380,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         }
                         break;
                     }
-                    if (spellId && m_caster->ToPlayer() && !m_caster->ToPlayer()->HasSpellCooldown(spellId))
+                    if (spellId)
                     {
                         m_caster->CastCustomSpell(unitTarget, spellId, &basePoint, 0, 0, true);
 
-                        if (spellId == 53359) // Scorpid Sting - This effect cannot occur more than once per 1 minute.
-                            m_caster->ToPlayer()->AddSpellCooldown(spellId,0,uint32(time(NULL) + 60));
+                        if (spellId == 53359  && m_caster->ToPlayer() && !m_caster->ToPlayer()->HasSpellCooldown(spellId)) // Scorpid Sting - This effect cannot occur more than once per 1 minute.
+                            m_caster->ToPlayer()->AddSpellCooldown(spellId, 0, uint32(time(NULL) + 60));
                     }
                     return;
                 }
