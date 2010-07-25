@@ -7339,6 +7339,7 @@ DROP TABLE IF EXISTS `spell_scripts`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `spell_scripts` (
   `id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `effIndex` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `delay` int(10) unsigned NOT NULL DEFAULT '0',
   `command` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `datalong` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -14569,6 +14570,20 @@ INSERT INTO `spelldifficulty_dbc` VALUES
 UNLOCK TABLES;
 
 --
+-- Table structure for table `spell_script_names`
+--
+
+DROP TABLE IF EXISTS `spell_script_names`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `spell_script_names` (
+  `spell_id` mediumint(8) NOT NULL,
+  `ScriptName` char(64) NOT NULL,
+  UNIQUE (`spell_id`, `ScriptName`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `transports`
 --
 
@@ -15391,6 +15406,7 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 (5025, 'Type: %u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (5026, 'DisplayID: %u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (5027, 'Name: %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(5028, 'Lootid: %u', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (6604, 'You cannot say, yell or emote until you become level %d.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (6605, 'You cannot whisper until you become level %d.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (6606, 'You cannot write to channels until you become level %d.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
