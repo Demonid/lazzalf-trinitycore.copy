@@ -804,7 +804,7 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const * /*triggeredByAura*/)
 
     switch (m_spellInfo->SpellFamilyName)
     {
-        case SPELLFAMILY_MAGE:
+        /*case SPELLFAMILY_MAGE:
         {
             // Blizzard - trigger as DOT
             if (m_spellInfo->SpellFamilyFlags[0] & 0x80)
@@ -813,7 +813,7 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const * /*triggeredByAura*/)
                 m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
             }
             break;
-        }
+        }*/
         case SPELLFAMILY_WARLOCK: 
         {
             // For Hellfire Effect / Rain of Fire - trigger as DOT
