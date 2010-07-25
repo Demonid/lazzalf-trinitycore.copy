@@ -953,7 +953,8 @@ enum TrinityStrings
     LANG_GOINFO_TYPE                    = 5025,
     LANG_GOINFO_DISPLAYID               = 5026,
     LANG_GOINFO_NAME                    = 5027,
-    // Room for more Trinity strings      5028-9999
+    LANG_GOINFO_LOOTID                  = 5028,
+    // Room for more Trinity strings      5029-9999
 
     // Level requirement notifications
     LANG_SAY_REQ                        = 6604,

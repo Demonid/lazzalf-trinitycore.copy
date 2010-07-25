@@ -2249,6 +2249,10 @@ void Spell::EffectDummy(uint32 i)
         return;
     }
 
+    // normal DB scripted effect
+    sLog.outDebug("Spell ScriptStart spellid %u in EffectDummy(%u)", m_spellInfo->Id, i);
+    m_caster->GetMap()->ScriptsStart(sSpellScripts, MAKE_PAIR32(m_spellInfo->Id,i), m_caster, unitTarget);
+
     // Script based implementation. Must be used only for not good for implementation in core spell effects
     // So called only for not proccessed cases
     if (gameObjTarget)
@@ -6564,8 +6568,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     }
 
     // normal DB scripted effect
-    sLog.outDebug("Spell ScriptStart spellid %u in EffectScriptEffect ", m_spellInfo->Id);
-    m_caster->GetMap()->ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
+    sLog.outDebug("Spell ScriptStart spellid %u in EffectScriptEffect(%u)", m_spellInfo->Id, effIndex);
+    m_caster->GetMap()->ScriptsStart(sSpellScripts, MAKE_PAIR32(m_spellInfo->Id,effIndex), m_caster, unitTarget);
 }
 
 void Spell::EffectSanctuary(uint32 /*i*/)

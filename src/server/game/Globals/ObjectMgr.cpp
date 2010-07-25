@@ -46,6 +46,8 @@
 #include "Vehicle.h"
 #include "AchievementMgr.h"
 #include "DisableMgr.h"
+#include "ScriptMgr.h"
+#include "SpellScript.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -4666,7 +4668,10 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 
     scripts.clear();                                        // need for reload support
 
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT id,delay,command,datalong,datalong2,dataint, x, y, z, o FROM %s", tablename);
+    char buff[125];
+    bool isSpellScriptTable = !strcmp(tablename, "spell_scripts");
+    sprintf(buff, "SELECT id,delay,command,datalong,datalong2,dataint,x,y,z,o%s FROM %s", isSpellScriptTable ? ",effIndex" : "", tablename);
+    QueryResult_AutoPtr result = WorldDatabase.Query(buff);
 
     uint32 count = 0;
 
@@ -4689,6 +4694,8 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
         Field *fields = result->Fetch();
         ScriptInfo tmp;
         tmp.id        = fields[0].GetUInt32();
+        if (isSpellScriptTable)
+            tmp.id |= fields[10].GetUInt32() << 16;
         tmp.delay     = fields[1].GetUInt32();
         tmp.command   = fields[2].GetUInt32();
         tmp.datalong  = fields[3].GetUInt32();
@@ -4978,31 +4985,19 @@ void ObjectMgr::LoadSpellScripts()
     // check ids
     for (ScriptMapMap::const_iterator itr = sSpellScripts.begin(); itr != sSpellScripts.end(); ++itr)
     {
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(itr->first);
+        uint32 spellId = PAIR32_LOPART(itr->first);
+        SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellId);
 
         if (!spellInfo)
         {
-            sLog.outErrorDb("Table `spell_scripts` has not existing spell (Id: %u) as script id",itr->first);
+            sLog.outErrorDb("Table `spell_scripts` has not existing spell (Id: %u) as script id", spellId);
             continue;
         }
 
+        uint32 i = PAIR32_HIPART(itr->first);
         //check for correct spellEffect
-        bool found = false;
-        for (uint8 i=0; i<3; ++i)
-        {
-            // skip empty effects
-            if (!spellInfo->Effect[i])
-                continue;
-
-            if (spellInfo->Effect[i] == SPELL_EFFECT_SCRIPT_EFFECT)
-            {
-                found =  true;
-                break;
-            }
-        }
-
-        if (!found)
-            sLog.outErrorDb("Table `spell_scripts` has unsupported spell (Id: %u) without SPELL_EFFECT_SCRIPT_EFFECT (%u) spell effect",itr->first,SPELL_EFFECT_SCRIPT_EFFECT);
+        if (!spellInfo->Effect[i] || (spellInfo->Effect[i] != SPELL_EFFECT_SCRIPT_EFFECT && spellInfo->Effect[i] != SPELL_EFFECT_DUMMY))
+            sLog.outErrorDb("Table `spell_scripts` - spell %u effect %u is not SPELL_EFFECT_SCRIPT_EFFECT or SPELL_EFFECT_DUMMY", spellId, i);
     }
 }
 
@@ -5070,6 +5065,106 @@ void ObjectMgr::LoadWaypointScripts()
         if (!query || !query->GetRowCount())
             sLog.outErrorDb("There is no waypoint which links to the waypoint script %u", itr->first);
     }
+}
+
+void ObjectMgr::LoadSpellScriptNames()
+{
+    mSpellScripts.clear();                            // need for reload case
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT spell_id, ScriptName FROM spell_script_names");
+
+    uint32 count = 0;
+
+    if (!result)
+    {
+        barGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded %u spell script names", count);
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        ++count;
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        int32 spellId         = fields[0].GetInt32();
+        const char *scriptName = fields[1].GetString();
+
+        bool allRanks = false;
+        if (spellId <=0)
+        {
+            allRanks = true;
+            spellId = -spellId;
+        }
+
+        SpellEntry const* spellEntry = sSpellStore.LookupEntry(spellId);
+        if (!spellEntry)
+        {
+            sLog.outErrorDb("Scriptname:`%s` spell (spell_id:%d) does not exist in `Spell.dbc`.",scriptName,fields[0].GetInt32());
+            continue;
+        }
+
+        if (allRanks)
+        {
+            if (spellmgr.GetFirstSpellInChain(spellId) != spellId)
+            {
+                sLog.outErrorDb("Scriptname:`%s` spell (spell_id:%d) is not first rank of spell.",scriptName,fields[0].GetInt32());
+                continue;
+            }
+            while(spellId)
+            {
+                mSpellScripts.insert(SpellScriptsMap::value_type(spellId, GetScriptId(scriptName)));
+                spellId = spellmgr.GetNextSpellInChain(spellId);
+            }
+        }
+        else
+            mSpellScripts.insert(SpellScriptsMap::value_type(spellId, GetScriptId(scriptName)));
+
+    } while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u spell script names", count);
+}
+
+void ObjectMgr::ValidateSpellScripts()
+{
+    if (mSpellScripts.empty())
+    {
+        barGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Validation done");
+        return;
+    }
+
+    barGoLink bar(mSpellScripts.size());
+    for (SpellScriptsMap::iterator itr = mSpellScripts.begin(); itr != mSpellScripts.end();)
+    {
+        SpellEntry const * spellEntry = sSpellStore.LookupEntry(itr->first);
+        std::vector<std::pair<SpellScript *, SpellScriptsMap::iterator> > spellScripts;
+        sScriptMgr.CreateSpellScripts(itr->first, spellScripts);
+        SpellScriptsMap::iterator bitr;
+        itr = mSpellScripts.upper_bound(itr->first);
+
+        for (std::vector<std::pair<SpellScript *, SpellScriptsMap::iterator> >::iterator sitr = spellScripts.begin(); sitr != spellScripts.end(); ++sitr)
+        {
+            bar.step();
+            sitr->first->Register();
+            if (!sitr->first->_Validate(spellEntry, objmgr.GetScriptName(sitr->second->second)))
+                mSpellScripts.erase(sitr->second);
+            delete sitr->first;
+        }
+    }
+
+    sLog.outString();
+    sLog.outString(">> Validation done");
 }
 
 void ObjectMgr::LoadGossipScripts()
@@ -8019,6 +8114,11 @@ uint32 ObjectMgr::GetAreaTriggerScriptId(uint32 trigger_id)
     return 0;
 }
 
+SpellScriptsBounds ObjectMgr::GetSpellScriptsBounds(uint32 spell_id)
+{
+    return SpellScriptsBounds(mSpellScripts.lower_bound(spell_id),mSpellScripts.upper_bound(spell_id));
+}
+
 SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial)
 {
     switch(pSkill->categoryId)
@@ -8811,6 +8911,8 @@ void ObjectMgr::LoadScriptNames()
       "SELECT DISTINCT(ScriptName) FROM item_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM spell_script_names WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(script) FROM instance_template WHERE script <> ''");
 
