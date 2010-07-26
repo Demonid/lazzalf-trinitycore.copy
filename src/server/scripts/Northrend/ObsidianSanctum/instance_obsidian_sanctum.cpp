@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+ 
 #include "ScriptPCH.h"
 #include "obsidian_sanctum.h"
 
@@ -33,6 +34,7 @@ struct instance_obsidian_sanctum : public ScriptedInstance
     uint64 m_uiTenebronGUID;
     uint64 m_uiShadronGUID;
     uint64 m_uiVesperonGUID;
+    uint64 m_uiDiscipleOfVesperonGUID;
 
     bool m_bTenebronKilled;
     bool m_bShadronKilled;
@@ -52,7 +54,7 @@ struct instance_obsidian_sanctum : public ScriptedInstance
         m_bVesperonKilled = false;
     }
 
-    void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+    void OnCreatureCreate(Creature* pCreature, bool add)
     {
         switch(pCreature->GetEntry())
         {
@@ -71,6 +73,10 @@ struct instance_obsidian_sanctum : public ScriptedInstance
                 break;
             case NPC_VESPERON:
                 m_uiVesperonGUID = pCreature->GetGUID();
+                pCreature->setActive(true);
+                break;
+            case NPC_DISCIPLE_OF_VESPERON:
+                m_uiDiscipleOfVesperonGUID = pCreature->GetGUID();
                 pCreature->setActive(true);
                 break;
         }
@@ -114,6 +120,8 @@ struct instance_obsidian_sanctum : public ScriptedInstance
                 return m_uiShadronGUID;
             case DATA_VESPERON:
                 return m_uiVesperonGUID;
+            case DATA_DISCIPLE_OF_VESPERON:
+                return m_uiDiscipleOfVesperonGUID;
         }
         return 0;
     }
