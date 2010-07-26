@@ -8178,6 +8178,16 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                     }
                     basepoints0 = damage * triggerAmount / 100 / 3;
                     target = this;
+
+                    if (Aura* blessed_recovery = target->GetAura(trigger_spell_id, target->GetGUID()))
+                    {
+                        if (AuraEffect* recovery_effect = blessed_recovery->GetEffect(0))
+                        {
+                            recovery_effect->SetAmount(recovery_effect->GetAmount() + basepoints0);
+                            blessed_recovery->RefreshDuration();
+                            return true;
+                        }
+                    }
                 }
                 break;
             }
