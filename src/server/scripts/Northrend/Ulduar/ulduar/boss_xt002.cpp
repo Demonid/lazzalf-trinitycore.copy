@@ -491,6 +491,14 @@ struct boss_xt002_AI : public BossAI
         DoZoneInCombat();
         phase = 1;
     }
+
+    void DamageTaken(Unit* pDone_by, uint32& uiDamage)
+    {
+        if (pDone_by->GetTypeId() == TYPEID_UNIT && (pDone_by->GetEntry() == NPC_XT002_HEART))
+        {
+            me->LowerPlayerDamageReq(uiDamage);
+        }
+    }
 };
 
 CreatureAI* GetAI_boss_xt002(Creature* pCreature)
