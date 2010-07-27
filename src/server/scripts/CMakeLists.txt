@@ -13,10 +13,11 @@ file(GLOB_RECURSE scripts_kalimdor Kalimdor/*.cpp)
 file(GLOB_RECURSE scripts_northrend Northrend/*.cpp)
 file(GLOB_RECURSE scripts_outland Outland/*.cpp)
 file(GLOB_RECURSE scripts_world World/*.cpp)
+file(GLOB_RECURSE scripts_spells Spells/*.cpp)
 file(GLOB_RECURSE scripts_examples Examples/*.cpp)
 
 # Enable precompiled headers when using the GCC compiler.
-if(DO_PCH)
+if(PCH)
   include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
   )
@@ -38,6 +39,7 @@ set(scripts_STAT_SRCS
   ${scripts_northrend}
   ${scripts_outland}
   ${scripts_world}
+  ${scripts_spells}
   ${scripts_examples}
 )
 message("-- Added Scriptengine to SCRIPTS lib")
@@ -139,7 +141,7 @@ endif()
 add_library(scripts STATIC ${scripts_STAT_SRCS})
 
 # Generate precompiled header
-if(DO_PCH)
+if(PCH)
   if(CMAKE_COMPILER_IS_GNUCXX)
     add_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/ScriptPCH.h)
   elseif(MSVC)
