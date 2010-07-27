@@ -1926,7 +1926,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    if ((GetSession()->GetSecurity() < SEC_GAMEMASTER) && sDisableMgr.IsDisabledFor(DISABLE_TYPE_MAP, mapid, NULL))
+    if ((GetSession()->GetSecurity() < SEC_GAMEMASTER) && sDisableMgr.IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
     {
         sLog.outError("Player %s tried to enter a forbidden map", GetName());
         return false;
@@ -6638,16 +6638,23 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
 }
 
 //Calculate total reputation percent player gain with quest/creature level
-int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest)
+int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest, bool noQuestBonus)
 {
     float percent = 100.0f;
+
+    // Get the generic rate first
+    if (RepRewardRate const * repData = objmgr.GetRepRewardRate(faction))
+    {
+        float repRate = for_quest ? repData->quest_rate : repData->creature_rate;
+        percent *= repRate;
+    }
 
     float rate = for_quest ? sWorld.getRate(RATE_REPUTATION_LOWLEVEL_QUEST) : sWorld.getRate(RATE_REPUTATION_LOWLEVEL_KILL);
 
     if (rate != 1.0f && creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))
         percent *= rate;
 
-    float repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
+    float repMod = noQuestBonus ? 0.0f : (float)GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
 
     if (!for_quest)
         repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
@@ -6756,7 +6763,7 @@ void Player::RewardReputation(Quest const *pQuest)
             continue;
         if (pQuest->RewRepValue[i])
         {
-            int32 rep = CalculateReputationGain(GetQuestLevel(pQuest), pQuest->RewRepValue[i]/100, pQuest->RewRepFaction[i], true);
+            int32 rep = CalculateReputationGain(GetQuestLevel(pQuest), pQuest->RewRepValue[i]/100, pQuest->RewRepFaction[i], true, true);
             if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewRepFaction[i]))
                 GetReputationMgr().ModifyReputation(factionEntry, rep);
         }
@@ -17744,11 +17751,15 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
         uint8 LevelMin = 0;
         uint8 LevelMax = 0;
 
+        MapEntry const* mapEntry = sMapStore.LookupEntry(target_map);
+        if (!mapEntry)
+            return false;
+
         if (!sWorld.getConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
         {
             if (ar->levelMin && getLevel() < ar->levelMin)
                 LevelMin = ar->levelMin;
-            if (ar->heroicLevelMin && GetDungeonDifficulty() == DUNGEON_DIFFICULTY_HEROIC && getLevel() < ar->heroicLevelMin)
+            if (mapEntry->IsNonRaidDungeon() && ar->heroicLevelMin && GetDungeonDifficulty() == DUNGEON_DIFFICULTY_HEROIC && getLevel() < ar->heroicLevelMin)
                 LevelMin = ar->heroicLevelMin;
             if (ar->levelMax && getLevel() > ar->levelMax)
                 LevelMax = ar->levelMax;
@@ -17763,10 +17774,6 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
         }
         else if (ar->item2 && !HasItemCount(ar->item2, 1))
             missingItem = ar->item2;
-
-        MapEntry const* mapEntry = sMapStore.LookupEntry(target_map);
-        if (!mapEntry)
-            return false;
 
         if (sDisableMgr.IsDisabledFor(DISABLE_TYPE_MAP, target_map, this))
         {
