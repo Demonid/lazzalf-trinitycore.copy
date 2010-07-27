@@ -17,7 +17,7 @@ file(GLOB_RECURSE scripts_spells Spells/*.cpp)
 file(GLOB_RECURSE scripts_examples Examples/*.cpp)
 
 # Enable precompiled headers when using the GCC compiler.
-if(DO_PCH)
+if(PCH)
   include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
   )
@@ -29,13 +29,17 @@ set(scripts_STAT_SRCS
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp
   ../game/AI/ScriptedAI/ScriptedGuardAI.cpp
   ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
+   ../game/Custom/sc_bs_sp_wrkr.cpp
+   ../game/Custom/sc_bs_sp_wrkr.h
+   Custom/GuildHouse_npc.cpp
+   Custom/npc_teleport.cpp
   Custom/on_events.cpp
   ${scripts_easternkingdoms}
   ${scripts_kalimdor}
   ${scripts_northrend}
   ${scripts_outland}
   ${scripts_world}
-  ${script_spells}
+  ${scripts_spells}
   ${scripts_examples}
 )
 message("-- Added Scriptengine to SCRIPTS lib")
@@ -77,6 +81,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Corpse
@@ -108,6 +113,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Movement/Waypoints
   ${CMAKE_SOURCE_DIR}/src/server/game/Opcodes
   ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP
+  ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP/Zones
   ${CMAKE_SOURCE_DIR}/src/server/game/Pools
   ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders
   ${CMAKE_SOURCE_DIR}/src/server/game/Quests
@@ -135,7 +141,7 @@ endif()
 add_library(scripts STATIC ${scripts_STAT_SRCS})
 
 # Generate precompiled header
-if(DO_PCH)
+if(PCH)
   if(CMAKE_COMPILER_IS_GNUCXX)
     add_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/ScriptPCH.h)
   elseif(MSVC)
