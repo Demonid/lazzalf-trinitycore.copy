@@ -607,18 +607,20 @@ void LoadDBCStores(const std::string& dataPath)
     sLog.outString(">> Initialized %d data stores", DBCFilesCount);
 }
 
-SimpleFactionsList const* GetFactionTeamList(uint32 faction)
+SimpleFactionsList const* GetFactionTeamList(uint32 faction, bool &isTeamMember)
 {
     for (FactionTeamMap::const_iterator itr = sFactionTeamMap.begin(); itr != sFactionTeamMap.end(); ++itr)
     {
         if (itr->first == faction)
         {
+            isTeamMember = false;
             return &itr->second;
         }
         for (SimpleFactionsList::const_iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); ++itr2)
         {
             if ((*itr2) == faction)
             {
+                isTeamMember = true;
                 return &itr->second;
             }
         }
