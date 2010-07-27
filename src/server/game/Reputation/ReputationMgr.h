@@ -109,13 +109,37 @@ class ReputationMgr
         }
 
     public:                                                 // modifiers
-        bool SetReputation(FactionEntry const* factionEntry, int32 standing, bool spillover = true)
+        bool SetReputation(FactionEntry const* factionEntry, int32 standing)
         {
-            return SetReputation(factionEntry, standing, false, spillover);
+            return SetReputation(factionEntry, standing, false);
         }
-        bool ModifyReputation(FactionEntry const* factionEntry, int32 standing, bool spillover = true)
+        bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
         {
-            return SetReputation(factionEntry, standing, true, spillover);
+            bool res = SetOneFactionReputation(factionEntry, standing, false);
+            if (res)
+            {
+                // now we can send it
+                FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+                if (itr != m_factions.end())
+                    SendState(&itr->second);
+            }
+            return res;
+        }
+        bool ModifyReputation(FactionEntry const* factionEntry, int32 standing)
+        {
+            return SetReputation(factionEntry, standing, true);
+        }
+        bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+        {            
+            bool res = SetOneFactionReputation(factionEntry, standing, true);
+            if (res)
+            {
+                // now we can send it
+                FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+                if (itr != m_factions.end())
+                    SendState(&itr->second);
+            }
+            return res;
         }
 
         void SetVisible(FactionTemplateEntry const* factionTemplateEntry);
@@ -134,7 +158,7 @@ class ReputationMgr
     private:                                                // internal helper functions
         void Initialize();
         uint32 GetDefaultStateFlags(FactionEntry const* factionEntry) const;
-        bool SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental, bool spillover = true);
+        bool SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental);
         bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing, bool incremental);
         void SetVisible(FactionState* faction);
         void SetAtWar(FactionState* faction, bool atWar);
