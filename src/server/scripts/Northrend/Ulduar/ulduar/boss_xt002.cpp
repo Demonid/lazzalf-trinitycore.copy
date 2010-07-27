@@ -97,11 +97,6 @@ enum Actions
     ACTION_DISABLE_NERF_ACHI                    = 1,
 };
 
-enum XT002Data
-{
-    DATA_TRANSFERED_HEALTH                      = 0,
-};
-
 enum Yells
 {
     SAY_AGGRO                                   = -1603300,
@@ -179,7 +174,6 @@ struct boss_xt002_AI : public BossAI
     uint8 heart_exposed;
     bool enraged;
 
-    uint32 transferHealth;
     bool enterHardMode;
     bool hardMode;
     bool achievement_nerf;
@@ -227,6 +221,11 @@ struct boss_xt002_AI : public BossAI
                 if (!hardMode)
                 {
                     hardMode = true;
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetStandState(UNIT_STAND_STATE_STAND);
+                    DoZoneInCombat();
+
                     uiEnrageTimer = TIMER_ENRAGE;
                     // Add HardMode Loot
                     me->AddLootMode(LOOT_MODE_HARD_MODE_1);
@@ -247,16 +246,6 @@ struct boss_xt002_AI : public BossAI
         }
     }
 
-    void SetData(uint32 id, uint32 value)
-    {
-        switch(id)
-        {
-            case DATA_TRANSFERED_HEALTH:
-                transferHealth = value;
-                break;
-        }
-    }
-
     void KilledUnit(Unit* victim)
     {
         DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
@@ -266,6 +255,9 @@ struct boss_xt002_AI : public BossAI
     {
         DoScriptText(SAY_DEATH, me);
         _JustDied();
+
+        // Needed if is killed during the Heart-phase
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
 
         // Achievements
         if (pInstance)
@@ -482,22 +474,11 @@ struct boss_xt002_AI : public BossAI
         uiTympanicTantrumTimer = TIMER_TYMPANIC_TANTRUM / 2;
         uiSpawnAddTimer = TIMER_SPAWN_ADD;
 
-        if (!hardMode)
-            me->ModifyHealth(-((int32)transferHealth));
-
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         me->SetReactState(REACT_AGGRESSIVE);
         me->SetStandState(UNIT_STAND_STATE_STAND);
         DoZoneInCombat();
         phase = 1;
-    }
-
-    void DamageTaken(Unit* pDone_by, uint32& uiDamage)
-    {
-        if (pDone_by->GetTypeId() == TYPEID_UNIT && (pDone_by->GetEntry() == NPC_XT002_HEART))
-        {
-            me->LowerPlayerDamageReq(uiDamage);
-        }
     }
 };
 
@@ -557,15 +538,10 @@ struct mob_xt002_heartAI : public ScriptedAI
     void DamageTaken(Unit *pDone, uint32 &damage)
     {
         if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(DATA_XT002)))
-            if (pXT002->AI())
-            {
-                uint32 health = me->GetHealth();
-                health -= damage;
-                if (health < 0)
-                    health = 0;
-
-                pXT002->AI()->SetData(DATA_TRANSFERED_HEALTH, me->GetMaxHealth() - health);
-            }
+        {
+            if (pDone)
+                pDone->DealDamage(pXT002, damage);
+        }
     }
 };
 
