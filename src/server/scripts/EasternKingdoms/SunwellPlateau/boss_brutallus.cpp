@@ -157,7 +157,8 @@ struct boss_brutallusAI : public ScriptedAI
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->Attack(Madrigosa, true);
             Madrigosa->Attack(me, true);
-        }else
+        }
+        else
         {
             //Madrigosa not found, end intro
             sLog.outError("Madrigosa was not found");

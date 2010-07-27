@@ -11,7 +11,7 @@
 ######## game ########
 
 # Enable precompiled headers when using the GCC compiler.
-if(DO_PCH)
+if(PCH)
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
@@ -64,6 +64,10 @@ set(game_STAT_SRCS
   Combat/ThreatManager.cpp
   Conditions/ConditionMgr.cpp
   Conditions/DisableMgr.cpp
+  Custom/GuildHouse.cpp
+  Custom/GuildHouse.h
+  Custom/sc_npc_teleport.cpp
+  Custom/sc_npc_teleport.h
   DataStores/DBCStores.cpp
   DungeonFinding/LFGMgr.cpp
   Entities/Corpse/Corpse.cpp
@@ -124,6 +128,8 @@ set(game_STAT_SRCS
   OutdoorPvP/Zones/OutdoorPvPSI.cpp
   OutdoorPvP/Zones/OutdoorPvPTF.cpp
   OutdoorPvP/Zones/OutdoorPvPZM.cpp
+   OutdoorPvP/Zones/OutdoorPvPWG.cpp
+   OutdoorPvP/Zones/OutdoorPvPWG.h
   OutdoorPvP/OutdoorPvP.cpp
   OutdoorPvP/OutdoorPvPMgr.cpp
   Pools/PoolMgr.cpp
@@ -218,6 +224,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Commands
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
@@ -271,7 +278,7 @@ include_directories(
   ${ACE_INCLUDE_DIR}
 )
 
-if(NOT DO_SCRIPTS)
+if(NOT SCRIPTS)
   set(game_STAT_SRCS
     ${game_STAT_SRCS}
     AI/ScriptedAI/ScriptedEscortAI.cpp
@@ -279,6 +286,8 @@ if(NOT DO_SCRIPTS)
     AI/ScriptedAI/ScriptedFollowerAI.cpp
     AI/ScriptedAI/ScriptedGuardAI.cpp
     AI/ScriptedAI/ScriptedSimpleAI.cpp
+      Custom/sc_bs_sp_wrkr.cpp
+      Custom/sc_bs_sp_wrkr.h
   )
   message("-- Added basic scriptAI-engines to GAME library")
 endif()
@@ -295,7 +304,7 @@ add_library(game STATIC ${game_STAT_SRCS})
 add_dependencies(game revision.h)
 
 # Generate precompiled header
-if(DO_PCH)
+if(PCH)
   if(CMAKE_COMPILER_IS_GNUCXX)
     add_precompiled_header(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/gamePCH.h)
   elseif(MSVC)
