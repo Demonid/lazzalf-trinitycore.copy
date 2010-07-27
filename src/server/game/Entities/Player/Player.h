@@ -1553,7 +1553,8 @@ class Player : public Unit, public GridObject<Player>
         void learnSpellHighRank(uint32 spellid);
         void AddTemporarySpell(uint32 spellId);
         void RemoveTemporarySpell(uint32 spellId);
-        void SetReputation(uint32 factionentry, uint32 value, bool spillover = true);
+        void SetReputation(uint32 factionentry, uint32 value);
+        void SetOneFactionReputation(uint32 factionentry, uint32 value)
         uint32 GetReputation(uint32 factionentry);
         std::string GetGuildName();
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }

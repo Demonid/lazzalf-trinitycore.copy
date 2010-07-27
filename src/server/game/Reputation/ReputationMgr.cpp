@@ -249,9 +249,9 @@ void ReputationMgr::Initialize()
     }
 }
 
-bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental, bool spillover)
+bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
 {
-    if ((SimpleFactionsList const* flist = GetFactionTeamList(factionEntry->ID)) && spillover)
+    if (SimpleFactionsList const* flist = GetFactionTeamList(factionEntry->ID))
     {
         bool res = false;
         for (SimpleFactionsList::const_iterator itr = flist->begin();itr != flist->end();++itr)
@@ -273,12 +273,12 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
     else
     {
         // update for the actual faction first
-        bool res = SetOneFactionReputation(factionEntry, standing, incremental);
+                bool res = SetOneFactionReputation(factionEntry, standing, incremental);
 
         if (res)
         {
             // then some spillover calculation here if it exist
-            if ((const RepSpilloverTemplate *repTemplate = objmgr.GetRepSpilloverTemplate(factionEntry->ID)) && spillover)
+                        if (const RepSpilloverTemplate *repTemplate = objmgr.GetRepSpilloverTemplate(factionEntry->ID))
             {
                 for (uint32 i = 0; i < MAX_SPILLOVER_FACTIONS; ++i)
                 {
@@ -295,7 +295,7 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
             }
 
             // now we can send it
-            FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+                        FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
             if (itr != m_factions.end())
                 SendState(&itr->second);
         }
