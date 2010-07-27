@@ -374,3 +374,11 @@ uint32 MapManager::GetNumPlayersInInstances()
     }
     return ret;
 }
+
+Map* MapManager::FindMapByThread(ACE_thread_t tId)
+{
+    for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
+        if (iter->second->m_updater == tId)
+            return iter->second;
+    return NULL;
+}

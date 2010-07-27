@@ -225,6 +225,15 @@ EAIErrorLevel = 2
 #	Number of threads to update maps.
 #	Default: 1
 #
+#   CrashRecover.Enable
+#   Default: 0
+#
+#   CrashRecover.MaxCrashCount
+#   Default: 5
+#
+#   CrashRecover.CountResetTime
+#   Default: 300000
+#
 #    CleanCharacterDB
 #        Perform character db clean ups on start up
 #        Default: 0 (Disabled)
@@ -262,6 +271,9 @@ LogDB.Opt.ClearTime = 1209600
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
+CrashRecover.Enable = 0
+CrashRecover.MaxCrashCount = 5
+CrashRecover.CountResetTime = 300000
 CleanCharacterDB = 0
 
 ###############################################################################
