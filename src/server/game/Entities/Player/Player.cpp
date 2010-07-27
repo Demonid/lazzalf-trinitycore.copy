@@ -4754,7 +4754,7 @@ void Player::BuildPlayerRepop()
     if (GetCorpse())
     {
         sLog.outError("BuildPlayerRepop: player %s(%d) already has a corpse", GetName(), GetGUIDLow());
-        assert(false);
+        return;
     }
 
     // create a corpse and place it at the player's location
@@ -18794,7 +18794,7 @@ Pet* Player::GetPet() const
         if (!IS_PET_GUID(pet_guid))
             return NULL;
 
-        Pet* pet = ObjectAccessor::GetPet(pet_guid);
+        Pet* pet = ObjectAccessor::GetPet(*this, pet_guid);
 
         if (!pet)
             return NULL;

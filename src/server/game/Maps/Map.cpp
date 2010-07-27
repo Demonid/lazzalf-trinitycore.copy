@@ -3591,7 +3591,7 @@ void Map::ScriptsProcess()
                         uSource = dynamic_cast<Unit*>(target);
                         uTarget = dynamic_cast<Unit*>(source);
                     break;
-                    case 4: // creature
+                    case 4: // source -> creature with entry
                         uSource = dynamic_cast<Unit*>(source);
                         uTarget = GetClosestCreatureWithEntry(uSource, step.script->dataint, step.script->x);
                     break;
@@ -3609,7 +3609,9 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                uSource->CastSpell(uTarget, step.script->datalong, false);
+                // sorry, no triggered for case 4 yet
+                bool triggered = step.script->dataint & 0x1 && step.script->datalong2 != 4;
+                uSource->CastSpell(uTarget, step.script->datalong, triggered);
                 break;
             }
 
@@ -3948,46 +3950,19 @@ void Map::ScriptsProcess()
 Creature*
 Map::GetCreature(uint64 guid)
 {
-    Creature * ret = NULL;
-    if (IS_CRE_OR_VEH_GUID(guid))
-      ret = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL);
-
-    if (!ret)
-        return NULL;
-
-    if (ret->GetMapId() != GetId())
-        return NULL;
-
-    if (ret->GetInstanceId() != GetInstanceId())
-        return NULL;
-
-    return ret;
+    return ObjectAccessor::GetObjectInMap(guid, this, (Creature*)NULL);
 }
 
 GameObject*
 Map::GetGameObject(uint64 guid)
 {
-    GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL);
-    if (!ret)
-        return NULL;
-    if (ret->GetMapId() != GetId())
-        return NULL;
-    if (ret->GetInstanceId() != GetInstanceId())
-        return NULL;
-    return ret;
+    return ObjectAccessor::GetObjectInMap(guid, this, (GameObject*)NULL);
 }
 
 DynamicObject*
 Map::GetDynamicObject(uint64 guid)
 {
-    DynamicObject * ret = ObjectAccessor::GetObjectInWorld(guid, (DynamicObject*)NULL);
-    if (!ret)
-        return NULL;
-    if (ret->GetMapId() != GetId())
-        return NULL;
-    if (ret->GetInstanceId() != GetInstanceId())
-        return NULL;
-    return ret;
+    return ObjectAccessor::GetObjectInMap(guid, this, (DynamicObject*)NULL);
 }
 
 void Map::UpdateIteratorBack(Player *player)
