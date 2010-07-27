@@ -113,9 +113,33 @@ class ReputationMgr
         {
             return SetReputation(factionEntry, standing, false);
         }
+        bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+        {
+            bool res = SetOneFactionReputation(factionEntry, standing, false);
+            if (res)
+            {
+                // now we can send it
+                FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+                if (itr != m_factions.end())
+                    SendState(&itr->second);
+            }
+            return res;
+        }
         bool ModifyReputation(FactionEntry const* factionEntry, int32 standing)
         {
             return SetReputation(factionEntry, standing, true);
+        }
+        bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+        {            
+            bool res = SetOneFactionReputation(factionEntry, standing, true);
+            if (res)
+            {
+                // now we can send it
+                FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+                if (itr != m_factions.end())
+                    SendState(&itr->second);
+            }
+            return res;
         }
 
         void SetVisible(FactionTemplateEntry const* factionTemplateEntry);
