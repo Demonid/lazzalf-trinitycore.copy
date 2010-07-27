@@ -1337,6 +1337,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads", 1);
 
+    m_configs[CONFIG_CRASH_RECOVER_ENABLE] = sConfig.GetBoolDefault("CrashRecover.Enable", false);
+    m_configs[CONFIG_UINT32_MAX_CRASH_COUNT] = sConfig.GetIntDefault("CrashRecover.MaxCrashCount", 5);
+    m_configs[CONFIG_UINT32_CRASH_COUNT_RESET] = sConfig.GetIntDefault("CrashRecover.CountResetTime", 3 * MINUTE * IN_MILLISECONDS);
+
     // chat logging
     m_configs[CONFIG_CHATLOG_CHANNEL] = sConfig.GetBoolDefault("ChatLogs.Channel", false);
     m_configs[CONFIG_CHATLOG_WHISPER] = sConfig.GetBoolDefault("ChatLogs.Whisper", false);

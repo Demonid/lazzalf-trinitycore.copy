@@ -3995,3 +3995,32 @@ void Map::UpdateIteratorBack(Player *player)
     if (m_mapRefIter == player->GetMapRef())
         m_mapRefIter = m_mapRefIter->nocheck_prev();
 }
+
+void Map::Wipe()
+{
+    if (Instanceable())
+    {
+        MapInstanced::InstancedMaps InstanceList = ((MapInstanced*)this)->GetInstancedMaps();
+        for(MapInstanced::InstancedMaps::iterator m_Iter = InstanceList.begin(); m_Iter != InstanceList.end(); m_Iter++)
+        {
+            PlayerList const& pList = m_Iter->second->GetPlayers();
+            for(PlayerList::const_iterator itr = pList.begin(), next; itr != pList.end(); itr = next)
+            {
+                next = itr; ++next;
+                if (Player *plr = itr->getSource())
+                    plr->GetSession()->LogoutPlayer(false);
+            }
+        }
+    }
+    else
+    {
+        MapRefManager::iterator next;
+        for(m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); m_mapRefIter = next)
+        {
+            next = m_mapRefIter; ++next;
+            if (Player *plr = m_mapRefIter->getSource())
+                plr->GetSession()->LogoutPlayer(false);
+        }
+    }
+    UnloadAll();
+}
