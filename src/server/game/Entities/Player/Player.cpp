@@ -24179,9 +24179,9 @@ void Player::SendTimeSync()
     m_timeSyncServer = getMSTime();
 }
 
-void Player::SetReputation(uint32 factionentry, uint32 value)
+void Player::SetReputation(uint32 factionentry, uint32 value, bool spillover)
 {
-    GetReputationMgr().SetReputation(sFactionStore.LookupEntry(factionentry),value);
+    GetReputationMgr().SetReputation(sFactionStore.LookupEntry(factionentry),value,spillover);
 }
 uint32 Player::GetReputation(uint32 factionentry)
 {
