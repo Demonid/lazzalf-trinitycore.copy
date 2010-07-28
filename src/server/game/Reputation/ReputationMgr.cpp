@@ -304,7 +304,7 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
     }
 }
 
-bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
 {
     bool res = SetOneFactionReputation(factionEntry, standing, false);
     if (res)
@@ -317,7 +317,7 @@ bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
     return res;
 }
 
-bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+bool ReputationMgr::ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
 {            
     bool res = SetOneFactionReputation(factionEntry, standing, true);
     if (res)
