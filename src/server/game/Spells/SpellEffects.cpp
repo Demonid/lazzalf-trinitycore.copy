@@ -1428,7 +1428,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     if (BattleGround* bg = m_caster->ToPlayer()->GetBattleGround())
-              bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
+                        bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
 
                     m_caster->CastSpell(m_caster, 30452, true, NULL);
                     return;
@@ -1440,7 +1440,6 @@ void Spell::EffectDummy(uint32 i)
 
                     unitTarget->ToCreature()->ForcedDespawn();
                     return;
-
                 }
                 case 52308:                                 // Take Sputum Sample
                 {
@@ -1668,32 +1667,6 @@ void Spell::EffectDummy(uint32 i)
                 return;
             }
             break;
-        case SPELLFAMILY_PRIEST:
-            // Penance
-            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_PRIEST_PENANCE)
-            {
-                if (!unitTarget || !unitTarget->isAlive())
-                    return;
-
-                int hurt = 0;
-                int heal = 0;
-                switch(m_spellInfo->Id)
-                {
-                    case 47540: hurt = 47758; heal = 47757; break;
-                    case 53005: hurt = 53001; heal = 52986; break;
-                    case 53006: hurt = 53002; heal = 52987; break;
-                    case 53007: hurt = 53003; heal = 52988; break;
-                    default:
-                        sLog.outError("Spell::EffectDummy: Spell %u Penance need set correct heal/damage spell", m_spellInfo->Id);
-                        return;
-                }
-                if (m_caster->IsFriendlyTo(unitTarget))
-                    m_caster->CastSpell(unitTarget, heal, false, 0);
-                else
-                    m_caster->CastSpell(unitTarget, hurt, false, 0);
-                return;
-            }
-            break;
         case SPELLFAMILY_DRUID:
             // Starfall
             if (m_spellInfo->SpellFamilyFlags[2] & SPELLFAMILYFLAG2_DRUID_STARFALL)
@@ -1714,89 +1687,9 @@ void Spell::EffectDummy(uint32 i)
                 return;
             }
             break;
-        case SPELLFAMILY_ROGUE:
-            // Hunger for Blood
-            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_HUNGERFORBLOOD)
-            {
-                m_caster->CastSpell(m_caster, 63848, true);
-                break;
-            }
-            switch (m_spellInfo->Id)
-            {
-                case 5938:                                  // Shiv
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-                       
-                    m_caster->CastSpell(unitTarget, 5940, true);                  
-                    return;
-                }
-                case 14185:                                 // Preparation
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    //immediately finishes the cooldown on certain Rogue abilities
-                    const SpellCooldowns& cm = m_caster->ToPlayer()->GetSpellCooldownMap();
-                    for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                    {
-                        SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
-
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
-                        {
-                            if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP ||                      // Cold Blood, Shadowstep
-                                spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT                           // Vanish, Evasion, Sprint
-                               )
-                                m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first, true);
-                            else if (m_caster->HasAura(56819))                                                                    // Glyph of Preparation
-                            {
-                                if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE ||                         // Dismantle
-                                    spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_KICK ||                               // Kick
-                                    (
-                                      spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY &&                     // Blade Flurry
-                                      spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY
-                                    )
-                                   )
-                                    m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first, true);
-                                else
-                                    ++itr;
-                            }
-                            else
-                                ++itr;
-                        }
-                        else
-                            ++itr;
-                    }
-                    return;
-                }
-                case 31231:                                 // Cheat Death
-                {
-                    m_caster->CastSpell(m_caster, 45182, true);
-                    return;
-                }
-            }
-            break;
         case SPELLFAMILY_HUNTER:
             switch(m_spellInfo->Id)
             {
-                case 23989:                                 // Readiness talent
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    // immediately finishes the cooldown on your other Hunter abilities except Bestial Wrath
-                    const SpellCooldowns& cm = m_caster->ToPlayer()->GetSpellCooldownMap();
-                    for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                    {
-                        SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
-
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && spellInfo->Id != 19574 && GetSpellRecoveryTime(spellInfo) > 0)
-                            m_caster->ToPlayer()->RemoveSpellCooldown((itr++)->first,true);
-                        else
-                            ++itr;
-                    }
-                    return;
-                }
                 case 37506:                                 // Scatter Shot
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -1806,24 +1699,6 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                     m_caster->AttackStop();
                     m_caster->ToPlayer()->SendAttackSwingCancelAttack();
-                    return;
-                }
-                // Last Stand (pet)
-                case 53478:
-                {
-                    int32 healthModSpellBasePoints0 = int32(m_caster->GetMaxHealth()*0.3);
-                    m_caster->CastCustomSpell(m_caster, 53479, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
-                    return;
-                }
-                // Master's Call
-                case 53271:
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER || !unitTarget)
-                        return;
-
-                    if (Pet *pPet = m_caster->ToPlayer()->GetPet())
-                        if (pPet->isAlive())
-                            pPet->CastSpell(unitTarget, SpellMgr::CalculateSpellEffectAmount(m_spellInfo, i), true);
                     return;
                 }
             }
