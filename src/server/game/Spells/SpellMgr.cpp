@@ -3928,14 +3928,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags = 47;
             count++;
             break;
-        case 61306:     // Kirin Tor Commendation Badge
-        case 61308:     // Wyrmrest Commendation Badge
-        case 61311:     // Argent Crusade Commendation Badge
-        case 61312:     // Ebon Blade Commendadtion Badge
-        case 69757:     // Sons of Hodir Commendation Badge
-            spellInfo->EffectBasePoints[0] = 519;           // Some suggest a global multiplier is used for rep gain
-            count++;                                        // but basepoints * 1,3 hard coded in the tooltip says
-            break;                                          // otherwise.
         case 63676:     // Focused Eyebeam Visual 2
         case 63702:     // Focused Eyebeam Visual Right Eye
             spellInfo->EffectImplicitTargetA[0] = 92;
