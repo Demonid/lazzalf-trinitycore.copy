@@ -47,7 +47,7 @@
 #include "GameEventMgr.h"
 #include "ProgressBar.h"
 #include "SharedDefines.h"
-#include "Configuration/ConfigEnv.h"
+#include "Configuration/Config.h"
 #include "Formulas.h"
 #include "DisableMgr.h"
 

@@ -246,6 +246,16 @@ struct boss_sartharionAI : public BossAI
         me->ResetLootMode();
         me->SetHomePosition(3246.57, 551.263, 58.6164, 4.66003); 
 
+        Creature* pTenebron = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
+        Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
+        Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
+        if (pTenebron && pTenebron->isAlive())
+            pTenebron->ResetLootMode();
+        if (pShadron && pShadron->isAlive())
+            pShadron->ResetLootMode();
+        if (pVesperon && pVesperon->isAlive())
+            pVesperon->ResetLootMode();
+
         achievProgress = 0; 
         Acolytes = 2;
     }
@@ -264,10 +274,16 @@ struct boss_sartharionAI : public BossAI
         events.ScheduleEvent(EVENT_CLEAVE, 7000);
         events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
         events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILLISECONDS);
-                        pTenebron->SetLootRecipient(NULL);
-                        pShadron->SetLootRecipient(NULL);
-                        pVesperon->SetLootRecipient(NULL);
-    }
+        Creature* pTenebron = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
+        Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
+        Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
+        if (pTenebron && pTenebron->isAlive())
+            pTenebron->SetLootRecipient(NULL);
+        if (pShadron && pShadron->isAlive())
+            pShadron->SetLootRecipient(NULL);
+        if (pVesperon && pVesperon->isAlive())
+            pVesperon->SetLootRecipient(NULL);
+    }   
 
     void DoAction(const int32 action)
     {
