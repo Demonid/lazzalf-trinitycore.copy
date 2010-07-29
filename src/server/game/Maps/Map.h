@@ -247,6 +247,9 @@ class Map : public GridRefManager<NGridType>
         Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent = NULL);
         virtual ~Map();
 
+        ACE_thread_t m_updater;
+        void Wipe();
+
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
