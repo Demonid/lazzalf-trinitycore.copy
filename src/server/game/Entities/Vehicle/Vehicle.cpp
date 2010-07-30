@@ -69,14 +69,13 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo) : me(unit), m_vehicleI
         default:
             break;
     }
-
-    assert(!m_Seats.empty());
+    ASSERT(!m_Seats.empty());
 }
 
 Vehicle::~Vehicle()
 {
     for (SeatMap::const_iterator itr = m_Seats.begin(); itr != m_Seats.end(); ++itr)
-        assert(!itr->second.passenger);
+        ASSERT(!itr->second.passenger);
 }
 
 void Vehicle::Install()
@@ -180,7 +179,7 @@ void Vehicle::RemoveAllPassengers()
             if (itr->second.passenger)
             {
                 sLog.outCrash("Vehicle %u cannot remove passenger %u. %u is still on vehicle.", me->GetEntry(), passenger->GetEntry(), itr->second.passenger->GetEntry());
-                //assert(!itr->second.passenger);
+                //ASSERT(!itr->second.passenger);
                 itr->second.passenger = NULL;
             }
         }
@@ -231,7 +230,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion)
         // already installed
         if (passenger->GetEntry() == entry)
         {
-            assert(passenger->GetTypeId() == TYPEID_UNIT);
+            ASSERT(passenger->GetTypeId() == TYPEID_UNIT);
             if (me->GetTypeId() == TYPEID_UNIT && me->ToCreature()->IsInEvadeMode() && passenger->ToCreature()->IsAIEnabled)
                 passenger->ToCreature()->AI()->EnterEvadeMode();
             return;
@@ -277,7 +276,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
         if (seat->second.passenger)
             seat->second.passenger->ExitVehicle();
 
-        assert(!seat->second.passenger);
+        ASSERT(!seat->second.passenger);
     }
 
     sLog.outDebug("Unit %s enter vehicle entry %u id %u dbguid %u seat %d", unit->GetName(), me->GetEntry(), m_vehicleInfo->m_ID, me->GetGUIDLow(), (int32)seat->first);
@@ -285,7 +284,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
     seat->second.passenger = unit;
     if (seat->second.seatInfo->IsUsable())
     {
-        assert(m_usableSeatNum);
+        ASSERT(m_usableSeatNum);
         --m_usableSeatNum;
         if (!m_usableSeatNum)
         {
@@ -325,7 +324,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
         && unit->GetTypeId() == TYPEID_PLAYER
         && seat->first == 0 && seat->second.seatInfo->m_flags & 0x800) // not right
         if (!me->SetCharmedBy(unit, CHARM_TYPE_VEHICLE))
-            assert(false);
+            ASSERT(false);
 
     if (me->IsInWorld())
     {
@@ -358,7 +357,7 @@ void Vehicle::RemovePassenger(Unit *unit)
         if (seat->second.passenger == unit)
             break;
 
-    assert(seat != m_Seats.end());
+    ASSERT(seat != m_Seats.end());
 
     sLog.outDebug("Unit %s exit vehicle entry %u id %u dbguid %u seat %d", unit->GetName(), me->GetEntry(), m_vehicleInfo->m_ID, me->GetGUIDLow(), (int32)seat->first);
 
@@ -395,7 +394,7 @@ void Vehicle::RemovePassenger(Unit *unit)
 void Vehicle::RelocatePassengers(float x, float y, float z, float ang)
 {
     Map *map = me->GetMap();
-    assert(map != NULL);
+    ASSERT(map != NULL);
 
     // not sure that absolute position calculation is correct, it must depend on vehicle orientation and pitch angle
     for (SeatMap::const_iterator itr = m_Seats.begin(); itr != m_Seats.end(); ++itr)

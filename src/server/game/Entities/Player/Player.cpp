@@ -1295,7 +1295,7 @@ void Player::Update(uint32 p_time)
 
     // If this is set during update SetSpellModTakingSpell call is missing somewhere in the code
     // Having this would prevent more aura charges to be dropped, so let's crash
-    //assert (!m_spellModTakingSpell);
+    //ASSERT (!m_spellModTakingSpell);
     if ( m_spellModTakingSpell)
     {
         //sLog.outCrash("Player has m_pad %u during update!", m_pad);
@@ -1914,7 +1914,7 @@ void Player::TeleportOutOfMap(Map *oldMap)
     {
         sLog.outCrash("Cannot teleport player out of map!");
         ResetMap();
-        assert(false);
+        ASSERT(false);
     }
 }
 
@@ -4980,7 +4980,7 @@ void Player::CreateCorpse()
 
     // we don't SaveToDB for players in battlegrounds so don't do it for corpses either
     const MapEntry *entry = sMapStore.LookupEntry(corpse->GetMapId());
-    assert(entry);
+    ASSERT(entry);
     if (entry->map_type != MAP_BATTLEGROUND)
         corpse->SaveToDB();
 
@@ -9359,7 +9359,7 @@ void Player::ResetPetTalents()
 
 void Player::SetVirtualItemSlot(uint8 i, Item* item)
 {
-    assert(i < 3);
+    ASSERT(i < 3);
     if (i < 2 && item)
     {
         if (!item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
@@ -13055,7 +13055,7 @@ void Player::UpdateEnchantTime(uint32 time)
 {
     for (EnchantDurationList::iterator itr = m_enchantDuration.begin(),next; itr != m_enchantDuration.end(); itr=next)
     {
-        assert(itr->item);
+        ASSERT(itr->item);
         next = itr;
         if (!itr->item->GetEnchantmentId(itr->slot))
         {
@@ -14433,7 +14433,7 @@ bool Player::CanRewardQuest(Quest const *pQuest, uint32 reward, bool msg)
 void Player::AddQuest(Quest const *pQuest, Object *questGiver)
 {
     uint16 log_slot = FindQuestSlot(0);
-    assert(log_slot < MAX_QUEST_LOG_SIZE);
+    ASSERT(log_slot < MAX_QUEST_LOG_SIZE);
 
     uint32 quest_id = pQuest->GetQuestId();
 
@@ -14858,7 +14858,7 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                 ObjectMgr::ExclusiveQuestGroups::iterator iter2 = objmgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                assert(iter2 != end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
+                ASSERT(iter2 != end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for (; iter2 != end; ++iter2)
                 {
@@ -14893,7 +14893,7 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                 ObjectMgr::ExclusiveQuestGroups::iterator iter2 = objmgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                assert(iter2 != end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
+                ASSERT(iter2 != end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for (; iter2 != end; ++iter2)
                 {
@@ -14995,7 +14995,7 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
     ObjectMgr::ExclusiveQuestGroups::iterator iter = objmgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
     ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
-    assert(iter != end);                                      // always must be found if qInfo->ExclusiveGroup != 0
+    ASSERT(iter != end);                                      // always must be found if qInfo->ExclusiveGroup != 0
 
     for (; iter != end; ++iter)
     {
@@ -15868,7 +15868,7 @@ void Player::SendQuestUpdateAddItem(Quest const* /*pQuest*/, uint32 /*item_idx*/
 
 void Player::SendQuestUpdateAddCreatureOrGo(Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count)
 {
-    assert(old_count + add_count < 65536 && "mob/GO count store in 16 bits 2^16 = 65536 (0..65536)");
+    ASSERT(old_count + add_count < 65536 && "mob/GO count store in 16 bits 2^16 = 65536 (0..65536)");
 
     int32 entry = pQuest->ReqCreatureOrGOId[ creatureOrGO_idx ];
     if (entry < 0)
@@ -16341,7 +16341,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             TaxiNodesEntry const* nodeEntry = sTaxiNodesStore.LookupEntry(node_id);
             if (nodeEntry && nodeEntry->map_id == GetMapId())
             {
-                assert(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
+                ASSERT(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
                 mapId = nodeEntry->map_id;
                 Relocate(nodeEntry->x, nodeEntry->y, nodeEntry->z,0.0f);
             }
@@ -17695,7 +17695,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
         if (!group)
             group = player->GetGroup();
     }
-    assert(player_guid);
+    ASSERT(player_guid);
 
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
@@ -18882,7 +18882,7 @@ void Player::StopCastingCharm()
         if (charm->GetCharmerGUID())
         {
             sLog.outCrash("Charmed unit has charmer guid " UI64FMTD, charm->GetCharmerGUID());
-            assert(false);
+            ASSERT(false);
         }
         else
             SetCharm(charm, false);
@@ -19278,7 +19278,7 @@ void Player::RestoreSpellMods(Spell * spell)
 
             // Skip this check for now - aura charges may change due to various reason
             // TODO: trac these changes correctly
-            //assert (mod->ownerAura->GetCharges() <= mod->charges);
+            //ASSERT (mod->ownerAura->GetCharges() <= mod->charges);
         }
     }
 }
@@ -21162,7 +21162,7 @@ void Player::SetGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetGroup without a subgroup unless you specify NULL for group
-        assert(subgroup >= 0);
+        ASSERT(subgroup >= 0);
         m_group.link(group, this);
         m_group.setSubGroup((uint8)subgroup);
     }
@@ -22431,7 +22431,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetOriginalGroup without a subgroup unless you specify NULL for group
-        assert(subgroup >= 0);
+        ASSERT(subgroup >= 0);
         m_originalGroup.link(group, this);
         m_originalGroup.setSubGroup((uint8)subgroup);
     }

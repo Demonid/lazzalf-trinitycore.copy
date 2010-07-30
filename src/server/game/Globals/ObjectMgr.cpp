@@ -9348,7 +9348,7 @@ void ObjectMgr::RemoveGMTicket(GM_Ticket *ticket, int64 source, bool permanently
 void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently)
 {
     GM_Ticket *ticket = GetGMTicket(ticketGuid);
-    assert(ticket);
+    ASSERT(ticket);
     RemoveGMTicket(ticket, source, permanently);
 }
 
