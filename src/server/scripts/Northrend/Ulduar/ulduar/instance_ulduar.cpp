@@ -40,19 +40,20 @@ const DoorData doorData[] =
 
 enum eGameObjects
 {
-    GO_Leviathan_DOOR       = 194630,
-    GO_Kologarn_CHEST_HERO  = 195047,
-    GO_Kologarn_CHEST       = 195046,
-    GO_Kologarn_BRIDGE      = 194232,
-    GO_Hodir_CHEST_HERO     = 194308,
-    GO_Hodir_CHEST          = 194307,
-    GO_Hodir_Rare_CHEST     = 194200,
-    GO_Runic_DOOR           = 194557,
-    GO_Stone_DOOR           = 194558,
-    GO_Thorim_LEVER         = 194265,
-    GO_Mimiron_TRAM         = 194675,
-    GO_Mimiron_ELEVATOR     = 194749,
-    GO_Keepers_DOOR         = 194255
+    GO_Leviathan_DOOR        = 194630,
+    GO_Kologarn_CHEST_HERO   = 195047,
+    GO_Kologarn_CHEST        = 195046,
+    GO_Kologarn_BRIDGE       = 194232,
+    GO_Hodir_CHEST_HERO      = 194308,
+    GO_Hodir_CHEST           = 194307,
+    GO_Hodir_Rare_CHEST      = 194200,
+    GO_Hodir_Rare_CHEST_HERO = 194201,
+    GO_Runic_DOOR            = 194557,
+    GO_Stone_DOOR            = 194558,
+    GO_Thorim_LEVER          = 194265,
+    GO_Mimiron_TRAM          = 194675,
+    GO_Mimiron_ELEVATOR      = 194749,
+    GO_Keepers_DOOR          = 194255
 };
 
 struct instance_ulduar : public InstanceData
@@ -100,7 +101,7 @@ struct instance_ulduar : public InstanceData
     uint64 uiMimironYS;
     uint64 uiHodirYS;
         
-    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
+    GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *HodirRareChestHero, *pRunicDoor, *pStoneDoor, *pThorimLever,
         *MimironTram, *MimironElevator;
 
     void OnGameObjectCreate(GameObject* pGo, bool add)
@@ -115,6 +116,7 @@ struct instance_ulduar : public InstanceData
             case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
             case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
             case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
+            case GO_Hodir_Rare_CHEST_HERO: HodirRareChestHero = add ? pGo : NULL; break;
             case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
             case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
             case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
@@ -348,6 +350,10 @@ struct instance_ulduar : public InstanceData
             case DATA_HODIR_RARE_CHEST:
                 if (HodirRareChest && value == GO_STATE_READY)
                     HodirRareChest->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                break;
+            case DATA_HODIR_RARE_CHEST_HERO:
+                if (HodirRareChestHero && value == GO_STATE_READY)
+                    HodirRareChestHero->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
                 break;
         }
     }
