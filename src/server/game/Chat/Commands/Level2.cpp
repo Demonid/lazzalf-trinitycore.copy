@@ -737,7 +737,7 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     obj->DeleteFromDB();
 
     // GuidHouse
-    WorldDatabase.PExecuteLog("DELETE FROM guildhouses_add WHERE guid = %u AND type = 1", obj->GetDBTableGUIDLow());   
+    WorldDatabase.PQuery("DELETE FROM guildhouses_add WHERE guid = %u AND type = 1", obj->GetDBTableGUIDLow());   
 
     PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, obj->GetGUIDLow());
 
@@ -1022,7 +1022,7 @@ bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
 
     map->Add(pGameObj);
 
-    WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')", 
+    WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')", 
                               pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
 
     // TODO: is it really necessary to add both the real and DB table guid here ?
@@ -1329,29 +1329,6 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
     float o = chr->GetOrientation();
     Map *map = chr->GetMap();
 
-    if (chr->GetTransport())
-    {
-        uint32 tguid = chr->GetTransport()->AddNPCPassenger(0, id, chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
-        if (tguid > 0)
-        {
-            WorldDatabase.PQuery("INSERT INTO creature_transport (guid, npc_entry, transport_entry,  TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO) values (%u, %u, %f, %f, %f, %f, %u)", tguid, id, chr->GetTransport()->GetEntry(), chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
-
-            TransportCreatureProto *transportCreatureProto = new TransportCreatureProto;
-            transportCreatureProto->guid = tguid;
-            transportCreatureProto->npc_entry = id;
-            uint32 transportEntry = chr->GetTransport()->GetEntry();
-            transportCreatureProto->TransOffsetX = chr->GetTransOffsetX();
-            transportCreatureProto->TransOffsetY = chr->GetTransOffsetY();
-            transportCreatureProto->TransOffsetZ = chr->GetTransOffsetZ();
-            transportCreatureProto->TransOffsetO = chr->GetTransOffsetO();
-            transportCreatureProto->emote = 0;
-
-            sMapMgr.m_TransportNPCMap[transportEntry].insert(transportCreatureProto);
-            sMapMgr.m_TransportNPCs.insert(transportCreatureProto);
-        }
-        return true;
-    }
-
     Creature* pCreature = new Creature;
     if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
     {
@@ -1366,7 +1343,7 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map);
 
-    WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')", 
+    WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')", 
                            pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
 
     map->Add(pCreature);
@@ -1622,7 +1599,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     unit->AddObjectToRemoveList();
 
     // GuidHouse
-    WorldDatabase.PExecuteLog("DELETE FROM guildhouses_add WHERE guid = %u AND type = 0", unit->GetDBTableGUIDLow());   
+    WorldDatabase.PQuery("DELETE FROM guildhouses_add WHERE guid = %u AND type = 0", unit->GetDBTableGUIDLow());   
 
     SendSysMessage(LANG_COMMAND_DELCREATMESSAGE);
 
