@@ -1302,7 +1302,7 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
             {
                 Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
                 if(Shadron)
-                    ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
+                    (CAST_AI(mob_shadronAI,Shadron->AI()))->m_bHasPortalOpen = false;
                 
                 Map *map = me->GetMap();
                 if (map->IsDungeon())
@@ -1411,7 +1411,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
         {
             Creature* pVesperon = pInstance->instance->GetCreature(pInstance->GetData64(DATA_VESPERON));
             if (pVesperon)
-                ((mob_vesperonAI*)pVesperon->AI())->m_bHasPortalOpen = false;
+                (CAST_AI(mob_vesperonAI,pVesperon->AI()))->m_bHasPortalOpen = false;
 
             if (pVesperon && pVesperon->isAlive() && pVesperon->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
                 pVesperon->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
@@ -1425,7 +1425,7 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
             {
                 Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
                 if(Shadron)
-                    ((mob_shadronAI*)Shadron->AI())->m_bHasPortalOpen = false;
+                    (CAST_AI(mob_shadronAI,Shadron->AI()))->m_bHasPortalOpen = false;
                 
                 Map *map = me->GetMap();
                 if (map->IsDungeon())
@@ -1510,7 +1510,7 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
         {
             Creature* Tenebron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_TENEBRON));
             if(Tenebron)
-                ((mob_tenebronAI*)Tenebron->AI())->m_bHasPortalOpen = false;
+                (CAST_AI(mob_tenebronAI,Tenebron->AI()))->m_bHasPortalOpen = false;
             SpawnWhelps();
         }
         else
