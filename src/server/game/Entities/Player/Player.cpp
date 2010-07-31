@@ -16274,7 +16274,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
             GetPositionZ()+m_movementInfo.t_z,GetOrientation()+m_movementInfo.t_o) ||
             // transport size limited
-            m_movementInfo.t_x > 50 || m_movementInfo.t_y > 50 || m_movementInfo.t_z > 50)
+            m_movementInfo.t_x > 250 || m_movementInfo.t_y > 250 || m_movementInfo.t_z > 250)
         {
             sLog.outError("Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",
                 guid,GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
@@ -16398,11 +16398,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
             mapId = info->mapId;
             Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
-            sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+            sLog.outError("Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
             map = sMapMgr.CreateMap(mapId, this, 0);
             if (!map)
             {
-                sLog.outError("ERROR: Player (guidlow %d) has invalid default map coordinates (X: %f Y: %f Z: %f O: %f). or instance couldn't be created",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+                sLog.outError("Player (guidlow %d) has invalid default map coordinates (X: %f Y: %f Z: %f O: %f). or instance couldn't be created",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
                 return false;
             }
         }

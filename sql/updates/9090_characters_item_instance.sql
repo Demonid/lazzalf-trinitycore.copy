@@ -15,7 +15,7 @@ ALTER TABLE `item_instance`
 DELIMITER ||
 
 -- Function to convert ints from unsigned to signed
-DROP FUNCTION IF EXISTS `uint32toint32`;
+DROP FUNCTION IF EXISTS `uint32toint32`||
 CREATE FUNCTION `uint32toint32`(input INT(10) UNSIGNED) RETURNS INT(11) SIGNED DETERMINISTIC
 BEGIN
   RETURN input;
@@ -68,8 +68,8 @@ length(SUBSTRING_INDEX(`data`,' ',22))+2,
 length(SUBSTRING_INDEX(`data`,' ',57+1))-length(SUBSTRING_INDEX(data,' ',22))-1),
 
 `randomPropertyId` = uint32toint32(SUBSTRING(`data`,
-length(SUBSTRING_INDEX(`data`,' ',58))+2,
-length(SUBSTRING_INDEX(`data`,' ',58+1))-length(SUBSTRING_INDEX(data,' ',58))-1)),
+length(SUBSTRING_INDEX(`data`,' ',59))+2,
+length(SUBSTRING_INDEX(`data`,' ',59+1))-length(SUBSTRING_INDEX(data,' ',59))-1)),
 
 `durability` = SUBSTRING(`data`,
 length(SUBSTRING_INDEX(`data`,' ',60))+2,

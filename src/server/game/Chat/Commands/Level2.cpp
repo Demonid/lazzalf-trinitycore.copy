@@ -45,7 +45,7 @@
 #include "GlobalEvents.h"
 #include "OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
-
+#include "Transport.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "CreatureGroups.h"
 
@@ -1226,6 +1226,72 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
 }
 
 //-----------------------Npc Commands-----------------------
+//add spawn of creature
+bool ChatHandler::HandleNpcAddCommand(const char* args)
+{
+    if (!*args)
+        return false;
+    char* charID = extractKeyFromLink((char*)args,"Hcreature_entry");
+    if (!charID)
+        return false;
+
+    char* team = strtok(NULL, " ");
+    int32 teamval = 0;
+    if (team) { teamval = atoi(team); }
+    if (teamval < 0) { teamval = 0; }
+
+    uint32 id  = atoi(charID);
+
+    Player *chr = m_session->GetPlayer();
+    float x = chr->GetPositionX();
+    float y = chr->GetPositionY();
+    float z = chr->GetPositionZ();
+    float o = chr->GetOrientation();
+    Map *map = chr->GetMap();
+
+    if (chr->GetTransport())
+    {
+        uint32 tguid = chr->GetTransport()->AddNPCPassenger(0, id, chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+        if (tguid > 0)
+        {
+            WorldDatabase.PQuery("INSERT INTO creature_transport (guid, npc_entry, transport_entry,  TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO) values (%u, %u, %f, %f, %f, %f, %u)", tguid, id, chr->GetTransport()->GetEntry(), chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+
+            TransportCreatureProto *transportCreatureProto = new TransportCreatureProto;
+            transportCreatureProto->guid = tguid;
+            transportCreatureProto->npc_entry = id;
+            uint32 transportEntry = chr->GetTransport()->GetEntry();
+            transportCreatureProto->TransOffsetX = chr->GetTransOffsetX();
+            transportCreatureProto->TransOffsetY = chr->GetTransOffsetY();
+            transportCreatureProto->TransOffsetZ = chr->GetTransOffsetZ();
+            transportCreatureProto->TransOffsetO = chr->GetTransOffsetO();
+            transportCreatureProto->emote = 0;
+
+            sMapMgr.m_TransportNPCMap[transportEntry].insert(transportCreatureProto);
+            sMapMgr.m_TransportNPCs.insert(transportCreatureProto);
+        }
+        return true;
+    }
+    
+    Creature* pCreature = new Creature;
+    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
+    {
+        delete pCreature;
+        return false;
+    }
+
+    pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
+
+    uint32 db_guid = pCreature->GetDBTableGUIDLow();
+
+    // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
+    pCreature->LoadFromDB(db_guid, map);
+
+    map->Add(pCreature);
+    objmgr.AddCreatureToGrid(db_guid, objmgr.GetCreatureData(db_guid));
+    return true;
+}
+
+
 //add spawn of creature for a GuildHouse
 bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
 {
@@ -1263,6 +1329,29 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
     float o = chr->GetOrientation();
     Map *map = chr->GetMap();
 
+    if (chr->GetTransport())
+    {
+        uint32 tguid = chr->GetTransport()->AddNPCPassenger(0, id, chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+        if (tguid > 0)
+        {
+            WorldDatabase.PQuery("INSERT INTO creature_transport (guid, npc_entry, transport_entry,  TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO) values (%u, %u, %f, %f, %f, %f, %u)", tguid, id, chr->GetTransport()->GetEntry(), chr->GetTransOffsetX(), chr->GetTransOffsetY(), chr->GetTransOffsetZ(), chr->GetTransOffsetO());
+
+            TransportCreatureProto *transportCreatureProto = new TransportCreatureProto;
+            transportCreatureProto->guid = tguid;
+            transportCreatureProto->npc_entry = id;
+            uint32 transportEntry = chr->GetTransport()->GetEntry();
+            transportCreatureProto->TransOffsetX = chr->GetTransOffsetX();
+            transportCreatureProto->TransOffsetY = chr->GetTransOffsetY();
+            transportCreatureProto->TransOffsetZ = chr->GetTransOffsetZ();
+            transportCreatureProto->TransOffsetO = chr->GetTransOffsetO();
+            transportCreatureProto->emote = 0;
+
+            sMapMgr.m_TransportNPCMap[transportEntry].insert(transportCreatureProto);
+            sMapMgr.m_TransportNPCs.insert(transportCreatureProto);
+        }
+        return true;
+    }
+
     Creature* pCreature = new Creature;
     if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
     {
@@ -1279,48 +1368,6 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
 
     WorldDatabase.PExecuteLog("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')", 
                            pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
-
-    map->Add(pCreature);
-    objmgr.AddCreatureToGrid(db_guid, objmgr.GetCreatureData(db_guid));
-    return true;
-}
-
-//add spawn of creature
-bool ChatHandler::HandleNpcAddCommand(const char* args)
-{
-    if (!*args)
-        return false;
-    char* charID = extractKeyFromLink((char*)args,"Hcreature_entry");
-    if (!charID)
-        return false;
-
-    char* team = strtok(NULL, " ");
-    int32 teamval = 0;
-    if (team) { teamval = atoi(team); }
-    if (teamval < 0) { teamval = 0; }
-
-    uint32 id  = atoi(charID);
-
-    Player *chr = m_session->GetPlayer();
-    float x = chr->GetPositionX();
-    float y = chr->GetPositionY();
-    float z = chr->GetPositionZ();
-    float o = chr->GetOrientation();
-    Map *map = chr->GetMap();
-
-    Creature* pCreature = new Creature;
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
-    {
-        delete pCreature;
-        return false;
-    }
-
-    pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
-
-    uint32 db_guid = pCreature->GetDBTableGUIDLow();
-
-    // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-    pCreature->LoadFromDB(db_guid, map);
 
     map->Add(pCreature);
     objmgr.AddCreatureToGrid(db_guid, objmgr.GetCreatureData(db_guid));
@@ -4298,7 +4345,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* /*args*/)
 
     if (!pet->InitStatsForLevel(creatureTarget->getLevel()))
     {
-        sLog.outError("ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
+        sLog.outError("InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
         PSendSysMessage("Error 2");
         delete pet;
         return false;
