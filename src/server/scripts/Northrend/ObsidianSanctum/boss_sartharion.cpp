@@ -243,6 +243,9 @@ struct boss_sartharionAI : public BossAI
         if (me->HasAura(SPELL_TWILIGHT_REVENGE))
             me->RemoveAurasDueToSpell(SPELL_TWILIGHT_REVENGE);
 
+        if (me->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
+            me->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
+
         me->ResetLootMode();
         me->SetHomePosition(3246.57, 551.263, 58.6164, 4.66003); 
 
@@ -420,6 +423,7 @@ struct boss_sartharionAI : public BossAI
                 if(instance->GetData(TYPE_TENEBRON_PREKILLED) == false)
                 {
                     pTenebron->Respawn();
+                    pTenebron->SetHomePosition(3239.07, 657.235, 86.8775, 4.74729);
                     pTenebron->GetMotionMaster()->MoveTargetedHome();
                 }
             }
@@ -433,11 +437,13 @@ struct boss_sartharionAI : public BossAI
                     pShadron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pShadron->RemoveAllAuras();
                 pShadron->GetMotionMaster()->MoveTargetedHome();
-            }else
+            }
+            else
             {
                 if(instance->GetData(TYPE_SHADRON_PREKILLED) == false)
                 {
                     pShadron->Respawn();
+                    pShadron->SetHomePosition(3363.06, 525.28, 98.362, 4.76475);
                     pShadron->GetMotionMaster()->MoveTargetedHome();
                 }
             }
@@ -451,11 +457,13 @@ struct boss_sartharionAI : public BossAI
                     pVesperon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pVesperon->RemoveAllAuras();
                 pVesperon->GetMotionMaster()->MoveTargetedHome();
-            }else
+            }
+            else
             {
                 if(instance->GetData(TYPE_VESPERON_PREKILLED) == false)
                 {
                     pVesperon->Respawn();
+                    pVesperon->SetHomePosition(3145.68, 520.71, 89.7, 4.64258);
                     pVesperon->GetMotionMaster()->MoveTargetedHome();
                 }
             }
@@ -1332,6 +1340,9 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
                 pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
                 if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
                     pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
+                pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+                if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
+                    pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
             }
             else
             {
