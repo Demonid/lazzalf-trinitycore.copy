@@ -90,6 +90,12 @@ set(game_STAT_SRCS
   ${sources_Tools}
   ${sources_Weather}
   ${sources_World}
+  Custom/GuildHouse.cpp
+  Custom/GuildHouse.h
+  Custom/sc_npc_teleport.cpp
+  Custom/sc_npc_teleport.h
+   OutdoorPvP/Zones/OutdoorPvPWG.cpp
+   OutdoorPvP/Zones/OutdoorPvPWG.h
 )
 
 include_directories(
@@ -130,6 +136,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Commands
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
@@ -183,6 +190,8 @@ include_directories(
   ${ACE_INCLUDE_DIR}
 )
 
+      Custom/sc_bs_sp_wrkr.cpp
+      Custom/sc_bs_sp_wrkr.h
 add_library(game STATIC ${game_STAT_SRCS})
 
 add_dependencies(game revision.h)
@@ -195,4 +204,3 @@ if(PCH)
     add_native_precompiled_header(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/gamePCH)
   endif()
 endif()
-

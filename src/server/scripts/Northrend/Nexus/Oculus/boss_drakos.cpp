@@ -203,6 +203,7 @@ CreatureAI* GetAI_npc_unstable_sphere(Creature* pCreature)
     return new npc_unstable_sphereAI (pCreature);
 }
 
+
 void AddSC_boss_drakos()
 {
     Script* newscript;
@@ -217,3 +218,4 @@ void AddSC_boss_drakos()
     newscript->GetAI = &GetAI_npc_unstable_sphere;
     newscript->RegisterSelf();
 }
+
