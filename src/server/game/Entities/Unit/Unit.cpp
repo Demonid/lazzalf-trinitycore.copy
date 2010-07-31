@@ -1967,6 +1967,25 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                             RemainingDamage -= absorbed;
                         }
                         continue;
+                    case 52284: // Will of the Necropolis
+                    case 52285:
+                    case 52286:
+                    {
+                        int32 remainingHp = (int32)pVictim->GetHealth() - RemainingDamage;
+
+                        // min pct of hp is stored in effect 0 of talent spell
+                        uint32 rank = spellmgr.GetSpellRank(spellProto->Id);
+                        SpellEntry const * talentProto = sSpellStore.LookupEntry(spellmgr.GetSpellWithRank(49189, rank));
+
+                        int32 minHp = (float)pVictim->GetMaxHealth() * (float)SpellMgr::CalculateSpellEffectAmount(talentProto, 0, (*i)->GetCaster())  / 100.0f;
+                        // Damage that would take you below [effect0] health or taken while you are at [effect0]
+                        if (remainingHp < minHp)
+                        {
+                            uint32 absorbed = uint32(currentAbsorb * RemainingDamage * 0.01f);
+                            RemainingDamage -= absorbed;
+                        }
+                        continue;
+                    }
                     case 48707: // Anti-Magic Shell (on self)
                     {
                         // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
@@ -5980,7 +5999,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     }
 
                     triggered_spell_id = 12654;
-                    basepoints0 += GetRemainingDotDamage(GetGUID(), triggered_spell_id);
+                    basepoints0 += pVictim->GetRemainingDotDamage(GetGUID(), triggered_spell_id);
                     break;
                 }
                 // Glyph of Ice Block
@@ -6822,7 +6841,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 basepoints0 = triggerAmount*damage/400;
                 triggered_spell_id = 61840;
                 // Add remaining ticks to damage done
-                basepoints0 += GetRemainingDotDamage(GetGUID(), triggered_spell_id);
+                basepoints0 += pVictim->GetRemainingDotDamage(GetGUID(), triggered_spell_id);
                 break;
             }
             // Sheath of Light
@@ -8239,7 +8258,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                         return false;
 
                     basepoints0 = int32(damage * triggerAmount / 100 / (GetSpellMaxDuration(TriggerPS) / TriggerPS->EffectAmplitude[0]));
-                    basepoints0 += GetRemainingDotDamage(GetGUID(), trigger_spell_id);
+                    basepoints0 += pVictim->GetRemainingDotDamage(GetGUID(), trigger_spell_id);
                     break;
                 }
                 break;
@@ -13953,15 +13972,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
                     continue;
                 // If not trigger by default and spellProcEvent == NULL - skip
                 if (!isTriggerAura[aurEff->GetAuraType()] && triggerData.spellProcEvent == NULL)
-                    continue;
-                uint32 triggered_spell_id = aurEff->GetSpellProto()->EffectTriggerSpell[i];
-                                // check for positive auras that proc with charge drop
-                bool positive = (!triggered_spell_id && IsPositiveSpell(aurEff->GetId()) && aurEff->GetBase()->GetCharges()) ||
-                                // check for positive auras that triggers unknown spells (Blessing Recovery, etc...)
-                                (!sSpellStore.LookupEntry(triggered_spell_id) && IsPositiveSpell(aurEff->GetId())) ||
-                                // final check for positive triggered spell
-                                IsPositiveSpell(triggered_spell_id);
-                if (!damage && (procExtra & PROC_EX_ABSORB) && isVictim && positive)
                     continue;
                 // Some spells must always trigger
                 if (!triggered || isAlwaysTriggeredAura[aurEff->GetAuraType()])

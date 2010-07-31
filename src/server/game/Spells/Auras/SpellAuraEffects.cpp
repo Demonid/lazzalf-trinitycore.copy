@@ -625,6 +625,13 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         amount += int32(amount * SpellMgr::CalculateSpellEffectAmount(m_spellProto, 2, caster) / 100.0f);
                 }
             }
+            // Unholy Blight damage over time effect
+            else if (GetId() == 50536)
+            {
+                m_canBeRecalculated = false;
+                // we're getting total damage on aura apply, change it to be damage per tick
+                amount = (float)amount / GetTotalTicks();
+            }
             break;
         case SPELL_AURA_PERIODIC_ENERGIZE:
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_GENERIC)
@@ -676,6 +683,14 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     }
                     amount = -value;
                 }
+            }
+            // Hand of Salvation
+            else if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PALADIN && GetSpellProto()->SpellFamilyFlags[0] & 0x00000100)
+            {
+                //Glyph of Salvation
+                if (caster->GetGUID() == GetBase()->GetUnitOwner()->GetGUID())
+                    if (AuraEffect const * aurEff = caster->GetAuraEffect(63225, 0))
+                        amount = -aurEff->GetAmount();
             }
             break;
         case SPELL_AURA_MOD_THREAT:
@@ -2303,7 +2318,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case 53303:
                     case 53304:
                         // We are standing at the moment
-                        if (GetAmount() >= 0)
+                        if (GetAmount() > -1)
                             return;
 
                         triggerSpellId = 64418 + auraId - 53302;

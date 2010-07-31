@@ -7175,9 +7175,12 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     if (zone->flags & AREA_FLAG_CAPITAL)                     // in capital city
     {
-        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        SetRestType(REST_TYPE_IN_CITY);
-        InnEnter(time(0),GetMapId(),0,0,0);
+        if (!pvpInfo.inHostileArea || zone->IsSanctuary())
+        {
+            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+            SetRestType(REST_TYPE_IN_CITY);
+            InnEnter(time(0),GetMapId(),0,0,0);
+        }
         pvpInfo.inNoPvPArea = true;
     }
     else                                                    // anywhere else
@@ -8053,7 +8056,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             ApplySpellMod(pEnchant->spellid[s],SPELLMOD_CHANCE_OF_SUCCESS,chance);
             
             // Shiv has 100% chance to apply the poison
-            if (FindCurrentSpellBySpellId(5938))
+            if (FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
                 chance = 100.0f;
 
             if (roll_chance_f(chance))
@@ -20236,10 +20239,8 @@ void Player::UpdatePvP(bool state, bool override)
     }
     else
     {
-        if (pvpInfo.endTimer != 0)
-            pvpInfo.endTimer = time(NULL);
-        else
-            SetPvP(state);
+        pvpInfo.endTimer = time(NULL);
+        SetPvP(state);
     }
 }
 
