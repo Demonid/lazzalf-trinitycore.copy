@@ -280,6 +280,21 @@ Aura * Aura::Create(SpellEntry const* spellproto, uint8 effMask, WorldObject * o
         else
             caster = ObjectAccessor::GetUnit(*owner, casterGUID);
     }
+    else
+    {
+        casterGUID = caster->GetGUID();
+    }
+    // check if aura can be owned by owner
+    if (owner->isType(TYPEMASK_UNIT))
+    {
+        if (!owner->IsInWorld() || ((Unit*)owner)->IsDuringRemoveFromWorld())
+        {
+            // owner not in world so
+            // don't allow to own not self casted single target auras
+            if (casterGUID != owner->GetGUID() && IsSingleTargetSpell(spellproto))
+                return NULL;
+        }
+    }
     Aura * aura = NULL;
     switch(owner->GetTypeId())
     {
@@ -455,7 +470,7 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
         {
             // needs readding - remove now, will be applied in next update cycle
             // (dbcs do not have auras which apply on same type of targets but have different radius, so this is not really needed)
-            if (appIter->second->GetEffectMask() != existing->second)
+            if (appIter->second->GetEffectMask() != existing->second || !CanBeAppliedOn(existing->first))
                 targetsToRemove.push_back(appIter->second->GetTarget());
             // nothing todo - aura already applied
             // remove from auras to register list
@@ -469,8 +484,7 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
         bool addUnit = true;
         // check target immunities 
         if (itr->first->IsImmunedToSpell(GetSpellProto()) 
-            // check area target requirements
-            || (itr->first != GetOwner() && !CheckAreaTarget(itr->first)))
+            || !CanBeAppliedOn(itr->first))
             addUnit = false;
 
         if (addUnit)
@@ -765,6 +779,9 @@ void Aura::UnregisterSingleTarget()
 {
     ASSERT(m_isSingleTarget);
     Unit * caster = GetCaster();
+    //if (!caster)
+        //caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
+    ASSERT(caster);
     caster->GetSingleCastAuras().remove(this);
     SetIsSingleTarget(false);
 }
@@ -1495,6 +1512,23 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
             }
             break;
     }
+}
+
+bool Aura::CanBeAppliedOn(Unit *target)
+{
+    // unit not in world or during remove from world
+    if (!target->IsInWorld() || target->IsDuringRemoveFromWorld())
+    {
+        // area auras mustn't be applied
+        if (GetOwner() != target)
+            return false;
+        // not selfcasted single target auras mustn't be applied
+        if (GetCasterGUID() != GetOwner()->GetGUID() && IsSingleTargetSpell(GetSpellProto()))
+            return false;
+    }
+    else if (GetOwner() != target)
+        return CheckAreaTarget(target);
+    return true;
 }
 
 bool Aura::CheckAreaTarget(Unit *target)

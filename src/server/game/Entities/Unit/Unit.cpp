@@ -185,6 +185,7 @@ Unit::Unit()
         m_reactiveTimer[i] = 0;
 
     m_cleanupDone = false;
+    m_duringRemoveFromWorld = false;
 }
 
 Unit::~Unit()
@@ -206,6 +207,7 @@ Unit::~Unit()
     delete m_charmInfo;
     delete m_vehicleKit;
 
+    ASSERT(!m_duringRemoveFromWorld);
     ASSERT(!m_attacking);
     ASSERT(m_attackers.empty());
     ASSERT(m_sharedVision.empty());
@@ -573,6 +575,9 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }*/
     if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
+
+    if (GetTypeId() == TYPEID_UNIT && this->ToCreature()->IsAIEnabled)
+        this->ToCreature()->AI()->DamageDealt(pVictim, damage);
 
     if (damagetype != NODAMAGE)
     {
@@ -3659,6 +3664,7 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
     aura->SetIsSingleTarget(caster && IsSingleTargetSpell(aura->GetSpellProto()));
     if (aura->IsSingleTarget())
     {
+        ASSERT((IsInWorld() && !IsDuringRemoveFromWorld()) || (aura->GetCasterGUID() == GetGUID()));
         // register single target aura
         caster->GetSingleCastAuras().push_back(aura);
         // remove other single target auras
@@ -4243,10 +4249,10 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
                 newAura = Aura::TryCreate(aura->GetSpellProto(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID());
                 if (!newAura)
                     return;
-                newAura->SetLoadedState(dur, dur, stealCharge ? 1 : aura->GetCharges(), aura->GetStackAmount(), recalculateMask, &damage[0]);
                 // strange but intended behaviour: Stolen single target auras won't be treated as single targeted
                 if (newAura->IsSingleTarget())
                     newAura->UnregisterSingleTarget();
+                newAura->SetLoadedState(dur, dur, stealCharge ? 1 : aura->GetCharges(), aura->GetStackAmount(), recalculateMask, &damage[0]);
                 newAura->ApplyForTargets();
             }
             return;
@@ -4413,43 +4419,35 @@ void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemo
 
 void Unit::RemoveAreaAurasDueToLeaveWorld()
 {
-    bool cleanRun;
-    do
+    // make sure that all area auras not applied on self are removed - prevent access to deleted pointer later
+    for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
     {
-        cleanRun = true;
-        // make sure that all area auras not applied on self are removed - prevent access to deleted pointer later
-        for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
+        Aura * aura = iter->second;
+        ++iter;
+        Aura::ApplicationMap const & appMap = aura->GetApplicationMap();
+        for (Aura::ApplicationMap::const_iterator itr = appMap.begin(); itr!= appMap.end();)
         {
-            Aura * aura = iter->second;
-            ++iter;
-            Aura::ApplicationMap const & appMap = aura->GetApplicationMap();
-            for (Aura::ApplicationMap::const_iterator itr = appMap.begin(); itr!= appMap.end();)
-            {
-                AuraApplication * aurApp = itr->second;
-                ++itr;
-                Unit * target = aurApp->GetTarget();
-                if (target == this)
-                    continue;
-                target->RemoveAura(aurApp);
-                cleanRun = false;
-                // things linked on aura remove may apply new area aura - so start from the beginning
-                iter = m_ownedAuras.begin();
-            }
-        }
-
-        // remove area auras owned by others
-        for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
-        {
-            if (iter->second->GetBase()->GetOwner() != this)
-            {
-                RemoveAura(iter);
-                cleanRun = false;
-            }
-            else
-                ++iter;
+            AuraApplication * aurApp = itr->second;
+            ++itr;
+            Unit * target = aurApp->GetTarget();
+            if (target == this)
+                continue;
+            target->RemoveAura(aurApp);
+            // things linked on aura remove may apply new area aura - so start from the beginning
+            iter = m_ownedAuras.begin();
         }
     }
-    while (!cleanRun);
+
+    // remove area auras owned by others
+    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
+    {
+        if (iter->second->GetBase()->GetOwner() != this)
+        {
+            RemoveAura(iter);
+        }
+        else
+            ++iter;
+    }
 }
 
 void Unit::RemoveAllAuras()
@@ -4658,6 +4656,15 @@ bool Unit::HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         if (miscvalue == (*i)->GetMiscValue())
+            return true;
+    return false;
+}
+
+bool Unit::HasAuraTypeWithAffectMask(AuraType auratype, SpellEntry const * affectedSpell) const
+{
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if ((*i)->IsAffectedOnSpell(affectedSpell))
             return true;
     return false;
 }
@@ -4901,6 +4908,60 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
     {
         if ((*i)->GetMiscValue() == misc_value && (*i)->GetAmount() < modifier)
+            modifier = (*i)->GetAmount();
+    }
+
+    return modifier;
+}
+
+int32 Unit::GetTotalAuraModifierByAffectMask(AuraType auratype, SpellEntry const * affectedSpell) const
+{
+    int32 modifier = 0;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if ((*i)->IsAffectedOnSpell(affectedSpell))
+            modifier += (*i)->GetAmount();
+    }
+    return modifier;
+}
+
+float Unit::GetTotalAuraMultiplierByAffectMask(AuraType auratype, SpellEntry const * affectedSpell) const
+{
+    float multiplier = 1.0f;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if ((*i)->IsAffectedOnSpell(affectedSpell))
+            multiplier *= (100.0f + (*i)->GetAmount())/100.0f;
+    }
+    return multiplier;
+}
+
+int32 Unit::GetMaxPositiveAuraModifierByAffectMask(AuraType auratype, SpellEntry const * affectedSpell) const
+{
+    int32 modifier = 0;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if ((*i)->IsAffectedOnSpell(affectedSpell) && (*i)->GetAmount() > modifier)
+            modifier = (*i)->GetAmount();
+    }
+
+    return modifier;
+}
+
+int32 Unit::GetMaxNegativeAuraModifierByAffectMask(AuraType auratype, SpellEntry const * affectedSpell) const
+{
+    int32 modifier = 0;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if ((*i)->IsAffectedOnSpell(affectedSpell) && (*i)->GetAmount() < modifier)
             modifier = (*i)->GetAmount();
     }
 
@@ -13406,6 +13467,7 @@ void Unit::RemoveFromWorld()
 
     if (IsInWorld())
     {
+        m_duringRemoveFromWorld = true;
         if (IsVehicle())
             GetVehicleKit()->Uninstall();
 
@@ -13438,6 +13500,7 @@ void Unit::RemoveFromWorld()
         }
 
         WorldObject::RemoveFromWorld();
+        m_duringRemoveFromWorld = false;
     }
 }
 

@@ -1618,14 +1618,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\server\game\Tools\CharacterDatabaseCleaner.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\server\game\Tools\CharacterDatabaseCleaner.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\src\server\game\Server\Protocol\Handlers\CharacterHandler.cpp"
 						>
 					</File>
@@ -1883,6 +1875,14 @@
 		<Filter
 			Name="Tools"
 			>
+			<File
+				RelativePath="..\..\src\server\game\Tools\CharacterDatabaseCleaner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\server\game\Tools\CharacterDatabaseCleaner.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\src\server\game\Tools\PlayerDump.cpp"
 				>
