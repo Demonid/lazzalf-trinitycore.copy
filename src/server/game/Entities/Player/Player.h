@@ -511,7 +511,7 @@ enum QuestSlotOffsets
     QUEST_ID_OFFSET     = 0,
     QUEST_STATE_OFFSET  = 1,
     QUEST_COUNTS_OFFSET = 2,
-    QUEST_TIME_OFFSET   = 3
+    QUEST_TIME_OFFSET   = 4
 };
 
 #define MAX_QUEST_OFFSET 5
@@ -1343,7 +1343,7 @@ class Player : public Unit, public GridObject<Player>
         {
             uint64 val = GetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET);
             val &= ~((uint64)0xFFFF << (counter * 16));
-        val |= ((uint64)count << (counter * 16));
+            val |= ((uint64)count << (counter * 16));
             SetUInt64Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET, val);
         }
         void SetQuestSlotState(uint16 slot, uint32 state) { SetFlag(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET, state); }

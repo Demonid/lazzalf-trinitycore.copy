@@ -43,13 +43,12 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
 
     uint8 bagIndex, slot;
-    uint8 unk_flags;                                        // flags (if 0x02 - some additional data are received)
     uint8 cast_count;                                       // next cast if exists (single or not)
     uint64 item_guid;
     uint32 glyphIndex;                                      // something to do with glyphs?
     uint32 spellid;                                         // casted spell id
 
-    recvPacket >> bagIndex >> slot >> cast_count >> spellid >> item_guid >> glyphIndex >> unk_flags;
+    recvPacket >> bagIndex >> slot >> cast_count >> spellid >> item_guid >> glyphIndex;
 
     if (glyphIndex >= MAX_GLYPH_SLOT_INDEX)
     {
@@ -70,7 +69,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    sLog.outDetail("WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, cast_count: %u, spellid: %u, Item: %u, glyphIndex: %u, unk_flags: %u, data length = %i", bagIndex, slot, cast_count, spellid, pItem->GetEntry(), glyphIndex, unk_flags, (uint32)recvPacket.size());
+    sLog.outDetail("WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, cast_count: %u, spellid: %u, Item: %u, glyphIndex: %u, data length = %i", bagIndex, slot, cast_count, spellid, pItem->GetEntry(), glyphIndex, (uint32)recvPacket.size());
 
     ItemPrototype const *proto = pItem->GetProto();
     if (!proto)
@@ -94,9 +93,16 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     // only allow conjured consumable, bandage, poisons (all should have the 2^21 item flag set in DB)
-    if (proto->Class == ITEM_CLASS_CONSUMABLE && !(proto->Flags & ITEM_FLAGS_USEABLE_IN_ARENA) && pUser->InArena())
+    if (proto->Class == ITEM_CLASS_CONSUMABLE && !(proto->Flags & ITEM_PROTO_FLAG_USEABLE_IN_ARENA) && pUser->InArena())
     {
-        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH,pItem,NULL);
+        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH, pItem, NULL);
+        return;
+    }
+
+    // don't allow items banned in arena
+    if (proto->Flags & ITEM_PROTO_FLAG_NOT_USEABLE_IN_ARENA && pUser->InArena())
+    {
+        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH, pItem, NULL);
         return;
     }
 
@@ -209,15 +215,15 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             return;
         }
 
-        // required picklocking
-        if (lockInfo->Skill[1] || lockInfo->Skill[0])
+        // was not unlocked yet
+        if (pItem->IsLocked())
         {
             pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL);
             return;
         }
     }
 
-    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))// wrapped?
+    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))// wrapped?
     {
         QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
         if (result)
@@ -290,10 +296,9 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId;
-    uint8  cast_count, unk_flags;
+    uint8  cast_count;
     recvPacket >> cast_count;
     recvPacket >> spellId;
-    recvPacket >> unk_flags;                                // flags (if 0x02 - some additional data are received)
 
     // ignore for remote control state (for player case)
     Unit* mover = _player->m_mover;
@@ -303,7 +308,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u, unk_flags %u, data length = %i", spellId, cast_count, unk_flags, (uint32)recvPacket.size());
+    sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u, data length = %i", spellId, cast_count, (uint32)recvPacket.size());
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
@@ -351,25 +356,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         recvPacket.rpos(recvPacket.wpos());                 // prevent spam at ignore packet
         return;
-    }
-
-    // some spell cast packet including more data (for projectiles?)
-    if (unk_flags & 0x02)
-    {
-        //recvPacket.read_skip<float>();                      // unk1, coords?
-        //recvPacket.read_skip<float>();                      // unk1, coords?
-        uint8 unk1;
-        recvPacket >> unk1;                                 // >> 1 or 0
-        if (unk1)
-        {
-            recvPacket.read_skip<uint32>();                 // >> MSG_MOVE_STOP
-            uint64 guid;                                    // guid - unused
-            if (!recvPacket.readPackGUID(guid))
-                return;
-
-            MovementInfo movementInfo;
-            ReadMovementInfo(recvPacket, &movementInfo);
-        }
     }
 
     // auto-selection buff level base at target level (in spellInfo)

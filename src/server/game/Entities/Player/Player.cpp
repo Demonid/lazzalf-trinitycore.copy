@@ -1968,10 +1968,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         {
             m_transport->RemovePassenger(this);
             m_transport = NULL;
-            m_movementInfo.t_x = 0.0f;
-            m_movementInfo.t_y = 0.0f;
-            m_movementInfo.t_z = 0.0f;
-            m_movementInfo.t_o = 0.0f;
+            m_movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
             m_movementInfo.t_time = 0;
             m_movementInfo.t_seat = -1;
         }
@@ -2126,7 +2123,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
                 data.Initialize(SMSG_NEW_WORLD, (20));
                 if (m_transport)
-                    data << (uint32)mapid << m_movementInfo.t_x << m_movementInfo.t_y << m_movementInfo.t_z << m_movementInfo.t_o;
+                    data << (uint32)mapid << m_movementInfo.t_pos.PositionXYZOStream();
                 else
                     data << (uint32)mapid << (float)x << (float)y << (float)z << (float)orientation;
 
@@ -2146,10 +2143,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             if (m_transport)
             {
-                final_x += m_movementInfo.t_x;
-                final_y += m_movementInfo.t_y;
-                final_z += m_movementInfo.t_z;
-                final_o += m_movementInfo.t_o;
+                final_x += m_movementInfo.t_pos.GetPositionX();
+                final_y += m_movementInfo.t_pos.GetPositionY();
+                final_z += m_movementInfo.t_pos.GetPositionZ();
+                final_o += m_movementInfo.t_pos.GetOrientation();
             }
 
             m_teleport_dest = WorldLocation(mapid, final_x, final_y, final_z, final_o);
@@ -12075,7 +12072,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
                 DestroyItem(slot, i, update);
         }
 
-        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
+        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
 
         RemoveEnchantmentDurations(pItem);
@@ -12438,14 +12435,9 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
 
     if (IsInventoryPos(dst))
     {
-        bool isRefundable = pSrcItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-       
         // change item amount before check (for unique max count check)
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
         
-        if (isRefundable)
-            SendRefundInfo(pSrcItem);
-
         ItemPosCountVec dest;
         uint8 msg = CanStoreItem(dstbag, dstslot, dest, pNewItem, false);
         if (msg != EQUIP_ERR_OK)
@@ -12460,24 +12452,11 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
             pSrcItem->SendUpdateToPlayer(this);
         pSrcItem->SetState(ITEM_CHANGED, this);
         StoreItem(dest, pNewItem, true);
-        if (isRefundable)
-        {
-            pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
-            pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
-            pNewItem->SetRefundRecipient(GetGUIDLow());
-            pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
-            pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-        }
     }
     else if (IsBankPos (dst))
     {
-        bool isRefundable = pSrcItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-        
         // change item amount before check (for unique max count check)
         pSrcItem->SetCount(pSrcItem->GetCount() - count);
-
-        if (isRefundable)
-            SendRefundInfo(pSrcItem);
 
         ItemPosCountVec dest;
         uint8 msg = CanBankItem(dstbag, dstslot, dest, pNewItem, false);
@@ -12493,15 +12472,6 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
             pSrcItem->SendUpdateToPlayer(this);
         pSrcItem->SetState(ITEM_CHANGED, this);
         BankItem(dest, pNewItem, true);
-        if (isRefundable)
-        {
-            AddRefundReference(pNewItem->GetGUIDLow());
-            pNewItem->SetPaidExtendedCost(pSrcItem->GetPaidExtendedCost());
-            pNewItem->SetPaidMoney(pSrcItem->GetPaidMoney());
-            pNewItem->SetRefundRecipient(GetGUIDLow());
-            pNewItem->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, pSrcItem->GetPlayedTime());
-            pNewItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
-        }
     }
     else if (IsEquipmentPos (dst))
     {
@@ -16265,20 +16235,17 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         instanceId = 0;
 
         m_movementInfo.t_guid = MAKE_NEW_GUID(transGUID, 0, HIGHGUID_TRANSPORT);
-        m_movementInfo.t_x = fields[26].GetFloat();
-        m_movementInfo.t_y = fields[27].GetFloat();
-        m_movementInfo.t_z = fields[28].GetFloat();
-        m_movementInfo.t_o = fields[29].GetFloat();
+        m_movementInfo.t_pos.Relocate(fields[26].GetFloat(), fields[27].GetFloat(), fields[28].GetFloat(), fields[29].GetFloat());
 
         if (!Trinity::IsValidMapCoord(
-            GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
-            GetPositionZ()+m_movementInfo.t_z,GetOrientation()+m_movementInfo.t_o) ||
+            GetPositionX()+m_movementInfo.t_pos.m_positionX,GetPositionY()+m_movementInfo.t_pos.m_positionY,
+            GetPositionZ()+m_movementInfo.t_pos.m_positionZ,GetOrientation()+m_movementInfo.t_pos.m_orientation) ||
             // transport size limited
-            m_movementInfo.t_x > 250 || m_movementInfo.t_y > 250 || m_movementInfo.t_z > 250)
+            m_movementInfo.t_pos.m_positionX > 250 || m_movementInfo.t_pos.m_positionY > 250 || m_movementInfo.t_pos.m_positionZ > 250)
         {
             sLog.outError("Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",
-                guid,GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
-                GetPositionZ()+m_movementInfo.t_z,GetOrientation()+m_movementInfo.t_o);
+                guid,GetPositionX()+m_movementInfo.t_pos.m_positionX,GetPositionY()+m_movementInfo.t_pos.m_positionY,
+                GetPositionZ()+m_movementInfo.t_pos.m_positionZ,GetOrientation()+m_movementInfo.t_pos.m_orientation);
 
             RelocateToHomebind();
         }
@@ -17006,7 +16973,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
             }
 
             // "Conjured items disappear if you are logged out for more than 15 minutes"
-            if (timediff > 15*MINUTE && item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED))
+            if (timediff > 15*MINUTE && proto->Flags & ITEM_PROTO_FLAG_CONJURED)
             {
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 item->FSetState(ITEM_REMOVED);
@@ -17014,13 +16981,13 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                 continue;
             }
 
-            if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
+            if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
             {
                 if (item->GetPlayedTime() > (2*HOUR))
                 {
                     sLog.outDebug("Item::LoadFromDB, Item GUID: %u: refund time expired, deleting refund data and removing refundable flag.", item->GetGUIDLow());
                     CharacterDatabase.PExecute("DELETE FROM item_refund_instance WHERE item_guid = '%u'", item->GetGUIDLow());
-                    item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
+                    item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
                 }
                 else
                 {
@@ -17032,7 +16999,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
                         sLog.outDebug("Item::LoadFromDB, "
                         "Item GUID: %u has field flags & ITEM_FLAGS_REFUNDABLE but has no data in item_refund_instance, removing flag.",
                         item->GetGUIDLow());
-                        RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE);
+                        item->RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
                     }
                     else
                     {
@@ -17146,7 +17113,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
 void Player::_LoadMailedItems(Mail *mail)
 {
     // data needs to be at first place for Item::LoadFromDB
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, item_guid, item_template FROM mail_items JOIN item_instance ON item_guid = guid WHERE mail_id='%u'", mail->messageID);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, item_guid, item_template, owner_guid FROM mail_items JOIN item_instance ON item_guid = guid WHERE mail_id='%u'", mail->messageID);
     if (!result)
         return;
 
@@ -17170,7 +17137,7 @@ void Player::_LoadMailedItems(Mail *mail)
 
         Item *item = NewItemOrBag(proto);
 
-        if (!item->LoadFromDB(item_guid_low, 0, result, item_template))
+        if (!item->LoadFromDB(item_guid_low, MAKE_NEW_GUID(fields[13].GetUInt32(), 0, HIGHGUID_PLAYER), result, item_template))
         {
             sLog.outError("Player::_LoadMailedItems - Item in mail (%u) doesn't exist !!!! - item guid: %u, deleted from mail", mail->messageID, item_guid_low);
             CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", item_guid_low);
@@ -17970,10 +17937,10 @@ void Player::SaveToDB()
     ss << m_resetTalentsCost << ", ";
     ss << (uint64)m_resetTalentsTime << ", ";
 
-    ss << finiteAlways(m_movementInfo.t_x) << ", ";
-    ss << finiteAlways(m_movementInfo.t_y) << ", ";
-    ss << finiteAlways(m_movementInfo.t_z) << ", ";
-    ss << finiteAlways(m_movementInfo.t_o) << ", ";
+    ss << finiteAlways(m_movementInfo.t_pos.GetPositionX()) << ", ";
+    ss << finiteAlways(m_movementInfo.t_pos.GetPositionY()) << ", ";
+    ss << finiteAlways(m_movementInfo.t_pos.GetPositionZ()) << ", ";
+    ss << finiteAlways(m_movementInfo.t_pos.GetOrientation()) << ", ";
     if (m_transport)
         ss << m_transport->GetGUIDLow();
     else
@@ -20053,8 +20020,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             GetSession()->SendPacket(&data);
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
 
-            if (it->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE) && crItem->ExtendedCost)
+            if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
             {
+                it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
@@ -20111,8 +20079,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
             AutoUnequipOffhandIfNeed();
 
-            if (it->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE) && crItem->ExtendedCost)
+            if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
             {
+                it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
                 it->SetRefundRecipient(GetGUIDLow());
                 it->SetPaidMoney(price);
                 it->SetPaidExtendedCost(crItem->ExtendedCost);
@@ -21333,7 +21302,7 @@ void Player::SendInstanceResetWarning(uint32 mapid, Difficulty difficulty, uint3
 
 void Player::ApplyEquipCooldown(Item * pItem)
 {
-    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_NO_EQUIP_COOLDOWN))
+    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_PROTO_FLAG_NO_EQUIP_COOLDOWN))
         return;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -23135,7 +23104,7 @@ uint8 Player::CanEquipUniqueItem(Item* pItem, uint8 eslot, uint32 limit_count) c
 uint8 Player::CanEquipUniqueItem(ItemPrototype const* itemProto, uint8 except_slot, uint32 limit_count) const
 {
     // check unique-equipped on item
-    if (itemProto->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED)
+    if (itemProto->Flags & ITEM_PROTO_FLAG_UNIQUE_EQUIPPED)
     {
         // there is an equip limit on this item
         if (HasItemOrGemWithIdEquipped(itemProto->ItemId,1,except_slot))
@@ -23163,7 +23132,7 @@ uint8 Player::CanEquipUniqueItem(ItemPrototype const* itemProto, uint8 except_sl
 void Player::HandleFall(MovementInfo const& movementInfo)
 {
     // calculate total z distance of the fall
-    float z_diff = m_lastFallZ - movementInfo.z;
+    float z_diff = m_lastFallZ - movementInfo.pos.GetPositionZ();
     //sLog.outDebug("zDiff = %f", z_diff);
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
@@ -23181,8 +23150,8 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         {
             uint32 damage = (uint32)(damageperc * GetMaxHealth()*sWorld.getRate(RATE_DAMAGE_FALL));
 
-            float height = movementInfo.z;
-            UpdateGroundPositionZ(movementInfo.x,movementInfo.y,height);
+            float height = movementInfo.t_pos.m_positionZ;
+            UpdateGroundPositionZ(movementInfo.pos.m_positionX,movementInfo.pos.m_positionY,height);
 
             if (damage > 0)
             {
@@ -23203,7 +23172,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
             }
 
             //Z given by moveinfo, LastZ, FallTime, WaterZ, MapZ, Damage, Safefall reduction
-            DEBUG_LOG("FALLDAMAGE z=%f sz=%f pZ=%f FallTime=%d mZ=%f damage=%d SF=%d" , movementInfo.z, height, GetPositionZ(), movementInfo.fallTime, height, damage, safe_fall);
+            DEBUG_LOG("FALLDAMAGE z=%f sz=%f pZ=%f FallTime=%d mZ=%f damage=%d SF=%d" , movementInfo.pos.GetPositionZ(), height, GetPositionZ(), movementInfo.fallTime, height, damage, safe_fall);
         }
     }
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LANDING); // No fly zone - Parachute
@@ -23483,8 +23452,8 @@ void Player::UpdateKnownCurrencies(uint32 itemId, bool apply)
 
 void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo,uint16 opcode)
 {
-    if (m_lastFallTime >= minfo.fallTime || m_lastFallZ <= minfo.z || opcode == MSG_MOVE_FALL_LAND)
-        SetFallInformation(minfo.fallTime, minfo.z);
+    if (m_lastFallTime >= minfo.fallTime || m_lastFallZ <= minfo.pos.GetPositionZ() || opcode == MSG_MOVE_FALL_LAND)
+        SetFallInformation(minfo.fallTime, minfo.pos.GetPositionZ());
 }
 
 void Player::UnsummonPetTemporaryIfAny()
@@ -24204,7 +24173,7 @@ void Player::SendRefundInfo(Item *item)
     // This function call unsets ITEM_FLAGS_REFUNDABLE if played time is over 2 hours.
     item->UpdatePlayedTime(this);
 
-    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
+    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
     {
         sLog.outDebug("Item refund: item not refundable!");
         return;
@@ -24224,17 +24193,15 @@ void Player::SendRefundInfo(Item *item)
         return;
     }
 
-    uint32 itemCount = item->GetCount();
-
     WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
     data << uint64(item->GetGUID());                    // item guid
-    data << uint32(item->GetPaidMoney() * itemCount);   // money cost
-    data << uint32(iece->reqhonorpoints * itemCount);   // honor point cost
-    data << uint32(iece->reqarenapoints * itemCount);   // arena point cost
+    data << uint32(item->GetPaidMoney());               // money cost
+    data << uint32(iece->reqhonorpoints);               // honor point cost
+    data << uint32(iece->reqarenapoints);               // arena point cost
     for (uint8 i = 0; i < 5; ++i)                       // item cost data
     {
-        data << iece->reqitem[i];
-        data << (iece->reqitemcount[i] * itemCount);
+        data << uint32(iece->reqitem[i]);
+        data << uint32(iece->reqitemcount[i]);
     }
     data << uint32(0);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
@@ -24243,7 +24210,7 @@ void Player::SendRefundInfo(Item *item)
 
 void Player::RefundItem(Item *item)
 {
-    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_REFUNDABLE))
+    if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
     {
         sLog.outDebug("Item refund: item not refundable!");
         return;
@@ -24273,13 +24240,10 @@ void Player::RefundItem(Item *item)
         return;
     }
 
-    uint32 itemCount = item->GetCount(); // stacked refundable items.
-    uint32 moneyRefund = item->GetPaidMoney()*itemCount;
-
     bool store_error = false;
     for (uint8 i = 0; i < 5; ++i)
     {
-        uint32 count = iece->reqitemcount[i] * itemCount;
+        uint32 count = iece->reqitemcount[i];
         uint32 itemid = iece->reqitem[i];
 
         if (count && itemid)
@@ -24306,13 +24270,13 @@ void Player::RefundItem(Item *item)
     WorldPacket data(SMSG_ITEM_REFUND_RESULT, 8+4+4+4+4+4*4+4*4);
     data << uint64(item->GetGUID());                    // item guid
     data << uint32(0);                                  // 0, or error code
-    data << uint32(moneyRefund);                        // money cost
-    data << uint32(iece->reqhonorpoints * itemCount);   // honor point cost
-    data << uint32(iece->reqarenapoints * itemCount);   // arena point cost
+    data << uint32(item->GetPaidMoney());               // money cost
+    data << uint32(iece->reqhonorpoints);               // honor point cost
+    data << uint32(iece->reqarenapoints);               // arena point cost
     for (uint8 i = 0; i < 5; ++i)                       // item cost data
     {
         data << iece->reqitem[i];
-        data << (iece->reqitemcount[i] * itemCount);
+        data << (iece->reqitemcount[i]);
     }
     GetSession()->SendPacket(&data);
 
@@ -24325,7 +24289,7 @@ void Player::RefundItem(Item *item)
     // Grant back extendedcost items
     for (uint8 i = 0; i < 5; ++i)
     {
-        uint32 count = iece->reqitemcount[i] * itemCount;
+        uint32 count = iece->reqitemcount[i];
         uint32 itemid = iece->reqitem[i];
         if (count && itemid)
         {
@@ -24338,17 +24302,15 @@ void Player::RefundItem(Item *item)
     }
 
     // Grant back money
-    if (moneyRefund)
+    if (uint32 moneyRefund = item->GetPaidMoney())
         ModifyMoney(moneyRefund);
 
     // Grant back Honor points
-    uint32 honorRefund = iece->reqhonorpoints * itemCount;
-    if (honorRefund)
+    if (uint32 honorRefund = iece->reqhonorpoints)
         ModifyHonorPoints(honorRefund);
 
     // Grant back Arena points
-    uint32 arenaRefund = iece->reqarenapoints * itemCount;
-    if (arenaRefund)
+    if (uint32 arenaRefund = iece->reqarenapoints)
         ModifyArenaPoints(arenaRefund);
 
 }
