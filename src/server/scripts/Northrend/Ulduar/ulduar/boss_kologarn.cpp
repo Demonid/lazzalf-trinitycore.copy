@@ -229,7 +229,7 @@ struct boss_kologarnAI : public BossAI
         if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
                         
-        if (events.GetTimer() > 15000 && !me->IsWithinMeleeRange(me->getVictim()))
+        if (events.GetTimer() > 15000 && !IsInRange())
             DoCastAOE(SPELL_PETRIFY_BREATH, true);
         
         if (!left && !right)
@@ -317,6 +317,22 @@ struct boss_kologarnAI : public BossAI
         }
 
         DoMeleeAttackIfReady();
+    }
+
+    bool IsInRange()
+    {
+        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+        for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+        {
+            Unit* pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                        
+            if (!pTarget)
+                continue;
+                           
+            if (me->IsWithinMeleeRange(pTarget))
+                return true;
+        }
+        return false;
     }
     
     void DoAction(const int32 action)

@@ -134,6 +134,8 @@ enum eEnums
     H_ACHIEV_TWILIGHT_ZONE                      = 2054
 };
 
+#define DATA_CAN_LOOT   0
+
 //each dragons special points. First where fly to before connect to connon, second where land point is.
 Position m_aTene[]=
 {
@@ -281,11 +283,11 @@ struct boss_sartharionAI : public BossAI
         Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
         Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
         if (pTenebron && pTenebron->isAlive())
-            pTenebron->SetLootRecipient(NULL);
+            pTenebron->AI()->SetData(DATA_CAN_LOOT,0);
         if (pShadron && pShadron->isAlive())
-            pShadron->SetLootRecipient(NULL);
+            pShadron->AI()->SetData(DATA_CAN_LOOT,0);
         if (pVesperon && pVesperon->isAlive())
-            pVesperon->SetLootRecipient(NULL);
+            pVesperon->AI()->SetData(DATA_CAN_LOOT,0);
     }   
 
     void DoAction(const int32 action)
@@ -742,6 +744,7 @@ struct dummy_dragonAI : public ScriptedAI
     uint32 m_uiMoveNextTimer;
     int32 m_iPortalRespawnTime;
     bool m_bCanMoveFree;
+    bool m_bCanLoot;
 
     void Reset()
     {
@@ -752,6 +755,13 @@ struct dummy_dragonAI : public ScriptedAI
         m_uiMoveNextTimer = 500;
         m_iPortalRespawnTime = 30000;
         m_bCanMoveFree = false;
+        m_bCanLoot = true;
+    }
+
+     void SetData(uint32 type, uint32 value)
+    {
+        if (type == DATA_CAN_LOOT)
+            m_bCanLoot = value;
     }
 
     void MovementInform(uint32 uiType, uint32 uiPointId)
@@ -875,6 +885,9 @@ struct dummy_dragonAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
+        if (!m_bCanLoot)
+            me->SetLootRecipient(NULL);
+
         int32 iTextId = 0;
         uint32 uiSpellId = 0;
 

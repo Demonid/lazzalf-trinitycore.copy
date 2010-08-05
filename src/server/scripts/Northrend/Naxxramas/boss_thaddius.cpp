@@ -276,10 +276,26 @@ struct boss_thaddiusAI : public BossAI
             }
         }
 
-        if (events.GetTimer() > 15000 && !me->IsWithinMeleeRange(me->getVictim()))
+        if (events.GetTimer() > 15000 && !IsInRange())
             DoCast(me->getVictim(), SPELL_BALL_LIGHTNING);
         else
             DoMeleeAttackIfReady();
+    }
+
+    bool IsInRange()
+    {
+        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+        for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+        {
+            Unit* pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                        
+            if (!pTarget)
+                continue;
+                           
+            if (me->IsWithinMeleeRange(pTarget))
+                return true;
+        }
+        return false;
     }
 };
 
