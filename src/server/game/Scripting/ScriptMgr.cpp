@@ -1,6 +1,22 @@
-/* Copyright (C) 2006 - 2008 TrinityScript <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
+/*
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+ *
+ * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 #include "ScriptPCH.h"
 #include "Config.h"
@@ -15,6 +31,7 @@
 
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
+#define SCR_REG_ITR(T) ScriptRegistry<T>::ScriptMapIterator
 #define SCR_REG_LST(T) ScriptRegistry<T>::ScriptPointerList
 	// Load TeleNPC2 - maybe not the best place to load it ...
     LoadNpcTele();
@@ -25,12 +42,12 @@
 #define FOR_SCRIPTS(T,C,E) \
     if (SCR_REG_LST(T).empty()) \
         return; \
-    for (SCR_REG_MAP(T)::iterator C = SCR_REG_LST(T).begin(); \
+    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
         C != SCR_REG_LST(T).end(); ++C)
 #define FOR_SCRIPTS_RET(T,C,E,R) \
     if (SCR_REG_LST(T).empty()) \
         return R; \
-    for (SCR_REG_MAP(T)::iterator C = SCR_REG_LST(T).begin(); \
+    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
         C != SCR_REG_LST(T).end(); ++C)
 #define FOREACH_SCRIPT(T) \
     FOR_SCRIPTS(T, itr, end) \
@@ -157,6 +174,7 @@ ScriptMgr::~ScriptMgr()
     SCR_CLEAR(VehicleScript);
     SCR_CLEAR(DynamicObjectScript);
     SCR_CLEAR(TransportScript);
+    SCR_CLEAR(AchievementCriteriaScript);
 
     #undef SCR_CLEAR
 }
@@ -344,21 +362,21 @@ void ScriptMgr::OnSocketClose(WorldSocket* socket, bool wasNew)
     FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket, wasNew);
 }
 
-void ScriptMgr::OnPacketReceive(WorldSocket* socket, WorldPacket& packet)
+void ScriptMgr::OnPacketReceive(WorldSocket* socket, WorldPacket packet)
 {
     ASSERT(socket);
 
     FOREACH_SCRIPT(ServerScript)->OnPacketReceive(socket, packet);
 }
 
-void ScriptMgr::OnPacketSend(WorldSocket* socket, WorldPacket& packet)
+void ScriptMgr::OnPacketSend(WorldSocket* socket, WorldPacket packet)
 {
     ASSERT(socket);
 
     FOREACH_SCRIPT(ServerScript)->OnPacketSend(socket, packet);
 }
 
-void ScriptMgr::OnUnknownPacketReceive(WorldSocket* socket, WorldPacket& packet)
+void ScriptMgr::OnUnknownPacketReceive(WorldSocket* socket, WorldPacket packet)
 {
     ASSERT(socket);
 
@@ -380,9 +398,9 @@ void ScriptMgr::OnMotdChange(std::string& newMotd)
     FOREACH_SCRIPT(WorldScript)->OnMotdChange(newMotd);
 }
 
-void ScriptMgr::OnShutdown(ShutdownExitCode code, ShutdownMask mask)
+void ScriptMgr::OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask)
 {
-    FOREACH_SCRIPT(WorldScript)->OnShutdown(code, mask);
+    FOREACH_SCRIPT(WorldScript)->OnShutdownInitiate(code, mask);
 }
 
 void ScriptMgr::OnShutdownCancel()
@@ -405,37 +423,37 @@ void ScriptMgr::OnHonorCalculation(uint32& honor, uint8 level, uint32 count)
     FOREACH_SCRIPT(FormulaScript)->OnHonorCalculation(honor, level, count);
 }
 
-void ScriptMgr::OnGetGrayLevel(uint8& grayLevel, uint8 playerLevel)
+void ScriptMgr::OnGrayLevelCalculation(uint8& grayLevel, uint8 playerLevel)
 {
-    FOREACH_SCRIPT(FormulaScript)->OnGetGrayLevel(grayLevel, playerLevel);
+    FOREACH_SCRIPT(FormulaScript)->OnGrayLevelCalculation(grayLevel, playerLevel);
 }
 
-void ScriptMgr::OnGetColorCode(XPColorChar& color, uint8 playerLevel, uint8 mobLevel)
+void ScriptMgr::OnColorCodeCalculation(XPColorChar& color, uint8 playerLevel, uint8 mobLevel)
 {
-    FOREACH_SCRIPT(FormulaScript)->OnGetColorCode(color, playerLevel, mobLevel);
+    FOREACH_SCRIPT(FormulaScript)->OnColorCodeCalculation(color, playerLevel, mobLevel);
 }
 
-void ScriptMgr::OnGetZeroDifference(uint8& diff, uint8 playerLevel)
+void ScriptMgr::OnZeroDifferenceCalculation(uint8& diff, uint8 playerLevel)
 {
-    FOREACH_SCRIPT(FormulaScript)->OnGetZeroDifference(diff, playerLevel);
+    FOREACH_SCRIPT(FormulaScript)->OnZeroDifferenceCalculation(diff, playerLevel);
 }
 
-void ScriptMgr::OnGetBaseGain(uint32& gain, uint8 playerLevel, uint8 mobLevel, ContentLevels content)
+void ScriptMgr::OnBaseGainCalculation(uint32& gain, uint8 playerLevel, uint8 mobLevel, ContentLevels content)
 {
-    FOREACH_SCRIPT(FormulaScript)->OnGetBaseGain(gain, playerLevel, mobLevel, content);
+    FOREACH_SCRIPT(FormulaScript)->OnBaseGainCalculation(gain, playerLevel, mobLevel, content);
 }
 
-void ScriptMgr::OnGetGain(uint32& gain, Player* player, Unit* unit)
+void ScriptMgr::OnGainCalculation(uint32& gain, Player* player, Unit* unit)
 {
     ASSERT(player);
     ASSERT(unit);
 
-    FOREACH_SCRIPT(FormulaScript)->OnGetGain(gain, player, unit);
+    FOREACH_SCRIPT(FormulaScript)->OnGainCalculation(gain, player, unit);
 }
 
-void ScriptMgr::OnGetGroupRate(float& rate, uint32 count, bool isRaid)
+void ScriptMgr::OnGroupRateCalculation(float& rate, uint32 count, bool isRaid)
 {
-    FOREACH_SCRIPT(FormulaScript)->OnGetGroupRate(rate, count, isRaid);
+    FOREACH_SCRIPT(FormulaScript)->OnGroupRateCalculation(rate, count, isRaid);
 }
 
 #define SCR_MAP_BGN(M,V,I,E,C,T) \
@@ -489,41 +507,43 @@ void ScriptMgr::OnDestroyMap(Map* map)
     SCR_MAP_END;
 }
 
-void ScriptMgr::OnLoadGridMap(Map* map, uint32 gx, uint32 gy)
+void ScriptMgr::OnLoadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy)
 {
     ASSERT(map);
+    ASSERT(gmap);
 
     SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
-        itr->second->OnLoadGridMap(map, gx, gy);
+        itr->second->OnLoadGridMap(map, gmap, gx, gy);
     SCR_MAP_END;
 
     SCR_MAP_BGN(InstanceMapScript, map, itr, end, entry, IsDungeon);
-        itr->second->OnLoadGridMap((InstanceMap*)map, gx, gy);
+        itr->second->OnLoadGridMap((InstanceMap*)map, gmap, gx, gy);
     SCR_MAP_END;
 
     SCR_MAP_BGN(BattlegroundMapScript, map, itr, end, entry, IsBattleGround);
-        itr->second->OnLoadGridMap((BattleGroundMap*)map, gx, gy);
+        itr->second->OnLoadGridMap((BattleGroundMap*)map, gmap, gx, gy);
     SCR_MAP_END;
 }
 
-void ScriptMgr::OnUnloadGridMap(Map* map, uint32 gx, uint32 gy)
+void ScriptMgr::OnUnloadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy)
 {
     ASSERT(map);
+    ASSERT(gmap);
 
     SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
-        itr->second->OnUnloadGridMap(map, gx, gy);
+        itr->second->OnUnloadGridMap(map, gmap, gx, gy);
     SCR_MAP_END;
 
     SCR_MAP_BGN(InstanceMapScript, map, itr, end, entry, IsDungeon);
-        itr->second->OnUnloadGridMap((InstanceMap*)map, gx, gy);
+        itr->second->OnUnloadGridMap((InstanceMap*)map, gmap, gx, gy);
     SCR_MAP_END;
 
     SCR_MAP_BGN(BattlegroundMapScript, map, itr, end, entry, IsBattleGround);
-        itr->second->OnUnloadGridMap((BattleGroundMap*)map, gx, gy);
+        itr->second->OnUnloadGridMap((BattleGroundMap*)map, gmap, gx, gy);
     SCR_MAP_END;
 }
 
-void ScriptMgr::OnPlayerEnter(Map* map, Player* player)
+void ScriptMgr::OnPlayerEnterMap(Map* map, Player* player)
 {
     ASSERT(map);
     ASSERT(player);
@@ -541,7 +561,7 @@ void ScriptMgr::OnPlayerEnter(Map* map, Player* player)
     SCR_MAP_END;
 }
 
-void ScriptMgr::OnPlayerLeave(Map* map, Player* player)
+void ScriptMgr::OnPlayerLeaveMap(Map* map, Player* player)
 {
     ASSERT(map);
     ASSERT(player);
@@ -584,7 +604,7 @@ InstanceData* ScriptMgr::CreateInstanceData(InstanceMap* map)
     ASSERT(map);
 
     GET_SCRIPT_RET(InstanceMapScript, map->GetScriptId(), tmpscript, NULL);
-    return tmpscript->OnGetInstanceData(map);
+    return tmpscript->GetInstanceData(map);
 }
 
 bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, Item* target)
@@ -592,7 +612,7 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     ASSERT(caster);
     ASSERT(target);
 
-    GET_SCRIPT_RET(ItemScript, target->GetProto()->ScriptId, tmpscript, false);
+    GET_SCRIPT_RET(ItemScript, target->GetScriptId(), tmpscript, false);
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
@@ -602,7 +622,7 @@ bool ScriptMgr::OnQuestAccept(Player* player, Item* item, Quest const* quest)
     ASSERT(item);
     ASSERT(quest);
 
-    GET_SCRIPT_RET(ItemScript, item->GetProto()->ScriptId, tmpscript, false);
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnQuestAccept(player, item, quest);
 }
@@ -612,7 +632,7 @@ bool ScriptMgr::OnItemUse(Player* player, Item* item, SpellCastTargets const& ta
     ASSERT(player);
     ASSERT(item);
 
-    GET_SCRIPT_RET(ItemScript, item->GetProto()->ScriptId, tmpscript, false);
+    GET_SCRIPT_RET(ItemScript, item->GetScriptId(), tmpscript, false);
     return tmpscript->OnUse(player, item, targets);
 }
 
@@ -717,7 +737,7 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
     // TODO: 100 is a funny magic number to have hanging around here...
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, 100);
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnDialogStatus(player, creature);
+    return tmpscript->GetDialogStatus(player, creature);
 }
 
 CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
@@ -725,7 +745,7 @@ CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
     ASSERT(creature);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
-    return tmpscript->OnGetAI(creature);
+    return tmpscript->GetAI(creature);
 }
 
 void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
@@ -797,7 +817,7 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
     // TODO: 100 is a funny magic number to have hanging around here...
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, 100);
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnDialogStatus(player, go);
+    return tmpscript->GetDialogStatus(player, go);
 }
 
 void ScriptMgr::OnGameObjectDestroyed(Player* player, GameObject* go, uint32 eventId)
@@ -826,7 +846,7 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
-bool ScriptMgr::OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
 {
     ASSERT(player);
     ASSERT(trigger);
@@ -847,7 +867,7 @@ OutdoorPvP* ScriptMgr::CreateOutdoorPvP(OutdoorPvPData const* data)
     ASSERT(data);
 
     GET_SCRIPT_RET(OutdoorPvPScript, data->ScriptId, tmpscript, NULL);
-    return tmpscript->OnGetOutdoorPvP();
+    return tmpscript->GetOutdoorPvP();
 }
 
 std::vector<ChatCommand*> ScriptMgr::GetChatCommands()
@@ -855,7 +875,7 @@ std::vector<ChatCommand*> ScriptMgr::GetChatCommands()
     std::vector<ChatCommand*> table;
 
     FOR_SCRIPTS_RET(CommandScript, itr, end, table)
-        table.push_back(itr->second->OnGetCommands());
+        table.push_back(itr->second->GetCommands());
 
     return table;
 }
@@ -912,6 +932,7 @@ bool ScriptMgr::OnConditionCheck(Condition* condition, Player* player, Unit* tar
 {
     ASSERT(condition);
     ASSERT(player);
+    // targetOverride can be NULL.
 
     GET_SCRIPT_RET(ConditionScript, condition->mScriptId, tmpscript, true);
     return tmpscript->OnConditionCheck(condition, player, targetOverride);
@@ -920,53 +941,67 @@ bool ScriptMgr::OnConditionCheck(Condition* condition, Player* player, Unit* tar
 void ScriptMgr::OnInstall(Vehicle* veh)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
 
-    FOREACH_SCRIPT(VehicleScript)->OnInstall(veh);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnInstall(veh);
 }
 
 void ScriptMgr::OnUninstall(Vehicle* veh)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
 
-    FOREACH_SCRIPT(VehicleScript)->OnUninstall(veh);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnUninstall(veh);
 }
 
 void ScriptMgr::OnDie(Vehicle* veh)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
 
-    FOREACH_SCRIPT(VehicleScript)->OnDie(veh);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnDie(veh);
 }
 
 void ScriptMgr::OnReset(Vehicle* veh)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
 
-    FOREACH_SCRIPT(VehicleScript)->OnReset(veh);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnReset(veh);
 }
 
 void ScriptMgr::OnInstallAccessory(Vehicle* veh, Creature* accessory)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
     ASSERT(accessory);
 
-    FOREACH_SCRIPT(VehicleScript)->OnInstallAccessory(veh, accessory);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnInstallAccessory(veh, accessory);
 }
 
 void ScriptMgr::OnAddPassenger(Vehicle* veh, Unit* passenger, int8 seatId)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
     ASSERT(passenger);
 
-    FOREACH_SCRIPT(VehicleScript)->OnAddPassenger(veh, passenger, seatId);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnAddPassenger(veh, passenger, seatId);
 }
 
 void ScriptMgr::OnRemovePassenger(Vehicle* veh, Unit* passenger)
 {
     ASSERT(veh);
+    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
     ASSERT(passenger);
 
-    FOREACH_SCRIPT(VehicleScript)->OnRemovePassenger(veh, passenger);
+    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
+    tmpscript->OnRemovePassenger(veh, passenger);
 }
 
 void ScriptMgr::OnDynamicObjectUpdate(DynamicObject* dynobj, uint32 diff)
@@ -1010,6 +1045,31 @@ void ScriptMgr::OnTransportUpdate(Transport* transport, uint32 diff)
 
     GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
     tmpscript->OnUpdate(transport, diff);
+}
+
+void ScriptMgr::OnRelocate(Transport* transport, uint32 mapId, float x, float y, float z)
+{
+    GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnRelocate(transport, mapId, x, y, z);
+}
+
+void ScriptMgr::OnStartup()
+{
+    FOREACH_SCRIPT(WorldScript)->OnStartup();
+}
+
+void ScriptMgr::OnShutdown()
+{
+    FOREACH_SCRIPT(WorldScript)->OnShutdown();
+}
+
+bool ScriptMgr::OnCriteriaCheck(AchievementCriteriaData const* data, Player* source, Unit* target)
+{
+    ASSERT(source);
+    // target can be NULL.
+
+    GET_SCRIPT_RET(AchievementCriteriaScript, data->ScriptId, tmpscript, false);
+    return tmpscript->OnCheck(source, target);
 }
 
 void SpellHandlerScript::RegisterSelf()
@@ -1117,6 +1177,11 @@ void TransportScript::RegisterSelf()
     ScriptMgr::ScriptRegistry<TransportScript>::AddScript(this);
 }
 
+void AchievementCriteriaScript::RegisterSelf()
+{
+    ScriptMgr::ScriptRegistry<AchievementCriteriaScript>::AddScript(this);
+}
+
 template<class TScript>
 void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
 {
@@ -1124,7 +1189,7 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
 
     // See if the script is using the same memory as another script. If this happens, it means that
     // someone forgot to allocate new memory for a script.
-    for (ScriptMap::iterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
+    for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
     {
         if (it->second == script)
         {
@@ -1135,47 +1200,50 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
         }
     }
 
-    // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
-    // through a script name (or similar).
-    uint32 id = GetScriptId(script->ToString());
-    if (id)
+    if (script->IsDatabaseBound())
     {
-        // Try to find an existing script.
-        bool existing = false;
-        for (ScriptMap::iterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
+        // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
+        // through a script name (or similar).
+        uint32 id = GetScriptId(script->ToString());
+        if (id)
         {
-            // If the script names match...
-            if (it->second->GetName() == script->GetName())
+            // Try to find an existing script.
+            bool existing = false;
+            for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
             {
-                // ... It exists.
-                existing = true;
-                break;
+                // If the script names match...
+                if (it->second->GetName() == script->GetName())
+                {
+                    // ... It exists.
+                    existing = true;
+                    break;
+                }
             }
-        }
 
-        // If the script isn't assigned -> assign it!
-        if (!existing)
-        {
-            ScriptPointerList[id] = script;
-            sScriptMgr.IncrementScriptCount();
+            // If the script isn't assigned -> assign it!
+            if (!existing)
+            {
+                ScriptPointerList[id] = script;
+                sScriptMgr.IncrementScriptCount();
+            }
+            else
+            {
+                // If the script is already assigned -> delete it!
+                sLog.outError("Script '%s' already assigned with the same script name, so the script can't work.",
+                    script->ToString());
+
+                delete script;
+            }
         }
         else
         {
-            // If the script is already assigned -> delete it!
-            sLog.outError("Script '%s' already assigned with the same script name, so the script can't work.",
-                script->ToString());
+            // The script uses a script name from database, but isn't assigned to anything.
+            if (script->GetName().find("example") == std::string::npos)
+                sLog.outErrorDb("Script named '%s' does not have a script name assigned in database.",
+                    script->ToString());
 
             delete script;
         }
-    }
-    else if (script->IsDatabaseBound())
-    {
-        // The script uses a script name from database, but isn't assigned to anything.
-        if (script->GetName().find("example") == std::string::npos)
-            sLog.outErrorDb("Script named '%s' does not have a script name assigned in database.",
-            script->ToString());
-
-        delete script;
     }
     else
     {
@@ -1211,6 +1279,7 @@ template class ScriptMgr::ScriptRegistry<ConditionScript>;
 template class ScriptMgr::ScriptRegistry<VehicleScript>;
 template class ScriptMgr::ScriptRegistry<DynamicObjectScript>;
 template class ScriptMgr::ScriptRegistry<TransportScript>;
+template class ScriptMgr::ScriptRegistry<AchievementCriteriaScript>;
 
 // Undefine utility macros.
 #undef GET_SCRIPT_RET
@@ -1219,4 +1288,5 @@ template class ScriptMgr::ScriptRegistry<TransportScript>;
 #undef FOR_SCRIPTS_RET
 #undef FOR_SCRIPTS
 #undef SCR_REG_LST
+#undef SCR_REG_ITR
 #undef SCR_REG_MAP

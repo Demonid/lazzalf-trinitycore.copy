@@ -18,7 +18,6 @@
 #include "ScriptLoader.h"
 
 #ifdef SCRIPTS
-//custom
 
 //examples
 void AddSC_example_creature();
@@ -45,6 +44,7 @@ void AddSC_npc_professions();
 void AddSC_npc_innkeeper();
 void AddSC_npcs_special();
 void AddSC_npc_taxi();
+void AddSC_achievement_scripts();
 
 //eastern kingdoms
 void AddSC_alterac_valley();                 //Alterac Valley
@@ -553,6 +553,16 @@ void AddSC_warlock_spell_scripts();
 void AddSC_warrior_spell_scripts();
 void AddSC_example_spell_scripts();
 
+// battlegrounds
+
+// outdoor pvp
+void AddSC_outdoorpvp_ep();
+void AddSC_outdoorpvp_hp();
+void AddSC_outdoorpvp_na();
+void AddSC_outdoorpvp_si();
+void AddSC_outdoorpvp_tf();
+void AddSC_outdoorpvp_zm();
+
 #endif
 
 void AddScripts()
@@ -565,21 +575,26 @@ void AddScripts()
     AddKalimdorScripts();
     AddOutlandScripts();
     AddNorthrendScripts();
+    AddBattlegroundScripts();
+    AddOutdoorPvPScripts();
     AddCustomScripts();
 #endif
 }
 
 void AddExampleScripts()
 {
+#ifdef SCRIPTS
     AddSC_example_creature();
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+#endif
 }
 	
 
 void AddSpellScripts()
 {
+#ifdef SCRIPTS
     AddSC_deathknight_spell_scripts();
     AddSC_druid_spell_scripts();
     AddSC_generic_spell_scripts();
@@ -592,10 +607,12 @@ void AddSpellScripts()
     AddSC_warlock_spell_scripts();
     AddSC_warrior_spell_scripts();
     AddSC_example_spell_scripts();
+#endif
 }
 
 void AddWorldScripts()
 {
+#ifdef SCRIPTS
     AddSC_areatrigger_scripts();
     AddSC_boss_emeriss();
     AddSC_boss_taerar();
@@ -608,14 +625,17 @@ void AddWorldScripts()
     AddSC_npc_innkeeper();
     AddSC_npcs_special();
     AddSC_npc_taxi();
+    AddSC_achievement_scripts();
     //TeleNPC2
     AddSC_npc_teleport();
     //Guild House
-    AddSC_guildhouse_npcs();
+    AddSC_guildhouse_npcs(); 
+#endif
 }
 
 void AddEasternKingdomsScripts()
 {
+#ifdef SCRIPTS
     AddSC_alterac_valley();                 //Alterac Valley
     AddSC_boss_balinda();
     AddSC_boss_drekthar();
@@ -797,10 +817,12 @@ void AddEasternKingdomsScripts()
     AddSC_western_plaguelands();
     AddSC_westfall();
     AddSC_wetlands();
+#endif
 }
 
 void AddKalimdorScripts()
 {
+#ifdef SCRIPTS
     AddSC_blackfathom_deeps();              //Blackfathom Depths
     AddSC_boss_gelihast();
     AddSC_boss_kelris();
@@ -885,10 +907,12 @@ void AddKalimdorScripts()
     AddSC_thunder_bluff();
     AddSC_ungoro_crater();
     AddSC_winterspring();
+#endif
 }
 
 void AddOutlandScripts()
 {
+#ifdef SCRIPTS
     AddSC_trial_of_the_crusader();		//Trial of the crusader
     AddSC_northrend_beasts();			
     AddSC_boss_anub_arak_crusader();
@@ -977,10 +1001,12 @@ void AddOutlandScripts()
     AddSC_terokkar_forest();
     AddSC_zangarmarsh();
     AddSC_onevents();
+#endif
 }
 
 void AddNorthrendScripts()
 {
+#ifdef SCRIPTS
     AddSC_boss_slad_ran();               //Gundrak
     AddSC_boss_moorabi();
     AddSC_boss_drakkari_colossus();
@@ -1112,9 +1138,36 @@ void AddNorthrendScripts()
     AddSC_wintergrasp();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
+#endif
 }
+
+void AddOutdoorPvPScripts()
+{
+#ifdef SCRIPTS
+    AddSC_outdoorpvp_ep();
+    AddSC_outdoorpvp_hp();
+    AddSC_outdoorpvp_na();
+    AddSC_outdoorpvp_si();
+    AddSC_outdoorpvp_tf();
+    AddSC_outdoorpvp_zm();
+#endif SCRIPTS
+}
+
+void AddBattlegroundScripts()
+{
+#ifdef SCRIPTS
+#endif SCRIPTS
+}
+
+#ifdef SCRIPTS
+/* This is where custom scripts' loading functions should be declared. */
+
+#endif SCRIPTS
 
 void AddCustomScripts()
 {
+#ifdef SCRIPTS
     /* This is where custom scripts should be added. */
+
+#endif
 }

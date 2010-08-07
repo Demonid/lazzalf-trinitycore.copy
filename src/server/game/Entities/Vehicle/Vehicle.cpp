@@ -117,7 +117,8 @@ void Vehicle::Install()
 
     Reset();
 
-    sScriptMgr.OnInstall(this);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnInstall(this);
 }
 
 void Vehicle::InstallAllAccessories()
@@ -140,7 +141,8 @@ void Vehicle::Uninstall()
 
     RemoveAllPassengers();
 
-    sScriptMgr.OnUninstall(this);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnUninstall(this);
 }
 
 void Vehicle::Die()
@@ -153,7 +155,8 @@ void Vehicle::Die()
 
     RemoveAllPassengers();
 
-    sScriptMgr.OnDie(this);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnDie(this);
 }
 
 void Vehicle::Reset()
@@ -171,7 +174,8 @@ void Vehicle::Reset()
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
     }
 
-    sScriptMgr.OnReset(this);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnReset(this);
 }
 
 void Vehicle::RemoveAllPassengers()
@@ -256,7 +260,8 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion)
         // This is not good, we have to send update twice
         accessory->SendMovementFlagUpdate();
 
-        sScriptMgr.OnInstallAccessory(this, accessory);
+        if (GetBase()->GetTypeId() == TYPEID_UNIT)
+            sScriptMgr.OnInstallAccessory(this, accessory);
     }
 }
 
@@ -351,7 +356,8 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
         }
     }
 
-    sScriptMgr.OnAddPassenger(this, unit, seatId);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnAddPassenger(this, unit, seatId);
 
     return true;
 }
@@ -399,7 +405,8 @@ void Vehicle::RemovePassenger(Unit *unit)
     if (unit->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
         me->CastSpell(unit, 45472, true);                           // Parachute
 
-    sScriptMgr.OnRemovePassenger(this, unit);
+    if (GetBase()->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnRemovePassenger(this, unit);
 }
 
 void Vehicle::RelocatePassengers(float x, float y, float z, float ang)

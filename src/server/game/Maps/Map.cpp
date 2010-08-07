@@ -63,8 +63,7 @@ struct ScriptAction
 
 Map::~Map()
 {
-    if (!Instanceable())
-        sScriptMgr.OnDestroyMap(this);
+    sScriptMgr.OnDestroyMap(this);
 
     UnloadAll();
 
@@ -171,10 +170,10 @@ void Map::LoadMap(int gx,int gy, bool reload)
     if (GridMaps[gx][gy])
     {
         sLog.outDetail("Unloading previously loaded map %u before reloading.",GetId());
+        sScriptMgr.OnUnloadGridMap(this, GridMaps[gx][gy], gx, gy);
+
         delete (GridMaps[gx][gy]);
         GridMaps[gx][gy]=NULL;
-
-        sScriptMgr.OnUnloadGridMap(this, gx, gy);
     }
 
     // map file name
@@ -191,7 +190,7 @@ void Map::LoadMap(int gx,int gy, bool reload)
     }
     delete [] tmp;
 
-    sScriptMgr.OnLoadGridMap(this, gx, gy);
+    sScriptMgr.OnLoadGridMap(this, GridMaps[gx][gy], gx, gy);
 }
 
 void Map::LoadMapAndVMap(int gx,int gy)
@@ -238,8 +237,7 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _par
     //lets initialize visibility distance for map
     Map::InitVisibilityDistance();
 
-    if (!Instanceable())
-        sScriptMgr.OnCreateMap(this);
+    sScriptMgr.OnCreateMap(this);
 }
 
 void Map::InitVisibilityDistance()
@@ -448,7 +446,7 @@ bool Map::Add(Player *player)
     player->m_clientGUIDs.clear();
     player->UpdateObjectVisibility(true);
 
-    sScriptMgr.OnPlayerEnter(this, player);
+    sScriptMgr.OnPlayerEnterMap(this, player);
     return true;
 }
 
@@ -740,7 +738,7 @@ void Map::Remove(Player *player, bool remove)
     if (remove)
         DeleteFromWorld(player);
 
-    sScriptMgr.OnPlayerLeave(this, player);
+    sScriptMgr.OnPlayerLeaveMap(this, player);
 }
 
 template<class T>
