@@ -1,10 +1,12 @@
 -- Up to TC2 6928
 
 -- Cleanup first
+UPDATE `battleground_template` SET `ScriptName`='';
 UPDATE `instance_template` SET `Script`='';
 UPDATE `item_template` SET `ScriptName`='';
 UPDATE `creature_template` SET `ScriptName`='';
 UPDATE `gameobject_template` SET `ScriptName`='';
+UPDATE `outdoorpvp_template` SET `ScriptName`='';
 
 /* AREA TRIGGERS */
 DELETE FROM `areatrigger_scripts` WHERE `entry` IN (5284,5285,5286,5287,4871,4872,4873,5108,5332,5338,5334,5340,5369,5423);
@@ -360,11 +362,6 @@ UPDATE `creature_template` SET `ScriptName`='mob_phalanx' WHERE `entry`=9502;
 UPDATE `gameobject_template` SET `ScriptName`='go_shadowforge_brazier' WHERE `entry` IN (174744,174745);
 
 /* BLACKROCK SPIRE */
-
-UPDATE `instance_template` SET `script`='instance_blackrock_spire' WHERE `map`=229;
-UPDATE `creature_template` SET `ScriptName`='npc_rookey_whelp' WHERE `entry`=10161;
-UPDATE `gameobject_template` SET `ScriptName`='go_rookey_egg' WHERE `entry`=175124;
-
 /* BLACKROCK SPIRE Lower bosses */
 UPDATE `creature_template` SET `ScriptName`='boss_highlord_omokk' WHERE `entry`=9196;
 UPDATE `creature_template` SET `ScriptName`='boss_shadow_hunter_voshgajin' WHERE `entry`=9236;
@@ -1362,6 +1359,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_isla_starmane' WHERE `entry`=18
 UPDATE `creature_template` SET `ScriptName`='mob_unkor_the_ruthless' WHERE `entry`=18262;
 UPDATE `creature_template` SET `ScriptName`='npc_slim' WHERE `entry`=19679;
 UPDATE `creature_template` SET `ScriptName`='npc_akuno' WHERE `entry`=22377;
+UPDATE `creature_template` SET `ScriptName`='npc_skywing' WHERE `entry`=22424;
 
 /* THOUSAND NEEDLES */
 UPDATE `creature_template` SET `ScriptName`='npc_kanati' WHERE `entry`=10638;
@@ -1635,15 +1633,28 @@ UPDATE `creature_template` SET `ScriptName`='mob_batrider' WHERE `entry`=14965;
 UPDATE `creature_template` SET `ScriptName`='mob_shade_of_jindo' WHERE `entry`=14986;
 UPDATE `creature_template` SET `ScriptName`='mob_ohgan' WHERE `entry`=14988;
 
-/* EOF */
-
-UPDATE `creature_template` SET `ScriptName`='npc_skywing' WHERE `entry`=22424;
-
-DELETE FROM areatrigger_scripts WHERE `entry`=3066;
-INSERT INTO areatrigger_scripts VALUES
+DELETE FROM `areatrigger_scripts` WHERE `entry`=3066;
+INSERT INTO `areatrigger_scripts` VALUES
    (3066,'at_ravenholdt');
-   
--- moved from world_spell_full.sql to here
-update creature_template set `AIName`='TurretAI',`ScriptName`='' WHERE `entry`=33139;
-update creature_template set `ScriptName`= 'boss_kologarn' WHERE `entry`=32930;
-update creature_template set `scriptname`= 'boss_flame_leviathan_safety_container' WHERE `entry`=33218;
+
+/* Moved from world_spell_full.sql to here. */
+UPDATE `creature_template` SET `AIName`='TurretAI',`ScriptName`='' WHERE `entry`=33139;
+UPDATE `creature_template` SET `ScriptName`= 'boss_kologarn' WHERE `entry`=32930;
+UPDATE `creature_template` SET `ScriptName`= 'boss_flame_leviathan_safety_container' WHERE `entry`=33218;
+
+/* BATTLEGROUNDS */
+/* TODO */
+
+/* OUTDOOR PVP */
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_hp' WHERE `TypeId`=1;
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_na' WHERE `TypeId`=2;
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_tf' WHERE `TypeId`=3;
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_zm' WHERE `TypeId`=4;
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_si' WHERE `TypeId`=5;
+UPDATE `outdoorpvp_template` SET `ScriptName`='outdoorpvp_ep' WHERE `TypeId`=6;
+
+/* ACHIEVEMENTS */
+UPDATE `achievement_criteria_data` SET `ScriptName`='achievement_school_of_hard_knocks' WHERE `criteria_id` IN (6641,6642,6643,6644);
+UPDATE `achievement_criteria_data` SET `ScriptName`='achievement_storm_glory' WHERE `criteria_id`=3693;
+
+/* EOF */
