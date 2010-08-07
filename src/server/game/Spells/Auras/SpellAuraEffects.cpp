@@ -2393,7 +2393,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
         triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, 0, this);
         sLog.outDebug("AuraEffect::TriggerSpell: Spell %u Trigger %u",GetId(), triggeredSpellInfo->Id);
     }
-    else if (target->GetTypeId() != TYPEID_UNIT || !sScriptMgr.EffectDummyCreature(caster, GetId(), GetEffIndex(), triggerTarget->ToCreature()))
+    else if (target->GetTypeId() != TYPEID_UNIT || !sScriptMgr.OnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex()), triggerTarget->ToCreature()))
         sLog.outError("AuraEffect::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
 }
 
@@ -4693,7 +4693,7 @@ void AuraEffect::HandleModTotalPercentStat(AuraApplication const * aurApp, uint8
     if ((GetMiscValue() == STAT_STAMINA) && (maxHPValue > 0) && (m_spellProto->Attributes & 0x10))
     {
         // newHP = (curHP / maxHP) * newMaxHP = (newMaxHP * curHP) / maxHP -> which is better because no int -> double -> int conversion is needed
-        uint32 newHPValue = (target->GetMaxHealth() * curHPValue) / maxHPValue;
+        uint64 newHPValue = (target->GetMaxHealth() * curHPValue) / maxHPValue;
         target->SetHealth(newHPValue);
     }
 }
@@ -5817,6 +5817,10 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         case 60244:  // Blood Parrot Despawn Aura
                             target->CastSpell((Unit*)NULL, GetAmount(), true, NULL, this);
                             break;
+                        case 58600: // Restricted Flight Area
+                            if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                                target->CastSpell(target, 58601, true);
+                            break;
                         case 68839: // Corrupt Soul
                             target->CastSpell(target, 68846, true, NULL, this, GetCasterGUID());
                             break;
@@ -6209,7 +6213,7 @@ void AuraEffect::HandleChannelDeathItem(AuraApplication const * aurApp, uint8 mo
         if (msg != EQUIP_ERR_OK)
         {
             count-=noSpaceForCount;
-            plCaster->SendEquipError(msg, NULL, NULL);
+            plCaster->SendEquipError(msg, NULL, NULL, GetSpellProto()->EffectItemType[m_effIndex]);
             if (count == 0)
                 return;
         }

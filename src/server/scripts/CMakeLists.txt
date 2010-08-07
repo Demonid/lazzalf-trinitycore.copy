@@ -35,7 +35,6 @@ set(scripts_STAT_SRCS
   ${scripts_world}
   ${scripts_spells}
   ${scripts_examples}
-  Custom/on_events.cpp
   ../game/AI/ScriptedAI/ScriptedEscortAI.cpp
   ../game/AI/ScriptedAI/ScriptedCreature.cpp
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp
@@ -95,6 +94,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Object/Updates
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Pet
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Player
+  ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Transport
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Unit
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Vehicle
   ${CMAKE_SOURCE_DIR}/src/server/game/Events

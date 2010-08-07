@@ -212,7 +212,6 @@ struct InstanceTemplate
 {
     uint32 map;
     uint32 parent;
-    uint32 access_id;
     float startLocX;
     float startLocY;
     float startLocZ;
@@ -249,6 +248,8 @@ class Map : public GridRefManager<NGridType>
         Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent = NULL);
         virtual ~Map();
 
+        MapEntry const* GetEntry() const { return i_mapEntry; }
+        
         ACE_thread_t m_updater;
         void Wipe();
 
@@ -267,13 +268,6 @@ class Map : public GridRefManager<NGridType>
         template<class T> void Remove(T *, bool);
 
         virtual void Update(const uint32&);
-
-        /*
-        void MessageBroadcast(Player *, WorldPacket *, bool to_self);
-        void MessageBroadcast(WorldObject *, WorldPacket *);
-        void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool own_team_only = false);
-        void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist);
-        */
 
         float GetVisibilityDistance() const { return m_VisibleDistance; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
@@ -373,7 +367,6 @@ class Map : public GridRefManager<NGridType>
         MapDifficulty const* GetMapDifficulty() const;
 
         bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
-        // NOTE: this duplicate of Instanceable(), but Instanceable() can be changed when BG also will be instanceable
         bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
         bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
@@ -392,8 +385,6 @@ class Map : public GridRefManager<NGridType>
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
         virtual void DelayedUpdate(const uint32 diff);
-
-        virtual bool RemoveBones(uint64 guid, float x, float y);
 
         void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair);
         void UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair);

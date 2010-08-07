@@ -104,7 +104,7 @@ bool ChatHandler::HandleDebugSendEquipErrorCommand(const char* args)
         return false;
 
     uint8 msg = atoi(args);
-    m_session->GetPlayer()->SendEquipError(msg, 0, 0);
+    m_session->GetPlayer()->SendEquipError(msg, NULL, NULL);
     return true;
 }
 
@@ -896,8 +896,8 @@ bool ChatHandler::HandleDebugItemExpireCommand(const char* args)
     if (!i)
         return false;
 
-    m_session->GetPlayer()->DestroyItem(i->GetBagSlot(),i->GetSlot(), true);
-    sScriptMgr.ItemExpire(m_session->GetPlayer(),i->GetProto());
+    m_session->GetPlayer()->DestroyItem(i->GetBagSlot(), i->GetSlot(), true);
+    sScriptMgr.OnItemExpire(m_session->GetPlayer(), i->GetProto());
 
     return true;
 }

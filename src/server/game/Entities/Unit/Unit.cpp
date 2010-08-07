@@ -731,13 +731,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         {
             Player *killer = this->ToPlayer();
             Player *killed = pVictim->ToPlayer();
-            killer->GetSession()->HandleOnPVPKill(killed);
         }
         if (pVictim->GetTypeId() == TYPEID_UNIT && this->GetTypeId() == TYPEID_PLAYER)
         {
             Player *killer = this->ToPlayer();
             Creature *pCreature = (pVictim->ToCreature());
-            killer->GetSession()->HandleOnCreatureKill(pCreature);
         }
     }
     else                                                    // if (health <= damage)
@@ -13594,9 +13592,8 @@ CharmInfo::CharmInfo(Unit* unit)
 CharmInfo::~CharmInfo()
 {
     if (m_unit->GetTypeId() == TYPEID_UNIT)
-    {
-        m_unit->ToCreature()->SetReactState(m_oldReactState);
-    }
+        if (Creature *pCreature = m_unit->ToCreature())
+            pCreature->SetReactState(m_oldReactState);
 }
 
 void CharmInfo::InitPetActionBar()

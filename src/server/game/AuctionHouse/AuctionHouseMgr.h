@@ -23,8 +23,6 @@
 
 #include "SharedDefines.h"
 
-#include "AuctionHouseBot.h"
-
 class Item;
 class Player;
 class WorldPacket;
@@ -97,7 +95,7 @@ class AuctionHouseObject
         return itr != AuctionsMap.end() ? itr->second : NULL;
     }
 
-    void AddAuction(AuctionEntry *ah);
+    void AddAuction(AuctionEntry *auction);
 
     bool RemoveAuction(AuctionEntry *auction, uint32 item_template);
 

@@ -3122,8 +3122,8 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
                 if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
                     return false;
-            }break;
-        case 58600: // No fly Zone - Dalaran (Krasus Landing exception)
+            } break;
+         case 58600: // No fly Zone - Dalaran
             {
                 if (!player)
                     return false;
@@ -3131,10 +3131,9 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
                 if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
                     return false;
-                if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY) || player->HasAura(44795))
-                    return false;
-            }
-            break;
+                if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
+                    return false;            	
+            } break;
             /*if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
                 || player->HasAura(44795))
                 return false;
@@ -3146,14 +3145,15 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             break;
         case SPELL_ESSENCE_OF_WINTERGRASP_WINNER:   // Essence of Wintergrasp - Wintergrasp
         case SPELL_ESSENCE_OF_WINTERGRASP_WORLD:    // Essence of Wintergrasp - Northrend
-            if (sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
             {
-                if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                if (sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+                {
+                    if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                        return false;
+                }
+                else
                     return false;
             }
-            else
-                return false;
-
             break;
     }
 

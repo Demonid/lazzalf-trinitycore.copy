@@ -241,6 +241,7 @@ CREATE TABLE `battleground_template` (
   `HordeStartLoc` mediumint(8) unsigned NOT NULL,
   `HordeStartO` float NOT NULL,
   `Weight` tinyint(2) unsigned NOT NULL DEFAULT 1,
+  `ScriptName` char(64) NOT NULL DEFAULT '',
   `Comment` char(32) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -724,6 +725,7 @@ CREATE TABLE `conditions` (
   `ConditionValue2` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `ConditionValue3` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `ErrorTextId` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ScriptName` char(64) NOT NULL DEFAULT '',
   `Comment` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ElseGroup`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`ConditionValue3`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Condition System';
@@ -2371,6 +2373,7 @@ CREATE TABLE `game_weather` (
   `winter_rain_chance` tinyint(3) unsigned NOT NULL DEFAULT '25',
   `winter_snow_chance` tinyint(3) unsigned NOT NULL DEFAULT '25',
   `winter_storm_chance` tinyint(3) unsigned NOT NULL DEFAULT '25',
+  `ScriptName` char(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`zone`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Weather System';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2715,7 +2718,6 @@ DROP TABLE IF EXISTS `instance_template`;
 CREATE TABLE `instance_template` (
   `map` smallint(5) unsigned NOT NULL,
   `parent` int(10) unsigned NOT NULL,
-  `access_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `startLocX` float DEFAULT NULL,
   `startLocY` float DEFAULT NULL,
   `startLocZ` float DEFAULT NULL,
@@ -3836,6 +3838,30 @@ CREATE TABLE `npc_vendor` (
 LOCK TABLES `npc_vendor` WRITE;
 /*!40000 ALTER TABLE `npc_vendor` DISABLE KEYS */;
 /*!40000 ALTER TABLE `npc_vendor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `outdoorpvp_template`
+--
+
+DROP TABLE IF EXISTS `outdoorpvp_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `outdoorpvp_template` (
+  `TypeId` tinyint(2) unsigned NOT NULL,
+  `ScriptName` char(64) NOT NULL DEFAULT '',
+  `comment` text,
+  PRIMARY KEY (`TypeId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='OutdoorPvP Templates';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `outdoorpvp_template`
+--
+
+LOCK TABLES `outdoorpvp_template` WRITE;
+/*!40000 ALTER TABLE `outdoorpvp_template` DISABLE KEYS */;
+/*!40000 ALTER TABLE `outdoorpvp_template` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -7307,10 +7333,10 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 27044, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000040, 0x00000000,   0,   0,   0), -- Aspect of the Hawk
 ( 61846, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000040, 0x00000000,   0,   0,   0), -- Aspect of the Dragonhawk
 ( 61847, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000040, 0x00000000,   0,   0,   0), -- Aspect of the Dragonhawk
-( 53178, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00000000, 0x00000000,   0, 100,   0), -- Guard Dog (Rank 1)
-( 53179, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00000000, 0x00000000,   0, 100,   0), -- Guard Dog (Rank 2)
-( 62764, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00000000, 0x00000000,   0, 100,   0), -- Silverback (Rank 1)
-( 62765, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00000000, 0x00000000,   0, 100,   0), -- Silverback (Rank 2)
+( 53178, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00010000, 0x00000000,   0, 100,   0), -- Guard Dog (Rank 1)
+( 53179, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00010000, 0x00000000,   0, 100,   0), -- Guard Dog (Rank 2)
+( 62764, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00010000, 0x00000000,   0, 100,   0), -- Silverback (Rank 1)
+( 62765, 0x00,   9, 0x00000000, 0x10000000, 0x00000000, 0x00010000, 0x00000000,   0, 100,   0), -- Silverback (Rank 2)
 ( 49223, 0x00,  15, 0x00000011, 0x08020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Dirge
 ( 49599, 0x00,  15, 0x00000011, 0x08020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Dirge
 ( 49188, 0x00,  15, 0x00000000, 0x00020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Rime
@@ -14686,9 +14712,10 @@ CREATE TABLE `spell_script_names` (
 LOCK TABLES `spell_script_names` WRITE;
 /*!40000 ALTER TABLE `spell_script_names` DISABLE KEYS */;
 INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
+-- generic
+( 58601, 'spell_gen_remove_flight_auras'),
 -- warrior
 ( 12975,'spell_warr_last_stand'),
-( 21977,'spell_warr_warriors_wrath'),
 -- paladin
 ( 20425, 'spell_pal_judgement_of_command'),
 (-20473, 'spell_pal_holy_shock'),
@@ -14705,6 +14732,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 31231, 'spell_rog_cheat_death'),
 ( 51662, 'spell_rog_hunger_for_blood'),
 -- priest
+( 47948, 'spell_pri_pain_and_suffering_proc'),
 (-47540, 'spell_pri_penance'),
 -- death knight
 -- shaman
@@ -14728,6 +14756,7 @@ CREATE TABLE `transports` (
   `entry` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `name` text,
   `period` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ScriptName` char(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Transports';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -15657,7 +15686,7 @@ AVG_ROW_LENGTH=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `version`
+-- Dumping data for table `vehicle_accessory`
 --
 
 LOCK TABLES `vehicle_accessory` WRITE;
