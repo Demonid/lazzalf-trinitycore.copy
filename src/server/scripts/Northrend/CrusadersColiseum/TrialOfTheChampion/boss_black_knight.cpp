@@ -28,7 +28,6 @@ EndScriptData */
 #define SAY_RESET  -1999927
 
 
-
 enum eEnums
 {
     //Yell
@@ -585,28 +584,28 @@ struct npc_grAI : public npc_escortAI
         switch(uiPointId)
         {
                 case 1:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                                 break;
                 case 2:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                                 break;
                 case 3:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                                 break;
                 case 4:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                                 break;
                 case 5:
-                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);                        
+                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);                        
                                 break;
                 case 6:
-                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);                        
+                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);                        
                                 break;                          
                 case 7:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                                 break;                          
                 case 8:
-                                me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+                                me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                 case 9:
                                 me->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
                                 break;

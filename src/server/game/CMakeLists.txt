@@ -25,6 +25,7 @@ file(GLOB_RECURSE sources_Calendar Calendar/*.cpp Calendar/*.h)
 file(GLOB_RECURSE sources_Chat Chat/*.cpp Chat/*.h)
 file(GLOB_RECURSE sources_Combat Combat/*.cpp Combat/*.h)
 file(GLOB_RECURSE sources_Conditions Conditions/*.cpp Conditions/*.h)
+file(GLOB_RECURSE sources_Custom Custom/*.cpp Custom/*.h)
 file(GLOB_RECURSE sources_DataStores DataStores/*.cpp DataStores/*.h)
 file(GLOB_RECURSE sources_DungeonFinding DungeonFinding/*.cpp DungeonFinding/*.h)
 file(GLOB_RECURSE sources_Entities Entities/*.cpp Entities/*.h)
@@ -64,6 +65,7 @@ set(game_STAT_SRCS
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
+  ${sources_Custom}
   ${sources_DataStores}
   ${sources_DungeonFinding}
   ${sources_Entities}
@@ -89,12 +91,6 @@ set(game_STAT_SRCS
   ${sources_Tools}
   ${sources_Weather}
   ${sources_World}
-  Custom/GuildHouse.cpp
-  Custom/GuildHouse.h
-  Custom/sc_npc_teleport.cpp
-  Custom/sc_npc_teleport.h
-   OutdoorPvP/Zones/OutdoorPvPWG.cpp
-   OutdoorPvP/Zones/OutdoorPvPWG.h
 )
 
 if( MSVC )
@@ -194,9 +190,6 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
 )
-
-      Custom/sc_bs_sp_wrkr.cpp
-      Custom/sc_bs_sp_wrkr.h
 add_library(game STATIC ${game_STAT_SRCS})
 
 add_dependencies(game revision.h)
