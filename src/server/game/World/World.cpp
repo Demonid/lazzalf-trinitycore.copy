@@ -51,10 +51,8 @@
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
-#include "GlobalEvents.h"
 #include "GameEventMgr.h"
 #include "PoolMgr.h"
 #include "DatabaseImpl.h"
@@ -72,6 +70,7 @@
 #include "ConditionMgr.h"
 #include "DisableMgr.h"
 #include "CharacterDatabaseCleaner.h"
+#include "ScriptMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -187,6 +186,31 @@ Player* World::FindPlayerInZone(uint32 zone)
         }
     }
     return NULL;
+}
+
+bool World::IsClosed() const
+{
+    return m_isClosed;
+}
+
+void World::SetClosed(bool val)
+{
+    m_isClosed = val;
+
+    // Invert the value, for simplicity for scripters.
+    sScriptMgr.OnOpenStateChange(!val);
+}
+
+void World::SetMotd(const std::string& motd)
+{
+    m_motd = motd;
+
+    sScriptMgr.OnMotdChange(m_motd);
+}
+
+const char* World::GetMotd() const
+{
+    return m_motd.c_str();
 }
 
 /// Find a session by its id
@@ -441,7 +465,7 @@ void World::RemoveWeather(uint32 id)
 /// Add a Weather object to the list
 Weather* World::AddWeather(uint32 zone_id)
 {
-    WeatherZoneChances const* weatherChances = objmgr.GetWeatherChances(zone_id);
+    WeatherData const* weatherChances = objmgr.GetWeatherChances(zone_id);
 
     // zone not have weather, ignore
     if (!weatherChances)
@@ -1330,7 +1354,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM]    = sConfig.GetIntDefault("ArenaMod.MaximalPlayerWinsAgainstTeam", 15);
     m_configs[CONFIG_ARENAMOD_TIME_RESET]                     = sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
     m_configs[CONFIG_ARENAMOD_CONTROLL_IP]                    = sConfig.GetIntDefault("ArenaMod.ControllIp", 0);
-
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfig.GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
     m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfig.GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
@@ -1351,6 +1374,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CHATLOG_PUBLIC] = sConfig.GetBoolDefault("ChatLogs.Public", false);
     m_configs[CONFIG_CHATLOG_ADDON] = sConfig.GetBoolDefault("ChatLogs.Addon", false);
     m_configs[CONFIG_CHATLOG_BGROUND] = sConfig.GetBoolDefault("ChatLogs.BattleGround", false);
+
+    sScriptMgr.OnConfigLoad(reload);
 }
 
 /// Initialize the World
@@ -1393,8 +1418,8 @@ void World::SetInitialWorldSettings()
     uint32 realm_zone = getConfig(CONFIG_REALM_ZONE);
     LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realmID);
 
-    ///- Remove the bones after a restart
-    CharacterDatabase.Execute("DELETE FROM corpse WHERE corpse_type = '0'");
+    ///- Remove the bones (they should not exist in DB though) and old corpses after a restart
+    CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0' OR time < (UNIX_TIMESTAMP()-'%u')", 3 * DAY);
 
     ///- Load the DBC files
     sLog.outString("Initialize data stores...");
@@ -1540,7 +1565,7 @@ void World::SetInitialWorldSettings()
     gameeventmgr.LoadFromDB();
 
     sLog.outString("Loading Weather Data...");
-    objmgr.LoadWeatherZoneChances();
+    objmgr.LoadWeatherData();
 
     sLog.outString("Loading Quests...");
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
@@ -1743,7 +1768,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadSpellScriptNames();
 
     sLog.outString("Initializing Scripts...");
-    sScriptMgr.ScriptsInit();
+    sScriptMgr.Initialize();
 
     sLog.outString("Validating spell scripts...");
     objmgr.ValidateSpellScripts();
@@ -1772,7 +1797,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_AUCTIONS].SetInterval(MINUTE*IN_MILLISECONDS);
     m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*IN_MILLISECONDS);
                                                             //Update "uptime" table based on configuration entry in minutes.
-    m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*IN_MILLISECONDS);
+    m_timers[WUPDATE_CORPSES].SetInterval(3 * HOUR * IN_MILLISECONDS);
                                                             //erase corpses every 20 minutes
     m_timers[WUPDATE_CLEANDB].SetInterval(m_configs[CONFIG_LOGDB_CLEARINTERVAL]*MINUTE*IN_MILLISECONDS);
                                                             // clean logs table every 14 days by default
@@ -1843,9 +1868,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting objects Pooling system...");
     poolhandler.Initialize();
 
-    sLog.outString("Initialize AuctionHouseBot...");
-    auctionbot.Initialize();
-
     // possibly enable db logging; avoid massive startup spam by doing it here.
     if (sLog.GetLogDBLater())
     {
@@ -1856,7 +1878,6 @@ void World::SetInitialWorldSettings()
     else
         sLog.SetLogDB(false);
 
-    sScriptMgr.OnServerStartup();
     sLog.outString("WORLD: World initialized");
 }
 
@@ -1970,7 +1991,8 @@ void World::LoadAutobroadcasts()
 /// Update the World !
 void World::Update(uint32 diff)
 {
-    m_updateTime = uint32(diff);
+    m_updateTime = diff;
+
     if (m_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
         if (m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
@@ -1990,7 +2012,8 @@ void World::Update(uint32 diff)
     for (int i = 0; i < WUPDATE_COUNT; ++i)
         if (m_timers[i].GetCurrent() >= 0)
             m_timers[i].Update(diff);
-    else m_timers[i].SetCurrent(0);
+        else
+            m_timers[i].SetCurrent(0);
 
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
@@ -2011,7 +2034,6 @@ void World::Update(uint32 diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
-        auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
@@ -2052,6 +2074,7 @@ void World::Update(uint32 diff)
             }
         }
     }
+
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
     {
@@ -2079,12 +2102,6 @@ void World::Update(uint32 diff)
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
     sMapMgr.Update(diff);                // As interval = 0
-
-    /*if (m_timers[WUPDATE_OBJECTS].Passed())
-    {
-        m_timers[WUPDATE_OBJECTS].Reset();
-        sMapMgr.DoDelayedMovesAndRemoves();
-    }*/
 
     static uint32 autobroadcaston = 0;
     autobroadcaston = sConfig.GetIntDefault("AutoBroadcast.On", 0);
@@ -2122,7 +2139,7 @@ void World::Update(uint32 diff)
     {
         m_timers[WUPDATE_CORPSES].Reset();
 
-        CorpsesErase();
+        sObjectAccessor.RemoveOldCorpses();
     }
 
     ///- Process Game events when necessary
@@ -2139,6 +2156,8 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+
+    sScriptMgr.OnWorldUpdate(diff);
 }
 
 void World::ForceGameEventUpdate()
@@ -2485,7 +2504,7 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
         ShutdownMsg(true);
     }
 
-    sScriptMgr.OnServerShutdown();
+    sScriptMgr.OnShutdown(ShutdownExitCode(exitcode), ShutdownMask(options));
 }
 
 /// Display a shutdown message to the user(s)
@@ -2533,6 +2552,8 @@ void World::ShutdownCancel()
     SendServerMessage(msgid);
 
     DEBUG_LOG("Server %s cancelled.",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shuttingdown"));
+
+    sScriptMgr.OnShutdownCancel();
 }
 
 /// Send a server message to the user(s)

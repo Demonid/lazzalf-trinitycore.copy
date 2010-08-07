@@ -42,7 +42,7 @@
 #include "OutdoorPvPMgr.h"
 #include "ScriptedCreature.h"
 #include "GossipDef.h"
-
+#include "ScriptMgr.h"
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
 #include "VMapFactory.h"
@@ -63,6 +63,9 @@ struct ScriptAction
 
 Map::~Map()
 {
+    if (!Instanceable())
+        sScriptMgr.OnDestroyMap(this);
+
     UnloadAll();
 
     while (!i_worldObjects.empty())
@@ -170,6 +173,8 @@ void Map::LoadMap(int gx,int gy, bool reload)
         sLog.outDetail("Unloading previously loaded map %u before reloading.",GetId());
         delete (GridMaps[gx][gy]);
         GridMaps[gx][gy]=NULL;
+
+        sScriptMgr.OnUnloadGridMap(this, gx, gy);
     }
 
     // map file name
@@ -185,6 +190,8 @@ void Map::LoadMap(int gx,int gy, bool reload)
         sLog.outError("Error loading map file: \n %s\n", tmp);
     }
     delete [] tmp;
+
+    sScriptMgr.OnLoadGridMap(this, gx, gy);
 }
 
 void Map::LoadMapAndVMap(int gx,int gy)
@@ -230,6 +237,9 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _par
 
     //lets initialize visibility distance for map
     Map::InitVisibilityDistance();
+
+    if (!Instanceable())
+        sScriptMgr.OnCreateMap(this);
 }
 
 void Map::InitVisibilityDistance()
@@ -438,6 +448,7 @@ bool Map::Add(Player *player)
     player->m_clientGUIDs.clear();
     player->UpdateObjectVisibility(true);
 
+    sScriptMgr.OnPlayerEnter(this, player);
     return true;
 }
 
@@ -480,102 +491,6 @@ Map::Add(T *obj)
     //also, trigger needs to cast spell, if not update, cannot see visual
     obj->UpdateObjectVisibility(true);
 }
-
-/*
-void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self)
-{
-    CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
-
-    if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Player (GUID: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", player->GetGUIDLow(), player->GetPositionX(), player->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if (!loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    Trinity::MessageDeliverer post_man(*player, msg, to_self);
-    TypeContainerVisitor<Trinity::MessageDeliverer, WorldTypeMapContainer > message(post_man);
-    CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this, *player, GetVisibilityDistance());
-}
-
-void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg)
-{
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-
-    if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Object (GUID: %u TypeId: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if (!loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    //TODO: currently on continents when Visibility.Distance.InFlight > Visibility.Distance.Continents
-    //we have alot of blinking mobs because monster move packet send is broken...
-    Trinity::ObjectMessageDeliverer post_man(*obj,msg);
-    TypeContainerVisitor<Trinity::ObjectMessageDeliverer, WorldTypeMapContainer > message(post_man);
-    CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this, *obj, GetVisibilityDistance());
-}
-
-void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool own_team_only)
-{
-    CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
-
-    if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Player (GUID: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", player->GetGUIDLow(), player->GetPositionX(), player->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if (!loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    Trinity::MessageDistDeliverer post_man(*player, msg, dist, to_self, own_team_only);
-    TypeContainerVisitor<Trinity::MessageDistDeliverer , WorldTypeMapContainer > message(post_man);
-    CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this, *player, dist);
-}
-
-void Map::MessageDistBroadcast(WorldObject *obj, WorldPacket *msg, float dist)
-{
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-
-    if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Object (GUID: %u TypeId: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if (!loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    Trinity::ObjectMessageDistDeliverer post_man(*obj, msg, dist);
-    TypeContainerVisitor<Trinity::ObjectMessageDistDeliverer, WorldTypeMapContainer > message(post_man);
-    CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this, *obj, dist);
-}
-*/
 
 bool Map::loaded(const GridPair &p) const
 {
@@ -705,6 +620,8 @@ void Map::Update(const uint32 &t_diff)
 
     if (!m_mapRefManager.isEmpty() || !m_activeNonPlayers.empty())
         ProcessRelocationNotifies(t_diff);
+
+    sScriptMgr.OnMapUpdate(this, t_diff);
 }
 
 struct ResetNotifier
@@ -822,19 +739,8 @@ void Map::Remove(Player *player, bool remove)
 
     if (remove)
         DeleteFromWorld(player);
-}
 
-bool Map::RemoveBones(uint64 guid, float x, float y)
-{
-    if (IsRemovalGrid(x, y))
-    {
-        Corpse * corpse = sObjectAccessor.GetObjectInWorld(GetId(), x, y, guid, (Corpse*)NULL);
-        if (corpse && corpse->GetTypeId() == TYPEID_CORPSE && corpse->GetType() == CORPSE_BONES)
-            corpse->DeleteBonesFromWorld();
-        else
-            return false;
-    }
-    return true;
+    sScriptMgr.OnPlayerLeave(this, player);
 }
 
 template<class T>
@@ -2007,32 +1913,6 @@ void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpai
     // send data
     notifier.SendToSelf();
 }
-/*
-void Map::PlayerRelocationNotify(Player* player, Cell cell, CellPair cellpair)
-{
-    Trinity::PlayerRelocationNotifier relocationNotifier(*player);
-    cell.data.Part.reserved = ALL_DISTRICT;
-
-    TypeContainerVisitor<Trinity::PlayerRelocationNotifier, GridTypeMapContainer >  p2grid_relocation(relocationNotifier);
-    TypeContainerVisitor<Trinity::PlayerRelocationNotifier, WorldTypeMapContainer > p2world_relocation(relocationNotifier);
-
-    cell.Visit(cellpair, p2grid_relocation, *this, *player, MAX_CREATURE_ATTACK_RADIUS);
-    cell.Visit(cellpair, p2world_relocation, *this, *player, MAX_CREATURE_ATTACK_RADIUS);
-}
-
-void Map::CreatureRelocationNotify(Creature *creature, Cell cell, CellPair cellpair)
-{
-    Trinity::CreatureRelocationNotifier relocationNotifier(*creature);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();                                     // not trigger load unloaded grids at notifier call
-
-    TypeContainerVisitor<Trinity::CreatureRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocationNotifier);
-    TypeContainerVisitor<Trinity::CreatureRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocationNotifier);
-
-    cell.Visit(cellpair, c2world_relocation, *this, *creature, MAX_CREATURE_ATTACK_RADIUS);
-    cell.Visit(cellpair, c2grid_relocation, *this, *creature, MAX_CREATURE_ATTACK_RADIUS);
-}
-*/
 
 void Map::SendInitSelf(Player * player)
 {
@@ -3508,7 +3388,7 @@ void Map::ScriptsProcess()
                             pReceiver->SendNewItem(item, step.script->datalong2, false, true);
                     }
                     else
-                        pReceiver->SendEquipError(msg, NULL, NULL);
+                        pReceiver->SendEquipError(msg, NULL, NULL, step.script->datalong);
                 }
                 break;
 

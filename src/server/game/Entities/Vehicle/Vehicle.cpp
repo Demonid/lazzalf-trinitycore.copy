@@ -23,7 +23,7 @@
 #include "Unit.h"
 #include "Util.h"
 #include "WorldPacket.h"
-
+#include "ScriptMgr.h"
 #include "CreatureAI.h"
 #include "ZoneScript.h"
 
@@ -69,7 +69,6 @@ Vehicle::Vehicle(Unit *unit, VehicleEntry const *vehInfo) : me(unit), m_vehicleI
         default:
             break;
     }
-    ASSERT(!m_Seats.empty());
 }
 
 Vehicle::~Vehicle()
@@ -80,43 +79,45 @@ Vehicle::~Vehicle()
 
 void Vehicle::Install()
 {
-    if (Creature *cre = dynamic_cast<Creature*>(me))
+    if (Creature *pCreature = me->ToCreature())
     {
-        if (m_vehicleInfo->m_powerType == POWER_STEAM)
+        switch (m_vehicleInfo->m_powerType)
         {
-            me->setPowerType(POWER_ENERGY);
-            me->SetMaxPower(POWER_ENERGY, 100);
-        }
-        else if (m_vehicleInfo->m_powerType == POWER_PYRITE)
-        {
-            me->setPowerType(POWER_ENERGY);
-            me->SetMaxPower(POWER_ENERGY, 50);
-        }
-        else
-        {
-            for (uint32 i = 0; i < MAX_SPELL_VEHICLE; ++i)
-            {
-                if (!cre->m_spells[i])
-                    continue;
-
-                SpellEntry const *spellInfo = sSpellStore.LookupEntry(cre->m_spells[i]);
-                if (!spellInfo)
-                    continue;
-
-                if (spellInfo->powerType == POWER_MANA)
-                    break;
-
-                if (spellInfo->powerType == POWER_ENERGY)
+            case POWER_STEAM:
+                me->setPowerType(POWER_ENERGY);
+                me->SetMaxPower(POWER_ENERGY, 100);
+                break;
+            case POWER_PYRITE:
+                me->setPowerType(POWER_ENERGY);
+                me->SetMaxPower(POWER_ENERGY, 50);
+                break;
+            default:
+                for (uint32 i = 0; i < MAX_SPELL_VEHICLE; ++i)
                 {
-                    me->setPowerType(POWER_ENERGY);
-                    me->SetMaxPower(POWER_ENERGY, 100);
-                    break;
+                    if (!pCreature->m_spells[i])
+                        continue;
+
+                    SpellEntry const *spellInfo = sSpellStore.LookupEntry(pCreature->m_spells[i]);
+                    if (!spellInfo)
+                        continue;
+
+                    if (spellInfo->powerType == POWER_MANA)
+                        break;
+
+                    if (spellInfo->powerType == POWER_ENERGY)
+                    {
+                        me->setPowerType(POWER_ENERGY);
+                        me->SetMaxPower(POWER_ENERGY, 100);
+                        break;
+                    }
                 }
-            }
+                break;
         }
     }
 
     Reset();
+
+    sScriptMgr.OnInstall(this);
 }
 
 void Vehicle::InstallAllAccessories()
@@ -136,7 +137,10 @@ void Vehicle::Uninstall()
         if (Unit *passenger = itr->second.passenger)
             if (passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
                 passenger->ToTempSummon()->UnSummon();
+
     RemoveAllPassengers();
+
+    sScriptMgr.OnUninstall(this);
 }
 
 void Vehicle::Die()
@@ -146,7 +150,10 @@ void Vehicle::Die()
         if (Unit *passenger = itr->second.passenger)
             if (passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
                 passenger->setDeathState(JUST_DIED);
+
     RemoveAllPassengers();
+
+    sScriptMgr.OnDie(this);
 }
 
 void Vehicle::Reset()
@@ -163,6 +170,8 @@ void Vehicle::Reset()
         if (m_usableSeatNum)
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
     }
+
+    sScriptMgr.OnReset(this);
 }
 
 void Vehicle::RemoveAllPassengers()
@@ -246,6 +255,8 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion)
         accessory->EnterVehicle(this, seatId);
         // This is not good, we have to send update twice
         accessory->SendMovementFlagUpdate();
+
+        sScriptMgr.OnInstallAccessory(this, accessory);
     }
 }
 
@@ -340,9 +351,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
         }
     }
 
-    //if (unit->GetTypeId() == TYPEID_PLAYER)
-    //    unit->ToPlayer()->SendTeleportAckPacket();
-    //unit->SendMovementFlagUpdate();
+    sScriptMgr.OnAddPassenger(this, unit, seatId);
 
     return true;
 }
@@ -389,6 +398,8 @@ void Vehicle::RemovePassenger(Unit *unit)
     // only for flyable vehicles
     if (unit->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
         me->CastSpell(unit, 45472, true);                           // Parachute
+
+    sScriptMgr.OnRemovePassenger(this, unit);
 }
 
 void Vehicle::RelocatePassengers(float x, float y, float z, float ang)

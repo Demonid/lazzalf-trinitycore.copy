@@ -5285,7 +5285,7 @@ void ObjectMgr::LoadInstanceTemplate()
 
     for (uint32 i = 0; i < sInstanceTemplate.MaxEntry; i++)
     {
-        InstanceTemplate* temp = (InstanceTemplate*)GetInstanceTemplate(i);
+        InstanceTemplate* temp = const_cast<InstanceTemplate*>(GetInstanceTemplate(i));
         if (!temp)
             continue;
 
@@ -7530,12 +7530,12 @@ void ObjectMgr::LoadNPCSpellClickSpells()
     sLog.outString(">> Loaded %u spellclick definitions", count);
 }
 
-void ObjectMgr::LoadWeatherZoneChances()
+void ObjectMgr::LoadWeatherData()
 {
     uint32 count = 0;
 
-    //                                                0     1                   2                   3                    4                   5                   6                    7                 8                 9                  10                  11                  12
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT zone, spring_rain_chance, spring_snow_chance, spring_storm_chance, summer_rain_chance, summer_snow_chance, summer_storm_chance, fall_rain_chance, fall_snow_chance, fall_storm_chance, winter_rain_chance, winter_snow_chance, winter_storm_chance FROM game_weather");
+    //                                                0     1                   2                   3                    4                   5                   6                    7                 8                 9                  10                  11                  12                                13
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT zone, spring_rain_chance, spring_snow_chance, spring_storm_chance, summer_rain_chance, summer_snow_chance, summer_storm_chance, fall_rain_chance, fall_snow_chance, fall_storm_chance, winter_rain_chance, winter_snow_chance, winter_storm_chance, ScriptName FROM game_weather");
 
     if (!result)
     {
@@ -7557,7 +7557,7 @@ void ObjectMgr::LoadWeatherZoneChances()
 
         uint32 zone_id = fields[0].GetUInt32();
 
-        WeatherZoneChances& wzc = mWeatherZoneMap[zone_id];
+        WeatherData& wzc = mWeatherZoneMap[zone_id];
 
         for (uint8 season = 0; season < WEATHER_SEASONS; ++season)
         {
@@ -7583,6 +7583,8 @@ void ObjectMgr::LoadWeatherZoneChances()
                 sLog.outErrorDb("Weather for zone %u season %u has wrong storm chance > 100%%",zone_id,season);
             }
         }
+
+        wzc.ScriptId = objmgr.GetScriptId(fields[13].GetString());
 
         ++count;
     } while (result->NextRow());
@@ -9084,6 +9086,8 @@ void ObjectMgr::LoadScriptNames()
 {
     m_scriptNames.push_back("");
     QueryResult_AutoPtr result = WorldDatabase.Query(
+      "SELECT DISTINCT(ScriptName) FROM battleground_template WHERE ScriptName <> '' "
+      "UNION "
       "SELECT DISTINCT(ScriptName) FROM creature_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM gameobject_template WHERE ScriptName <> '' "
@@ -9093,6 +9097,14 @@ void ObjectMgr::LoadScriptNames()
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM spell_script_names WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM transports WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM game_weather WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM conditions WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM outdoorpvp_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(script) FROM instance_template WHERE script <> ''");
 
@@ -9107,8 +9119,6 @@ void ObjectMgr::LoadScriptNames()
 
     barGoLink bar(result->GetRowCount());
 
-    //OnEvent Changes
-    m_scriptNames.push_back("scripted_on_events");
     uint32 count = 1;
 
     do
@@ -9116,7 +9126,8 @@ void ObjectMgr::LoadScriptNames()
         bar.step();
         m_scriptNames.push_back((*result)[0].GetString());
         ++count;
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
     std::sort(m_scriptNames.begin(), m_scriptNames.end());
     sLog.outString();

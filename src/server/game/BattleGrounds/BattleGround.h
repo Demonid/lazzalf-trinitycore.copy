@@ -311,6 +311,8 @@ enum BGHonorMode
     BG_HONOR_MODE_NUM
 };
 
+#define BG_AWARD_ARENA_POINTS_MIN_LEVEL 71
+
 /*
 This class is used to:
 1. Add player to battleground
@@ -368,6 +370,7 @@ class BattleGround
         int32 GetStartDelayTime() const     { return m_StartDelayTime; }
         uint8 GetArenaType() const          { return m_ArenaType; }
         uint8 GetWinner() const             { return m_Winner; }
+        uint32 GetScriptId() const          { return ScriptId; }
         uint32 GetBattlemasterEntry() const;
         uint32 GetBonusHonorFromKill(uint32 kills) const;
         bool IsRandom() { return m_IsRandom; }
@@ -391,6 +394,7 @@ class BattleGround
         void SetArenaType(uint8 type)       { m_ArenaType = type; }
         void SetArenaorBGType(bool _isArena) { m_IsArena = _isArena; }
         void SetWinner(uint8 winner)        { m_Winner = winner; }
+        void SetScriptId(uint32 scriptId)   { ScriptId = scriptId; }
 
         void ModifyStartDelayTime(int diff) { m_StartDelayTime -= diff; }
         void SetStartDelayTime(int Time)    { m_StartDelayTime = Time; }
@@ -577,6 +581,7 @@ class BattleGround
         int32 m_TeamScores[BG_TEAMS_COUNT];
 
         void RewardXPAtKill(Player* plr, Player* victim);
+        bool CanAwardArenaPoints() const { return m_LevelMin >= BG_AWARD_ARENA_POINTS_MIN_LEVEL; }
 
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround
@@ -664,6 +669,7 @@ class BattleGround
         float m_TeamStartLocY[BG_TEAMS_COUNT];
         float m_TeamStartLocZ[BG_TEAMS_COUNT];
         float m_TeamStartLocO[BG_TEAMS_COUNT];
+        uint32 ScriptId;
 };
 #endif
 
