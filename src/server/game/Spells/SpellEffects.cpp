@@ -7683,13 +7683,13 @@ void Spell::EffectPlayerNotification(uint32 /*eff_idx*/)
             }
             else break;
         }
-        case 58600: // Restricted Flight Area
+        /*case 58600: // Restricted Flight Area
         {
             unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             unitTarget->PlayDirectSound(9417, unitTarget->ToPlayer()); // Fel Reaver sound
             unitTarget->MonsterTextEmote("The air over Dalaran is protected. You will be ejected in 9 sec.",unitTarget->GetGUID(),true);
             break;
-        }
+        }*/
     }   
 }
 
