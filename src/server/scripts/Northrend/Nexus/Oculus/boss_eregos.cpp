@@ -113,7 +113,7 @@ struct boss_eregosAI : public ScriptedAI
 		lSummons.DespawnAll();
 		me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		me->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+		me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
 		me->GetMotionMaster()->Clear();
 		me->GetMotionMaster()->MoveRandom(80.0f);
 		me->SetReactState(REACT_PASSIVE);
@@ -135,7 +135,7 @@ struct boss_eregosAI : public ScriptedAI
 					printf("PLANAR_ANOMALY attack uinit %s \n",pUnit->GetName());
 					summon->SetVisibility(VISIBILITY_ON);
 					summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-					summon->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+					summon->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
 				}
 			}
 		}

@@ -96,10 +96,10 @@ struct instance_oculus : public ScriptedInstance
                 break;
             case CREATURE_EREGOS:
                 uiEregos = pCreature->GetGUID();
-				pCreature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				pCreature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
 				break;
 			case CREATURE_AZURE_GUARDIAN:
-				pCreature->SetUnitMovementFlags(MOVEMENTFLAG_FLY_MODE);
+				pCreature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                 break;
 			case NPC_BELGARISTRASZ:
 				uiBera = pCreature->GetGUID();
