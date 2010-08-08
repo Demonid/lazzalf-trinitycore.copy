@@ -24,6 +24,8 @@ class DelayExecutor : protected ACE_Task_Base
 
         virtual int svc();
 
+        int respawn();
+
     private:
 
         ACE_Activation_Queue queue_;

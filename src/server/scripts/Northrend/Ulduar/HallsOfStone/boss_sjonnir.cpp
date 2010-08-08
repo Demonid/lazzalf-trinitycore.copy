@@ -81,7 +81,8 @@ static Locations PipeLocations[] =
 };
 
 static Locations CenterPoint = {1295.21, 667.157, 189.691};
-class boss_sjonnir : public CreatureScript
+
+class boss_sjonnir : public CreatureScript
 {
 public:
     boss_sjonnir() : CreatureScript("boss_sjonnir") { }
@@ -210,10 +211,11 @@ public:
         }
 
         void JustSummoned(Creature* summon)
-        {
+        {        
+        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+            summon->AI()->AttackStart(pTarget);
+        else
             summon->GetMotionMaster()->MovePoint(0, CenterPoint.x, CenterPoint.y, CenterPoint.z);
-            /*if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                summon->AI()->AttackStart(pTarget);*/
             lSummons.Summon(summon);
         }
 
@@ -244,7 +246,8 @@ public:
 
 };
 
-class mob_malformed_ooze : public CreatureScript
+
+class mob_malformed_ooze : public CreatureScript
 {
 public:
     mob_malformed_ooze() : CreatureScript("mob_malformed_ooze") { }
@@ -287,7 +290,8 @@ public:
 
 };
 
-class mob_iron_sludge : public CreatureScript
+
+class mob_iron_sludge : public CreatureScript
 {
 public:
     mob_iron_sludge() : CreatureScript("mob_iron_sludge") { }

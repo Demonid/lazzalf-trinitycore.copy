@@ -51,7 +51,8 @@ enum Yells
     SAY_DEATH                                   = -1599009,
     SAY_SHATTER                                 = -1599010
 };
-class boss_krystallus : public CreatureScript
+
+class boss_krystallus : public CreatureScript
 {
 public:
     boss_krystallus() : CreatureScript("boss_krystallus") { }
@@ -129,8 +130,8 @@ public:
             {
                 DoCast(me, SPELL_GROUND_SLAM);
                 bIsSlam = true;
-                uiShatterTimer = 10000;
-                uiGroundSlamTimer = 15000 + rand()%3000;
+                uiShatterTimer = 8000;
+                uiGroundSlamTimer = 20000 + rand()%3000;
             } else uiGroundSlamTimer -= diff;
 
             if (bIsSlam)
@@ -138,6 +139,7 @@ public:
                 if (uiShatterTimer <= diff)
                 {
                     DoCast(me, DUNGEON_MODE(SPELL_SHATTER, H_SPELL_SHATTER));
+                bIsSlam = false;
                 } else uiShatterTimer -= diff;
             }
 

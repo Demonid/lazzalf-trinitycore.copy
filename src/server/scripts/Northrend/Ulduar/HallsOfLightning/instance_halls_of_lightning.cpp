@@ -32,7 +32,8 @@ EndScriptData */
 2 - Ionar
 3 - Loken
 */
-class instance_halls_of_lightning : public InstanceMapScript
+
+class instance_halls_of_lightning : public InstanceMapScript
 {
 public:
     instance_halls_of_lightning() : InstanceMapScript("instance_halls_of_lightning") { }
@@ -100,10 +101,6 @@ public:
             {
                 case GO_BJARNGRIM_DOOR:
                     m_uiBjarngrimDoorGUID = pGo->GetGUID();
-                    if (m_auiEncounter[0] == DONE)
-                        pGo->SetGoState(GO_STATE_ACTIVE);
-                    else
-                        pGo->SetGoState(GO_STATE_READY);
                     break;
                 case GO_VOLKHAN_DOOR:
                     m_uiVolkhanDoorGUID = pGo->GetGUID();

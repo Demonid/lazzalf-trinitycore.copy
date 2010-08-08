@@ -37,6 +37,8 @@
 #include "Battleground.h"
 #include "Guild.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
 
 enum StableResultCode    
 {
@@ -413,9 +415,17 @@ void WorldSession::HandleSpiritHealerActivateOpcode(WorldPacket & recv_data)
 
 void WorldSession::SendSpiritResurrect()
 {
-    _player->ResurrectPlayer(0.5f, true);
-
-    _player->DurabilityLossAll(0.25f,true);
+    if ((_player->GetZoneId() == NORTHREND_WINTERGRASP) 
+        && ((OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP)) 
+        && ((OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))->isWarTime())
+    {
+        _player->ResurrectPlayer(1.0f);
+    }
+    else
+    {    
+        _player->ResurrectPlayer(0.5f, true);
+        _player->DurabilityLossAll(0.25f,true);
+    }
 
     // get corpse nearest graveyard
     WorldSafeLocsEntry const *corpseGrave = NULL;
