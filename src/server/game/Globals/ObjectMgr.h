@@ -40,6 +40,7 @@
 #include "ace/Singleton.h"
 #include "SQLStorage.h"
 #include "Vehicle.h"
+#include "Weather.h"
 #include "ObjectMgr.h"
 #include <string>
 #include <map>
@@ -316,20 +317,6 @@ struct QuestPoolEntry
     QuestPoolEntry(uint32 _qnum, QuestPoolVector _pool) : qnum(_qnum), pool(_pool) {}
 };
 typedef std::map<uint32, QuestPoolEntry> QuestPoolMap;
-
-#define WEATHER_SEASONS 4
-struct WeatherSeasonChances
-{
-    uint32 rainChance;
-    uint32 snowChance;
-    uint32 stormChance;
-};
-
-struct WeatherData
-{
-    WeatherSeasonChances data[WEATHER_SEASONS];
-    uint32 ScriptId;
-};
 
 struct GraveYardData
 {
