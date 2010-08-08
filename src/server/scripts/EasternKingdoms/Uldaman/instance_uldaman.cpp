@@ -33,9 +33,9 @@ class instance_uldaman : public InstanceMapScript
         {
         }
 
-        struct instance_uldaman_InstanceMapScript : public ScriptedInstance
+        struct instance_uldaman_InstanceMapScript : public InstanceScript
         {
-            instance_uldaman_InstanceMapScript(Map* pMap) : ScriptedInstance(pMap)
+            instance_uldaman_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
             {
                 Initialize();
             };
@@ -289,8 +289,8 @@ class instance_uldaman : public InstanceMapScript
                 return 0;
             } // end GetData64
         };
-        
-        InstanceData* OnGetInstanceData(InstanceMap* pMap)
+
+        InstanceScript* OnGetInstanceData(InstanceMap* pMap)
         {
             return new instance_uldaman_InstanceMapScript(pMap);
         }

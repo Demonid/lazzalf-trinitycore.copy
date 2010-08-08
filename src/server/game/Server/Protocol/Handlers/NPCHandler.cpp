@@ -40,7 +40,7 @@
 #include "OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 
-enum StableResultCode	
+enum StableResultCode    
 {
     STABLE_ERR_MONEY        = 0x01,                         // "you don't have enough money"
     STABLE_ERR_STABLE       = 0x06,                         // currently used in most fail cases
@@ -386,7 +386,7 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket & recv_data)
     }
     else
     {
-        if (!Script->GossipSelect (_player, unit, _player->PlayerTalkClass->GossipOptionSender (option), _player->PlayerTalkClass->GossipOptionAction (option)))
+        if (!Script->OnGossipSelect (_player, unit, _player->PlayerTalkClass->GossipOptionSender (option), _player->PlayerTalkClass->GossipOptionAction (option)))
            unit->OnGossipSelect (_player, option);
     }
 }*/

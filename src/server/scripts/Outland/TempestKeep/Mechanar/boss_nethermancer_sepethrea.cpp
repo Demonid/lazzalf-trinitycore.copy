@@ -45,7 +45,7 @@ enum eSpells
     SPELL_DRAGONS_BREATH           = 35250,
     SPELL_KNOCKBACK                = 37317,
     SPELL_SOLARBURN                = 35267,
-    H_SPELL_SUMMON_RAGIN_FLAMES    = 39084,   
+    H_SPELL_SUMMON_RAGIN_FLAMES    = 39084,
     SPELL_INFERNO                  = 35268,
     H_SPELL_INFERNO                = 39346,
     SPELL_FIRE_TAIL                = 35278,
@@ -63,17 +63,17 @@ class boss_nethermancer_sepethrea : public CreatureScript
         {
             boss_nethermancer_sepethreaAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceData();
+                pInstance = pCreature->GetInstanceScript();
             }
-            
-            ScriptedInstance *pInstance;
-            
+
+            InstanceScript *pInstance;
+
             uint32 frost_attack_Timer;
             uint32 arcane_blast_Timer;
             uint32 dragons_breath_Timer;
             uint32 knockback_Timer;
             uint32 solarburn_Timer;
-            
+
             void Reset()
             {
                 frost_attack_Timer = 7000 + rand()%3000;
@@ -121,17 +121,17 @@ class boss_nethermancer_sepethrea : public CreatureScript
                     DoCast(me->getVictim(), SPELL_FROST_ATTACK);
 
                     frost_attack_Timer = 7000 + rand()%3000;
-                } 
-                else 
+                }
+                else
                     frost_attack_Timer -= diff;
 
-                //Arcane Blast       
+                //Arcane Blast
                 if (arcane_blast_Timer <= diff)
                 {
                     DoCast(me->getVictim(), SPELL_ARCANE_BLAST);
                     arcane_blast_Timer = 15000;
-                } 
-                else 
+                }
+                else
                     arcane_blast_Timer -= diff;
                 //Dragons Breath
                 if (dragons_breath_Timer <= diff)
@@ -143,8 +143,8 @@ class boss_nethermancer_sepethrea : public CreatureScript
                         DoScriptText(RAND(SAY_DRAGONS_BREATH_1,SAY_DRAGONS_BREATH_2), me);
                     }
                     dragons_breath_Timer = 12000 + rand()%10000;
-                } 
-                else 
+                }
+                else
                     dragons_breath_Timer -= diff;
 
                 //Knockback
@@ -152,8 +152,8 @@ class boss_nethermancer_sepethrea : public CreatureScript
                 {
                     DoCast(me->getVictim(), SPELL_KNOCKBACK);
                     knockback_Timer = 15000 + rand()%10000;
-                } 
-                else 
+                }
+                else
                     knockback_Timer -= diff;
 
                 //Solarburn
@@ -161,13 +161,13 @@ class boss_nethermancer_sepethrea : public CreatureScript
                 {
                     DoCast(me->getVictim(), SPELL_SOLARBURN);
                     solarburn_Timer = 30000;
-                } 
-                else 
+                }
+                else
                     solarburn_Timer -= diff;
 
                 DoMeleeAttackIfReady();
             }
-        };  
+        };
 
         CreatureAI* GetAI(Creature* creature) const
         {
@@ -186,10 +186,10 @@ class mob_ragin_flames : public CreatureScript
             {
                 mob_ragin_flamesAI(Creature* pCreature) : ScriptedAI(pCreature)
                 {
-                    pInstance = pCreature->GetInstanceData();
+                    pInstance = pCreature->GetInstanceScript();
                 }
 
-                ScriptedInstance *pInstance;
+                InstanceScript *pInstance;
 
                 uint32 inferno_Timer;
                 uint32 flame_timer;
@@ -259,7 +259,7 @@ class mob_ragin_flames : public CreatureScript
             CreatureAI* GetAI(Creature* creature) const
             {
                 return new mob_ragin_flamesAI(creature);
-            }        
+            }
 };
 void AddSC_boss_nethermancer_sepethrea()
 {

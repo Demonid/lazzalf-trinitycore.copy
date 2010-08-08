@@ -105,6 +105,7 @@ void MapManager::LoadTransports()
 
         //If we someday decide to use the grid to track transports, here:
         t->SetMap(sMapMgr.CreateMap(mapid, t, 0));
+        t->AddToWorld();
 
         for (TransportNPCSet::const_iterator i = m_TransportNPCMap[entry].begin(); i != m_TransportNPCMap[entry].end(); ++i)
         {
@@ -250,7 +251,7 @@ bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids)
         return false;
 
     TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathid];
-    
+
     std::vector<keyFrame> keyFrames;
     int mapChange = 0;
     mapids.clear();
@@ -506,17 +507,19 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
     }
     m_NPCPassengerSet.clear();
 
+    RemoveFromWorld();
     ResetMap();
     Map * newMap = sMapMgr.CreateMap(newMapid, this, 0);
     SetMap(newMap);
     ASSERT (GetMap());
+    AddToWorld();
 
     if (oldMap != newMap)
     {
         UpdateForMap(oldMap);
         UpdateForMap(newMap);
     }
-    
+
     for (std::set<TransportCreatureProto *>::const_iterator i = sMapMgr.m_TransportNPCMap[GetEntry()].begin(); i != sMapMgr.m_TransportNPCMap[GetEntry()].end(); ++i)
     {
         TransportCreatureProto *proto = (*i);
@@ -660,7 +663,7 @@ uint32 Transport::AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, 
     pCreature->Relocate(
         GetPositionX() + (x * cos(GetOrientation()) + y * sin(GetOrientation() + M_PI)),
         GetPositionY() + (y * cos(GetOrientation()) + x * sin(GetOrientation())),
-        z + GetPositionZ() , 
+        z + GetPositionZ() ,
         o + GetOrientation());
 
     if(!pCreature->IsPositionValid())

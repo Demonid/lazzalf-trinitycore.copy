@@ -57,10 +57,10 @@ class boss_hakkar : public CreatureScript
         {
             boss_hakkarAI(Creature *c) : ScriptedAI(c)
             {
-                m_pInstance = c->GetInstanceData();
+                m_pInstance = c->GetInstanceScript();
             }
 
-            ScriptedInstance *m_pInstance;
+            InstanceScript *m_pInstance;
 
             uint32 BloodSiphon_Timer;
             uint32 CorruptedBlood_Timer;
@@ -244,7 +244,7 @@ class boss_hakkar : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-        
+
         CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_hakkarAI(creature);

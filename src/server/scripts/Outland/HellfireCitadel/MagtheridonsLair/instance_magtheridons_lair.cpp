@@ -29,7 +29,7 @@ EndScriptData */
 enum eSpells
 {
     SPELL_SOUL_TRANSFER        = 30531, // core bug, does not support target 7
-    SPELL_BLAZE_TARGET         = 30541, // core bug, does not support target 7   
+    SPELL_BLAZE_TARGET         = 30541, // core bug, does not support target 7
 };
 
 #define CHAMBER_CENTER_X            -15.14
@@ -48,9 +48,9 @@ class instance_magtheridons_lair : public InstanceMapScript
         {
         }
 
-        struct instance_magtheridons_lair_InstanceMapScript : public ScriptedInstance
+        struct instance_magtheridons_lair_InstanceMapScript : public InstanceScript
         {
-            instance_magtheridons_lair_InstanceMapScript(Map* pMap) : ScriptedInstance(pMap)
+            instance_magtheridons_lair_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
             {
                 Initialize();
             }
@@ -251,7 +251,7 @@ class instance_magtheridons_lair : public InstanceMapScript
             }
         };
 
-        InstanceData* GetInstanceData(Map* pMap) const
+        InstanceScript* GetInstanceScript(Map* pMap) const
         {
             return new instance_magtheridons_lair_InstanceMapScript(pMap);
         }

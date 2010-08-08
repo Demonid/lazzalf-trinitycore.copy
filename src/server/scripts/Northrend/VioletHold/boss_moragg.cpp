@@ -26,75 +26,85 @@ enum Spells
     SPELL_RAY_OF_PAIN                          = 59525
 };
 
-struct boss_moraggAI : public ScriptedAI
+class boss_moragg : public CreatureScript
 {
-    boss_moraggAI(Creature *c) : ScriptedAI(c)
+public:
+    boss_moragg() : CreatureScript("boss_moragg") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
     {
-        pInstance = c->GetInstanceData();
+        return new boss_moraggAI (pCreature);
     }
 
-    uint32 uiOpticLinkTimer;
-    uint32 uiCorrosiveSalivaTimer;
+    struct boss_moraggAI : public ScriptedAI
+    {
+        boss_moraggAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        uint32 uiOpticLinkTimer;
+        uint32 uiCorrosiveSalivaTimer;
     uint32 uiRayOfPainTimer;
 
-    ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
 
-    void Reset()
-    {
-        uiOpticLinkTimer = 10000;
-        uiCorrosiveSalivaTimer = 5000;
+        void Reset()
+        {
+            uiOpticLinkTimer = 10000;
+            uiCorrosiveSalivaTimer = 5000;
         uiRayOfPainTimer = 8000; // Not Offy-Like
 
-        if (pInstance)
-        {
-            if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
-                pInstance->SetData(DATA_1ST_BOSS_EVENT, NOT_STARTED);
-            else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
-                pInstance->SetData(DATA_2ND_BOSS_EVENT, NOT_STARTED);
+            if (pInstance)
+            {
+                if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
+                    pInstance->SetData(DATA_1ST_BOSS_EVENT, NOT_STARTED);
+                else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
+                    pInstance->SetData(DATA_2ND_BOSS_EVENT, NOT_STARTED);
+            }
         }
-    }
 
-    void EnterCombat(Unit* /*who*/)
-    {
-        if (pInstance)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (GameObject *pDoor = pInstance->instance->GetGameObject(pInstance->GetData64(DATA_MORAGG_CELL)))
-                if (pDoor->GetGoState() == GO_STATE_READY)
-               {
-                    EnterEvadeMode();
-                    return;
-                }
-            if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
-                pInstance->SetData(DATA_1ST_BOSS_EVENT, IN_PROGRESS);
-            else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
-                pInstance->SetData(DATA_2ND_BOSS_EVENT, IN_PROGRESS);
+            if (pInstance)
+            {
+                if (GameObject *pDoor = pInstance->instance->GetGameObject(pInstance->GetData64(DATA_MORAGG_CELL)))
+                    if (pDoor->GetGoState() == GO_STATE_READY)
+                   {
+                        EnterEvadeMode();
+                        return;
+                    }
+                if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
+                    pInstance->SetData(DATA_1ST_BOSS_EVENT, IN_PROGRESS);
+                else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
+                    pInstance->SetData(DATA_2ND_BOSS_EVENT, IN_PROGRESS);
+            }
         }
-    }
 
-    void AttackStart(Unit* pWho)
-    {
-        if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        if (me->Attack(pWho, true))
+        void AttackStart(Unit* pWho)
         {
-            me->AddThreat(pWho, 0.0f);
-            me->SetInCombatWith(pWho);
-            pWho->SetInCombatWith(me);
-            DoStartMovement(pWho);
+            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+                return;
+
+            if (me->Attack(pWho, true))
+            {
+                me->AddThreat(pWho, 0.0f);
+                me->SetInCombatWith(pWho);
+                pWho->SetInCombatWith(me);
+                DoStartMovement(pWho);
+            }
         }
-    }
 
-    void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        //Return since we have no target
-        if (!UpdateVictim())
-            return;
-
-        if (uiOpticLinkTimer <= diff)
+        void UpdateAI(const uint32 diff)
         {
+            //Return since we have no target
+            if (!UpdateVictim())
+                return;
+
+            if (uiOpticLinkTimer <= diff)
+            {
             // Hack per Optical Link (Hack from Loken script)
             Map* pMap = me->GetMap();
             if (pMap->IsDungeon())
@@ -119,13 +129,13 @@ struct boss_moraggAI : public ScriptedAI
                     }
             }
             uiOpticLinkTimer = 25000;
-        } else uiOpticLinkTimer -= diff;
+            } else uiOpticLinkTimer -= diff;
 
-        if (uiCorrosiveSalivaTimer <= diff)
-        {
-            DoCast(me->getVictim(), SPELL_CORROSIVE_SALIVA);
-            uiCorrosiveSalivaTimer = 10000;
-        } else uiCorrosiveSalivaTimer -= diff;
+            if (uiCorrosiveSalivaTimer <= diff)
+            {
+                DoCast(me->getVictim(), SPELL_CORROSIVE_SALIVA);
+                uiCorrosiveSalivaTimer = 10000;
+            } else uiCorrosiveSalivaTimer -= diff;
 
         if (uiRayOfPainTimer <= diff)
         { 
@@ -133,37 +143,30 @@ struct boss_moraggAI : public ScriptedAI
             uiRayOfPainTimer = 12000;
         } else uiRayOfPainTimer -= diff;
 
-        DoMeleeAttackIfReady();
-    }
-    void JustDied(Unit* /*killer*/)
-    {
-        if (pInstance)
+            DoMeleeAttackIfReady();
+        }
+        void JustDied(Unit* /*killer*/)
         {
-            if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
+            if (pInstance)
             {
-                pInstance->SetData(DATA_1ST_BOSS_EVENT, DONE);
-                pInstance->SetData(DATA_WAVE_COUNT, 7);
-            }
-            else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
-            {
-                pInstance->SetData(DATA_2ND_BOSS_EVENT, DONE);
-                pInstance->SetData(DATA_WAVE_COUNT,13);
+                if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
+                {
+                    pInstance->SetData(DATA_1ST_BOSS_EVENT, DONE);
+                    pInstance->SetData(DATA_WAVE_COUNT, 7);
+                }
+                else if (pInstance->GetData(DATA_WAVE_COUNT) == 12)
+                {
+                    pInstance->SetData(DATA_2ND_BOSS_EVENT, DONE);
+                    pInstance->SetData(DATA_WAVE_COUNT,13);
+                }
             }
         }
-    }
+    };
+
 };
 
-CreatureAI* GetAI_boss_moragg(Creature* pCreature)
-{
-    return new boss_moraggAI (pCreature);
-}
 
 void AddSC_boss_moragg()
 {
-    Script *newscript;
-
-    newscript = new Script;
-    newscript->Name = "boss_moragg";
-    newscript->GetAI = &GetAI_boss_moragg;
-    newscript->RegisterSelf();
+    new boss_moragg();
 }

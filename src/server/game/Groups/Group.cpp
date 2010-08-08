@@ -1462,7 +1462,7 @@ void Group::ChangeMembersGroup(Player *player, const uint8 &group)
 {
     if (!player || !isRaidGroup())
         return;
-        
+
     uint8 prevSubGroup = player->GetSubGroup();
     if (prevSubGroup == group)
         return;
@@ -1825,12 +1825,12 @@ InstanceGroupBind* Group::GetBoundInstance(MapEntry const* mapEntry)
 {
     if (!mapEntry)
         return NULL;
-    
+
     Difficulty difficulty = GetDifficulty(mapEntry->IsRaid());
-    
+
     // some instances only have one difficulty
     MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(mapEntry->MapID,difficulty);
-    
+
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapEntry->MapID);
     if (itr != m_boundInstances[difficulty].end())
         return &itr->second;

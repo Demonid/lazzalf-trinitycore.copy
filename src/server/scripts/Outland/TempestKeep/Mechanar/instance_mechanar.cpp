@@ -35,18 +35,18 @@ class instance_mechanar : public InstanceMapScript
             : InstanceMapScript("instance_mechanar")
         {
         }
-        
-        struct instance_mechanar_InstanceMapScript : public ScriptedInstance
+
+        struct instance_mechanar_InstanceMapScript : public InstanceScript
         {
-            instance_mechanar_InstanceMapScript(Map* pMap) : ScriptedInstance(pMap) { Initialize(); };
-            
+            instance_mechanar_InstanceMapScript(Map* pMap) : InstanceScript(pMap) { Initialize(); };
+
             uint32 m_auiEncounter[MAX_ENCOUNTER];
-            
+
             void Initialize()
             {
                 memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
             }
-            
+
             bool IsEncounterInProgress() const
             {
                 for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
@@ -55,7 +55,7 @@ class instance_mechanar : public InstanceMapScript
 
                 return false;
             }
-            
+
             uint32 GetData(uint32 type)
             {
                 switch(type)
@@ -79,11 +79,11 @@ class instance_mechanar : public InstanceMapScript
                 }
             }
         };
-            InstanceData* GetInstanceData(InstanceMap* pMap) const
+            InstanceScript* GetInstanceScript(InstanceMap* pMap) const
             {
                 return new instance_mechanar_InstanceMapScript(pMap);
             }
-        
+
 };
 
 

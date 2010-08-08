@@ -61,10 +61,10 @@ class boss_arlokk : public CreatureScript
         {
             boss_arlokkAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                m_pInstance = pCreature->GetInstanceData();
+                m_pInstance = pCreature->GetInstanceScript();
             }
 
-            ScriptedInstance* m_pInstance;
+            InstanceScript* m_pInstance;
 
             uint32 m_uiShadowWordPain_Timer;
             uint32 m_uiGouge_Timer;
@@ -265,13 +265,13 @@ class boss_arlokk : public CreatureScript
 class go_gong_of_bethekk : public GameObjectScript
 {
     public:
-        go_gong_of_bethekk() : GameObjectScript("go_gong_of_bethekk") 
+        go_gong_of_bethekk() : GameObjectScript("go_gong_of_bethekk")
         {
         }
 
         bool OnGossipHello(Player* /*pPlayer*/, GameObject* pGo)
         {
-            if (ScriptedInstance* m_pInstance = pGo->GetInstanceData())
+            if (InstanceScript* m_pInstance = pGo->GetInstanceScript())
             {
                 if (m_pInstance->GetData(TYPE_ARLOKK) == DONE || m_pInstance->GetData(TYPE_ARLOKK) == IN_PROGRESS)
                     return true;

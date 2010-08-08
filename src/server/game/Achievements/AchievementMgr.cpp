@@ -38,7 +38,7 @@
 #include "Battleground.h"
 #include "BattlegroundAB.h"
 #include "Map.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 
 namespace Trinity
 {
@@ -344,7 +344,7 @@ bool AchievementCriteriaData::Meets(uint32 criteria_id, Player const* source, Un
                     ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT, criteria_id, map->GetId());
                     return false;
             }
-            InstanceData* data = ((InstanceMap*)map)->GetInstanceData();
+            InstanceScript* data = ((InstanceMap*)map)->GetInstanceScript();
             if (!data)
             {
                 sLog.outErrorDb("Achievement system call ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT (%u) for achievement criteria %u for map %u but map does not have a instance script",
@@ -886,7 +886,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 }
 
                 ProgressType progressType;
-                if (!progress) 
+                if (!progress)
                     // 1st time. Start count.
                     progressType = PROGRESS_SET;
                 else if (progress->date < (nextDailyResetTime - 2 * DAY))
@@ -2098,7 +2098,7 @@ void AchievementGlobalMgr::LoadAchievementCriteriaData()
 {
     m_criteriaDataMap.clear();                              // need for reload case
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT criteria_id, type, value1, value2 FROM achievement_criteria_data");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT criteria_id, type, value1, value2, ScriptName FROM achievement_criteria_data");
 
     if (!result)
     {
@@ -2129,7 +2129,7 @@ void AchievementGlobalMgr::LoadAchievementCriteriaData()
         uint32 dataType = fields[1].GetUInt32();
         const char* scriptName = fields[4].GetString();
         uint32 scriptId = 0;
-        if (scriptName)
+        if (scriptName != "")
         {
             if (dataType != ACHIEVEMENT_CRITERIA_DATA_TYPE_SCRIPT)
                 sLog.outErrorDb("Table `achievement_criteria_data` has ScriptName set for non-scripted data type (Entry: %u, type %u), useless data.", criteria_id, dataType);

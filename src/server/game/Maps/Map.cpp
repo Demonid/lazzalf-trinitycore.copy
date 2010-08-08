@@ -25,7 +25,7 @@
 #include "Log.h"
 #include "GridStates.h"
 #include "CellImpl.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "Map.h"
 #include "GridNotifiersImpl.h"
 #include "Config.h"
@@ -2267,7 +2267,7 @@ bool InstanceMap::CanEnter(Player *player)
     // cannot enter while an encounter is in progress on raids
     /*Group *pGroup = player->GetGroup();
     if (!player->isGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())*/
-    if (/*IsRaid() && */ GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
+    if (/*IsRaid() &&*/ GetInstanceScript() && GetInstanceScript()->IsEncounterInProgress())
     {
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
@@ -2757,9 +2757,9 @@ inline Player* Map::_GetScriptPlayerSourceOrTarget(Object* source, Object* targe
             pPlayer = source->ToPlayer();
 
         if (!pPlayer)
-            sLog.outError("%s (script id: %u) neither source nor target object is player (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.", 
+            sLog.outError("%s (script id: %u) neither source nor target object is player (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.",
                 sCommandName, unScriptID,
-                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0, 
+                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0,
                 target ? target->GetTypeId() : 0, target ? target->GetEntry() : 0, target ? target->GetGUIDLow() : 0);
     }
     return pPlayer;
@@ -2790,9 +2790,9 @@ inline Creature* Map::_GetScriptCreatureSourceOrTarget(Object* source, Object* t
         }
 
         if (!pCreature)
-            sLog.outError("%s (script id: %u) neither source nor target are creatures (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.", 
+            sLog.outError("%s (script id: %u) neither source nor target are creatures (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.",
                 sCommandName, unScriptID,
-                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0, 
+                source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0,
                 target ? target->GetTypeId() : 0, target ? target->GetEntry() : 0, target ? target->GetGUIDLow() : 0);
     }
     return pCreature;
@@ -2876,13 +2876,13 @@ inline void Map::_ScriptProcessDoor(Object* source, Object* target, bool bOpen, 
         if (!wSource)
             sLog.outError("%s (script id: %u) source object could not be casted to world object (TypeId: %u, Entry: %u, GUID: %u), skipping.",
                 sCommandName, unScriptID, source->GetTypeId(), source->GetEntry(), source->GetGUIDLow());
-        else 
+        else
         {
             GameObject *pDoor = _FindGameObject(wSource, guid);
             if (!pDoor)
                 sLog.outError("%s (script id: %u) gameobject was not found (guid: %u).", sCommandName, unScriptID, guid);
             else if (pDoor->GetGoType() != GAMEOBJECT_TYPE_DOOR)
-                sLog.outError("%s (script id: %u) gameobject is not a door (GoType: %u, Entry: %u, GUID: %u).", 
+                sLog.outError("%s (script id: %u) gameobject is not a door (GoType: %u, Entry: %u, GUID: %u).",
                     sCommandName, unScriptID, pDoor->GetGoType(), pDoor->GetEntry(), pDoor->GetGUIDLow());
             else if (bOpen == (pDoor->GetGoState() == GO_STATE_READY))
             {
@@ -3128,7 +3128,7 @@ void Map::ScriptsProcess()
                             cSource->NearTeleportTo(step.script->x, step.script->y, step.script->z, step.script->o);
                         break;
                     default:
-                        sLog.outError("SCRIPT_COMMAND_TELEPORT_TO (script id: %u) unknown datalong2 flag (%u), skipping.", 
+                        sLog.outError("SCRIPT_COMMAND_TELEPORT_TO (script id: %u) unknown datalong2 flag (%u), skipping.",
                             step.script->id, step.script->datalong2);
                 }
                 break;
@@ -3150,7 +3150,7 @@ void Map::ScriptsProcess()
                 if (WorldObject* pSummoner = _GetScriptWorldObject(source, true, step.script->id, "SCRIPT_COMMAND_TEMP_SUMMON_CREATURE"))
                 {
                     if (!step.script->datalong)
-                        sLog.outError("SCRIPT_COMMAND_TEMP_SUMMON_CREATURE (script id: %u) creature entry (datalong) is not specified.", 
+                        sLog.outError("SCRIPT_COMMAND_TEMP_SUMMON_CREATURE (script id: %u) creature entry (datalong) is not specified.",
                             step.script->id);
                     else
                     {
@@ -3160,7 +3160,7 @@ void Map::ScriptsProcess()
                         float o = step.script->o;
 
                         if (pSummoner->SummonCreature(step.script->datalong, x, y, z, o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, step.script->datalong2))
-                            sLog.outError("SCRIPT_COMMAND_TEMP_SUMMON (script id: %u) creature was not spawned (entry: %u).", 
+                            sLog.outError("SCRIPT_COMMAND_TEMP_SUMMON (script id: %u) creature was not spawned (entry: %u).",
                                 step.script->id, step.script->datalong);
                     }
                 }
@@ -3180,7 +3180,7 @@ void Map::ScriptsProcess()
                     GameObject *pGO = _FindGameObject(pSummoner, step.script->datalong);
                     if (!pGO)
                     {
-                        sLog.outError("SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (script id: %u) gameobject was not found (guid: %u).", 
+                        sLog.outError("SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (script id: %u) gameobject was not found (guid: %u).",
                             step.script->id, step.script->datalong);
                         break;
                     }
@@ -3190,7 +3190,7 @@ void Map::ScriptsProcess()
                         pGO->GetGoType() == GAMEOBJECT_TYPE_BUTTON      ||
                         pGO->GetGoType() == GAMEOBJECT_TYPE_TRAP)
                     {
-                        sLog.outError("SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (script id: %u) can not be used with gameobject of type %u (guid: %u).", 
+                        sLog.outError("SCRIPT_COMMAND_RESPAWN_GAMEOBJECT (script id: %u) can not be used with gameobject of type %u (guid: %u).",
                             step.script->id, uint32(pGO->GetGoType()), step.script->datalong);
                         break;
                     }
@@ -3253,15 +3253,15 @@ void Map::ScriptsProcess()
                 }
                 else
                 {
-                    sLog.outError("SCRIPT_COMMAND_QUEST_EXPLORED (script id %u) neither source nor target is player (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.", 
+                    sLog.outError("SCRIPT_COMMAND_QUEST_EXPLORED (script id %u) neither source nor target is player (source: TypeId: %u, Entry: %u, GUID: %u; target: TypeId: %u, Entry: %u, GUID: %u), skipping.",
                         step.script->id,
-                        source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0, 
+                        source ? source->GetTypeId() : 0, source ? source->GetEntry() : 0, source ? source->GetGUIDLow() : 0,
                         target ? target->GetTypeId() : 0, target ? target->GetEntry() : 0, target ? target->GetGUIDLow() : 0);
                     break;
                 }
 
                 // quest id and flags checked at script loading
-                if ((worldObject->GetTypeId() != TYPEID_UNIT || ((Unit*)worldObject)->isAlive()) && 
+                if ((worldObject->GetTypeId() != TYPEID_UNIT || ((Unit*)worldObject)->isAlive()) &&
                     (step.script->datalong2 == 0 || worldObject->IsWithinDistInMap(pTarget, float(step.script->datalong2))))
                     pTarget->AreaExploredOrEventHappens(step.script->datalong);
                 else
@@ -3487,7 +3487,7 @@ void Map::ScriptsProcess()
                 if (Creature *cSource = _GetScriptCreatureSourceOrTarget(source, target, step.script->id, "SCRIPT_COMMAND_KILL"))
                 {
                     if (cSource->isDead())
-                        sLog.outError("SCRIPT_COMMAND_KILL (script id: %u) creature is already dead (Entry: %u, GUID: %u)", 
+                        sLog.outError("SCRIPT_COMMAND_KILL (script id: %u) creature is already dead (Entry: %u, GUID: %u)",
                             step.script->id, cSource->GetEntry(), cSource->GetGUIDLow());
                     else
                     {

@@ -29,7 +29,7 @@
 #include "GameEventMgr.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "SpellMgr.h"
 #include "CreatureAIImpl.h"
 #include "ConditionMgr.h"
@@ -708,7 +708,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_SET_INST_DATA:
         {
-            InstanceData* pInst = (InstanceData*)me->GetInstanceData();
+            InstanceScript* pInst = (InstanceScript*)me->GetInstanceScript();
             if (!pInst)
             {
                 sLog.outErrorDb("CreatureEventAI: Event %d attempt to set instance data without instance script. Creature %d", EventId, me->GetEntry());
@@ -727,7 +727,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 return;
             }
 
-            InstanceData* pInst = (InstanceData*)me->GetInstanceData();
+            InstanceScript* pInst = (InstanceScript*)me->GetInstanceScript();
             if (!pInst)
             {
                 sLog.outErrorDb("CreatureEventAI: Event %d attempt to set instance data64 without instance script. Creature %d", EventId, me->GetEntry());
@@ -1332,10 +1332,10 @@ void CreatureEventAI::ReceiveEmote(Player* pPlayer, uint32 text_emote)
                 return;
 
             Condition cond;
-            cond.mConditionType = ConditionType((*itr).Event.receive_emote.condition);            
+            cond.mConditionType = ConditionType((*itr).Event.receive_emote.condition);
             cond.mConditionValue1 = (*itr).Event.receive_emote.conditionValue1;
             cond.mConditionValue2 = (*itr).Event.receive_emote.conditionValue2;
-            
+
             if (cond.Meets(pPlayer))
             {
                 sLog.outDebug("CreatureEventAI: ReceiveEmote CreatureEventAI: Condition ok, processing");

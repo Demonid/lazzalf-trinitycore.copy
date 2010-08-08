@@ -37,8 +37,21 @@ enum eEnums
 };
 
 //definizione della struttura instance
-struct instance_trial_of_the_champion : public ScriptedInstance
+class instance_trial_of_the_champion : public InstanceMapScript
 {
+    public:
+    instance_trial_of_the_champion() : InstanceMapScript("instance_trial_of_the_champion") { }
+
+    InstanceScript* GetInstanceData_InstanceMapScript(Map* pMap)
+    {
+        return new instance_trial_of_the_champion_InstanceMapScript(pMap);
+    }
+
+    struct instance_trial_of_the_champion_InstanceMapScript : public InstanceScript
+    {
+        instance_trial_of_the_champion_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {Initialize();}
+
+
     instance_trial_of_the_champion(Map* pMap) : ScriptedInstance(pMap) {Initialize();}
     //4 incontri
     uint32 m_auiEncounter[MAX_ENCOUNTER];
@@ -101,7 +114,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
-        //true se Ã¨ in progress almeno un incontro
+        //true se è in progress almeno un incontro
     bool IsEncounterInProgress() const
     {
 
@@ -521,20 +534,17 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }
-};
+}
 
 InstanceData* GetInstanceData_instance_trial_of_the_champion(Map* pMap)
 {
     return new instance_trial_of_the_champion(pMap);
 }
+};
 
 //registrazione script
 void AddSC_instance_trial_of_the_champion()
 {
-    Script *newscript;
-    newscript = new Script;
-    newscript->Name = "instance_trial_of_the_champion";
-    newscript->GetInstanceData = &GetInstanceData_instance_trial_of_the_champion;
-    newscript->RegisterSelf();
+    new instance_trial_of_the_champion();
 }
 

@@ -202,9 +202,8 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
 {
     sLog.outDebug("WORLD: Received CMSG_MOVE_SPLINE_DONE");
 
-    uint64 guid;                                            // used only for proper packet read
-    if (!recv_data.readPackGUID(guid))
-        return;
+    uint64 guid; // used only for proper packet read
+    recv_data.readPackGUID(guid);
 
     // movement anticheat code
     const Unit *mover = _player->m_mover;

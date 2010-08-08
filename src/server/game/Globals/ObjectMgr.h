@@ -383,7 +383,7 @@ class ObjectMgr
     friend class ACE_Singleton<ObjectMgr, ACE_Null_Mutex>;
     ObjectMgr();
     ~ObjectMgr();
-    
+
     public:
         typedef UNORDERED_MAP<uint32, Item*> ItemMap;
 

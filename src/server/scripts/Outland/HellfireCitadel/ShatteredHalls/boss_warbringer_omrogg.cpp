@@ -164,10 +164,10 @@ class boss_warbringer_omrogg : public CreatureScript
             {
                 LeftHeadGUID  = 0;
                 RightHeadGUID = 0;
-                pInstance = pCreature->GetInstanceData();
+                pInstance = pCreature->GetInstanceScript();
             }
 
-            ScriptedInstance* pInstance;
+            InstanceScript* pInstance;
 
             uint64 LeftHeadGUID;
             uint64 RightHeadGUID;
@@ -367,7 +367,7 @@ class boss_warbringer_omrogg : public CreatureScript
                     if (BlastCount == 3)
                         BlastCount = 0;
                 }
-                else 
+                else
                     BlastWave_Timer -= diff;
 
                 if (BurningMaul_Timer <= diff)
@@ -377,8 +377,8 @@ class boss_warbringer_omrogg : public CreatureScript
                     BurningMaul_Timer = 40000;
                     BlastWave_Timer = 16000;
                     BlastCount = 1;
-                } 
-                else 
+                }
+                else
                     BurningMaul_Timer -= diff;
 
                 if (ResetThreat_Timer <= diff)
@@ -390,7 +390,7 @@ class boss_warbringer_omrogg : public CreatureScript
                         me->AddThreat(pTarget, 0.0f);
                     }
                     ResetThreat_Timer = 25000+rand()%15000;
-                } 
+                }
                 else
                     ResetThreat_Timer -= diff;
 
@@ -398,7 +398,7 @@ class boss_warbringer_omrogg : public CreatureScript
                 {
                     DoCast(me, SPELL_FEAR);
                     Fear_Timer = 15000+rand()%20000;
-                } 
+                }
                 else
                     Fear_Timer -= diff;
 
@@ -407,14 +407,14 @@ class boss_warbringer_omrogg : public CreatureScript
                     DoCast(me, SPELL_THUNDERCLAP);
                     ThunderClap_Timer = 15000+rand()%15000;
                 }
-                else 
+                else
                     ThunderClap_Timer -= diff;
 
                 DoMeleeAttackIfReady();
             }
         };
 
-        CreatureAI* GetAI_boss_warbringer_omrogg(Creature* pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
             return new boss_warbringer_omroggAI (pCreature);
         }

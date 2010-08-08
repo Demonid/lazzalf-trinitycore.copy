@@ -64,8 +64,7 @@ void AddSC_boss_magmus();
 void AddSC_boss_moira_bronzebeard();
 void AddSC_boss_tomb_of_seven();
 void AddSC_instance_blackrock_depths();
-void AddSC_blackrock_spire();                //Blackrock Spire
-void AddSC_boss_drakkisath();
+void AddSC_boss_drakkisath();                //Blackrock Spire
 void AddSC_boss_halycon();
 void AddSC_boss_highlordomokk();
 void AddSC_boss_mothersmolderweb();
@@ -77,7 +76,6 @@ void AddSC_boss_quatermasterzigris();
 void AddSC_boss_pyroguard_emberseer();
 void AddSC_boss_gyth();
 void AddSC_boss_rend_blackhand();
-void AddSC_instance_blackrock_spire();
 void AddSC_boss_razorgore();                 //Blackwing lair
 void AddSC_boss_vael();
 void AddSC_boss_broodlord();
@@ -537,7 +535,6 @@ void AddSC_shadowmoon_valley();
 void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
-void AddSC_onevents();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -653,8 +650,7 @@ void AddEasternKingdomsScripts()
     AddSC_boss_moira_bronzebeard();
     AddSC_boss_tomb_of_seven();
     AddSC_instance_blackrock_depths();
-    AddSC_blackrock_spire();                //Blackrock Spire
-    AddSC_boss_drakkisath();
+    AddSC_boss_drakkisath();                //Blackrock Spire
     AddSC_boss_halycon();
     AddSC_boss_highlordomokk();
     AddSC_boss_mothersmolderweb();
@@ -666,7 +662,6 @@ void AddEasternKingdomsScripts()
     AddSC_boss_pyroguard_emberseer();
     AddSC_boss_gyth();
     AddSC_boss_rend_blackhand();
-    AddSC_instance_blackrock_spire();
     AddSC_boss_razorgore();                 //Blackwing lair
     AddSC_boss_vael();
     AddSC_boss_broodlord();
@@ -1000,7 +995,6 @@ void AddOutlandScripts()
     AddSC_shattrath_city();
     AddSC_terokkar_forest();
     AddSC_zangarmarsh();
-    AddSC_onevents();
 #endif
 }
 
