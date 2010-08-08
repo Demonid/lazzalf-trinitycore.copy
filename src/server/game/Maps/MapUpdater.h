@@ -27,6 +27,10 @@ class MapUpdater
 
         bool activated();
 
+        void update_finished_wrapper() { update_finished(); }
+
+        int respawn() { return m_executor.respawn(); }
+
     private:
 
         DelayExecutor m_executor;

@@ -35,8 +35,34 @@ typedef std::list<BattleGround*> BGFreeSlotQueueType;
 typedef UNORDERED_MAP<uint32, BattleGroundTypeId> BattleMastersMap;
 
 #define BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY 86400     // seconds in a day
+#define BATTLEGROUND_ARENA_MOD_RESET_HOUR         3600      // seconds in an hour
 #define COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME 10
 #define WS_ARENA_DISTRIBUTION_TIME 20001                    // Custom worldstate
+
+struct QueueUpdateInfo
+{
+    uint32 ateamId;
+    uint64 schedule_id;
+};
+
+enum WintergraspWorldStatesAndSpells
+{
+    // Worldstates
+    WS_WINTERGRASP_CONTROLING_TEAMID    = 90001,            // Wintergrasp: Current team id
+    WS_WINTERGRASP_ISWAR                = 90002,            // Wintergrasp: Is currently wartime?
+    WS_WINTERGRASP_TIMER                = 90003,            // Wintergrasp: Timer
+    WS_WINTERGRASP_CLOCK_ALLY           = 90004,            // Wintergrasp: Clock Ally
+    WS_WINTERGRASP_CLOCK_HORDE          = 90005,            // Wintergrasp: Clock Horde
+    WS_WINTERGRASP_SHOP_CNT_ALLY        = 90006,            // Wintergrasp: Workshop count Ally
+    WS_WINTERGRASP_SHOP_CNT_HORDE       = 90007,            // Wintergrasp: Workshop count Horde
+    WS_WINTERGRASP_TOWER_DEST_ALLY      = 90008,            // Wintergrasp: Tower destroyed Ally
+    WS_WINTERGRASP_TOWER_DEST_HORDE     = 90009,            // Wintergrasp: Tower destroyed Horde
+    WS_WINTERGRASP_VEHICLE_CNT_ALLY     = 90010,            // Wintergrasp: Vehicle count Ally
+    WS_WINTERGRASP_VEHICLE_CNT_HORDE    = 90011,            // Wintergrasp: Vehicle count Horde
+    // Special spells
+    SPELL_ESSENCE_OF_WINTERGRASP_WINNER = 58045,            // Only within wintergrasp
+    SPELL_ESSENCE_OF_WINTERGRASP_WORLD  = 57940             // For entire northrend
+};
 
 struct GroupQueueInfo;                                      // type predefinition
 struct PlayerQueueInfo                                      // stores information for players in queue
@@ -76,7 +102,7 @@ class BattleGroundQueue
         BattleGroundQueue();
         ~BattleGroundQueue();
 
-        void Update(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
+        void Update(BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0, uint32 ateamId = 0);
 
         void FillPlayersToBG(BattleGround* bg, BattleGroundBracketId bracket_id);
         bool CheckPremadeMatch(BattleGroundBracketId bracket_id, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam);
@@ -88,6 +114,7 @@ class BattleGroundQueue
         bool GetPlayerGroupInfoData(const uint64& guid, GroupQueueInfo* ginfo);
         void PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
         uint32 GetAverageQueueWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
+        bool TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2);
 
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
@@ -224,12 +251,13 @@ class BattleGroundMgr
 
         BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPE_ID];
 
-        void ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattleGroundQueueTypeId bgQueueTypeId, BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id);
+        void ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattleGroundQueueTypeId bgQueueTypeId, BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id, uint32 ateamId = 0);
         uint32 GetMaxRatingDifference() const;
         uint32 GetRatingDiscardTimer()  const;
         uint32 GetPrematureFinishTime() const;
 
         void InitAutomaticArenaPointDistribution();
+        void InitAutomaticArenaModTimer();
         void DistributeArenaPoints();
         void ToggleArenaTesting();
         void ToggleTesting();
@@ -265,11 +293,15 @@ class BattleGroundMgr
         BattleGroundSet m_BattleGrounds[MAX_BATTLEGROUND_TYPE_ID];
         BattleGroundSelectionWeightMap m_ArenaSelectionWeights;
         BattleGroundSelectionWeightMap m_BGSelectionWeights;
-        std::vector<uint64> m_QueueUpdateScheduler;
+        //std::vector<uint64> m_QueueUpdateScheduler;
+        std::vector<QueueUpdateInfo> m_QueueUpdateScheduler;
+
         std::set<uint32> m_ClientBattleGroundIds[MAX_BATTLEGROUND_TYPE_ID][MAX_BATTLEGROUND_BRACKETS]; //the instanceids just visible for the client
         uint32 m_NextRatingDiscardUpdate;
         time_t m_NextAutoDistributionTime;
+        time_t m_NextArenaModResetTime;
         uint32 m_AutoDistributionTimeChecker;
+        uint32 m_ArenaModResetChecker;
         bool   m_ArenaTesting;
         bool   m_Testing;
 };

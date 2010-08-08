@@ -91,10 +91,6 @@ struct instance_halls_of_lightning : public ScriptedInstance
         {
             case GO_BJARNGRIM_DOOR:
                 m_uiBjarngrimDoorGUID = pGo->GetGUID();
-                if (m_auiEncounter[0] == DONE)
-                    pGo->SetGoState(GO_STATE_ACTIVE);
-                else
-                    pGo->SetGoState(GO_STATE_READY);
                 break;
             case GO_VOLKHAN_DOOR:
                 m_uiVolkhanDoorGUID = pGo->GetGUID();
