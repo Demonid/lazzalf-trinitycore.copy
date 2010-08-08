@@ -42,7 +42,7 @@
 #include "Pet.h"
 #include "Util.h"
 #include "Totem.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "OutdoorPvP.h"
 #include "InstanceSaveMgr.h"
 #include "GridNotifiersImpl.h"
@@ -662,7 +662,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             // some critters required for quests (need normal entry instead possible heroic in any cases)
             if (GetTypeId() == TYPEID_PLAYER)
-                if (CreatureInfo const* normalInfo = objmgr.GetCreatureTemplate(pVictim->GetEntry()))
+                if (CreatureInfo const* normalInfo = sObjectMgr.GetCreatureTemplate(pVictim->GetEntry()))
                     this->ToPlayer()->KilledMonster(normalInfo,pVictim->GetGUID());
         }
         else
@@ -694,7 +694,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         // in bg, count dmg if victim is also a player
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
         {
-            if (BattleGround *bg = killer->GetBattleGround())
+            if (Battleground *bg = killer->GetBattleground())
             {
                 // FIXME: kept by compatibility. don't know in BG if the restriction apply.
                 bg->UpdatePlayerScore(killer, SCORE_DAMAGE_DONE, damage);
@@ -1977,8 +1977,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
                         int32 remainingHp = (int32)pVictim->GetHealth() - RemainingDamage;
 
                         // min pct of hp is stored in effect 0 of talent spell
-                        uint32 rank = spellmgr.GetSpellRank(spellProto->Id);
-                        SpellEntry const * talentProto = sSpellStore.LookupEntry(spellmgr.GetSpellWithRank(49189, rank));
+                        uint32 rank = sSpellMgr.GetSpellRank(spellProto->Id);
+                        SpellEntry const * talentProto = sSpellStore.LookupEntry(sSpellMgr.GetSpellWithRank(49189, rank));
 
                         int32 minHp = (float)pVictim->GetMaxHealth() * (float)SpellMgr::CalculateSpellEffectAmount(talentProto, 0, (*i)->GetCaster())  / 100.0f;
                         // Damage that would take you below [effect0] health or taken while you are at [effect0]
@@ -3945,7 +3945,7 @@ bool Unit::_IsNoStackAuraDueToAura(Aura * appliedAura, Aura * existingAura) cons
             return false;
 
         // passive non-stackable spells not stackable only with another rank of same spell
-        if (!spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
+        if (!sSpellMgr.IsRankSpellDueToSpell(spellProto, i_spellId))
             return false;
     }
 
@@ -3965,7 +3965,7 @@ bool Unit::_IsNoStackAuraDueToAura(Aura * appliedAura, Aura * existingAura) cons
     if (is_triggered_by_spell)
         return false;
 
-    if (spellmgr.CanAurasStack(spellProto, i_spellProto, sameCaster))
+    if (sSpellMgr.CanAurasStack(spellProto, i_spellProto, sameCaster))
         return false;
     return true;
 }
@@ -4546,12 +4546,12 @@ AuraEffect * Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster) 
 
 AuraEffect * Unit::GetAuraEffectOfRankedSpell(uint32 spellId, uint8 effIndex, uint64 caster) const
 {
-    uint32 rankSpell = spellmgr.GetFirstSpellInChain(spellId);
+    uint32 rankSpell = sSpellMgr.GetFirstSpellInChain(spellId);
     while (true)
     {
         if (AuraEffect * aurEff = GetAuraEffect(rankSpell, effIndex, caster))
             return aurEff;
-        SpellChainNode const * chainNode = spellmgr.GetSpellChainNode(rankSpell);
+        SpellChainNode const * chainNode = sSpellMgr.GetSpellChainNode(rankSpell);
         if (!chainNode)
             break;
         else
@@ -4609,12 +4609,12 @@ Aura * Unit::GetAura(uint32 spellId, uint64 casterGUID, uint8 reqEffMask) const
 
 AuraApplication * Unit::GetAuraApplicationOfRankedSpel(uint32 spellId, uint64 casterGUID, uint8 reqEffMask, AuraApplication * except) const
 {
-    uint32 rankSpell = spellmgr.GetFirstSpellInChain(spellId);
+    uint32 rankSpell = sSpellMgr.GetFirstSpellInChain(spellId);
     while (true)
     {
         if (AuraApplication * aurApp = GetAuraApplication(rankSpell, casterGUID, reqEffMask, except))
             return aurApp;
-        SpellChainNode const * chainNode = spellmgr.GetSpellChainNode(rankSpell);
+        SpellChainNode const * chainNode = sSpellMgr.GetSpellChainNode(rankSpell);
         if (!chainNode)
             break;
         else
@@ -5351,7 +5351,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
     }
 
     // default case
-    if ((!target && !spellmgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+    if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
         return false;
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->HasSpellCooldown(triggered_spell_id))
@@ -7523,7 +7523,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 // Lightning Shield
                 if (AuraEffect const * aurEff = GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_SHAMAN, 0x400, 0, 0))
                 {
-                    uint32 spell = spellmgr.GetSpellWithRank(26364, spellmgr.GetSpellRank(aurEff->GetId()));
+                    uint32 spell = sSpellMgr.GetSpellWithRank(26364, sSpellMgr.GetSpellRank(aurEff->GetId()));
 
                     // custom cooldown processing case
                     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(spell))
@@ -7725,7 +7725,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     if (spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT
                         && spellProto->SpellFamilyFlags[0] & 0x2000)
                     {
-                        SpellChainNode const* newChain = spellmgr.GetSpellChainNode(itr->first);
+                        SpellChainNode const* newChain = sSpellMgr.GetSpellChainNode(itr->first);
 
                         // No chain entry or entry lower than found entry
                         if (!chain || !newChain || (chain->rank < newChain->rank))
@@ -7813,7 +7813,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
     }
 
     // default case
-    if ((!target && !spellmgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+    if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
         return false;
 
     if (cooldown_spell_id == 0)
@@ -7875,7 +7875,7 @@ bool Unit::HandleObsModEnergyAuraProc(Unit *pVictim, uint32 /*damage*/, AuraEffe
     }
 
     // default case
-    if ((!target && !spellmgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+    if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
         return false;
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->HasSpellCooldown(triggered_spell_id))
@@ -7932,7 +7932,7 @@ bool Unit::HandleModDamagePctTakenAuraProc(Unit *pVictim, uint32 /*damage*/, Aur
     }
 
     // default case
-    if ((!target && !spellmgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+    if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
         return false;
 
     if (cooldown && GetTypeId() == TYPEID_PLAYER && this->ToPlayer()->HasSpellCooldown(triggered_spell_id))
@@ -8470,7 +8470,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
                         // Lightning Shield (overwrite non existing triggered spell call in spell.dbc
                         if (auraSpellInfo->SpellFamilyFlags[0] & 0x400)
                         {
-                            trigger_spell_id = spellmgr.GetSpellWithRank(26364, spellmgr.GetSpellRank(auraSpellInfo->Id));
+                            trigger_spell_id = sSpellMgr.GetSpellWithRank(26364, sSpellMgr.GetSpellRank(auraSpellInfo->Id));
                         }
                         // Nature's Guardian
                         else if (auraSpellInfo->SpellIconID == 2013)
@@ -8769,7 +8769,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         {
             // have rank dependent proc chance, ignore too often cases
             // PPM = 2.5 * (rank of talent),
-            uint32 rank = spellmgr.GetSpellRank(auraSpellInfo->Id);
+            uint32 rank = sSpellMgr.GetSpellRank(auraSpellInfo->Id);
             // 5 rank -> 100% 4 rank -> 80% and etc from full rate
             if (!roll_chance_i(20*rank))
                 return false;
@@ -8845,7 +8845,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
        target = !(procFlags & (PROC_FLAG_SUCCESSFUL_POSITIVE_MAGIC_SPELL | PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL_HIT)) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
 
     // default case
-    if ((!target && !spellmgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
+    if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
         return false;
 
     if (basepoints0)
@@ -9892,7 +9892,7 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth, SpellEntry const *spellPro
         // overheal = addhealth - gain
         unit->SendHealSpellLog(pVictim, spellProto->Id, addhealth, addhealth - gain, absorb, critical);
 
-        if (BattleGround *bg = unit->ToPlayer()->GetBattleGround())
+        if (Battleground *bg = unit->ToPlayer()->GetBattleground())
             bg->UpdatePlayerScore((Player*)unit, SCORE_HEALING_DONE, gain);
 
         // use the actual gain, as the overheal shall not be counted, skip gain 0 (it ignored anyway in to criteria)
@@ -10282,7 +10282,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DEATHKNIGHT, 0,0x02000000,0))
                 {
-                    if (SpellChainNode const *chain = spellmgr.GetSpellChainNode((*i)->GetId()))
+                    if (SpellChainNode const *chain = sSpellMgr.GetSpellChainNode((*i)->GetId()))
                         DoneTotalMod *= (chain->rank * 2.0f + 100.0f)/100.0f;
                 }
                 break;
@@ -10503,7 +10503,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 
     // Check for table values
     float coeff = 0;
-    SpellBonusEntry const *bonus = spellmgr.GetSpellBonusData(spellProto->Id);
+    SpellBonusEntry const *bonus = sSpellMgr.GetSpellBonusData(spellProto->Id);
     if (bonus)
     {
         if (damagetype == DOT)
@@ -11011,7 +11011,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     }
 
     // Check for table values
-    SpellBonusEntry const* bonus = !scripted ? spellmgr.GetSpellBonusData(spellProto->Id) : NULL;
+    SpellBonusEntry const* bonus = !scripted ? sSpellMgr.GetSpellBonusData(spellProto->Id) : NULL;
     float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
@@ -11508,7 +11508,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
             case 7293:
             {
                 if (pVictim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DEATHKNIGHT, 0,0x02000000,0))
-                    if (SpellChainNode const *chain = spellmgr.GetSpellChainNode((*i)->GetId()))
+                    if (SpellChainNode const *chain = sSpellMgr.GetSpellChainNode((*i)->GetId()))
                         DoneTotalMod *= (chain->rank * 2.0f + 100.0f)/100.0f;
                 break;
             }
@@ -11734,7 +11734,7 @@ void Unit::Mount(uint32 mount, uint32 VehicleId)
         Pet* pet = this->ToPlayer()->GetPet();
         if (pet)
         {
-            BattleGround *bg = ToPlayer()->GetBattleGround();
+            Battleground *bg = ToPlayer()->GetBattleground();
             // don't unsummon pet in arena but SetFlag UNIT_FLAG_STUNNED to disable pet's interface
             if (bg && bg->isArena())
                 pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
@@ -13701,14 +13701,14 @@ void CharmInfo::InitCharmCreateSpells()
 
 bool CharmInfo::AddSpellToActionBar(uint32 spell_id, ActiveStates newstate)
 {
-    uint32 first_id = spellmgr.GetFirstSpellInChain(spell_id);
+    uint32 first_id = sSpellMgr.GetFirstSpellInChain(spell_id);
 
     // new spell rank can be already listed
     for (uint8 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
     {
         if (uint32 action = PetActionBar[i].GetAction())
         {
-            if (PetActionBar[i].IsActionBarForSpell() && spellmgr.GetFirstSpellInChain(action) == first_id)
+            if (PetActionBar[i].IsActionBarForSpell() && sSpellMgr.GetFirstSpellInChain(action) == first_id)
             {
                 PetActionBar[i].SetAction(spell_id);
                 return true;
@@ -13730,13 +13730,13 @@ bool CharmInfo::AddSpellToActionBar(uint32 spell_id, ActiveStates newstate)
 
 bool CharmInfo::RemoveSpellFromActionBar(uint32 spell_id)
 {
-    uint32 first_id = spellmgr.GetFirstSpellInChain(spell_id);
+    uint32 first_id = sSpellMgr.GetFirstSpellInChain(spell_id);
 
     for (uint8 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
     {
         if (uint32 action = PetActionBar[i].GetAction())
         {
-            if (PetActionBar[i].IsActionBarForSpell() && spellmgr.GetFirstSpellInChain(action) == first_id)
+            if (PetActionBar[i].IsActionBarForSpell() && sSpellMgr.GetFirstSpellInChain(action) == first_id)
             {
                 SetActionBar(i,0,ACT_PASSIVE);
                 return true;
@@ -14429,7 +14429,7 @@ void Unit::ClearComboPointHolders()
     {
         uint32 lowguid = *m_ComboPointHolders.begin();
 
-        Player* plr = objmgr.GetPlayer(MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER));
+        Player* plr = sObjectMgr.GetPlayer(MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER));
         if (plr && plr->GetComboTarget() == GetGUID())         // recheck for safe
             plr->ClearComboPoints();                        // remove also guid from m_ComboPointHolders;
         else
@@ -14765,7 +14765,7 @@ Pet* Unit::CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id)
     if (GetTypeId() != TYPEID_PLAYER)
         return NULL;
 
-    CreatureInfo const* creatureInfo = objmgr.GetCreatureTemplate(creatureEntry);
+    CreatureInfo const* creatureInfo = sObjectMgr.GetCreatureTemplate(creatureEntry);
     if (!creatureInfo)
         return NULL;
 
@@ -14795,7 +14795,7 @@ bool Unit::InitTamedPet(Pet * pet, uint8 level, uint32 spell_id)
         return false;
     }
 
-    pet->GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
+    pet->GetCharmInfo()->SetPetNumber(sObjectMgr.GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
     pet->InitPetCreateSpells();
     //pet->InitLevelupSpellsForLevel();
@@ -14808,7 +14808,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
     SpellEntry const *spellProto = aura->GetSpellProto();
 
     // Get proc Event Entry
-    spellProcEvent = spellmgr.GetSpellProcEvent(spellProto->Id);
+    spellProcEvent = sSpellMgr.GetSpellProcEvent(spellProto->Id);
 
     // Get EventProcFlag
     uint32 EventProcFlag;
@@ -14828,7 +14828,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
     }
 
     // Check spellProcEvent data requirements
-    if (!spellmgr.IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
+    if (!sSpellMgr.IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
         return false;
     // In most cases req get honor or XP from kill
     if (EventProcFlag & PROC_FLAG_KILL && GetTypeId() == TYPEID_PLAYER)
@@ -15063,7 +15063,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 group->UpdateLooterGuid(creature, true);
                 if (group->GetLooterGuid())
                 {
-                    pLooter = objmgr.GetPlayer(group->GetLooterGuid());
+                    pLooter = sObjectMgr.GetPlayer(group->GetLooterGuid());
                     if (pLooter)
                     {
                         creature->SetLootRecipient(pLooter);   // update creature loot recipient to the allowed looter.
@@ -15160,7 +15160,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         pVictim->ToPlayer()->SetPvPDeath(player != NULL);
 
         // only if not player and not controlled by player pet. And not at BG
-        if ((durabilityLoss && !player && !pVictim->ToPlayer()->InBattleGround()) || (player && sWorld.getConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
+        if ((durabilityLoss && !player && !pVictim->ToPlayer()->InBattleground()) || (player && sWorld.getConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
         {
             DEBUG_LOG("We are dead, losing %u percent durability", sWorld.getRate(RATE_DURABILITY_LOSS_ON_DEATH));
             pVictim->ToPlayer()->DurabilityLossAll(sWorld.getRate(RATE_DURABILITY_LOSS_ON_DEATH),false);
@@ -15219,7 +15219,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     // the reset time is set but not added to the scheduler
                     // until the players leave the instance
                     time_t resettime = creature->GetRespawnTimeEx() + 2 * HOUR;
-                    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(creature->GetInstanceId()))
+                    if (InstanceSave *save = sInstanceSaveMgr.GetInstanceSave(creature->GetInstanceId()))
                         if (save->GetResetTime() < resettime) save->SetResetTime(resettime);
                 }
             }
@@ -15237,9 +15237,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     //        pvp->HandlePlayerActivityChangedpVictim->ToPlayer();
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
-    if (player && player->InBattleGround())
+    if (player && player->InBattleground())
     {
-        if (BattleGround *bg = player->GetBattleGround())
+        if (Battleground *bg = player->GetBattleground())
         {
             if (pVictim->GetTypeId() == TYPEID_PLAYER)
                 bg->HandleKillPlayer((Player*)pVictim, player);
@@ -15510,7 +15510,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
 
     // Set charmed
      Map* pMap = GetMap();
-     if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleGround()))
+     if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
         setFaction(charmer->getFaction());
 
     charmer->SetCharm(this, true);
@@ -15566,7 +15566,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
 
                         //just to enable stat window
                         if (GetCharmInfo())
-                            GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
+                            GetCharmInfo()->SetPetNumber(sObjectMgr.GeneratePetNumber(), true);
 
                         //if charmed two demons the same session, the 2nd gets the 1st one's name
                         SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
@@ -15610,7 +15610,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
     getHostileRefManager().deleteReferences();
     DeleteThreatList();
     Map* pMap = GetMap();
-    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleGround()))
+    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
         RestoreFaction();
     GetMotionMaster()->InitDefault();
 
@@ -16455,8 +16455,8 @@ void Unit::EnterVehicle(Vehicle *vehicle, int8 seatId)
         this->ToPlayer()->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
         // drop flag at invisible in bg
-        if (this->ToPlayer()->InBattleGround())
-            if (BattleGround *bg = this->ToPlayer()->GetBattleGround())
+        if (this->ToPlayer()->InBattleground())
+            if (Battleground *bg = this->ToPlayer()->GetBattleground())
           bg->EventPlayerDroppedFlag(this->ToPlayer());
     }
 

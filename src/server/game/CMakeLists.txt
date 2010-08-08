@@ -20,7 +20,7 @@ file(GLOB_RECURSE sources_Achievements Achievements/*.cpp Achievements/*.h)
 file(GLOB_RECURSE sources_Addons Addons/*.cpp Addons/*.h)
 file(GLOB_RECURSE sources_AI AI/*.cpp AI/*.h)
 file(GLOB_RECURSE sources_AuctionHouse AuctionHouse/*.cpp AuctionHouse/*.h)
-file(GLOB_RECURSE sources_BattleGrounds BattleGrounds/*.cpp BattleGrounds/*.h)
+file(GLOB_RECURSE sources_Battlegrounds Battlegrounds/*.cpp Battlegrounds/*.h)
 file(GLOB_RECURSE sources_Calendar Calendar/*.cpp Calendar/*.h)
 file(GLOB_RECURSE sources_Chat Chat/*.cpp Chat/*.h)
 file(GLOB_RECURSE sources_Combat Combat/*.cpp Combat/*.h)
@@ -59,7 +59,7 @@ set(game_STAT_SRCS
   ${sources_Addons}
   ${sources_AI}
   ${sources_AuctionHouse}
-  ${sources_BattleGrounds}
+  ${sources_Battlegrounds}
   ${sources_Calendar}
   ${sources_Chat}
   ${sources_Combat}
@@ -92,14 +92,11 @@ set(game_STAT_SRCS
   ${sources_World}
 )
 
-if( MSVC )
-  set(sources_PrecompiledHeaders 
-    PrecompiledHeaders/gamePCH.cpp
-    PrecompiledHeaders/gamePCH.h
-  )
+if(MSVC)
   set(game_STAT_SRCS
     ${game_STAT_SRCS}
-    ${sources_PrecompiledHeaders}
+    PrecompiledHeaders/gamePCH.cpp
+    PrecompiledHeaders/gamePCH.h
   )
 endif()
 
@@ -136,8 +133,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/EventAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/ScriptedAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AuctionHouse
-  ${CMAKE_SOURCE_DIR}/src/server/game/BattleGrounds
-  ${CMAKE_SOURCE_DIR}/src/server/game/BattleGrounds/Zones
+  ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
+  ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds/Zones
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
@@ -193,6 +190,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Tools
   ${CMAKE_SOURCE_DIR}/src/server/game/Weather
   ${CMAKE_SOURCE_DIR}/src/server/game/World
+  ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
 )
 add_library(game STATIC ${game_STAT_SRCS})
 

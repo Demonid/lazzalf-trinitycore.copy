@@ -2010,7 +2010,7 @@ void Map::DelayedUpdate(const uint32 t_diff)
 
     // Don't unload grids if it's battleground, since we may have manually added GOs,creatures, those doesn't load from DB at grid re-load !
     // This isn't really bother us, since as soon as we have instanced BG-s, the whole map unloads as the BG gets ended
-    if (!IsBattleGroundOrArena())
+    if (!IsBattlegroundOrArena())
     {
         for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end();)
         {
@@ -2328,11 +2328,11 @@ bool InstanceMap::Add(Player *player)
         if (IsDungeon())
         {
             // get or create an instance save for the map
-            InstanceSave *mapSave = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+            InstanceSave *mapSave = sInstanceSaveMgr.GetInstanceSave(GetInstanceId());
             if (!mapSave)
             {
                 sLog.outDetail("InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-                mapSave = sInstanceSaveManager.AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), 0, true);
+                mapSave = sInstanceSaveMgr.AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), 0, true);
             }
 
             // check for existing instance binds
@@ -2446,7 +2446,7 @@ void InstanceMap::CreateInstanceData(bool load)
     if (i_data != NULL)
         return;
 
-    InstanceTemplate const* mInstance = objmgr.GetInstanceTemplate(GetId());
+    InstanceTemplate const* mInstance = sObjectMgr.GetInstanceTemplate(GetId());
     if (mInstance)
     {
         i_script_id = mInstance->script_id;
@@ -2468,7 +2468,7 @@ void InstanceMap::CreateInstanceData(bool load)
             std::string data = fields[0].GetString();
             if (data != "")
             {
-                sLog.outDebug("Loading instance data for `%s` with id %u", objmgr.GetScriptName(i_script_id), i_InstanceId);
+                sLog.outDebug("Loading instance data for `%s` with id %u", sObjectMgr.GetScriptName(i_script_id), i_InstanceId);
                 i_data->Load(data.c_str());
             }
         }
@@ -2519,7 +2519,7 @@ void InstanceMap::PermBindAllPlayers(Player *player)
     if (!IsDungeon())
         return;
 
-    InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+    InstanceSave *save = sInstanceSaveMgr.GetInstanceSave(GetInstanceId());
     if (!save)
     {
         sLog.outError("Cannot bind players, no instance save available for map!");
@@ -2553,7 +2553,7 @@ void InstanceMap::UnloadAll()
     ASSERT(!HavePlayers());
 
     if (m_resetAfterUnload == true)
-        objmgr.DeleteRespawnTimeForInstance(GetInstanceId());
+        sObjectMgr.DeleteRespawnTimeForInstance(GetInstanceId());
 
     Map::UnloadAll();
 }
@@ -2571,9 +2571,9 @@ void InstanceMap::SetResetSchedule(bool on)
     // it is assumed that the reset time will rarely (if ever) change while the reset is scheduled
     if (IsDungeon() && !HavePlayers() && !IsRaidOrHeroicDungeon())
     {
-        InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+        InstanceSave *save = sInstanceSaveMgr.GetInstanceSave(GetInstanceId());
         if (!save) sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
-        else sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), Difficulty(GetSpawnMode()), GetInstanceId()));
+        else sInstanceSaveMgr.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), Difficulty(GetSpawnMode()), GetInstanceId()));
     }
 }
 
@@ -2606,25 +2606,25 @@ uint32 InstanceMap::GetMaxResetDelay() const
 
 /* ******* Battleground Instance Maps ******* */
 
-BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, Map* _parent, uint8 spawnMode)
+BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId, Map* _parent, uint8 spawnMode)
   : Map(id, expiry, InstanceId, spawnMode, _parent)
 {
     //lets initialize visibility distance for BG/Arenas
-    BattleGroundMap::InitVisibilityDistance();
+    BattlegroundMap::InitVisibilityDistance();
 }
 
-BattleGroundMap::~BattleGroundMap()
+BattlegroundMap::~BattlegroundMap()
 {
 }
 
-void BattleGroundMap::InitVisibilityDistance()
+void BattlegroundMap::InitVisibilityDistance()
 {
     //init visibility distance for BG/Arenas
     m_VisibleDistance = World::GetMaxVisibleDistanceInBGArenas();
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodInBGArenas();
 }
 
-bool BattleGroundMap::CanEnter(Player * player)
+bool BattlegroundMap::CanEnter(Player * player)
 {
     if (player->GetMapRef().getTarget() == this)
     {
@@ -2633,7 +2633,7 @@ bool BattleGroundMap::CanEnter(Player * player)
         return false;
     }
 
-    if (player->GetBattleGroundId() != GetInstanceId())
+    if (player->GetBattlegroundId() != GetInstanceId())
         return false;
 
     // player number limit is checked in bgmgr, no need to do it here
@@ -2641,7 +2641,7 @@ bool BattleGroundMap::CanEnter(Player * player)
     return Map::CanEnter(player);
 }
 
-bool BattleGroundMap::Add(Player * player)
+bool BattlegroundMap::Add(Player * player)
 {
     {
         ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, Lock, false);
@@ -2654,24 +2654,24 @@ bool BattleGroundMap::Add(Player * player)
     return Map::Add(player);
 }
 
-void BattleGroundMap::Remove(Player *player, bool remove)
+void BattlegroundMap::Remove(Player *player, bool remove)
 {
     sLog.outDetail("MAP: Removing player '%s' from bg '%u' of map '%s' before relocating to another map", player->GetName(), GetInstanceId(), GetMapName());
     Map::Remove(player, remove);
 }
 
-void BattleGroundMap::SetUnload()
+void BattlegroundMap::SetUnload()
 {
     m_unloadTimer = MIN_UNLOAD_DELAY;
 }
 
-void BattleGroundMap::RemoveAllPlayers()
+void BattlegroundMap::RemoveAllPlayers()
 {
     if (HavePlayers())
         for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
             if (Player* plr = itr->getSource())
                 if (!plr->IsBeingTeleportedFar())
-                    plr->TeleportTo(plr->GetBattleGroundEntryPoint());
+                    plr->TeleportTo(plr->GetBattlegroundEntryPoint());
 
 }
 
@@ -3437,7 +3437,7 @@ void Map::ScriptsProcess()
                 }
                 else //check hashmap holders
                 {
-                    if (CreatureData const* data = objmgr.GetCreatureData(step.script->datalong))
+                    if (CreatureData const* data = sObjectMgr.GetCreatureData(step.script->datalong))
                         cTarget = ObjectAccessor::GetObjectInWorld<Creature>(data->mapid, data->posX, data->posY, MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), cTarget);
                 }
 

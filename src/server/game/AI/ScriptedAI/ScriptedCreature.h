@@ -14,7 +14,6 @@
 #include "InstanceData.h"
 
 #define SCRIPT_CAST_TYPE dynamic_cast
-//#define SCRIPT_CAST_TYPE static_cast
 
 #define CAST_PLR(a)     (SCRIPT_CAST_TYPE<Player*>(a))
 #define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
@@ -25,7 +24,7 @@
 
 #define GET_SPELL(a)    (const_cast<SpellEntry*>(GetSpellStore()->LookupEntry(a)))
 
-class ScriptedInstance;
+class InstanceData;
 
 class SummonList : public std::list<uint64>
 {

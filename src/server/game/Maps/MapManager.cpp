@@ -168,7 +168,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (mapid == player->GetMapId())
        return true;
 
-    InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
+    InstanceTemplate const* instance = sObjectMgr.GetInstanceTemplate(mapid);
     if (!instance)
         return false;
 
@@ -218,7 +218,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
                 if (instance_map == mapid)
                     break;
 
-                InstanceTemplate const* instance = objmgr.GetInstanceTemplate(instance_map);
+                InstanceTemplate const* instance = sObjectMgr.GetInstanceTemplate(instance_map);
                 instance_map = instance ? instance->parent : 0;
             }
             while (instance_map);
@@ -257,7 +257,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     }
 
     //Other requirements
-    return player->Satisfy(objmgr.GetAccessRequirement(mapid, targetDifficulty), mapid, true);
+    return player->Satisfy(sObjectMgr.GetAccessRequirement(mapid, targetDifficulty), mapid, true);
 }
 
 void MapManager::Update(uint32 diff)
@@ -304,7 +304,7 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 bool MapManager::IsValidMAP(uint32 mapid)
 {
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
-    return mEntry && (!mEntry->IsDungeon() || objmgr.GetInstanceTemplate(mapid));
+    return mEntry && (!mEntry->IsDungeon() || sObjectMgr.GetInstanceTemplate(mapid));
     // TODO: add check for battleground template
 }
 

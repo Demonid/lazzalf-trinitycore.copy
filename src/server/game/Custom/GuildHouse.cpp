@@ -172,7 +172,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         gh_Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
         for (; itr2 != itr->second.AddCre.end(); itr2++)
         {
-            if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
+            if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
             {
                 objmgr.RemoveCreatureFromGrid(*itr2, data);
                 if( Creature* pCreature = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
@@ -182,7 +182,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         itr2 =  itr->second.AddGO.begin();
         for (; itr2 != itr->second.AddGO.end(); itr2++)
         {
-            if (GameObjectData const* data = objmgr.GetGOData(*itr2))
+            if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
             { 
                 objmgr.RemoveGameobjectFromGrid(*itr2, data);
                 if (GameObject* pGameobject = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
@@ -209,7 +209,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             gh_Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
             for (; itr2 != itr->second.AddGO.end(); itr2++)
             {
-                if (GameObjectData const* data = objmgr.GetGOData(*itr2))
+                if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
                 {
                     objmgr.AddGameobjectToGrid(*itr2, data);
 
@@ -232,7 +232,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             itr2 =  itr->second.AddCre.begin();
             for (; itr2 != itr->second.AddCre.end(); itr2++)
             {                
-                if (CreatureData const* data = objmgr.GetCreatureData(*itr2))
+                if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
                 {
                     objmgr.AddCreatureToGrid(*itr2, data);
 

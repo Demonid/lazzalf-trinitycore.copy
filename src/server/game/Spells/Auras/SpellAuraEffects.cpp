@@ -30,7 +30,7 @@
 #include "Util.h"
 #include "Spell.h"
 #include "SpellAuraEffects.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "OutdoorPvPMgr.h"
 #include "Formulas.h"
 #include "GridNotifiers.h"
@@ -619,7 +619,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                 amount+=caster->ApplyEffectModifiers(m_spellProto,m_effIndex,int32(((mwb_min+mwb_max)/2+ap*mws/14000)*0.2f));
                 // "If used while your target is above 75% health, Rend does 35% more damage."
                 // as for 3.1.3 only ranks above 9 (wrong tooltip?)
-                if (spellmgr.GetSpellRank(m_spellProto->Id) >= 9)
+                if (sSpellMgr.GetSpellRank(m_spellProto->Id) >= 9)
                 {
                     if (GetBase()->GetUnitOwner()->HasAuraState(AURA_STATE_HEALTH_ABOVE_75_PERCENT, m_spellProto, caster))
                         amount += int32(amount * SpellMgr::CalculateSpellEffectAmount(m_spellProto, 2, caster) / 100.0f);
@@ -981,7 +981,7 @@ void AuraEffect::ApplySpellMod(Unit * target, bool apply)
                 // only passive auras-active auras should have amount set on spellcast and not be affected
                 // if aura is casted by others, it will not be affected
                 if ((m_spellmod->spellId == 31821 || aura->IsPassive()) && 
-                    aura->GetCasterGUID() == guid && spellmgr.IsAffectedByMod(aura->GetSpellProto(),
+                    aura->GetCasterGUID() == guid && sSpellMgr.IsAffectedByMod(aura->GetSpellProto(),
                     m_spellmod))
                 {
                     if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
@@ -1556,7 +1556,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
             // add HoTs to amount healed in bgs
             if (caster->GetTypeId() == TYPEID_PLAYER)
-                if (BattleGround *bg = caster->ToPlayer()->GetBattleGround())
+                if (Battleground *bg = caster->ToPlayer()->GetBattleground())
                     bg->UpdatePlayerScore(caster->ToPlayer(), SCORE_HEALING_DONE, gain);
 
             target->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, GetSpellProto());
@@ -2847,8 +2847,8 @@ void AuraEffect::HandlePhase(AuraApplication const * aurApp, uint8 mode, bool ap
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
         // drop flag at invisible in bg
-        if (target->ToPlayer()->InBattleGround())
-            if (BattleGround *bg = target->ToPlayer()->GetBattleGround())
+        if (target->ToPlayer()->InBattleground())
+            if (Battleground *bg = target->ToPlayer()->GetBattleground())
           bg->EventPlayerDroppedFlag(target->ToPlayer());
 
         // GM-mode have mask 0xFFFFFFFF
@@ -3158,7 +3158,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const * aurApp, uint8 mode,
         }
         else
         {
-            CreatureInfo const * ci = objmgr.GetCreatureTemplate(GetMiscValue());
+            CreatureInfo const * ci = sObjectMgr.GetCreatureTemplate(GetMiscValue());
             if (!ci)
             {
                 target->SetDisplayId(16358);              // pig pink ^_^
@@ -3232,14 +3232,14 @@ void AuraEffect::HandleAuraTransform(AuraApplication const * aurApp, uint8 mode,
             if (!target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).empty())
             {
                 uint32 cr_id = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).front()->GetMiscValue();
-                if (CreatureInfo const* ci = objmgr.GetCreatureTemplate(cr_id))
+                if (CreatureInfo const* ci = sObjectMgr.GetCreatureTemplate(cr_id))
                 {
                     uint32 team = 0;
                     if (target->GetTypeId() == TYPEID_PLAYER)
                         team = target->ToPlayer()->GetTeam();
 
-                    uint32 display_id = objmgr.ChooseDisplayId(team,ci);
-                    CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(display_id);
+                    uint32 display_id = sObjectMgr.ChooseDisplayId(team,ci);
+                    CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(display_id);
                     if (minfo)
                         display_id = minfo->modelid;
 
@@ -3665,7 +3665,7 @@ void AuraEffect::HandleAuraMounted(AuraApplication const * aurApp, uint8 mode, b
 
     if (apply)
     {
-        CreatureInfo const* ci = objmgr.GetCreatureTemplate(GetMiscValue());
+        CreatureInfo const* ci = sObjectMgr.GetCreatureTemplate(GetMiscValue());
         if (!ci)
         {
             sLog.outErrorDb("AuraMounted: `creature_template`='%u' not found in database (only need it modelid)",GetMiscValue());
@@ -3676,8 +3676,8 @@ void AuraEffect::HandleAuraMounted(AuraApplication const * aurApp, uint8 mode, b
         if (target->GetTypeId() == TYPEID_PLAYER)
             team = target->ToPlayer()->GetTeam();
 
-        uint32 display_id = objmgr.ChooseDisplayId(team,ci);
-        CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(display_id);
+        uint32 display_id = sObjectMgr.ChooseDisplayId(team,ci);
+        CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(display_id);
         if (minfo)
             display_id = minfo->modelid;
 
@@ -4299,9 +4299,9 @@ void AuraEffect::HandleAuraModEffectImmunity(AuraApplication const * aurApp, uin
     {
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
-            if (target->ToPlayer()->InBattleGround())
+            if (target->ToPlayer()->InBattleground())
             {
-                if (BattleGround *bg = target->ToPlayer()->GetBattleGround())
+                if (Battleground *bg = target->ToPlayer()->GetBattleground())
                     bg->EventPlayerDroppedFlag(target->ToPlayer());
             }
             else
@@ -5779,7 +5779,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if (target->GetTypeId() == TYPEID_PLAYER)
-                                if (BattleGround *bg = target->ToPlayer()->GetBattleGround())
+                                if (Battleground *bg = target->ToPlayer()->GetBattleground())
                                     bg->RemovePlayerFromResurrectQueue(target->GetGUID());
                             break;
                         case 36730:                                     // Flame Strike
@@ -6141,7 +6141,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
     if (mode & AURA_EFFECT_HANDLE_REAL)
     {
         // pet auras
-        if (PetAura const* petSpell = spellmgr.GetPetAura(GetId(), m_effIndex))
+        if (PetAura const* petSpell = sSpellMgr.GetPetAura(GetId(), m_effIndex))
         {
             if (apply)
                 target->AddPetAura(petSpell);
@@ -6273,7 +6273,7 @@ void AuraEffect::HandleAuraEmpathy(AuraApplication const * aurApp, uint8 mode, b
             return;
     }
 
-    CreatureInfo const * ci = objmgr.GetCreatureTemplate(target->GetEntry());
+    CreatureInfo const * ci = sObjectMgr.GetCreatureTemplate(target->GetEntry());
     if (ci && ci->type == CREATURE_TYPE_BEAST)
         target->ApplyModUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_SPECIALINFO, apply);
 }

@@ -480,7 +480,7 @@ struct SQLCreatureLoader : public SQLStorageLoaderBase<SQLCreatureLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(objmgr.GetScriptId(src));
+        dst = D(sObjectMgr.GetScriptId(src));
     }
 };
 
@@ -1230,7 +1230,7 @@ void ObjectMgr::LoadCreatures()
                     spawnMasks[i] |= (1 << k);
 
     //TODO: remove this
-    //gameeventmgr.mGameEventCreatureGuids.resize(52*2-1);
+    //sGameEventMgr.mGameEventCreatureGuids.resize(52*2-1);
 
     barGoLink bar(result->GetRowCount());
 
@@ -1353,14 +1353,14 @@ void ObjectMgr::LoadCreatures()
         /*if (entry == 30739 || entry == 30740)
         {
             gameEvent = 51;
-            uint32 guid2 = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+            uint32 guid2 = sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT);
             CreatureData& data2 = mCreatureDataMap[guid2];
             data2 = data;
 //            data2.id = (entry == 32307 ? 32308 : 32307);
             data2.id = (entry == 30739 ? 30740 : 30739);
             data2.displayid = 0;
-            gameeventmgr.mGameEventCreatureGuids[51+51].push_back(guid);
-            gameeventmgr.mGameEventCreatureGuids[51+50].push_back(guid2);
+            sGameEventMgr.mGameEventCreatureGuids[51+51].push_back(guid);
+            sGameEventMgr.mGameEventCreatureGuids[51+50].push_back(guid2);
         }*/
 
         if (gameEvent == 0 && PoolId == 0)                      // if not this is to be managed by GameEvent System or Pool system
@@ -1498,7 +1498,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
         return 0;
 
     uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
-    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(level, cInfo->unit_class);
+    CreatureBaseStats const* stats = sObjectMgr.GetCreatureBaseStats(level, cInfo->unit_class);
 
     uint32 guid = GenerateLowGuid(HIGHGUID_UNIT);
     CreatureData& data = NewOrExistCreatureData(guid);
@@ -1941,7 +1941,7 @@ struct SQLItemLoader : public SQLStorageLoaderBase<SQLItemLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(objmgr.GetScriptId(src));
+        dst = D(sObjectMgr.GetScriptId(src));
     }
 };
 
@@ -3639,7 +3639,7 @@ void ObjectMgr::LoadGroups()
             diff = 0;                                   // default for both difficaly types
         }
 
-        InstanceSave *save = sInstanceSaveManager.AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), time_t(fields[5].GetUInt64()), fields[6].GetBool(), true);
+        InstanceSave *save = sInstanceSaveMgr.AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), time_t(fields[5].GetUInt64()), fields[6].GetBool(), true);
         group->BindToInstance(save, fields[3].GetBool(), true);
         ++count;
     }while (result->NextRow());
@@ -5121,7 +5121,7 @@ void ObjectMgr::LoadSpellScriptNames()
 
         if (allRanks)
         {
-            if (spellmgr.GetFirstSpellInChain(spellId) != spellId)
+            if (sSpellMgr.GetFirstSpellInChain(spellId) != spellId)
             {
                 sLog.outErrorDb("Scriptname:`%s` spell (spell_id:%d) is not first rank of spell.",scriptName,fields[0].GetInt32());
                 continue;
@@ -5129,7 +5129,7 @@ void ObjectMgr::LoadSpellScriptNames()
             while(spellId)
             {
                 mSpellScripts.insert(SpellScriptsMap::value_type(spellId, GetScriptId(scriptName)));
-                spellId = spellmgr.GetNextSpellInChain(spellId);
+                spellId = sSpellMgr.GetNextSpellInChain(spellId);
             }
         }
         else
@@ -5166,7 +5166,7 @@ void ObjectMgr::ValidateSpellScripts()
         {
             bar.step();
             sitr->first->Register();
-            if (!sitr->first->_Validate(spellEntry, objmgr.GetScriptName(sitr->second->second)))
+            if (!sitr->first->_Validate(spellEntry, sObjectMgr.GetScriptName(sitr->second->second)))
                 mSpellScripts.erase(sitr->second);
             delete sitr->first;
         }
@@ -5274,7 +5274,7 @@ struct SQLInstanceLoader : public SQLStorageLoaderBase<SQLInstanceLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(objmgr.GetScriptId(src));
+        dst = D(sObjectMgr.GetScriptId(src));
     }
 };
 
@@ -5793,7 +5793,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         }
     }
 
-    CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(mount_id);
+    CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(mount_id);
     if (minfo)
         mount_id = minfo->modelid;
 
@@ -6244,7 +6244,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 
     if (mapEntry->IsDungeon())
     {
-        const InstanceTemplate *iTemplate = objmgr.GetInstanceTemplate(Map);
+        const InstanceTemplate *iTemplate = sObjectMgr.GetInstanceTemplate(Map);
 
         if (!iTemplate)
             return NULL;
@@ -6525,7 +6525,7 @@ struct SQLGameObjectLoader : public SQLStorageLoaderBase<SQLGameObjectLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(objmgr.GetScriptId(src));
+        dst = D(sObjectMgr.GetScriptId(src));
     }
 };
 
@@ -7528,69 +7528,6 @@ void ObjectMgr::LoadNPCSpellClickSpells()
 
     sLog.outString();
     sLog.outString(">> Loaded %u spellclick definitions", count);
-}
-
-void ObjectMgr::LoadWeatherData()
-{
-    uint32 count = 0;
-
-    //                                                0     1                   2                   3                    4                   5                   6                    7                 8                 9                  10                  11                  12                                13
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT zone, spring_rain_chance, spring_snow_chance, spring_storm_chance, summer_rain_chance, summer_snow_chance, summer_storm_chance, fall_rain_chance, fall_snow_chance, fall_storm_chance, winter_rain_chance, winter_snow_chance, winter_storm_chance, ScriptName FROM game_weather");
-
-    if (!result)
-    {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
-        sLog.outErrorDb(">> Loaded 0 weather definitions. DB table `game_weather` is empty.");
-        return;
-    }
-
-    barGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-        bar.step();
-
-        uint32 zone_id = fields[0].GetUInt32();
-
-        WeatherData& wzc = mWeatherZoneMap[zone_id];
-
-        for (uint8 season = 0; season < WEATHER_SEASONS; ++season)
-        {
-            wzc.data[season].rainChance  = fields[season * (MAX_WEATHER_TYPE-1) + 1].GetUInt32();
-            wzc.data[season].snowChance  = fields[season * (MAX_WEATHER_TYPE-1) + 2].GetUInt32();
-            wzc.data[season].stormChance = fields[season * (MAX_WEATHER_TYPE-1) + 3].GetUInt32();
-
-            if (wzc.data[season].rainChance > 100)
-            {
-                wzc.data[season].rainChance = 25;
-                sLog.outErrorDb("Weather for zone %u season %u has wrong rain chance > 100%%",zone_id,season);
-            }
-
-            if (wzc.data[season].snowChance > 100)
-            {
-                wzc.data[season].snowChance = 25;
-                sLog.outErrorDb("Weather for zone %u season %u has wrong snow chance > 100%%",zone_id,season);
-            }
-
-            if (wzc.data[season].stormChance > 100)
-            {
-                wzc.data[season].stormChance = 25;
-                sLog.outErrorDb("Weather for zone %u season %u has wrong storm chance > 100%%",zone_id,season);
-            }
-        }
-
-        wzc.ScriptId = objmgr.GetScriptId(fields[13].GetString());
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog.outString();
-    sLog.outString(">> Loaded %u weather definitions", count);
 }
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
@@ -9193,7 +9130,7 @@ void ObjectMgr::LoadDbScriptStrings()
 // Functions for scripting access
 uint32 GetAreaTriggerScriptId(uint32 trigger_id)
 {
-    return objmgr.GetAreaTriggerScriptId(trigger_id);
+    return sObjectMgr.GetAreaTriggerScriptId(trigger_id);
 }
 
 bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
@@ -9206,27 +9143,27 @@ bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, i
         return false;
     }
 
-    return objmgr.LoadTrinityStrings(db,table,start_value,end_value);
+    return sObjectMgr.LoadTrinityStrings(db,table,start_value,end_value);
 }
 
 uint32  GetScriptId(const char *name)
 {
-    return objmgr.GetScriptId(name);
+    return sObjectMgr.GetScriptId(name);
 }
 
 ObjectMgr::ScriptNameMap & GetScriptNames()
 {
-    return objmgr.GetScriptNames();
+    return sObjectMgr.GetScriptNames();
 }
 
 GameObjectInfo const *GetGameObjectInfo(uint32 id)
 {
-    return objmgr.GetGameObjectInfo(id);
+    return sObjectMgr.GetGameObjectInfo(id);
 }
 
 CreatureInfo const *GetCreatureInfo(uint32 id)
 {
-    return objmgr.GetCreatureTemplate(id);
+    return sObjectMgr.GetCreatureTemplate(id);
 }
 
 CreatureInfo const* GetCreatureTemplateStore(uint32 entry)
@@ -9236,7 +9173,7 @@ CreatureInfo const* GetCreatureTemplateStore(uint32 entry)
 
 Quest const* GetQuestTemplateStore(uint32 entry)
 {
-    return objmgr.GetQuestTemplate(entry);
+    return sObjectMgr.GetQuestTemplate(entry);
 }
 
 uint64 ObjectMgr::GenerateGMTicketId()

@@ -123,7 +123,7 @@ void Vehicle::Install()
 
 void Vehicle::InstallAllAccessories()
 {
-    VehicleAccessoryList const* mVehicleList = objmgr.GetVehicleAccessoryList(me->GetEntry());
+    VehicleAccessoryList const* mVehicleList = sObjectMgr.GetVehicleAccessoryList(me->GetEntry());
     if (!mVehicleList)
         return;
 

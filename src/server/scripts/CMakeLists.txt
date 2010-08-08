@@ -44,6 +44,14 @@ set(scripts_STAT_SRCS
   ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
 )
 
+if(MSVC)
+  set(scripts_STAT_SRCS
+    ${scripts_STAT_SRCS}
+    PrecompiledHeaders/ScriptPCH.cpp
+    PrecompiledHeaders/ScriptPCH.h
+  )
+endif()
+
 message("-- Added Script Library to SCRIPTS lib")
 
 include_directories(
@@ -77,7 +85,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/EventAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/ScriptedAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AuctionHouse
-  ${CMAKE_SOURCE_DIR}/src/server/game/BattleGrounds
+  ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
@@ -131,23 +139,17 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Tools
   ${CMAKE_SOURCE_DIR}/src/server/game/Weather
   ${CMAKE_SOURCE_DIR}/src/server/game/World
+  ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
 )
-
-# Add ScriptPCH.cpp to project on Windows
-if(MSVC)
-set(scripts_STAT_SRCS
-    ../game/PrecompiledHeaders/ScriptPCH.cpp
-    ${scripts_STAT_SRCS})
-endif()
 
 add_library(scripts STATIC ${scripts_STAT_SRCS})
 
 # Generate precompiled header
 if(PCH)
   if(CMAKE_COMPILER_IS_GNUCXX)
-    add_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/ScriptPCH.h)
+    add_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders/ScriptPCH.h)
   elseif(MSVC)
-    add_native_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/ScriptPCH)
+    add_native_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders/ScriptPCH)
   endif()
 endif()
