@@ -214,7 +214,6 @@ public:
     }
 }
 
-
 void AddSC_npc_teleport()
 {
     new npc_teleport;
