@@ -24,10 +24,13 @@
 #include "Common.h"
 #include "DBCEnums.h"
 #include "BattleGround.h"
+#include "Configuration/Config.h"
 
 //this container can't be deque, because deque doesn't like removing the last element - if you remove it, it invalidates next iterator and crash appears
 typedef std::list<BattleGround*> BGFreeSlotQueueType;
 
+#define BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY 86400     // seconds in a day
+#define BATTLEGROUND_ARENA_MOD_RESET_HOUR         3600      // seconds in an hour
 #define COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME 10
 
 struct GroupQueueInfo;                                      // type predefinition
@@ -80,6 +83,7 @@ class BattleGroundQueue
         bool GetPlayerGroupInfoData(const uint64& guid, GroupQueueInfo* ginfo);
         void PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
         uint32 GetAverageQueueWaitTime(GroupQueueInfo* ginfo, BattleGroundBracketId bracket_id);
+		bool TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2);
 
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
