@@ -190,7 +190,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectWeaponDmg,                                //121 SPELL_EFFECT_NORMALIZED_WEAPON_DMG
     &Spell::EffectUnused,                                   //122 SPELL_EFFECT_122                      unused
     &Spell::EffectSendTaxi,                                 //123 SPELL_EFFECT_SEND_TAXI                taxi/flight related (misc value is taxi path id)
-    &Spell::EffectPlayerPull,                               //124 SPELL_EFFECT_PLAYER_PULL              opposite of knockback effect (pulls player twoard caster)
+    &Spell::EffectPullTowards,                              //124 SPELL_EFFECT_PULL_TOWARDS
     &Spell::EffectModifyThreatPercent,                      //125 SPELL_EFFECT_MODIFY_THREAT_PERCENT
     &Spell::EffectStealBeneficialBuff,                      //126 SPELL_EFFECT_STEAL_BENEFICIAL_BUFF    spell steal effect?
     &Spell::EffectProspecting,                              //127 SPELL_EFFECT_PROSPECTING              Prospecting spell
@@ -211,7 +211,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_DEST
-    &Spell::EffectPlayerPull,                               //145 SPELL_EFFECT_145                      Black Hole Effect
+    &Spell::EffectPullTowards,                              //145 SPELL_EFFECT_PULL_TOWARDS_DEST                      Black Hole Effect
     &Spell::EffectActivateRune,                             //146 SPELL_EFFECT_ACTIVATE_RUNE
     &Spell::EffectQuestFail,                                //147 SPELL_EFFECT_QUEST_FAIL               quest fail
     &Spell::EffectUnused,                                   //148 SPELL_EFFECT_148   1 spell - 43509
@@ -6622,26 +6622,25 @@ void Spell::EffectLeap(uint32 i)
 
 void Spell::EffectReputation(uint32 i)
 {
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if (!unitTarget)
         return;
 
-    Player *_player = (Player*)unitTarget;
-
-    int32  rep_change = damage;//+1;           // field store reputation change -1
-
-    uint32 faction_id = m_spellInfo->EffectMiscValue[i];
-
-    FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction_id);
-
-    if (!factionEntry)
-        return;
-
-    if (RepRewardRate const * repData = sObjectMgr.GetRepRewardRate(faction_id))
+    if (Player *_player = unitTarget->ToPlayer())
     {
-        rep_change = (float)rep_change * repData->spell_rate;
-    }
+        int32  rep_change = damage;//+1;           // field store reputation change -1
+        uint32 faction_id = m_spellInfo->EffectMiscValue[i];
 
-    _player->GetReputationMgr().ModifyReputation(factionEntry, rep_change);
+        FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction_id);
+        if (!factionEntry)
+            return;
+
+        if (RepRewardRate const * repData = sObjectMgr.GetRepRewardRate(faction_id))
+            rep_change = (float)rep_change * repData->spell_rate;
+
+        rep_change = _player->CalculateReputationGain(REPUTATION_SOURCE_SPELL, rep_change, faction_id);
+
+        _player->GetReputationMgr().ModifyReputation(factionEntry, rep_change);
+    }
 }
 
 void Spell::EffectQuestComplete(uint32 i)
@@ -6873,14 +6872,27 @@ void Spell::EffectSendTaxi(uint32 i)
     unitTarget->ToPlayer()->ActivateTaxiPathTo(m_spellInfo->EffectMiscValue[i],m_spellInfo->Id);
 }
 
-void Spell::EffectPlayerPull(uint32 i)
+void Spell::EffectPullTowards(uint32 i)
 {
     if (!unitTarget)
         return;
 
     float speedZ = m_spellInfo->EffectBasePoints[i]/10;
     float speedXY = m_spellInfo->EffectMiscValue[i]/10;
-    unitTarget->GetMotionMaster()->MoveJump(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), speedXY, speedZ);
+    Position pos;
+    if (m_spellInfo->Effect[i] == SPELL_EFFECT_PULL_TOWARDS_DEST)
+    {
+        if (m_targets.HasDst())
+            pos.Relocate(m_targets.m_dstPos);
+        else
+            return;
+    }
+    else //if (m_spellInfo->Effect[i] == SPELL_EFFECT_PULL_TOWARDS)
+    {
+        pos.Relocate(m_caster);
+    }
+
+    unitTarget->GetMotionMaster()->MoveJump(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), speedXY, speedZ);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)

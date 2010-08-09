@@ -307,7 +307,7 @@ void ScriptMgr::CreateSpellScripts(uint32 spell_id, std::list<SpellScript *> & s
 
         if (!script)
         {
-            sLog.outError("Spell script %s for spell %u returned a NULL SpellScript pointer!", tmpscript->ToString(), spell_id);
+            sLog.outError("Spell script %s for spell %u returned a NULL SpellScript pointer!", tmpscript->GetName().c_str(), spell_id);
             continue;
         }
 
@@ -330,7 +330,7 @@ void ScriptMgr::CreateSpellScripts(uint32 spell_id, std::vector<std::pair<SpellS
 
         if (!script)
         {
-            sLog.outError("Spell script %s for spell %u returned a NULL SpellScript pointer!", tmpscript->ToString(), spell_id);
+            sLog.outError("Spell script %s for spell %u returned a NULL SpellScript pointer!", tmpscript->GetName().c_str(), spell_id);
             continue;
         }
 
@@ -468,7 +468,7 @@ void ScriptMgr::OnGroupRateCalculation(float& rate, uint32 count, bool isRaid)
             {
 
 #define SCR_MAP_END \
-                break; \
+                return; \
             } \
         } \
     }
@@ -1194,7 +1194,7 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
         if (it->second == script)
         {
             sLog.outError("Script '%s' forgot to allocate memory, so this script and/or the script before that can't work.",
-                script->ToString());
+                script->GetName().c_str());
 
             return;
         }
@@ -1204,7 +1204,7 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
     {
         // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
         // through a script name (or similar).
-        uint32 id = GetScriptId(script->ToString());
+        uint32 id = GetScriptId(script->GetName().c_str());
         if (id)
         {
             // Try to find an existing script.
@@ -1230,7 +1230,7 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
             {
                 // If the script is already assigned -> delete it!
                 sLog.outError("Script '%s' already assigned with the same script name, so the script can't work.",
-                    script->ToString());
+                    script->GetName().c_str());
 
                 delete script;
             }
@@ -1240,7 +1240,7 @@ void ScriptMgr::ScriptRegistry<TScript>::AddScript(TScript* const script)
             // The script uses a script name from database, but isn't assigned to anything.
             if (script->GetName().find("example") == std::string::npos)
                 sLog.outErrorDb("Script named '%s' does not have a script name assigned in database.",
-                    script->ToString());
+                    script->GetName().c_str());
 
             delete script;
         }

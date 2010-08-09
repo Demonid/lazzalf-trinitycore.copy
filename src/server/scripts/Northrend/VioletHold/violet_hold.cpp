@@ -1206,6 +1206,7 @@ public:
         return new mob_azure_spellbreakerAI (pCreature);
     }
 };
+
 class mob_azure_captain : public CreatureScript
 {
 public:
