@@ -130,275 +130,283 @@ const Position SanityWellPos[10] =
 /*------------------------------------------------------*
  *                  Images of Keepers                   *
  *------------------------------------------------------*/
- 
-struct keeper_imageAI : public ScriptedAI
-{
-    keeper_imageAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = c->GetInstanceData();
-    }
 
-    ScriptedInstance* pInstance;
-};
-
-bool GossipHello_keeper_image(Player* pPlayer, Creature* pCreature)
+class npc_keeper_image : public CreatureScript
 {
-    InstanceData *data = pPlayer->GetInstanceData();
-    ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
-    
-    if (pInstance && pPlayer)
+    public:
+        npc_keeper_image(): CreatureScript("npc_keeper_image") {}
+
+    struct keeper_imageAI : public ScriptedAI
     {
-        if (!pCreature->HasAura(SPELL_KEEPER_ACTIVE))
+        keeper_imageAI(Creature *c) : ScriptedAI(c)
         {
-            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_KEEPER_HELP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+            pInstance = c->GetInstanceScript();
         }
-    }
-    return true;
-}
 
-bool GossipSelect_keeper_image(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
-{
-    InstanceData *data = pPlayer->GetInstanceData();
-    ScriptedInstance* pInstance = pCreature->GetInstanceData();
-    
-    if (pPlayer)
-        pPlayer->CLOSE_GOSSIP_MENU();
+        InstanceScript* pInstance;
+    };
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        InstanceScript *data = pPlayer->GetInstanceScript();
+        InstanceScript *pInstance = pCreature->GetInstanceScript();
         
-    switch (pCreature->GetEntry())
-    {
-        case NPC_IMAGE_OF_FREYA:
-            DoScriptText(SAY_FREYA_HELP, pCreature);
-            pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
-            if (Creature *pFreya = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_FREYA)))
-                pFreya->SetVisibility(VISIBILITY_ON);
-            break;
-        case NPC_IMAGE_OF_THORIM:
-            DoScriptText(SAY_THORIM_HELP, pCreature);
-            pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
-            if (Creature *pThorim = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_THORIM)))
-                pThorim->SetVisibility(VISIBILITY_ON);
-            break;
-        case NPC_IMAGE_OF_MIMIRON:
-            DoScriptText(SAY_MIMIRON_HELP, pCreature);
-            pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
-            if (Creature *pMimiron = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_MIMIRON)))
-                pMimiron->SetVisibility(VISIBILITY_ON);
-            break;
-        case NPC_IMAGE_OF_HODIR:
-            DoScriptText(SAY_HODIR_HELP, pCreature);
-            pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
-            if (Creature *pHodir = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_HODIR)))
-                pHodir->SetVisibility(VISIBILITY_ON);
-            break;
-    }
-    return true;
-}
-
-CreatureAI* GetAI_keeper_image(Creature* pCreature)
-{
-    return new keeper_imageAI (pCreature);
-}
-
-
-struct npc_ys_freyaAI : public ScriptedAI
-{
-    npc_ys_freyaAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        pInstance = pCreature->GetInstanceData();
-        me->SetReactState(REACT_PASSIVE);
-        me->SetVisibility(VISIBILITY_OFF);
-    }
-
-    ScriptedInstance* pInstance;
-    int32 WellTimer;
-
-    void Reset()
-    {
-        WellTimer = urand(5000, 10000);
-    }
-    
-    void EnterCombat()
-    {
-        DoCast(me, SPELL_RESILIENCE_OF_NATURE);
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
-            
-        if (WellTimer <= uiDiff)
+        if (pInstance && pPlayer)
         {
-            DoCast(SPELL_SANITY_WELL_SPAWN);
-            me->SummonCreature(NPC_SANITY_WELL, SanityWellPos[rand()%10], TEMPSUMMON_TIMED_DESPAWN, 60000);
-            WellTimer = 15000;
+            if (!pCreature->HasAura(SPELL_KEEPER_ACTIVE))
+            {
+                pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_KEEPER_HELP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+                pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+            }
         }
-        else WellTimer -= uiDiff;
-    }
-};
+        return true;
+    };
 
-CreatureAI* GetAI_npc_ys_freya(Creature* pCreature)
-{
-    return new npc_ys_freyaAI(pCreature);
-}
-
-struct npc_sanity_wellAI : public Scripted_NoMovementAI
-{
-    npc_sanity_wellAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
-        pInstance = pCreature->GetInstanceData();
-        DoCast(me, SPELL_SANITY_WELL_VISUAL);
-        DoCast(me, SPELL_SANITY_WELL);
-    }
-
-    ScriptedInstance* pInstance;
-};
-
-CreatureAI* GetAI_npc_sanity_well(Creature* pCreature)
-{
-    return new npc_sanity_wellAI(pCreature);
-}
-
-struct npc_ys_thorimAI : public ScriptedAI
-{
-    npc_ys_thorimAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        pInstance = pCreature->GetInstanceData();
-        me->SetReactState(REACT_PASSIVE);
-        me->SetVisibility(VISIBILITY_OFF);
-    }
-
-    ScriptedInstance* pInstance;
-
-    void Reset(){}
-    
-    void EnterCombat()
-    {
-        DoCast(me, SPELL_FURY_OF_THE_STORMS);
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
-            return;
+        InstanceScript *data = pPlayer->GetInstanceScript();
+        InstanceScript* pInstance = pCreature->GetInstanceScript();
+        
+        if (pPlayer)
+            pPlayer->CLOSE_GOSSIP_MENU();
             
-        if (!me->HasAura(SPELL_TITANIC_STORM) && phase == PHASE_3)
-            DoCast(me, SPELL_TITANIC_STORM);
-    }
-};
-
-CreatureAI* GetAI_npc_ys_thorim(Creature* pCreature)
-{
-    return new npc_ys_thorimAI(pCreature);
-}
-
-struct npc_ys_mimironAI : public ScriptedAI
-{
-    npc_ys_mimironAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        pInstance = pCreature->GetInstanceData();
-        me->SetReactState(REACT_PASSIVE);
-        me->SetVisibility(VISIBILITY_OFF);
-    }
-
-    ScriptedInstance* pInstance;
-    int32 DestabilizeTimer;
-
-    void Reset()
-    {
-        DestabilizeTimer = 15000;
-    }
-    
-    void EnterCombat()
-    {
-        DoCast(me, SPELL_SPEED_OF_INVENTION);
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
-            
-        if (DestabilizeTimer <= uiDiff)
+        switch (pCreature->GetEntry())
         {
-            if (phase == PHASE_2)
-                DoCast(SPELL_DESTABILIZATION);
+            case NPC_IMAGE_OF_FREYA:
+                DoScriptText(SAY_FREYA_HELP, pCreature);
+                pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
+                if (Creature *pFreya = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_FREYA)))
+                    pFreya->SetVisibility(VISIBILITY_ON);
+                break;
+            case NPC_IMAGE_OF_THORIM:
+                DoScriptText(SAY_THORIM_HELP, pCreature);
+                pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
+                if (Creature *pThorim = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_THORIM)))
+                    pThorim->SetVisibility(VISIBILITY_ON);
+                break;
+            case NPC_IMAGE_OF_MIMIRON:
+                DoScriptText(SAY_MIMIRON_HELP, pCreature);
+                pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
+                if (Creature *pMimiron = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_MIMIRON)))
+                    pMimiron->SetVisibility(VISIBILITY_ON);
+                break;
+            case NPC_IMAGE_OF_HODIR:
+                DoScriptText(SAY_HODIR_HELP, pCreature);
+                pCreature->CastSpell(pCreature, SPELL_KEEPER_ACTIVE, true);
+                if (Creature *pHodir = pCreature->GetCreature(*pCreature, pInstance->GetData64(DATA_YS_HODIR)))
+                    pHodir->SetVisibility(VISIBILITY_ON);
+                break;
+        }
+        return true;
+    };
+
+    CreatureAI* GetAI_keeper_image(Creature* pCreature)
+    {
+        return new keeper_imageAI (pCreature);
+    };
+};
+
+class npc_ys_freya : public CreatureScript
+{
+    public:
+        npc_ys_freya(): CreatureScript("npc_ys_freya") {}
+
+    struct npc_ys_freyaAI : public ScriptedAI
+    {
+        npc_ys_freyaAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetVisibility(VISIBILITY_OFF);
+        }
+
+        InstanceScript* pInstance;
+        int32 WellTimer;
+
+        void Reset()
+        {
+            WellTimer = urand(5000, 10000);
+        }
+        
+        void EnterCombat()
+        {
+            DoCast(me, SPELL_RESILIENCE_OF_NATURE);
+        }
+        
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+                
+            if (WellTimer <= uiDiff)
+            {
+                DoCast(SPELL_SANITY_WELL_SPAWN);
+                me->SummonCreature(NPC_SANITY_WELL, SanityWellPos[rand()%10], TEMPSUMMON_TIMED_DESPAWN, 60000);
+                WellTimer = 15000;
+            }
+            else WellTimer -= uiDiff;
+        }
+    };
+
+    CreatureAI* GetAI_npc_ys_freya(Creature* pCreature)
+    {
+        return new npc_ys_freyaAI(pCreature);
+    };
+};
+
+class npc_sanity_well : public CreatureScript
+{
+    public:
+        npc_sanity_well(): CreatureScript("npc_sanity_well") {}
+
+    struct npc_sanity_wellAI : public Scripted_NoMovementAI
+    {
+        npc_sanity_wellAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+            DoCast(me, SPELL_SANITY_WELL_VISUAL);
+            DoCast(me, SPELL_SANITY_WELL);
+        }
+
+        InstanceScript* pInstance;
+    };
+
+    CreatureAI* GetAI_npc_sanity_well(Creature* pCreature)
+    {
+        return new npc_sanity_wellAI(pCreature);
+    };
+};
+
+class npc_ys_thorim : public CreatureScript
+{
+    public:
+        npc_ys_thorim(): CreatureScript("npc_ys_thorim") {}
+
+    struct npc_ys_thorimAI : public ScriptedAI
+    {
+        npc_ys_thorimAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetVisibility(VISIBILITY_OFF);
+        }
+
+        InstanceScript* pInstance;
+
+        void Reset(){}
+        
+        void EnterCombat()
+        {
+            DoCast(me, SPELL_FURY_OF_THE_STORMS);
+        }
+        
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
+                return;
+                
+            if (!me->HasAura(SPELL_TITANIC_STORM) && phase == PHASE_3)
+                DoCast(me, SPELL_TITANIC_STORM);
+        }
+    };
+
+    CreatureAI* GetAI_npc_ys_thorim(Creature* pCreature)
+    {
+        return new npc_ys_thorimAI(pCreature);
+    }
+};
+
+class npc_ys_mimiron : public CreatureScript
+{
+    public:
+        npc_ys_mimiron(): CreatureScript("npc_ys_mimiron") {}
+
+    struct npc_ys_mimironAI : public ScriptedAI
+    {
+        npc_ys_mimironAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetVisibility(VISIBILITY_OFF);
+        }
+
+        InstanceScript* pInstance;
+        int32 DestabilizeTimer;
+
+        void Reset()
+        {
             DestabilizeTimer = 15000;
         }
-        else DestabilizeTimer -= uiDiff;            
-    }
+        
+        void EnterCombat()
+        {
+            DoCast(me, SPELL_SPEED_OF_INVENTION);
+        }
+        
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+                
+            if (DestabilizeTimer <= uiDiff)
+            {
+                if (phase == PHASE_2)
+                    DoCast(SPELL_DESTABILIZATION);
+                DestabilizeTimer = 15000;
+            }
+            else DestabilizeTimer -= uiDiff;            
+        }
+    };
+
+    CreatureAI* GetAI_npc_ys_mimiron(Creature* pCreature)
+    {
+        return new npc_ys_mimironAI(pCreature);
+    };
 };
 
-CreatureAI* GetAI_npc_ys_mimiron(Creature* pCreature)
+class npc_ys_hodir : public CreatureScript
 {
-    return new npc_ys_mimironAI(pCreature);
-}
+    public:
+        npc_ys_hodir(): CreatureScript("npc_ys_hodir") {}
 
-struct npc_ys_hodirAI : public ScriptedAI
-{
-    npc_ys_hodirAI(Creature* pCreature) : ScriptedAI(pCreature)
+    struct npc_ys_hodirAI : public ScriptedAI
     {
-        pInstance = pCreature->GetInstanceData();
-        me->SetReactState(REACT_PASSIVE);
-        me->SetVisibility(VISIBILITY_OFF);
-    }
+        npc_ys_hodirAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetVisibility(VISIBILITY_OFF);
+        }
 
-    ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
 
-    void Reset(){}
-    
-    void EnterCombat()
+        void Reset(){}
+        
+        void EnterCombat()
+        {
+            DoCast(me, SPELL_FORTITUDE_OF_FROST);
+        }
+        
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+        }
+    };
+
+    CreatureAI* GetAI_npc_ys_hodir(Creature* pCreature)
     {
-        DoCast(me, SPELL_FORTITUDE_OF_FROST);
-    }
-    
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
-    }
+        return new npc_ys_hodirAI(pCreature);
+    };
 };
-
-CreatureAI* GetAI_npc_ys_hodir(Creature* pCreature)
-{
-    return new npc_ys_hodirAI(pCreature);
-}
 
 void AddSC_boss_yogg_saron()
 {
-    Script *newscript;
-    
-    newscript = new Script;
-    newscript->Name="npc_keeper_image";
-    newscript->pGossipHello =  &GossipHello_keeper_image;
-    newscript->pGossipSelect = &GossipSelect_keeper_image;
-    newscript->GetAI = &GetAI_keeper_image;
-    newscript->RegisterSelf();
-    
-    newscript = new Script;
-    newscript->Name = "npc_ys_freya";
-    newscript->GetAI = &GetAI_npc_ys_freya;
-    newscript->RegisterSelf();
-    
-    newscript = new Script;
-    newscript->Name = "npc_ys_thorim";
-    newscript->GetAI = &GetAI_npc_ys_thorim;
-    newscript->RegisterSelf();
-    
-    newscript = new Script;
-    newscript->Name = "npc_ys_mimiron";
-    newscript->GetAI = &GetAI_npc_ys_mimiron;
-    newscript->RegisterSelf();
-    
-    newscript = new Script;
-    newscript->Name = "npc_ys_hodir";
-    newscript->GetAI = &GetAI_npc_ys_hodir;
-    newscript->RegisterSelf();
-    
-    newscript = new Script;
-    newscript->Name = "npc_sanity_well";
-    newscript->GetAI = &GetAI_npc_sanity_well;
-    newscript->RegisterSelf();
+    new npc_keeper_image();
+    new npc_ys_freya();
+    new npc_sanity_well();
+    new npc_ys_thorim();
+    new npc_ys_mimiron();
+    new npc_ys_hodir();
 }
