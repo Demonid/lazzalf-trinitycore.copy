@@ -275,7 +275,7 @@ public:
         }
     };
 
-    InstanceData* GetInstanceData_instance_oculus(Map* pMap)
+    InstanceScript* GetInstanceData_instance_oculus(Map* pMap)
     {
         return new instance_oculus(pMap);
     }

@@ -350,8 +350,8 @@ class mob_frozen_orb_stalker : public CreatureScript
 
 void AddSC_boss_toravon()
 {
-    new boss_toravon;
-    new mob_frost_warder;
-    new mob_frozen_orb;
-    new mob_frozen_orb_stalker;
+    new boss_toravon();
+    new mob_frost_warder();
+    new mob_frozen_orb();
+    new mob_frozen_orb_stalker();
 }
