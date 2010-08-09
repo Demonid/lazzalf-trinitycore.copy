@@ -30,7 +30,7 @@
 #include "CreatureAI.h"
 #include "MapManager.h"
 #include "OutdoorPvPMgr.h"
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];

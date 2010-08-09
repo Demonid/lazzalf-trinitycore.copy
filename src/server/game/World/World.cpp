@@ -1529,7 +1529,7 @@ void World::SetInitialWorldSettings()
     
     sLog.outString();
     sLog.outString("Loading Quest Pool...");
-    objmgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
+    sObjectMgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
 
     sLog.outString("Loading Quest POI");
     sObjectMgr.LoadQuestPOI();
@@ -1689,7 +1689,7 @@ void World::SetInitialWorldSettings()
 
 	// Loads the jail conf out of the database
     sLog.outString("Loading JailConfing...");    
-    objmgr.LoadJailConf();
+    sObjectMgr.LoadJailConf();
 
     sLog.outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
@@ -1795,7 +1795,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting Battleground System");
     sBattlegroundMgr.CreateInitialBattlegrounds();
     sBattlegroundMgr.InitAutomaticArenaPointDistribution();
-	sBattleGroundMgr.InitAutomaticArenaModTimer();
+	sBattlegroundMgr.InitAutomaticArenaModTimer();
 
     ///- Initialize outdoor pvp
     sLog.outString("Starting Outdoor PvP System");
@@ -2700,7 +2700,7 @@ void World::ResetDailyQuests()
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
 
-    objmgr.ResetQuestPool(true);
+    sObjectMgr.ResetQuestPool(true);
 }
 
 void World::UpdateAllowedSecurity()
@@ -2723,7 +2723,7 @@ void World::ResetWeeklyQuests()
     m_NextWeeklyQuestReset = time_t(m_NextWeeklyQuestReset + WEEK);
     sWorld.setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
 
-    objmgr.ResetQuestPool(false);
+    sObjectMgr.ResetQuestPool(false);
 }
 
 void World::ResetRandomBG()
