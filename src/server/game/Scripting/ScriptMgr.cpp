@@ -26,11 +26,17 @@
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
+#include "Custom/sc_npc_teleport.h"
+#include "Custom/GuildHouse.h"
 
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
 #define SCR_REG_ITR(T) ScriptRegistry<T>::ScriptMapIterator
 #define SCR_REG_LST(T) ScriptRegistry<T>::ScriptPointerList
+	// Load TeleNPC2 - maybe not the best place to load it ...
+    LoadNpcTele();
+    //GuildHouse System
+    LoadGuildHouseSystem();
 
 // Utility macros for looping over scripts.
 #define FOR_SCRIPTS(T,C,E) \
