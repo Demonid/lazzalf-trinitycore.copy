@@ -51,7 +51,7 @@
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
 #include "OutdoorPvPMgr.h"
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "ConditionMgr.h"
 #include "DisableMgr.h"
 #include "SpellScript.h"
@@ -5535,7 +5535,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if(m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     if(m_spellInfo->Id == 698) //ritual of summoning
-                        if(m_caster->ToPlayer()->GetMap()->IsBattleGround())
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleground())
                             return SPELL_FAILED_NOT_HERE;
                 }
                 break;

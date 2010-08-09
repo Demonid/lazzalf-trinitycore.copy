@@ -1,7 +1,7 @@
 #ifndef OUTDOOR_PVP_WG_
 #define OUTDOOR_PVP_WG_
 
-#include "OutdoorPvPImpl.h"
+#include "OutdoorPvP.h"
 #include "BattleGroundMgr.h"
 
 #define POS_X_CENTER                5100

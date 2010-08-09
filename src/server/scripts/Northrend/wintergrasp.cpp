@@ -1,5 +1,5 @@
 #include "ScriptPCH.h"
-#include "Zones/OutdoorPvPWG.h"
+#include "../OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "World.h"
 
@@ -70,7 +70,7 @@ class npc_demolisher_engineerer : public CreatureScript
 
         return true;
     }
-}
+};
 
 /*******************************************************
  * npc_wg_misc
@@ -285,13 +285,13 @@ class npc_wg_misc : public CreatureScript
                     return;
             }
         }
-    }
+    };
 
     CreatureAI* GetAI_npc_wg_misc(Creature* pCreature)
     {
         return new npc_wg_miscAI (pCreature);
     }
-}
+};
 
 /*******************************************************
  * npc_winterguard
@@ -345,13 +345,13 @@ class npc_winterguard : public CreatureScript
         }
 
         void UpdateAI(const uint32 /*diff*/){}
-    }
+    };
 
     CreatureAI* GetAI_npc_winterguard(Creature* pCreature)
     {
         return new npc_winterguardAI(pCreature);
     }
-}
+};
 
 void AddSC_wintergrasp()
 {

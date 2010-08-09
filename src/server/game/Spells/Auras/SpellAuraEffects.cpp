@@ -37,7 +37,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ScriptMgr.h"
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "CreatureAIImpl.h"
 
 class Aura;
