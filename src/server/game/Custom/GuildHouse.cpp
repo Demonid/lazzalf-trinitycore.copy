@@ -49,7 +49,7 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
     if (!guild_id)
         return false;
 
-    Guild* guild = objmgr.GetGuildById(guild_id);  
+    Guild* guild = sObjectMgr.GetGuildById(guild_id);  
     
     if (!guild_id)
     {
@@ -174,7 +174,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         {
             if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
             {
-                objmgr.RemoveCreatureFromGrid(*itr2, data);
+                sObjectMgr.RemoveCreatureFromGrid(*itr2, data);
                 if( Creature* pCreature = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
                     pCreature->AddObjectToRemoveList();
             }
@@ -184,7 +184,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         {
             if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
             { 
-                objmgr.RemoveGameobjectFromGrid(*itr2, data);
+                sObjectMgr.RemoveGameobjectFromGrid(*itr2, data);
                 if (GameObject* pGameobject = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
                      pGameobject->AddObjectToRemoveList();
             }
@@ -211,7 +211,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             {
                 if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
                 {
-                    objmgr.AddGameobjectToGrid(*itr2, data);
+                    sObjectMgr.AddGameobjectToGrid(*itr2, data);
 
                     Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
 
@@ -234,7 +234,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             {                
                 if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
                 {
-                    objmgr.AddCreatureToGrid(*itr2, data);
+                    sObjectMgr.AddCreatureToGrid(*itr2, data);
 
                     Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
                     
@@ -353,7 +353,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
         find = ( (uint32)id << 16 ) | (uint32)add_type;
         if (type == CREATURE)
         {
-            if (!objmgr.GetCreatureData(guid))                
+            if (!sObjectMgr.GetCreatureData(guid))                
             {                
                 sLog.outString( "Data per Creature Guid %u non esistente", guid );
                 continue;
@@ -362,7 +362,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
         }
         else if (type == OBJECT)
         {
-            if (!objmgr.GetGOData(guid))
+            if (!sObjectMgr.GetGOData(guid))
             {                
                 sLog.outString( "Data per GameObject Guid %u non esistente", guid );
                 continue;

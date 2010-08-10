@@ -71,6 +71,8 @@
 #include "CharacterDatabaseCleaner.h"
 #include "ScriptMgr.h"
 #include "WeatherMgr.h"
+#include "Custom/sc_npc_teleport.h"
+#include "Custom/GuildHouse.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1821,6 +1823,11 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Starting objects Pooling system...");
     sPoolMgr.Initialize();
+    
+	// Load TeleNPC2 - maybe not the best place to load it ...
+    LoadNpcTele();
+    //GuildHouse System
+    LoadGuildHouseSystem();
 
     // possibly enable db logging; avoid massive startup spam by doing it here.
     if (sLog.GetLogDBLater())

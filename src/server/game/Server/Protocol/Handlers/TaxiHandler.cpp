@@ -226,7 +226,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     if (!curDest)
     {
         // movement anticheat code
-        GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetPositionO());
+        GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetOrientation());
         GetPlayer()->m_movementInfo = movementInfo;
         GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
 
@@ -270,7 +270,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
             GetPlayer()->GetMotionMaster()->MovementExpired(false);
 
     // movement anticheat code
-    GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetPositionO());
+    GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetOrientation());
     GetPlayer()->m_movementInfo = movementInfo;
     GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
     // calc time deltas

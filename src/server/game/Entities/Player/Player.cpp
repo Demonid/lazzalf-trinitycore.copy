@@ -1331,19 +1331,19 @@ void Player::Update(uint32 p_time)
 
         if (m_team == ALLIANCE)
         {
-            if (GetDistance(objmgr.m_jailconf_ally_x, objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z) > objmgr.m_jailconf_radius)
+            if (GetDistance(sObjectMgr.m_jailconf_ally_x, sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z) > sObjectMgr.m_jailconf_radius)
             {
-                TeleportTo(objmgr.m_jailconf_ally_m, objmgr.m_jailconf_ally_x,
-                    objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z, objmgr.m_jailconf_ally_o);
+                TeleportTo(sObjectMgr.m_jailconf_ally_m, sObjectMgr.m_jailconf_ally_x,
+                    sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z, sObjectMgr.m_jailconf_ally_o);
                 return;
             }
         }
         else
         {
-            if (GetDistance(objmgr.m_jailconf_horde_x, objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z) > objmgr.m_jailconf_radius)
+            if (GetDistance(sObjectMgr.m_jailconf_horde_x, sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z) > sObjectMgr.m_jailconf_radius)
             {
-                TeleportTo(objmgr.m_jailconf_horde_m, objmgr.m_jailconf_horde_x,
-                    objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z, objmgr.m_jailconf_horde_o);
+                TeleportTo(sObjectMgr.m_jailconf_horde_m, sObjectMgr.m_jailconf_horde_x,
+                    sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z, sObjectMgr.m_jailconf_horde_o);
                 return;
             }
 			
@@ -1354,20 +1354,20 @@ void Player::Update(uint32 p_time)
 	{
 		m_jail_warning = false;
 		
-		if(objmgr.m_jailconf_warn_player && objmgr.m_jailconf_warn_player == m_jail_times)
+		if(sObjectMgr.m_jailconf_warn_player && sObjectMgr.m_jailconf_warn_player == m_jail_times)
 		{
-			if (((objmgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (objmgr.m_jailconf_ban - 1))
+			if (((sObjectMgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (sObjectMgr.m_jailconf_ban - 1))
 			{
-				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING_BAN, m_jail_times , objmgr.m_jailconf_max_jails-1);
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING_BAN, m_jail_times , sObjectMgr.m_jailconf_max_jails-1);
 			}
 			else
 			{
-				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING, m_jail_times , objmgr.m_jailconf_max_jails);
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING, m_jail_times , sObjectMgr.m_jailconf_max_jails);
 			}		        
 		}
 		return;
 	}
-    if(m_jail_amnestie == true && objmgr.m_jailconf_amnestie > 0 )
+    if(m_jail_amnestie == true && sObjectMgr.m_jailconf_amnestie > 0 )
     {
 	    m_jail_amnestie =false;
     	time_t localtime;
@@ -16678,13 +16678,13 @@ void Player::_LoadJail(void)
     {
         if (m_team == ALLIANCE)
         {
-            TeleportTo(objmgr.m_jailconf_ally_m, objmgr.m_jailconf_ally_x,
-                objmgr.m_jailconf_ally_y, objmgr.m_jailconf_ally_z, objmgr.m_jailconf_ally_o);
+            TeleportTo(sObjectMgr.m_jailconf_ally_m, sObjectMgr.m_jailconf_ally_x,
+                sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z, sObjectMgr.m_jailconf_ally_o);
         }
         else
         {
-            TeleportTo(objmgr.m_jailconf_horde_m, objmgr.m_jailconf_horde_x,
-                objmgr.m_jailconf_horde_y, objmgr.m_jailconf_horde_z, objmgr.m_jailconf_horde_o);
+            TeleportTo(sObjectMgr.m_jailconf_horde_m, sObjectMgr.m_jailconf_horde_x,
+                sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z, sObjectMgr.m_jailconf_horde_o);
         }
          
         sWorld.SendWorldText(LANG_JAIL_CHAR_TELE, GetName() );

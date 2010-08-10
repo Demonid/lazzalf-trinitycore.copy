@@ -248,8 +248,8 @@ public:
         //else
             //pPlayer->SEND_GOSSIP_MENU(???, pCreature->GetGUID()); Missing text
         return true;
-    }
-}
+    };
+};
 
 /*######
 ## npc_argent_valiant
@@ -330,7 +330,7 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_argent_valiantAI(creature);
-    }
+    };
 };
 
 /*######
@@ -372,7 +372,7 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_argent_tournament_postAI(creature);
-    }
+    };
 };
 
 /*######
@@ -431,7 +431,7 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_alorah_and_grimminAI(creature);
-    }
+    };
 };
 
 /*######
@@ -508,12 +508,12 @@ public:
 
             DoMeleeAttackIfReady();
         }
-    }
+    };
 
     CreatureAI* GetAI_npc_argent_champion(Creature* pCreature)
     {
         return new npc_argent_championAI (pCreature);
-    }
+    };
 };
 
 /*######
@@ -560,7 +560,7 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_guardian_pavilionAI(creature);
-    }
+    };
 };
 
 void AddSC_icecrown()
