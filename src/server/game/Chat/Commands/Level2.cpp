@@ -42,7 +42,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "Transport.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
@@ -59,7 +59,7 @@ bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
         return false;
     }
 
-    PSendSysMessage(LANG_BG_WG_STATUS, objmgr.GetTrinityStringForDBCLocale(
+    PSendSysMessage(LANG_BG_WG_STATUS, sObjectMgr.GetTrinityStringForDBCLocale(
         pvpWG->getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE),
         secsToTimeString(pvpWG->GetTimer(), true).c_str(),
         pvpWG->isWarTime() ? "Yes" : "No",
@@ -966,7 +966,7 @@ bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
 
     char* spawntimeSecs = strtok(NULL, " ");
 
-    const GameObjectInfo *gInfo = objmgr.GetGameObjectInfo(id);
+    const GameObjectInfo *gInfo = sObjectMgr.GetGameObjectInfo(id);
 
     if (!gInfo)
     {
@@ -992,7 +992,7 @@ bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
     Map *map = chr->GetMap();
 
     GameObject* pGameObj = new GameObject;
-    uint32 db_lowGUID = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    uint32 db_lowGUID = sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
     if (!pGameObj->Create(db_lowGUID, gInfo->id, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
     {
@@ -1025,7 +1025,7 @@ bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
                               pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
 
     // TODO: is it really necessary to add both the real and DB table guid here ?
-    objmgr.AddGameobjectToGrid(db_lowGUID, objmgr.GetGOData(db_lowGUID));
+    sObjectMgr.AddGameobjectToGrid(db_lowGUID, sObjectMgr.GetGOData(db_lowGUID));
 
     PSendSysMessage(LANG_GAMEOBJECT_ADD,id,gInfo->name,db_lowGUID,x,y,z);
     return true;
@@ -1329,7 +1329,7 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
     Map *map = chr->GetMap();
 
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
+    if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
     {
         delete pCreature;
         return false;
@@ -1346,7 +1346,7 @@ bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
                            pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
 
     map->Add(pCreature);
-    objmgr.AddCreatureToGrid(db_guid, objmgr.GetCreatureData(db_guid));
+    sObjectMgr.AddCreatureToGrid(db_guid, sObjectMgr.GetCreatureData(db_guid));
     return true;
 }
 

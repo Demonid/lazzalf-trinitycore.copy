@@ -278,8 +278,8 @@ public:
     InstanceScript* GetInstanceData_instance_oculus(Map* pMap)
     {
         return new instance_oculus_zone(pMap);
-    }
-}
+    };
+};
 
 void AddSC_instance_oculus()
 {

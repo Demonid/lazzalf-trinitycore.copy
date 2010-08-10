@@ -17,7 +17,7 @@
  */
 
 #include "OutdoorPvPMgr.h"
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "ProgressBar.h"

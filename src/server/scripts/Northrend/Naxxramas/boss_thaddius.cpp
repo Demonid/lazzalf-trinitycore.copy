@@ -106,389 +106,395 @@ enum Events
 #define TESLA_F_Y            -2988.65
 #define TESLA_F_Z             312.092
 
-struct boss_thaddiusAI : public BossAI
+class boss_thaddius : public CreatureScript
 {
-    boss_thaddiusAI(Creature *c) : BossAI(c, BOSS_THADDIUS)
+    public:
+        boss_thaddius(): CreatureScript("boss_thaddius") {}
+
+    struct boss_thaddiusAI : public BossAI
     {
-        // init is a bit tricky because thaddius shall track the life of both adds, but not if there was a wipe
-        // and, in particular, if there was a crash after both adds were killed (should not respawn)
-
-        // Moreover, the adds may not yet be spawn. So just track down the status if mob is spawn
-        // and each mob will send its status at reset (meaning that it is alive)
-        checkFeugenAlive = false;
-        if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
-            checkFeugenAlive = pFeugen->isAlive();
-
-        checkStalaggAlive = false;
-        if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
-            checkStalaggAlive = pStalagg->isAlive();
-
-        if (!checkFeugenAlive && !checkStalaggAlive)
+        boss_thaddiusAI(Creature *c) : BossAI(c, BOSS_THADDIUS)
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
-            me->SetReactState(REACT_AGGRESSIVE);
-        }
-        else
-        {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
-            me->SetReactState(REACT_PASSIVE);
-        }
-    }
+            // init is a bit tricky because thaddius shall track the life of both adds, but not if there was a wipe
+            // and, in particular, if there was a crash after both adds were killed (should not respawn)
 
-    bool checkStalaggAlive;
-    bool checkFeugenAlive;
-    uint32 uiAddsTimer;
+            // Moreover, the adds may not yet be spawn. So just track down the status if mob is spawn
+            // and each mob will send its status at reset (meaning that it is alive)
+            checkFeugenAlive = false;
+            if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
+                checkFeugenAlive = pFeugen->isAlive();
 
-    void KilledUnit(Unit* /*victim*/)
-    {
-        if (!(rand()%5))
-            DoScriptText(SAY_SLAY, me);
-    }
+            checkStalaggAlive = false;
+            if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
+                checkStalaggAlive = pStalagg->isAlive();
 
-    void JustDied(Unit* /*Killer*/)
-    {
-        _JustDied();
-        DoScriptText(SAY_DEATH, me);
-        me->SummonCreature(39000, 3517.93, -2942.52, 303.12, 2.096, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
-    }
-
-    void Reset()
-    {
-        if(checkStalaggAlive != checkFeugenAlive)
-            if (!checkStalaggAlive)
+            if (!checkFeugenAlive && !checkStalaggAlive)
             {
-                if (instance)
-                    if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
-                    {
-                        pStalagg->Respawn();
-                        checkStalaggAlive = true;
-                    }
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+                me->SetReactState(REACT_AGGRESSIVE);
             }
             else
             {
-                if (instance)
-                    if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
-                    {
-                        pFeugen->Respawn();
-                        checkFeugenAlive = true;
-                    }                
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+                me->SetReactState(REACT_PASSIVE);
             }
-        _Reset();
-    }
-
-    void DoAction(const int32 action)
-    {
-        switch(action)
-        {
-            case ACTION_FEUGEN_RESET:
-                checkFeugenAlive = true;
-                break;
-            case ACTION_FEUGEN_DIED:
-                checkFeugenAlive = false;
-                break;
-            case ACTION_STALAGG_RESET:
-                checkStalaggAlive = true;
-                break;
-            case ACTION_STALAGG_DIED:
-                checkStalaggAlive = false;
-                break;
         }
 
-        if (!checkFeugenAlive && !checkStalaggAlive)
+        bool checkStalaggAlive;
+        bool checkFeugenAlive;
+        uint32 uiAddsTimer;
+
+        void KilledUnit(Unit* /*victim*/)
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
-            // REACT_AGGRESSIVE only reset when he takes damage.
-            DoZoneInCombat();
+            if (!(rand()%5))
+                DoScriptText(SAY_SLAY, me);
         }
-        else
+
+        void JustDied(Unit* /*Killer*/)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
-            me->SetReactState(REACT_PASSIVE);
+            _JustDied();
+            DoScriptText(SAY_DEATH, me);
+            me->SummonCreature(39000, 3517.93, -2942.52, 303.12, 2.096, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
         }
-    }
 
-    void EnterCombat(Unit * /*who*/)
-    {
-        _EnterCombat();
-        DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2,SAY_AGGRO_3), me);
-        events.ScheduleEvent(EVENT_SHIFT, 30000);
-        events.ScheduleEvent(EVENT_CHAIN, urand(10000,20000));
-        events.ScheduleEvent(EVENT_BERSERK, 360000);
-    }
-
-    void DamageTaken(Unit * /*pDoneBy*/, uint32 & /*uiDamage*/)
-    {
-        me->SetReactState(REACT_AGGRESSIVE);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (checkFeugenAlive && checkStalaggAlive)
-            uiAddsTimer = 0;
-
-        if (checkStalaggAlive != checkFeugenAlive)
+        void Reset()
         {
-            uiAddsTimer += diff;
-            if (uiAddsTimer > 5000)
-            {
+            if(checkStalaggAlive != checkFeugenAlive)
                 if (!checkStalaggAlive)
                 {
                     if (instance)
                         if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
+                        {
                             pStalagg->Respawn();
+                            checkStalaggAlive = true;
+                        }
                 }
                 else
                 {
                     if (instance)
                         if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
+                        {
                             pFeugen->Respawn();
+                            checkFeugenAlive = true;
+                        }                
+                }
+            _Reset();
+        }
+
+        void DoAction(const int32 action)
+        {
+            switch(action)
+            {
+                case ACTION_FEUGEN_RESET:
+                    checkFeugenAlive = true;
+                    break;
+                case ACTION_FEUGEN_DIED:
+                    checkFeugenAlive = false;
+                    break;
+                case ACTION_STALAGG_RESET:
+                    checkStalaggAlive = true;
+                    break;
+                case ACTION_STALAGG_DIED:
+                    checkStalaggAlive = false;
+                    break;
+            }
+
+            if (!checkFeugenAlive && !checkStalaggAlive)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+                // REACT_AGGRESSIVE only reset when he takes damage.
+                DoZoneInCombat();
+            }
+            else
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
+                me->SetReactState(REACT_PASSIVE);
+            }
+        }
+
+        void EnterCombat(Unit * /*who*/)
+        {
+            _EnterCombat();
+            DoScriptText(RAND(SAY_AGGRO_1,SAY_AGGRO_2,SAY_AGGRO_3), me);
+            events.ScheduleEvent(EVENT_SHIFT, 30000);
+            events.ScheduleEvent(EVENT_CHAIN, urand(10000,20000));
+            events.ScheduleEvent(EVENT_BERSERK, 360000);
+        }
+
+        void DamageTaken(Unit * /*pDoneBy*/, uint32 & /*uiDamage*/)
+        {
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (checkFeugenAlive && checkStalaggAlive)
+                uiAddsTimer = 0;
+
+            if (checkStalaggAlive != checkFeugenAlive)
+            {
+                uiAddsTimer += diff;
+                if (uiAddsTimer > 5000)
+                {
+                    if (!checkStalaggAlive)
+                    {
+                        if (instance)
+                            if (Creature *pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
+                                pStalagg->Respawn();
+                    }
+                    else
+                    {
+                        if (instance)
+                            if (Creature *pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
+                                pFeugen->Respawn();
+                    }
                 }
             }
-        }
 
-        if (!UpdateVictim())
-            return;
+            if (!UpdateVictim())
+                return;
 
-        events.Update(diff);
+            events.Update(diff);
 
-        if (me->hasUnitState(UNIT_STAT_CASTING))
-            return;
+            if (me->hasUnitState(UNIT_STAT_CASTING))
+                return;
 
-        while (uint32 eventId = events.ExecuteEvent())
-        {
-            switch(eventId)
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                case EVENT_SHIFT:
-                    DoCastAOE(SPELL_POLARITY_SHIFT);
-                    events.ScheduleEvent(EVENT_SHIFT, 30000);
-                    return;
-                case EVENT_CHAIN:
-                    DoCast(me->getVictim(), RAID_MODE(SPELL_CHAIN_LIGHTNING, H_SPELL_CHAIN_LIGHTNING));
-                    events.ScheduleEvent(EVENT_CHAIN, urand(10000,20000));
-                    return;
-                case EVENT_BERSERK:
-                    DoCast(me, SPELL_BERSERK);
-                    return;
-                case EVENT_SCREAM:
-                    DoScriptText(RAND(SAY_SCREAM1,SAY_SCREAM2,SAY_SCREAM3,SAY_SCREAM4), me);
-                    events.ScheduleEvent(EVENT_SCREAM, urand(45000,60000));
-                    return;
+                switch(eventId)
+                {
+                    case EVENT_SHIFT:
+                        DoCastAOE(SPELL_POLARITY_SHIFT);
+                        events.ScheduleEvent(EVENT_SHIFT, 30000);
+                        return;
+                    case EVENT_CHAIN:
+                        DoCast(me->getVictim(), RAID_MODE(SPELL_CHAIN_LIGHTNING, H_SPELL_CHAIN_LIGHTNING));
+                        events.ScheduleEvent(EVENT_CHAIN, urand(10000,20000));
+                        return;
+                    case EVENT_BERSERK:
+                        DoCast(me, SPELL_BERSERK);
+                        return;
+                    case EVENT_SCREAM:
+                        DoScriptText(RAND(SAY_SCREAM1,SAY_SCREAM2,SAY_SCREAM3,SAY_SCREAM4), me);
+                        events.ScheduleEvent(EVENT_SCREAM, urand(45000,60000));
+                        return;
+                }
             }
+
+            if (events.GetTimer() > 15000 && !IsInRange())
+                DoCast(me->getVictim(), SPELL_BALL_LIGHTNING);
+            else
+                DoMeleeAttackIfReady();
         }
 
-        if (events.GetTimer() > 15000 && !IsInRange())
-            DoCast(me->getVictim(), SPELL_BALL_LIGHTNING);
-        else
-            DoMeleeAttackIfReady();
-    }
-
-    bool IsInRange()
-    {
-        std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
-        for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+        bool IsInRange()
         {
-            Unit* pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                        
-            if (!pTarget)
-                continue;
-                           
-            if (me->IsWithinMeleeRange(pTarget))
-                return true;
+            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Unit* pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                            
+                if (!pTarget)
+                    continue;
+                               
+                if (me->IsWithinMeleeRange(pTarget))
+                    return true;
+            }
+            return false;
         }
-        return false;
-    }
+    };
+
+    CreatureAI* GetAI_boss_thaddius(Creature* pCreature)
+    {
+        return new boss_thaddiusAI (pCreature);
+    };
 };
 
-CreatureAI* GetAI_boss_thaddius(Creature* pCreature)
+class mob_stalagg : public CreatureScript
 {
-    return new boss_thaddiusAI (pCreature);
-}
+    public:
+        mob_stalagg(): CreatureScript("mob_stalagg") {}
 
-struct mob_stalaggAI : public ScriptedAI
-{
-    mob_stalaggAI(Creature *c) : ScriptedAI(c)
+    struct mob_stalaggAI : public ScriptedAI
     {
-        pInstance = c->GetInstanceData();
-    }
-
-    ScriptedInstance* pInstance;
-
-    uint32 powerSurgeTimer;
-    uint32 magneticPullTimer;
-
-    void Reset()
-    {
-        if (pInstance)
-            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
-                if (pThaddius->AI())
-                    pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
-        powerSurgeTimer = urand(20000,25000);
-        magneticPullTimer = 20000;
-    }
-
-    void EnterCombat(Unit * /*pWho*/)
-    {
-        DoCast(SPELL_STALAGG_TESLA);
-        DoScriptText(SAY_STAL_AGGRO, me);
-    }
-
-    void JustDied(Unit * /*killer*/)
-    {
-        if (pInstance)
-            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
-                if (pThaddius->AI())
-                    {
-                        pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
-                        DoScriptText(SAY_STAL_DEATH, me);
-                    }
-    }
-
-    void KilledUnit(Unit* victim)
-    {
-        DoScriptText(SAY_STAL_SLAY, me);
-    }
-
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        // Tesla distance check
-        if(me->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 28)
+        mob_stalaggAI(Creature *c) : ScriptedAI(c)
         {
-            me->MonsterTextEmote(EMOTE_TESLA, 0, true);
-            DoCastAOE(SPELL_TESLA);
+            pInstance = c->GetInstanceScript();
         }
 
-        if (magneticPullTimer <= uiDiff)
+        InstanceScript* pInstance;
+
+        uint32 powerSurgeTimer;
+        uint32 magneticPullTimer;
+
+        void Reset()
         {
-            if (Creature *pFeugen = me->GetCreature(*me, pInstance->GetData64(DATA_FEUGEN)))
-            {
-                Unit* pStalaggVictim = me->getVictim();
-                Unit* pFeugenVictim = pFeugen->getVictim();
-
-                if (pFeugenVictim && pStalaggVictim)
-                {
-                    // store tank threat before any other change is made
-                    int32 threatStalaggVictim = me->getThreatManager().getThreat(pStalaggVictim);
-                    int32 threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
-						
-                    // magnetic pull is not working. So just jump.
-                    // reset aggro to be sure that feugen will not follow the jump
-                    pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
-                    me->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
-                    
-                    // threat switching between tanks, using the previously stored values
-                    pFeugen->getThreatManager().addThreat(pStalaggVictim, threatStalaggVictim);
-                    me->getThreatManager().addThreat(pFeugenVictim, threatFeugenVictim);
-
-                    pFeugenVictim->JumpTo(me, 0.3f); 
-                    pStalaggVictim->JumpTo(pFeugen, 0.3f);
-                }
-            }
+            if (pInstance)
+                if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->AI())
+                        pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
+            powerSurgeTimer = urand(20000,25000);
             magneticPullTimer = 20000;
         }
-        else magneticPullTimer -= uiDiff;
 
-        if (powerSurgeTimer <= uiDiff)
+        void EnterCombat(Unit * /*pWho*/)
         {
-            DoCast(me, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
-            powerSurgeTimer = urand(15000,20000);
-        } else powerSurgeTimer -= uiDiff;
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-CreatureAI* GetAI_mob_stalagg(Creature* pCreature)
-{
-    return new mob_stalaggAI(pCreature);
-}
-
-struct mob_feugenAI : public ScriptedAI
-{
-    mob_feugenAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = c->GetInstanceData();
-    }
-
-    ScriptedInstance* pInstance;
-
-    uint32 staticFieldTimer;
-
-    void Reset()
-    {
-        if (pInstance)
-            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
-                if (pThaddius->AI())
-                    pThaddius->AI()->DoAction(ACTION_FEUGEN_RESET);
-        staticFieldTimer = 5000;
-    }
-
-    void EnterCombat(Unit * /*pWho*/)
-    {
-        DoCast(SPELL_FEUGEN_TESLA);
-        DoScriptText(SAY_FEUG_AGGRO, me);
-    }
-
-    void JustDied(Unit * /*killer*/)
-    {
-        if (pInstance)
-            if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
-                if (pThaddius->AI())
-                    {
-                        DoScriptText(SAY_FEUG_DEATH, me);
-                        pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
-                    }
-    }
-
-    void KilledUnit(Unit* victim)
-    {
-        DoScriptText(SAY_FEUG_SLAY, me);
-    }
-
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        // Tesla distance check
-        if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 28)
-        {
-            me->MonsterTextEmote(EMOTE_TESLA, 0, true);
-            DoCastAOE(SPELL_TESLA);
+            DoCast(SPELL_STALAGG_TESLA);
+            DoScriptText(SAY_STAL_AGGRO, me);
         }
 
-        if (staticFieldTimer <= uiDiff)
+        void JustDied(Unit * /*killer*/)
         {
-            DoCast(me, RAID_MODE(SPELL_STATICFIELD, H_SPELL_STATICFIELD));
-            staticFieldTimer = 5000;
-        } else staticFieldTimer -= uiDiff;
+            if (pInstance)
+                if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->AI())
+                        {
+                            pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
+                            DoScriptText(SAY_STAL_DEATH, me);
+                        }
+        }
 
-        DoMeleeAttackIfReady();
-    }
+        void KilledUnit(Unit* victim)
+        {
+            DoScriptText(SAY_STAL_SLAY, me);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            // Tesla distance check
+            if(me->GetDistance(TESLA_S_X, TESLA_S_Y, TESLA_S_Z) >= 28)
+            {
+                me->MonsterTextEmote(EMOTE_TESLA, 0, true);
+                DoCastAOE(SPELL_TESLA);
+            }
+
+            if (magneticPullTimer <= uiDiff)
+            {
+                if (Creature *pFeugen = me->GetCreature(*me, pInstance->GetData64(DATA_FEUGEN)))
+                {
+                    Unit* pStalaggVictim = me->getVictim();
+                    Unit* pFeugenVictim = pFeugen->getVictim();
+
+                    if (pFeugenVictim && pStalaggVictim)
+                    {
+                        // store tank threat before any other change is made
+                        int32 threatStalaggVictim = me->getThreatManager().getThreat(pStalaggVictim);
+                        int32 threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
+    						
+                        // magnetic pull is not working. So just jump.
+                        // reset aggro to be sure that feugen will not follow the jump
+                        pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
+                        me->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
+                        
+                        // threat switching between tanks, using the previously stored values
+                        pFeugen->getThreatManager().addThreat(pStalaggVictim, threatStalaggVictim);
+                        me->getThreatManager().addThreat(pFeugenVictim, threatFeugenVictim);
+
+                        pFeugenVictim->JumpTo(me, 0.3f); 
+                        pStalaggVictim->JumpTo(pFeugen, 0.3f);
+                    }
+                }
+                magneticPullTimer = 20000;
+            }
+            else magneticPullTimer -= uiDiff;
+
+            if (powerSurgeTimer <= uiDiff)
+            {
+                DoCast(me, RAID_MODE(SPELL_POWERSURGE, H_SPELL_POWERSURGE));
+                powerSurgeTimer = urand(15000,20000);
+            } else powerSurgeTimer -= uiDiff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI_mob_stalagg(Creature* pCreature)
+    {
+        return new mob_stalaggAI(pCreature);
+    };
 };
 
-CreatureAI* GetAI_mob_feugen(Creature* pCreature)
+class mob_feugen : public CreatureScript
 {
-    return new mob_feugenAI(pCreature);
-}
+    public:
+        mob_feugen(): CreatureScript("mob_feugen") {}
+
+    struct mob_feugenAI : public ScriptedAI
+    {
+        mob_feugenAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        uint32 staticFieldTimer;
+
+        void Reset()
+        {
+            if (pInstance)
+                if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->AI())
+                        pThaddius->AI()->DoAction(ACTION_FEUGEN_RESET);
+            staticFieldTimer = 5000;
+        }
+
+        void EnterCombat(Unit * /*pWho*/)
+        {
+            DoCast(SPELL_FEUGEN_TESLA);
+            DoScriptText(SAY_FEUG_AGGRO, me);
+        }
+
+        void JustDied(Unit * /*killer*/)
+        {
+            if (pInstance)
+                if (Creature *pThaddius = me->GetCreature(*me, pInstance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->AI())
+                        {
+                            DoScriptText(SAY_FEUG_DEATH, me);
+                            pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
+                        }
+        }
+
+        void KilledUnit(Unit* victim)
+        {
+            DoScriptText(SAY_FEUG_SLAY, me);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            // Tesla distance check
+            if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 28)
+            {
+                me->MonsterTextEmote(EMOTE_TESLA, 0, true);
+                DoCastAOE(SPELL_TESLA);
+            }
+
+            if (staticFieldTimer <= uiDiff)
+            {
+                DoCast(me, RAID_MODE(SPELL_STATICFIELD, H_SPELL_STATICFIELD));
+                staticFieldTimer = 5000;
+            } else staticFieldTimer -= uiDiff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI_mob_feugen(Creature* pCreature)
+    {
+        return new mob_feugenAI(pCreature);
+    };
+};
 
 void AddSC_boss_thaddius()
 {
-    Script *newscript;
-    newscript = new Script;
-    newscript->Name = "boss_thaddius";
-    newscript->GetAI = &GetAI_boss_thaddius;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_stalagg";
-    newscript->GetAI = &GetAI_mob_stalagg;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_feugen";
-    newscript->GetAI = &GetAI_mob_feugen;
-    newscript->RegisterSelf();
+    new boss_thaddius();
+    new mob_stalagg();
+    new mob_feugen();
 }
