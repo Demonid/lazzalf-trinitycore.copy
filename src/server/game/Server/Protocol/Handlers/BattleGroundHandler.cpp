@@ -37,7 +37,7 @@
 #include "DisableMgr.h"
 
 // Temporal fix to wintergrasp spirit guides till 3.2
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 // WG end
 

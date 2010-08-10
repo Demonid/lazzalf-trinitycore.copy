@@ -37,7 +37,7 @@
 #include "Battleground.h"
 #include "Guild.h"
 #include "ScriptMgr.h"
-#include "OutdoorPvPWG.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 
 enum StableResultCode    

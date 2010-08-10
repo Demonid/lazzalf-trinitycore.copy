@@ -480,8 +480,8 @@ struct boss_sartharionAI : public BossAI
             {
                 if (pTemp->isAlive() && !pTemp->getVictim())
                 {
-                    if (pTemp->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-                        pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                    if (pTemp->HasUnitMovementFlag(MOVEMENTFLAG_WALKING))
+                        pTemp->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
                     if (pTemp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -735,10 +735,10 @@ struct dummy_dragonAI : public ScriptedAI
 {
     dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        pInstance = pCreature->GetInstanceData();
+        pInstance = pCreature->GetInstanceScript();
     }
 
-    ScriptedInstance* pInstance;
+    InstanceScript* pInstance;
 
     uint32 m_uiWaypointId;
     uint32 m_uiMoveNextTimer;
@@ -1293,10 +1293,10 @@ struct mob_acolyte_of_shadronAI : public ScriptedAI
 {
     mob_acolyte_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        pInstance = pCreature->GetInstanceData();
+        pInstance = pCreature->GetInstanceScript();
     }
 
-    ScriptedInstance* pInstance;
+    InstanceScript* pInstance;
     uint32 uiShiftEffectTimer;
     uint32 uiShieldTimer;
     bool shield;
@@ -1404,10 +1404,10 @@ struct mob_acolyte_of_vesperonAI : public ScriptedAI
 {
     mob_acolyte_of_vesperonAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        pInstance = pCreature->GetInstanceData();
+        pInstance = pCreature->GetInstanceScript();
     }
 
-    ScriptedInstance* pInstance;
+    InstanceScript* pInstance;
 
     void Reset()
     {
@@ -1500,12 +1500,12 @@ struct mob_twilight_eggsAI : public Scripted_NoMovementAI
 {
     mob_twilight_eggsAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
-        pInstance = pCreature->GetInstanceData();
+        pInstance = pCreature->GetInstanceScript();
     }
     uint32 m_uiFadeArmorTimer;
     uint32 m_uiHatchEggTimer;    
 
-    ScriptedInstance* pInstance;
+    InstanceScript* pInstance;
 
     void Reset()
     {
@@ -1680,60 +1680,15 @@ CreatureAI* GetAI_mob_twilight_whelp(Creature* pCreature)
 
 void AddSC_boss_sartharion()
 {
-    Script *newscript;
-
-    newscript = new Script;
-    newscript->Name = "boss_sartharion";
-    newscript->GetAI = &GetAI_boss_sartharion;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_disciple_of_vesperon";
-    newscript->GetAI = &GetAI_npc_disciple_of_vesperon;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_vesperon";
-    newscript->GetAI = &GetAI_mob_vesperon;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_shadron";
-    newscript->GetAI = &GetAI_mob_shadron;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_tenebron";
-    newscript->GetAI = &GetAI_mob_tenebron;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_acolyte_of_shadron";
-    newscript->GetAI = &GetAI_mob_acolyte_of_shadron;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_acolyte_of_vesperon";
-    newscript->GetAI = &GetAI_mob_acolyte_of_vesperon;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_twilight_eggs";
-    newscript->GetAI = &GetAI_mob_twilight_eggs;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_flame_tsunami";
-    newscript->GetAI = &GetAI_npc_flame_tsunami;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_twilight_fissure";
-    newscript->GetAI = &GetAI_npc_twilight_fissure;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_twilight_whelp";
-    newscript->GetAI = &GetAI_mob_twilight_whelp;
-    newscript->RegisterSelf();
+    new boss_sartharion();
+    new npc_disciple_of_vesperon();
+    new mob_vesperon();
+    new mob_shadron();
+    new mob_tenebron();
+    new mob_acolyte_of_shadron();
+    new mob_acolyte_of_vesperon();
+    new mob_twilight_eggs();
+    new npc_flame_tsunami();
+    new npc_twilight_fissure();
+    new mob_twilight_whelp();
 }

@@ -1081,22 +1081,24 @@ void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
     }
 }
 
-void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
+void BattleGroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint32 ateamId)
 {
     //This method must be atomic, TODO add mutex
     //we will use only 1 number created of bgTypeId and bracket_id
-    uint64 schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
-    bool found = false;
+    QueueUpdateInfo schedule;
+	schedule.schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
+	schedule.ateamId = ateamId;
+	bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {
-        if (m_QueueUpdateScheduler[i] == schedule_id)
+        if ((m_QueueUpdateScheduler[i].schedule_id == schedule.schedule_id) && (m_QueueUpdateScheduler[i].ateamId == schedule.ateamId)) //if ((m_QueueUpdateScheduler[i]) == (schedule))
         {
             found = true;
             break;
         }
     }
     if (!found)
-        m_QueueUpdateScheduler.push_back(schedule_id);
+        m_QueueUpdateScheduler.push_back(schedule);
 }
 
 uint32 BattlegroundMgr::GetMaxRatingDifference() const

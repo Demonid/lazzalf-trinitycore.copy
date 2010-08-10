@@ -46,9 +46,7 @@ enum Drakes
     ITEM_RUBY_ESSENCE                             = 37860,
 
 	//spells
-	SPELL_PARACHUTE								  = 61243
-
-    
+	SPELL_PARACHUTE								  = 61243    
 };
 
 class mob_centrifige_construct : public CreatureScript
@@ -105,12 +103,12 @@ public:
     CreatureAI* GetAI_mob_CentrifigeConstruct(Creature* pCreature)
     {
         return new mob_CentrifigeConstructAI (pCreature);
-    }
-}
+    };
+};
 
 class npc_oculus_drake : public CreatureScript
 {
-public:
+    public:
     npc_oculus_drake() : CreatureScript("npc_oculus_drake") { }
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
@@ -125,7 +123,7 @@ public:
         }
 
         return true;
-    }
+    };
 
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
@@ -224,8 +222,8 @@ public:
         }
 
         return true;
-    }
-}
+    };
+};
 
 void AddSC_oculus()
 {

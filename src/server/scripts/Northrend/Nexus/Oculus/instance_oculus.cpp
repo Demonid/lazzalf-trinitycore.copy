@@ -42,9 +42,9 @@ class instance_oculus : public InstanceMapScript
 public:
     instance_oculus() : InstanceMapScript("instance_oculus", 578) { }
 
-    struct instance_oculus : public InstanceScript
+    struct instance_oculus_zone : public InstanceScript
     {
-        instance_oculus(Map* pMap) : InstanceScript(pMap) {Initialize();};
+        instance_oculus_zone(Map* pMap) : InstanceScript(pMap) {Initialize();};
 
         uint64 uiDrakos;
         uint64 uiVaros;
@@ -136,7 +136,7 @@ public:
 							    Creature* pBera = instance->GetCreature(uiBera);
 							    if(pBera)
 							    {
-								    pBera->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+								    pBera->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
 								    pBera->GetMotionMaster()->MovePoint(1,BossMoveLoc[1].x,BossMoveLoc[1].y,BossMoveLoc[1].z);
 							    }
 						    }
@@ -145,7 +145,7 @@ public:
 							    Creature* pVerdisa = instance->GetCreature(uiVerdisa);
 							    if(pVerdisa)
 							    {
-								    pVerdisa->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+								    pVerdisa->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
 								    pVerdisa->GetMotionMaster()->MovePoint(2,BossMoveLoc[0].x,BossMoveLoc[0].y,BossMoveLoc[0].z);
 							    }
 						    }
@@ -154,7 +154,7 @@ public:
 							    Creature* pEternos = instance->GetCreature(uiEternos);
 							    if(pEternos)
 							    {
-								    pEternos->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+								    pEternos->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
 								    pEternos->GetMotionMaster()->MovePoint(3,BossMoveLoc[2].x,BossMoveLoc[2].y,BossMoveLoc[2].z);
 							    }
 						    }
@@ -277,7 +277,7 @@ public:
 
     InstanceScript* GetInstanceData_instance_oculus(Map* pMap)
     {
-        return new instance_oculus(pMap);
+        return new instance_oculus_zone(pMap);
     }
 }
 
