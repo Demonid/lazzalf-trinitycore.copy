@@ -28,7 +28,7 @@
 class instance_obsidian_sanctum : public InstanceMapScript
 {
 public:
-    instance_obsidian_sanctum() : InstanceMapScript("instance_obsidian_sanctum") { }
+    instance_obsidian_sanctum() : InstanceMapScript("instance_obsidian_sanctum", 615) { }
 
     struct instance_obsidian_sanctum : public InstanceScript
     {
