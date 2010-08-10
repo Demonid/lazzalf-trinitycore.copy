@@ -40,7 +40,7 @@ static Locations BossMoveLoc[]=
 class instance_oculus : public InstanceMapScript
 {
 public:
-    instance_oculus() : InstanceMapScript("instance_oculus") { }
+    instance_oculus() : InstanceMapScript("instance_oculus", 578) { }
 
     struct instance_oculus : public InstanceScript
     {

@@ -59,8 +59,13 @@ enum eGameObjects
 class instance_ulduar : public InstanceMapScript
 {
     public:
-    instance_ulduar() : InstanceMapScript("instance_ulduar") {}
+    instance_ulduar() : InstanceMapScript("instance_ulduar", 603) { }
 
+    InstanceScript* GetInstanceData_InstanceMapScript(Map* pMap)
+    {
+        return new instance_ulduar_InstanceMapScript(pMap);
+    }
+    
     struct instance_ulduar_struct : public InstanceScript
     {
         instance_ulduar_struct (Map* pMap) : InstanceScript(pMap)
@@ -424,11 +429,6 @@ class instance_ulduar : public InstanceMapScript
                             pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
             }
         }
-    };
-
-    InstanceScript* GetInstanceData_instance_ulduar(Map* pMap)
-    {
-        return new instance_ulduar_struct(pMap);
     };
 };
 
