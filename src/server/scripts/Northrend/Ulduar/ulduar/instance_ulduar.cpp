@@ -66,9 +66,9 @@ class instance_ulduar : public InstanceMapScript
         return new instance_ulduar_InstanceMapScript(pMap);
     }
     
-    struct instance_ulduar_struct : public InstanceScript
+    struct instance_ulduar_InstanceMapScript : public InstanceScript
     {
-        instance_ulduar_struct (Map* pMap) : InstanceScript(pMap)
+        instance_ulduar_InstanceMapScript (Map* pMap) : InstanceScript(pMap)
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);

@@ -226,7 +226,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     if (!curDest)
     {
         // movement anticheat code
-        GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
+        GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetPositionO());
         GetPlayer()->m_movementInfo = movementInfo;
         GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
 
@@ -256,7 +256,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     }
 
     // movment anticheat
-    const uint32 curloc = objmgr.GetNearestTaxiNode(movementInfo.x,movementInfo.y,movementInfo.z,GetPlayer()->GetMapId(),GetPlayer()->GetTeam(), curDest);
+    const uint32 curloc = sObjectMgr.GetNearestTaxiNode(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY(),movementInfo.pos.GetPositionZ(),GetPlayer()->GetMapId(),GetPlayer()->GetTeam(), curDest);
     // end movement anticheat
 
     // sLog.outBasic("AC2-%s > | xyzo: %f,%f,%fo(%f) flags[%X] | curloc: %d | destloc: %d ",
@@ -270,7 +270,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
             GetPlayer()->GetMotionMaster()->MovementExpired(false);
 
     // movement anticheat code
-    GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
+    GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetPositionO());
     GetPlayer()->m_movementInfo = movementInfo;
     GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
     // calc time deltas
@@ -318,10 +318,10 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     {
          // current source node for next destination
         uint32 sourcenode = GetPlayer()->m_taxi.GetTaxiSource();
-        uint16 MountId = objmgr.GetTaxiMountDisplayId(sourcenode, GetPlayer()->GetTeam());
+        uint16 MountId = sObjectMgr.GetTaxiMountDisplayId(sourcenode, GetPlayer()->GetTeam());
 
         uint32 path, cost;
-        objmgr.GetTaxiPath(sourcenode, curDest, path, cost);
+        sObjectMgr.GetTaxiPath(sourcenode, curDest, path, cost);
 
         if (path && MountId)
             SendDoFlight(MountId, path, 1);                 // skip start fly node
