@@ -35,7 +35,7 @@
 #include "World.h"
 #include "Guild.h"
 #include "GuildHouse.h"
-#include "Zones/OutdoorPvPWG.h"
+#include "../OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
@@ -99,7 +99,7 @@ class npc_guild_master : public CreatureScript
     bool isPlayerGuildLeader(Player *player)
     {
         return ((player->GetRank() == 0) && (player->GetGuildId() != 0));
-    }
+    };
 
     bool isPlayerHasGuildhouseAdd(Player *player, Creature *_creature, uint32 add, bool whisper = false)
     {
@@ -116,7 +116,7 @@ class npc_guild_master : public CreatureScript
             return true;
         }
         return false;
-    }
+    };
 
     bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = false)
     {
@@ -137,7 +137,7 @@ class npc_guild_master : public CreatureScript
             return true;
         }
         return false;
-    }
+    };
 
     void teleportPlayerToGuildHouse(Player *player, Creature *_creature)
     {
@@ -165,7 +165,7 @@ class npc_guild_master : public CreatureScript
         }
         else
             _creature->MonsterWhisper(MSG_NOGUILDHOUSE, player->GetGUID());
-    }
+    };
 
     bool showBuyList(Player *player, Creature *_creature, uint32 showFromId = 0)
     {
@@ -178,7 +178,7 @@ class npc_guild_master : public CreatureScript
 
         uint32 guildsize = 1;
 
-        Guild *guild = objmgr.GetGuildById(player->GetGuildId());
+        Guild *guild =sObjectMgr.GetGuildById(player->GetGuildId());
         if (guild)
             guildsize = guild->GetMemberSize();
 
@@ -242,7 +242,7 @@ class npc_guild_master : public CreatureScript
         }
 
         return false;
-    }
+    };
 
     bool showBuyAddList(Player *player, Creature *_creature, uint32 showFromId = 0)
     {
@@ -254,7 +254,7 @@ class npc_guild_master : public CreatureScript
         uint32 guildsize = 1;
         uint32 guild_add = GHobj.GetGuildHouse_Add(player->GetGuildId());
 
-        Guild *guild = objmgr.GetGuildById(player->GetGuildId());
+        Guild *guild =sObjectMgr.GetGuildById(player->GetGuildId());
         if (guild)
             guildsize = guild->GetMemberSize();
 
@@ -319,8 +319,7 @@ class npc_guild_master : public CreatureScript
             }
         }
         return false;
-    }
-
+    };
 
     bool confirmBuy(Player *player, Creature *_creature, uint32 guildhouseId)
     {
@@ -341,7 +340,7 @@ class npc_guild_master : public CreatureScript
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
 
         return true;
-    }
+    };
 
     void buyGuildhouse(Player *player, Creature *_creature, uint32 guildhouseId)
     {
@@ -380,7 +379,7 @@ class npc_guild_master : public CreatureScript
 
         player->ModifyMoney(-(price*10000));
         _creature->MonsterSay(MSG_CONGRATULATIONS, LANG_UNIVERSAL, 0);    
-    }
+    };
 
     bool confirmBuyAdd(Player *player, Creature *_creature, uint32 gh_Add)
     {
@@ -395,7 +394,7 @@ class npc_guild_master : public CreatureScript
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
 
         return true;
-    }
+    };
 
     void buyGuildhouseAdd(Player *player, Creature *_creature, uint32 gh_Add)
     {
@@ -430,7 +429,7 @@ class npc_guild_master : public CreatureScript
         GHobj.Add_GuildhouseAdd(player->GetGuildId(), gh_Add);
 
         player->ModifyMoney(-(price*10000));    
-    }
+    };
 
     void sellGuildhouse(Player *player, Creature *_creature)
     {
@@ -455,7 +454,7 @@ class npc_guild_master : public CreatureScript
             sprintf(msg, MSG_SOLD, price / 2);
             _creature->MonsterWhisper(msg, player->GetGUID());
         }
-    }
+    };
 
     bool OnGossipHello(Player *player, Creature *_creature)
     {
@@ -475,7 +474,7 @@ class npc_guild_master : public CreatureScript
         }
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
         return true;
-    }
+    };
 
 
     bool OnGossipSelect(Player *player, Creature *_creature, uint32 sender, uint32 action )
@@ -544,7 +543,7 @@ class npc_guild_master : public CreatureScript
         }
         
         return true;
-    }
+    };
 
     bool GossipSelectWithCode_guildmaster( Player *player, Creature *_creature,
                                           uint32 sender, uint32 action, const char* sCode )
@@ -572,8 +571,8 @@ class npc_guild_master : public CreatureScript
             }
         }
         return false;
-    }
-}
+    };
+};
 
 /*########
 # guild_guard
@@ -655,8 +654,8 @@ class guild_guard : public CreatureScript
     CreatureAI* GetAI_guild_guardAI(Creature *_Creature)
     {
         return new guild_guardAI(_Creature);
-    }
-}
+    };
+};
 
 /*########
 # npc_buffnpc
@@ -716,8 +715,8 @@ class npc_buffnpc : public CreatureScript
 
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
 
-    return true;
-    }
+        return true;
+    };
 
     void SendDefaultMenu_buffnpc(Player *player, Creature *_Creature, uint32 action )
     {
@@ -734,7 +733,7 @@ class npc_buffnpc : public CreatureScript
             case 1180://Remove Res Sickness
                 if(!player->HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS,0)) 
                 {
-                    GossipHello_buffnpc(player, _Creature);
+                    OnGossipHello(player, _Creature);
                     return;
                 }
 
@@ -808,7 +807,7 @@ class npc_buffnpc : public CreatureScript
                 _Creature->CastSpell(player,48161,false);
                 break;
         }
-    }
+    };
 
     bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
     {
@@ -817,8 +816,8 @@ class npc_buffnpc : public CreatureScript
         SendDefaultMenu_buffnpc( player, _Creature, action );
 
         return true;
-    }
-}
+    };
+};
 
 /*########
 # npc_portal
@@ -855,7 +854,7 @@ class npc_portal : public CreatureScript
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,_Creature->GetGUID());
 
         return true;
-    }
+    };
 
     void SendDefaultMenu_portal_npc(Player *player, Creature *_Creature, uint32 action)
     {
@@ -924,7 +923,7 @@ class npc_portal : public CreatureScript
                 }
                 break;
         }
-    }
+    };
 
     bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
     {
@@ -933,13 +932,13 @@ class npc_portal : public CreatureScript
             SendDefaultMenu_portal_npc( player, _Creature, action );
 
         return true;
-    }
-}
+    };
+};
 
 void AddSC_guildhouse_npcs()
 {
-    new npc_guild_master;
-    new guild_guard;
-    new npc_buffnpc;
-    new npc_portal;
+    new npc_guild_master();
+    new guild_guard();
+    new npc_buffnpc();
+    new npc_portal();
 }

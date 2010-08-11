@@ -2409,35 +2409,35 @@ bool ChatHandler::HandleJailCommand(const char *args)
     }
 
     uint32 jailtime = (uint32) atoi((char*)timetojail);
-    if (jailtime < 1 || jailtime > objmgr.m_jailconf_max_duration)
+    if (jailtime < 1 || jailtime > sObjectMgr.m_jailconf_max_duration)
     {
-        PSendSysMessage(LANG_JAIL_VALUE, objmgr.m_jailconf_max_duration);
+        PSendSysMessage(LANG_JAIL_VALUE, sObjectMgr.m_jailconf_max_duration);
         return true;
     }
 
     char *reason = strtok(NULL, "\0");
     std::string jailreason;
-    if (reason == NULL || strlen((const char*)reason) < objmgr.m_jailconf_min_reason)
+    if (reason == NULL || strlen((const char*)reason) < sObjectMgr.m_jailconf_min_reason)
     {
-        PSendSysMessage(LANG_JAIL_NOREASON, objmgr.m_jailconf_min_reason);
+        PSendSysMessage(LANG_JAIL_NOREASON, sObjectMgr.m_jailconf_min_reason);
         return true;
     } else jailreason = reason;
 
-    uint64 GUID = objmgr.GetPlayerGUIDByName(cname.c_str());
+    uint64 GUID = sObjectMgr.GetPlayerGUIDByName(cname.c_str());
     if (GUID == 0)
     {
         SendSysMessage(LANG_JAIL_WRONG_NAME);
         return true;
     }
 
-    Player *chr = objmgr.GetPlayer(GUID);
+    Player *chr = sObjectMgr.GetPlayer(GUID);
     if (!chr)
     {
 	    uint32 jail_guid = GUID_LOPART(GUID);
 	    std::string jail_char = cname;
 	    bool jail_isjailed = true;
 	    uint32 jail_release = localtime + (jailtime * 60 * 60);
-	    uint32 jail_amnestietime = localtime +(60* 60 * 24 * objmgr.m_jailconf_amnestie);
+	    uint32 jail_amnestietime = localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie);
 	    std::string jail_reason = jailreason;
 	    uint32 jail_times = 0;
 
@@ -2478,7 +2478,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
         HandleAnnounceCommand(announce.c_str());
 
-        if ((objmgr.m_jailconf_max_jails >= jail_times) && (objmgr.m_jailconf_ban == 2) )
+        if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 2) )
         {
             CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
@@ -2494,7 +2494,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
             Player::DeleteFromDB(GUID, fields[1].GetUInt32());
         }
-        else if ((objmgr.m_jailconf_max_jails >= jail_times) && (objmgr.m_jailconf_ban == 1) )
+        else if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 1) )
         {
             CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
@@ -2551,7 +2551,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
     chr->m_jail_char = fields[2].GetCppString();
     chr->m_jail_isjailed = true;
     chr->m_jail_release = localtime + (jailtime * 60 * 60);
-    chr->m_jail_amnestietime = localtime +(60* 60 * 24 * objmgr.m_jailconf_amnestie);
+    chr->m_jail_amnestietime = localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie);
     chr->m_jail_reason = jailreason;
     chr->m_jail_times = chr->m_jail_times+1;
     chr->m_jail_gmacc = m_session->GetAccountId();
@@ -2575,12 +2575,12 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
     HandleAnnounceCommand(announce.c_str());
 
-    if ( (objmgr.m_jailconf_max_jails >= chr->m_jail_times) && (objmgr.m_jailconf_ban == 2) )
+    if ( (sObjectMgr.m_jailconf_max_jails >= chr->m_jail_times) && (sObjectMgr.m_jailconf_ban == 2) )
     {
         chr->GetSession()->KickPlayer();
         chr->DeleteFromDB(fields[0].GetUInt64(), fields[1].GetUInt32());
     }
-    else if ((objmgr.m_jailconf_max_jails >= chr->m_jail_times) && (objmgr.m_jailconf_ban == 1) )
+    else if ((sObjectMgr.m_jailconf_max_jails >= chr->m_jail_times) && (sObjectMgr.m_jailconf_ban == 1) )
     {
         uint32 acc_id = chr->GetSession()->GetAccountId();
         ban_reason = GetTrinityString(LANG_JAIL_BAN_REASON);
@@ -2605,8 +2605,8 @@ bool ChatHandler::HandleUnJailCommand(const char *args)
     if (charname == NULL) return false;
     else cname = charname;
 
-    uint64 GUID = objmgr.GetPlayerGUIDByName(cname.c_str());
-    Player *chr = objmgr.GetPlayer(GUID);
+    uint64 GUID = sObjectMgr.GetPlayerGUIDByName(cname.c_str());
+    Player *chr = sObjectMgr.GetPlayer(GUID);
 
     if (chr)
     {
