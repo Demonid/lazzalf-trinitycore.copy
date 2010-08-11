@@ -49,6 +49,9 @@ Group::Group()
     m_guid              = 0;
     m_counter           = 0;
     m_maxEnchantingLevel= 0;
+    m_LfgQueued         = false;
+    m_LfgStatus         = LFG_STATUS_NOT_SAVED;
+    m_LfgDungeonEntry   = 0;
 
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
         m_targetIcons[i] = 0;
@@ -200,12 +203,22 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 memberFlags, uint8 subgroup)
 
     member.group = subgroup;
     member.flags = memberFlags;
+    member.roles = 0;
 
     m_memberSlots.push_back(member);
 
     SubGroupCounterIncrease(subgroup);
 
     return true;
+}
+
+void Group::ConvertToLFG()
+{
+    m_groupType = GroupType(m_groupType | GROUPTYPE_LFG | GROUPTYPE_UNK1);
+    m_lootMethod = NEED_BEFORE_GREED;
+    if (!isBGGroup())
+        CharacterDatabase.PExecute("UPDATE groups SET groupType='%u' WHERE guid='%u'", uint8(m_groupType), GUID_LOPART(m_guid));
+    SendUpdate();
 }
 
 void Group::ConvertToRaid()
@@ -291,8 +304,12 @@ Player* Group::GetInvited(const std::string& name) const
 
 bool Group::AddMember(const uint64 &guid, const char* name)
 {
+    if (isLfgQueued())
+        sLFGMgr.Leave(NULL, this);
+
     if (!_addMember(guid, name))
         return false;
+
     SendUpdate();
 
     Player *player = sObjectMgr.GetPlayer(guid);
@@ -337,8 +354,10 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
 {
     BroadcastGroupUpdate();
 
-    if (!isBGGroup())
+    if (isLfgQueued())
         sLFGMgr.Leave(NULL, this);
+    else if (isLFGGroup())
+        sLFGMgr.OfferContinue(this);
 
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove
     if (GetMembersCount() > (isBGGroup() ? 1 : 2))           // in BG group case allow 1 members group
@@ -1082,12 +1101,16 @@ void Group::SendUpdate()
         data << uint8(m_groupType);                         // group type (flags in 3.3)
         data << uint8(citr->group);
         data << uint8(citr->flags);
-        data << uint8(isBGGroup() ? 1 : 0);                 // 2.0.x, isBattlegroundGroup?
-        if (m_groupType & GROUPTYPE_LFD)
+        if (isLFGGroup())
         {
-            data << uint8(0);
-            data << uint32(0);
+            uint32 lowguid = GetLowGUID();
+            data << uint8(1);
+            data << uint8(m_LfgStatus);
+            data << uint32(m_LfgDungeonEntry);
         }
+        else
+            data << uint8(isBGGroup() ? 1 : 0);             // 2.0.x, isBattlegroundGroup?
+
         data << uint64(m_guid);
         data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
         data << uint32(GetMembersCount()-1);
@@ -1105,7 +1128,7 @@ void Group::SendUpdate()
             data << uint8(onlineState);                     // online-state
             data << uint8(citr2->group);                    // groupid
             data << uint8(citr2->flags);                    // See enum GroupMemberFlags
-            data << uint8(0);                               // 3.3
+            data << uint8(citr2->roles);                    // Lfg Roles
         }
         data << uint64(m_leaderGuid);                       // leader guid
         if (GetMembersCount()-1)
@@ -1215,6 +1238,7 @@ bool Group::_addMember(const uint64 &guid, const char* name, uint8 group)
     member.name      = name;
     member.group     = group;
     member.flags     = 0;
+    member.roles     = 0;
     m_memberSlots.push_back(member);
 
     SubGroupCounterIncrease(group);

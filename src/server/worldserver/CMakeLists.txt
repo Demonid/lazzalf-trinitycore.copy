@@ -25,6 +25,7 @@ set(worldserver_SRCS
 if( WIN32 )
   set(worldserver_SRCS
     ${worldserver_SRCS}
+    ${sources_Debugging}
     worldserver.rc
   )
 endif()
@@ -179,7 +180,7 @@ else()
     collision
     g3dlib
     gsoap
-    jemalloc
+    ${JEMALLOC_LIB}
     ${SCRIPT_LIB}
     ${READLINE_LIBRARY}
     ${TERMCAP_LIBRARY}
@@ -200,5 +201,8 @@ endif()
 
 if( UNIX )
   install(TARGETS worldserver DESTINATION bin)
-  install(FILES   worldserver.conf.dist DESTINATION etc)
+  install(FILES worldserver.conf.dist DESTINATION etc)
+elseif( WIN32 )
+  install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  install(FILES worldserver.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()

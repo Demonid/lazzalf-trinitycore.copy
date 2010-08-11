@@ -219,7 +219,7 @@ class instance_eye_of_eternity : public InstanceMapScript
         }
     };
      
-    InstanceScript* GetInstanceData_instance_eye_of_eternity(Map* pMap)
+    InstanceScript* GetInstanceScript(InstanceMap* pMap) const
     {
         return new instance_eye_of_eternity_InstanceMapScript(pMap);
     };

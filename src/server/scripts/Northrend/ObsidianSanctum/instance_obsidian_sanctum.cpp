@@ -29,10 +29,15 @@ class instance_obsidian_sanctum : public InstanceMapScript
 {
 public:
     instance_obsidian_sanctum() : InstanceMapScript("instance_obsidian_sanctum", 615) { }
-
-    struct instance_obsidian_sanctum_zone : public InstanceScript
+    
+    InstanceScript* GetInstanceScript(InstanceMap* pMap) const
     {
-        instance_obsidian_sanctum_zone(Map* pMap) : InstanceScript(pMap) {Initialize();};
+        return new instance_obsidian_sanctum_InstanceMapScript(pMap);
+    };
+
+    struct instance_obsidian_sanctum_InstanceMapScript : public InstanceScript
+    {
+        instance_obsidian_sanctum_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {Initialize();};
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         uint64 m_uiSartharionGUID;
@@ -130,11 +135,6 @@ public:
             }
             return 0;
         }
-    };
-
-    InstanceScript* GetInstanceData_instance_obsidian_sanctum(Map* pMap)
-    {
-        return new instance_obsidian_sanctum_zone(pMap);
     };
 };
 
