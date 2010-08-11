@@ -532,7 +532,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
 
             OUT_LOAD_INST_DATA_COMPLETE;
         }
-    }
+    };
 };
 
 //registrazione script

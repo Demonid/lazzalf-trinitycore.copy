@@ -446,7 +446,7 @@ class npc_expedition_commander_ulduar : public CreatureScript
 
         uint32 uiTimer;
         uint8  uiPhase;
-        Creature* engineer[2];
+        Creature* engineer[4];
         Creature* defender[4];
 
         std::list<Creature*> GuardList;
@@ -457,6 +457,8 @@ class npc_expedition_commander_ulduar : public CreatureScript
             uiPhase = 0;
             engineer[0] = 0;
             engineer[1] = 0;
+            engineer[2] = 0;
+            engineer[3] = 0;
             defender[0] = 0;
             defender[1] = 0;
             defender[2] = 0;

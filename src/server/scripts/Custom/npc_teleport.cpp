@@ -50,7 +50,7 @@ namespace
         std::ostringstream ostr;
         ostr << val;
         return ostr.str();
-    }
+    };
 
     // Conversion function intMoney->stringMoney
     std::string ConvertMoney(const uint32 &Money)
@@ -65,7 +65,7 @@ namespace
         Str += "pc";
 
         return Str;
-    }
+    };
 
     // Teleport Player
     void Teleport(Player * const player, const uint16 &map,
@@ -73,7 +73,7 @@ namespace
     {
         player->CastSpell(player, SPELL_VISUAL_TELEPORT, true);
         player->TeleportTo(map, X, Y, Z, orient);
-    }
+    };
 
     // Display categories
     void AffichCat(Player * const player, Creature * const creature)
@@ -92,7 +92,7 @@ namespace
             player->ADD_GOSSIP_ITEM(7, NEXT_PAGE, GOSSIP_NEXT_PAGEC, 0);
 
         player->SEND_GOSSIP_MENU(MSG_CAT, creature->GetGUID());
-    }
+    };
 
     // Display destination categories
     void AffichDest(Player * const player, Creature * const creature)
@@ -113,7 +113,7 @@ namespace
             player->ADD_GOSSIP_ITEM(7, MAIN_MENU, GOSSIP_MAIN_MENU, 0);
 
         player->SEND_GOSSIP_MENU(MSG_DEST, creature->GetGUID());
-    }
+    };
 
     // Verification before teleportation
     void ActionTeleport(Player * const player, Creature * const creature, const uint32 &id)
@@ -138,12 +138,12 @@ namespace
             player->ModifyMoney(-1 * dest.m_cost);
 
         Teleport(player, dest.m_map, dest.m_X, dest.m_Y, dest.m_Z, dest.m_orient);
-    }
-}
+    };
+};
 
 class npc_teleport : public CreatureScript
 {
-public:
+    public:
     npc_teleport() : CreatureScript("npc_teleport") { }
 
     bool OnGossipHello(Player *player, Creature *creature)
@@ -158,7 +158,7 @@ public:
         }
         AffichCat(player, creature);
         return true;
-    }
+    };
 
     bool OnGossipSelect(Player *player, Creature *creature, uint32 sender, uint32 param)
     {
@@ -196,13 +196,14 @@ public:
 
           // Display main menu
           case GOSSIP_MAIN_MENU:
-            GossipHello_npc_teleport(player, creature);
+            OnGossipHello(player, creature);
             break;
 
           // Teleportation
           case GOSSIP_TELEPORT:
             player->CLOSE_GOSSIP_MENU();
-            if(player->HasAura(15007,0)) {
+            if(player->HasAura(15007,0)) 
+            {
                 creature->CastSpell(player,38588,false); // Healing effect
                 player->RemoveAurasDueToSpell(15007);
             }
@@ -211,10 +212,10 @@ public:
             break;
         }
         return true;
-    }
-}
+    };
+};
 
 void AddSC_npc_teleport()
 {
-    new npc_teleport;
+    new npc_teleport();
 }

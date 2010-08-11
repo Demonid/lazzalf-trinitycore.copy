@@ -721,9 +721,9 @@ void Battleground::EndBattleground(uint32 winner)
         std::stringstream teamA;
         std::stringstream teamB;
 
-	    for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+	    for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
 	    { 
-            Player *plr = objmgr.GetPlayer(itr->first);
+            Player *plr = sObjectMgr.GetPlayer(itr->first);
             uint32 team = itr->second.Team;
 	        if (plr && plr->GetSession())
             {
@@ -975,9 +975,9 @@ uint32 Battleground::GetBattlemasterEntry() const
     }
 }
 
-void BattleGround::RewardMark(Player *plr,uint32 count)
+void Battleground::RewardMark(Player *plr,uint32 count)
 {
-    BattleGroundMarks mark;
+    BattlegroundMarks mark;
     switch(GetTypeID())
     {
         case BATTLEGROUND_AV:
@@ -1005,7 +1005,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
         RewardItem(plr,mark,count);
 }
 
-void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
+void Battleground::RewardSpellCast(Player *plr, uint32 spell_id)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
@@ -1021,7 +1021,7 @@ void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
     plr->CastSpell(plr, spellInfo, true);
 }
 
-void BattleGround::RewardItem(Player *plr, uint32 item_id, uint32 count)
+void Battleground::RewardItem(Player *plr, uint32 item_id, uint32 count)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
     if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
@@ -1048,13 +1048,13 @@ void BattleGround::RewardItem(Player *plr, uint32 item_id, uint32 count)
         SendRewardMarkByMail(plr,item_id,no_space_count);
 }
 
-void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
+void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
 {
     uint32 bmEntry = GetBattlemasterEntry();
     if (!bmEntry)
         return;
 
-    ItemPrototype const* markProto = objmgr.GetItemPrototype(mark);
+    ItemPrototype const* markProto = sObjectMgr.GetItemPrototype(mark);
     if (!markProto)
         return;
 
@@ -1067,7 +1067,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         std::string subject = markProto->Name1;
         int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
         if (loc_idx >= 0)
-            if (ItemLocale const *il = objmgr.GetItemLocale(markProto->ItemId))
+            if (ItemLocale const *il = sObjectMgr.GetItemLocale(markProto->ItemId))
                 if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
                     subject = il->Name[loc_idx];
 
@@ -1082,7 +1082,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     }
 }
 
-void BattleGround::RewardQuestComplete(Player *plr)
+void Battleground::RewardQuestComplete(Player *plr)
 {
     uint32 quest;
     switch(GetTypeID())

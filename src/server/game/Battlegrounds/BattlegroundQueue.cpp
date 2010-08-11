@@ -57,13 +57,13 @@ BattlegroundQueue::~BattlegroundQueue()
     }
 }
 
-bool BattleGroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
+bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
 {
     if(TeamId1 && TeamId2 && (TeamId1 != TeamId2)) // teamId1 only != 0 if rated/arena
     {
         //get arenateams and configs
-        ArenaTeam *at1 = objmgr.GetArenaTeamById(TeamId1);
-        ArenaTeam *at2 = objmgr.GetArenaTeamById(TeamId2);
+        ArenaTeam *at1 = sObjectMgr.GetArenaTeamById(TeamId1);
+        ArenaTeam *at2 = sObjectMgr.GetArenaTeamById(TeamId2);
 
         bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
         uint32 mode = sWorld.getConfig(CONFIG_ARENAMOD_MODE);
@@ -83,13 +83,13 @@ bool BattleGroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                     {
                         if(itr->guid)
                         {
-                            Player *plr = objmgr.GetPlayer(itr->guid);
+                            Player *plr = sObjectMgr.GetPlayer(itr->guid);
                             if(plr)
                             {
                                 //check if player is really in the group joining the arena match
-                                if((plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_2v2) && at1->GetType() == ARENA_TEAM_2v2 && !at1->IsFighting()) ||
-                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_3v3) && at1->GetType() == ARENA_TEAM_3v3 && !at1->IsFighting()) ||
-                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_5v5) && at1->GetType() == ARENA_TEAM_5v5 && !at1->IsFighting()))
+                                if((plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) && at1->GetType() == ARENA_TEAM_2v2 && !at1->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) && at1->GetType() == ARENA_TEAM_3v3 && !at1->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) && at1->GetType() == ARENA_TEAM_5v5 && !at1->IsFighting()))
                                 {
                                     //database query : get all wins of player against at2 and add them
                                     // in order to be able to check if that amount is bigger
@@ -126,13 +126,13 @@ bool BattleGroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                     {
                         if(itr->guid)
                         {
-                            Player *plr = objmgr.GetPlayer(itr->guid);
+                            Player *plr = sObjectMgr.GetPlayer(itr->guid);
                             if(plr)
                             {
                                 //check if player is really in the group joining the arena match
-                                if((plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_2v2) && at2->GetType() == ARENA_TEAM_2v2 && !at2->IsFighting()) ||
-                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_3v3) && at2->GetType() == ARENA_TEAM_3v3 && !at2->IsFighting()) ||
-                                    (plr->InBattleGroundQueueForBattleGroundQueueType(BATTLEGROUND_QUEUE_5v5) && at2->GetType() == ARENA_TEAM_5v5 && !at2->IsFighting()))
+                                if((plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) && at2->GetType() == ARENA_TEAM_2v2 && !at2->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) && at2->GetType() == ARENA_TEAM_3v3 && !at2->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) && at2->GetType() == ARENA_TEAM_5v5 && !at2->IsFighting()))
                                 {
                                     //database query : get all wins of player against at2 and add them
                                     // in order to be able to check if that amount is bigger
