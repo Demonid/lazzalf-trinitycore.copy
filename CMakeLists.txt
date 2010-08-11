@@ -82,21 +82,18 @@ endif()
 option(SERVERS "Build worldserver and authserver" 1)
 option(SCRIPTS "Build worldserver with scripts included" 1)
 option(TOOLS "Build map/vmap extraction/assembler tools" 0)
-option(CLI "Build worldserver with commandline-interface included" 1)
 option(DEBUG "Build worldserver with additional debug-code included" 0)
 option(SCRIPTPCH "Use precompiled headers when compiling scripts project" 1)
 option(GAMEPCH "Use precompiled headers when compiling game project" 1)
 option(SQL "Copy SQL files during installation" 0)
 option(WARNINGS "Enable all compile-warnings during compile" 0)
 
+#
+# Search for readline on *nixbased systems (CLI-handler)
+#
+
 if( UNIX )
-  option(CENTOS "CENTOS" 0)
-  if( CENTOS )
-    add_definitions(-DCENTOS)
-    find_termcap()
-  else()
-    find_readline()
-  endif()
+  find_readline()
 endif()
 
 #
@@ -200,13 +197,6 @@ if( TOOLS )
   message("* Build map/vmap tools  : Yes")
 else()
   message("* Build map/vmap tools  : No  (default)")
-endif()
-
-if( CLI )
-  message("* Build with CLI        : Yes (default)")
-  add_definitions(-DENABLE_CLI)
-else()
-  message("* Build with CLI        : No")
 endif()
 
 if( DEBUG )
