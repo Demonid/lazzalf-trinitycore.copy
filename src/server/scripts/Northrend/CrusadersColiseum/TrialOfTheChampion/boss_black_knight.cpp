@@ -442,7 +442,7 @@ class boss_black_knight : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_black_knight(Creature *pCreature)
+    CreatureAI* GetAI_boss_black_knight(Creature *pCreature) const
     {
         return new boss_black_knightAI (pCreature);
     };
@@ -503,7 +503,7 @@ class npc_risen_ghoul : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_risen_ghoul(Creature* pCreature)
+    CreatureAI* GetAI_npc_risen_ghoul(Creature* pCreature) const
     {
         return new npc_risen_ghoulAI(pCreature);
     };
@@ -581,7 +581,7 @@ class npc_black_knight_skeletal_gryphon : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_npc_black_knight_skeletal_gryphon(Creature* pCreature)
+    CreatureAI* GetAI_npc_black_knight_skeletal_gryphon(Creature* pCreature) const
     {
         return new npc_black_knight_skeletal_gryphonAI(pCreature);
     };
@@ -642,7 +642,7 @@ class npc_gr : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_npc_gr(Creature* pCreature)
+    CreatureAI* GetAI_npc_gr(Creature* pCreature) const
     {
         return new npc_grAI(pCreature);
     };

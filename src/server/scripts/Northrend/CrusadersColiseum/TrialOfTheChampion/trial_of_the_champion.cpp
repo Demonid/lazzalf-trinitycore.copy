@@ -241,7 +241,7 @@ class npc_anstart : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_anstart(Creature* pCreature)
+    CreatureAI* GetAI_npc_anstart(Creature* pCreature) const
     {
         return new npc_anstartAI (pCreature);
     };
@@ -766,7 +766,7 @@ class npc_announcer_toc5 : public CreatureScript
         return true;
     };
 
-    CreatureAI* GetAI_npc_announcer_toc5(Creature* pCreature)
+    CreatureAI* GetAI_npc_announcer_toc5(Creature* pCreature) const
     {
         return new npc_announcer_toc5AI(pCreature);
     };

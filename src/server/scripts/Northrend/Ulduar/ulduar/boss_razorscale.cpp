@@ -417,7 +417,7 @@ class boss_razorscale : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_razorscale(Creature* pCreature)
+    CreatureAI* GetAI_boss_razorscale(Creature* pCreature) const
     {
         return new boss_razorscaleAI (pCreature);
     };
@@ -591,7 +591,7 @@ class npc_expedition_commander_ulduar : public CreatureScript
         return true;
     };
 
-    CreatureAI* GetAI_commander_ulduar(Creature* pCreature)
+    CreatureAI* GetAI_commander_ulduar(Creature* pCreature) const
     {
         return new npc_expedition_commanderAI(pCreature);
     };
@@ -615,7 +615,7 @@ class mob_devouring_flame : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_devouring_flame(Creature* pCreature)
+    CreatureAI* GetAI_mob_devouring_flame(Creature* pCreature) const
     {
         return new mob_devouring_flameAI(pCreature);
     };
@@ -664,7 +664,7 @@ class mob_darkrune_watcher : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_darkrune_watcher(Creature* pCreature)
+    CreatureAI* GetAI_mob_darkrune_watcher(Creature* pCreature) const
     {
         return new mob_darkrune_watcherAI(pCreature);
     };
@@ -705,7 +705,7 @@ class mob_darkrune_guardian : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_darkrune_guardian(Creature* pCreature)
+    CreatureAI* GetAI_mob_darkrune_guardian(Creature* pCreature) const
     {
         return new mob_darkrune_guardianAI(pCreature);
     };
@@ -762,7 +762,7 @@ class mob_darkrune_sentinel : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_darkrune_sentinel(Creature* pCreature)
+    CreatureAI* GetAI_mob_darkrune_sentinel(Creature* pCreature) const
     {
         return new mob_darkrune_sentinelAI(pCreature);
     };
@@ -828,7 +828,7 @@ class mole_machine_trigger : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mole_machine_trigger(Creature* pCreature)
+    CreatureAI* GetAI_mole_machine_trigger(Creature* pCreature) const
     {
         return new mole_machine_triggerAI(pCreature);
     };
