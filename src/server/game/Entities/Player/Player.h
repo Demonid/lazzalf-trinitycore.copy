@@ -2521,10 +2521,10 @@ class Player : public Unit, public GridObject<Player>
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
-        uint16 m_baseSpellPower;
-        uint16 m_baseFeralAP;
-        uint16 m_baseManaRegen;
-        uint16 m_baseHealthRegen;
+        uint32 m_baseSpellPower;
+        uint32 m_baseFeralAP;
+        uint32 m_baseManaRegen;
+        uint32 m_baseHealthRegen;
         uint16 m_baseSpellPenetration;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
