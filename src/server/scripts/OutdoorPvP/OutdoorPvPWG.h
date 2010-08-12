@@ -2,7 +2,7 @@
 #define OUTDOOR_PVP_WG_
 
 #include "OutdoorPvP.h"
-#include "../../game/Battlegrounds/BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 
 #define POS_X_CENTER                5100
 #define MAX_VEHICLE_PER_WORKSHOP    4
