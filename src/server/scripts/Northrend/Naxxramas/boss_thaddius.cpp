@@ -304,7 +304,7 @@ class boss_thaddius : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_thaddius(Creature* pCreature)
+    CreatureAI* GetAI_boss_thaddius(Creature* pCreature) const
     {
         return new boss_thaddiusAI (pCreature);
     };
@@ -411,7 +411,7 @@ class mob_stalagg : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_stalagg(Creature* pCreature)
+    CreatureAI* GetAI_mob_stalagg(Creature* pCreature) const
     {
         return new mob_stalaggAI(pCreature);
     };
@@ -486,7 +486,7 @@ class mob_feugen : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_feugen(Creature* pCreature)
+    CreatureAI* GetAI_mob_feugen(Creature* pCreature) const
     {
         return new mob_feugenAI(pCreature);
     };

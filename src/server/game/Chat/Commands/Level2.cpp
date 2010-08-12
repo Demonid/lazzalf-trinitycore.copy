@@ -42,7 +42,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
+#include "../../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "Transport.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
