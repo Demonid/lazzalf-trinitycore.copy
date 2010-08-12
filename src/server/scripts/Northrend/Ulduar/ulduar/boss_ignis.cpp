@@ -270,7 +270,7 @@ class boss_ignis : public CreatureScript
                     case EVENT_CONSTRUCT:
                         if (!construct_list.empty())
                         {
-                            ConstructVct::const_iterator itr = (construct_list.begin() + (rand()%construct_list.size()));
+                            ConstructVct::iterator itr = (construct_list.begin() + (rand()%construct_list.size()));
                             Creature* pTarget = *itr;
                             if (pTarget)
                             {
