@@ -183,6 +183,9 @@ class ArenaTeam
         bool LoadMembersFromDB(QueryResult_AutoPtr arenaTeamMembersResult);
         void LoadStatsFromDB(uint32 ArenaTeamId);
 
+		void SaveToDBArenaModPlayer(uint64 PlayerGuid, uint32 ArenaTeamId, uint32 EnemyTeamId);
+        void SaveToDBArenaModTeam(uint32 ArenaTeamId, uint32 EnemyTeamId);
+
         void SaveToDB();
 
         void BroadcastPacket(WorldPacket *packet);
