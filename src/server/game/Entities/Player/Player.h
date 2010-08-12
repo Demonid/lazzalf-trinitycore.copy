@@ -25,7 +25,6 @@
 #include "ItemPrototype.h"
 #include "Unit.h"
 #include "Item.h"
-
 #include "DatabaseEnv.h"
 #include "NPCHandler.h"
 #include "QuestDef.h"
@@ -1248,6 +1247,7 @@ class Player : public Unit, public GridObject<Player>
         }
         void SendNewItem(Item *item, uint32 count, bool received, bool created, bool broadcast = false);
         bool BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
+        bool _StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int32 price, ItemPrototype const *pProto, Creature *pVendor, VendorItem const* crItem, bool bStore);
 
         float GetReputationPriceDiscount(Creature const* pCreature) const;
 
@@ -1447,25 +1447,8 @@ class Player : public Unit, public GridObject<Player>
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
         uint32 GetMoney() { return GetUInt32Value (PLAYER_FIELD_COINAGE); }
-        void ModifyMoney(int32 d)
-        {
-            if (d < 0)
-                SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
-            else
-            {
-                uint32 newAmount = 0;
-                if (GetMoney() < uint32(MAX_MONEY_AMOUNT - d))
-                    newAmount = GetMoney() + d;
-                else
-                {
-                    // "At Gold Limit"
-                    newAmount = MAX_MONEY_AMOUNT;
-                    if (d)
-                        SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD, NULL, NULL);
-                }
-                SetMoney (newAmount);
-            }
-        }
+        void ModifyMoney(int32 d);
+
         void SetMoney(uint32 value)
         {
             SetUInt32Value (PLAYER_FIELD_COINAGE, value);
@@ -1560,7 +1543,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetReputation(uint32 factionentry);
         std::string GetGuildName();
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
-        void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
+        void SetFreeTalentPoints(uint32 points);
         bool resetTalents(bool no_cost = false);
         uint32 resetTalentsCost() const;
         void InitTalentForLevel();

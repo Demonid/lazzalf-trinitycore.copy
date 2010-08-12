@@ -61,7 +61,12 @@ struct Position TempestMinions[MAX_TEMPEST_MINIONS] =
 class boss_emalon : public CreatureScript
 {
     public:
-        boss_emalon(): CreatureScript("boss_emalon") {}
+        boss_emalon(): CreatureScript("boss_emalon") {}       
+    
+    CreatureAI* GetAI(Creature *_Creature) const
+    {
+        return new boss_emalonAI (_Creature);
+    };
 
     struct boss_emalonAI : public BossAI
     {
@@ -184,11 +189,6 @@ class boss_emalon : public CreatureScript
             DoMeleeAttackIfReady();
         }
     };
-
-    CreatureAI* GetAI_boss_emalon(Creature *_Creature)
-    {
-        return new boss_emalonAI (_Creature);
-    };
 };
 
 /*######
@@ -199,6 +199,11 @@ class mob_tempest_minion : public CreatureScript
 {
     public:
         mob_tempest_minion(): CreatureScript("mob_tempest_minion") {}
+
+    CreatureAI* GetAI(Creature *_Creature) const
+    {
+        return new mob_tempest_minionAI (_Creature);
+    };
 
     struct mob_tempest_minionAI : public ScriptedAI
     {
@@ -296,11 +301,6 @@ class mob_tempest_minion : public CreatureScript
 
             DoMeleeAttackIfReady();
         }
-    };
-
-    CreatureAI* GetAI_mob_tempest_minion(Creature *_Creature)
-    {
-        return new mob_tempest_minionAI (_Creature);
     };
 };
 

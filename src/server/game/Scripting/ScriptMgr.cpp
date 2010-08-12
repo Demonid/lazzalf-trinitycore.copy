@@ -1067,6 +1067,66 @@ bool ScriptMgr::OnCriteriaCheck(AchievementCriteriaData const* data, Player* sou
     return tmpscript->OnCheck(source, target);
 }
 
+void ScriptMgr::OnPVPKill(Player *killer, Player *killed)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPVPKill(killer, killed);
+}
+
+void ScriptMgr::OnCreatureKill(Player *killer, Creature *killed)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreatureKill(killer, killed);
+}
+
+void ScriptMgr::OnPlayerKilledByCreature(Creature *killer, Player *killed)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);
+}
+
+void ScriptMgr::OnPlayerLevelChanged(Player *player, uint8 newLevel)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnLevelChanged(player, newLevel);
+}
+
+void ScriptMgr::OnPlayerFreeTalentPointsChanged(Player *player, uint32 points)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnFreeTalentPointsChanged(player, points);
+}
+
+void ScriptMgr::OnPlayerTalentsReset(Player *player, bool no_cost)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnTalentsReset(player, no_cost);
+}
+
+void ScriptMgr::OnPlayerMoneyChanged(Player *player, int32& amount)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnMoneyChanged(player, amount);
+}
+
+void ScriptMgr::OnGivePlayerXP(Player *player, uint32& amount, Unit *victim)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnGiveXP(player, amount, victim);
+}
+
+void ScriptMgr::OnPlayerReputationChange(Player *player, uint32 factionID, int32& standing, bool incremental)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnReputationChange(player, factionID, standing, incremental);
+}
+
+void ScriptMgr::OnPlayerChat(WorldSession *session, uint32 type, uint32 lang, std::string msg, std::string toOrChannel)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChat(session, type, lang, msg, toOrChannel);
+}
+
+void ScriptMgr::OnPlayerEmote(WorldSession *session, uint32 emote)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnEmote(session, emote);
+}
+
+void ScriptMgr::OnPlayerTextEmote(WorldSession *session, uint32 text_emote, uint32 emoteNum, uint64 guid)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnTextEmote(session, text_emote, emoteNum, guid);
+}
+
 SpellHandlerScript::SpellHandlerScript(const char* name)
     : ScriptObject(name)
 {
@@ -1206,6 +1266,12 @@ AchievementCriteriaScript::AchievementCriteriaScript(const char* name)
     : ScriptObject(name)
 {
     ScriptMgr::ScriptRegistry<AchievementCriteriaScript>::AddScript(this);
+}
+
+PlayerScript::PlayerScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptMgr::ScriptRegistry<PlayerScript>::AddScript(this);
 }
 
 // Instantiate static members of ScriptMgr::ScriptRegistry.
