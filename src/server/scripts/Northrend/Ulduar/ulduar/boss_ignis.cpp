@@ -139,7 +139,8 @@ class boss_ignis : public CreatureScript
 
         Vehicle *vehicle;
         InstanceScript *pInstance;
-        std::vector<Creature *> construct_list;
+        typedef std::vector<Creature*> ConstructVct;
+        ConstructVct construct_list;
 
         uint32 SlagPotGUID;
         
@@ -269,7 +270,7 @@ class boss_ignis : public CreatureScript
                     case EVENT_CONSTRUCT:
                         if (!construct_list.empty())
                         {
-                            std::vector<Creature*>::const_iterator itr = (construct_list.begin()+rand()%construct_list.size());
+                            ConstructVct::const_iterator itr = (construct_list.begin() + (rand()%construct_list.size()));
                             Creature* pTarget = *itr;
                             if (pTarget)
                             {
@@ -324,7 +325,7 @@ class boss_ignis : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_ignis(Creature* pCreature)
+    CreatureAI* GetAI_boss_ignis(Creature* pCreature) const
     {
         return new boss_ignis_AI (pCreature);
     };
@@ -408,7 +409,7 @@ class mob_iron_construct : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_iron_construct(Creature* pCreature)
+    CreatureAI* GetAI_mob_iron_construct(Creature* pCreature) const
     {
         return new mob_iron_constructAI (pCreature);
     };
@@ -432,7 +433,7 @@ class mob_scorch_ground : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_scorch_ground(Creature* pCreature)
+    CreatureAI* GetAI_mob_scorch_ground(Creature* pCreature) const
     {
         return new mob_scorch_groundAI(pCreature);
     };
