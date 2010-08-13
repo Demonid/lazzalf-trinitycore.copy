@@ -1140,7 +1140,9 @@ class ObjectMgr
         GossipMenuItemsLocaleMap mGossipMenuItemsLocaleMap;
         PointOfInterestLocaleMap mPointOfInterestLocaleMap;
         RespawnTimes mCreatureRespawnTimes;
+        ACE_Thread_Mutex m_CreatureRespawnTimesMtx;
         RespawnTimes mGORespawnTimes;
+        ACE_Thread_Mutex m_GORespawnTimesMtx;
 
         CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
