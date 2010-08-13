@@ -387,6 +387,22 @@ UpdateMask Player::updateVisualBits;
 
 Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputationMgr(this)
 {
+    // Jail
+	m_jail_guid     = 0;
+	m_jail_char     = "";
+	m_jail_amnestie = false;
+	m_jail_warning  = false;
+	m_jail_isjailed = false;
+	m_jail_amnestietime =0;
+	m_jail_release  = 0;
+	m_jail_times    = 0;
+	m_jail_reason   = "";
+	m_jail_gmacc    = 0;
+	m_jail_gmchar   = "";
+	m_jail_lasttime = "";
+        m_jail_duration = 0;
+	// Jail end
+
     m_speakTime = 0;
     m_speakCount = 0;
 
@@ -514,6 +530,27 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
+    // movement anticheat
+    m_anti_LastClientTime  = 0;          // last movement client time
+    m_anti_LastServerTime  = 0;          // last movement server time
+    m_anti_DeltaClientTime = 0;          // client side session time
+    m_anti_DeltaServerTime = 0;          // server side session time
+    m_anti_MistimingCount  = 0;          // mistiming count
+
+    m_anti_LastSpeedChangeTime = 0;      // last speed change time
+
+    m_anti_Last_HSpeed =  7.0f;          // horizontal speed, default RUN speed
+    m_anti_Last_VSpeed = -2.3f;          // vertical speed, default max jump height
+
+    m_anti_TeleToPlane_Count = 0;        // Teleport To Plane alarm counter
+
+    m_anti_AlarmCount = 0;               // alarm counter
+
+    m_anti_JumpCount = 0;                // Jump already began, anti air jump check
+    m_anti_JumpBaseZ = 0;                // Z coord before jump (AntiGrav)
+    m_logcheat_time = 0;                 // Time for logs
+    // end movement anticheat
+
     m_mailsLoaded = false;
     m_mailsUpdated = false;
     unReadMails = 0;
@@ -561,6 +598,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_baseFeralAP = 0;
     m_baseManaRegen = 0;
     m_baseHealthRegen = 0;
+    m_baseSpellPenetration = 0;
 
     // Honor System
     m_lastHonorUpdateTime = time(NULL);
@@ -1272,6 +1310,77 @@ void Player::Update(uint32 p_time)
     Unit::Update(p_time);
     SetCanDelayTeleport(false);
 
+	if(m_jail_isjailed)
+    {
+        time_t localtime;
+        localtime = time(NULL);
+		
+        if (m_jail_release <= localtime)
+        {
+            m_jail_isjailed = false;
+            m_jail_release = 0;
+
+            _SaveJail();
+            
+            sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+            
+			CastSpell(this,8690,false);
+
+            return;
+        }
+
+        if (m_team == ALLIANCE)
+        {
+            if (GetDistance(sObjectMgr.m_jailconf_ally_x, sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z) > sObjectMgr.m_jailconf_radius)
+            {
+                TeleportTo(sObjectMgr.m_jailconf_ally_m, sObjectMgr.m_jailconf_ally_x,
+                    sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z, sObjectMgr.m_jailconf_ally_o);
+                return;
+            }
+        }
+        else
+        {
+            if (GetDistance(sObjectMgr.m_jailconf_horde_x, sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z) > sObjectMgr.m_jailconf_radius)
+            {
+                TeleportTo(sObjectMgr.m_jailconf_horde_m, sObjectMgr.m_jailconf_horde_x,
+                    sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z, sObjectMgr.m_jailconf_horde_o);
+                return;
+            }
+			
+        }
+    }
+	
+	if(m_jail_warning == true)
+	{
+		m_jail_warning = false;
+		
+		if(sObjectMgr.m_jailconf_warn_player && sObjectMgr.m_jailconf_warn_player == m_jail_times)
+		{
+			if (((sObjectMgr.m_jailconf_max_jails - 1) == (m_jail_times - 1)) && (sObjectMgr.m_jailconf_ban - 1))
+			{
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING_BAN, m_jail_times , sObjectMgr.m_jailconf_max_jails-1);
+			}
+			else
+			{
+				ChatHandler(this).PSendSysMessage(LANG_JAIL_WARNING, m_jail_times , sObjectMgr.m_jailconf_max_jails);
+			}		        
+		}
+		return;
+	}
+    if(m_jail_amnestie == true && sObjectMgr.m_jailconf_amnestie > 0 )
+    {
+	    m_jail_amnestie =false;
+    	time_t localtime;
+        localtime    = time(NULL);
+	
+    	if(localtime >  m_jail_amnestietime)
+    	{   
+    		CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid` = '%u'",GetGUIDLow());
+    		ChatHandler(this).PSendSysMessage(LANG_JAIL_AMNESTII);
+    	}
+        return;
+    }
+
     time_t now = time(NULL);
 
     UpdatePvPFlag(now);
@@ -1449,9 +1558,17 @@ void Player::Update(uint32 p_time)
     }
 
     if (m_deathState == JUST_DIED)
-        KillPlayer();
+	{
+    // Prevent death of jailed players
+        if (!m_jail_isjailed) KillPlayer();
+        else
+        {
+            m_deathState = ALIVE;
+            RegenerateAll();
+        }
+    }
 
-    if (m_nextSave > 0)
+    if(m_nextSave > 0 && !m_jail_isjailed)
     {
         if (p_time >= m_nextSave)
         {
@@ -1868,6 +1985,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if (GetMapId() == mapid && !m_transport)
     {
+        m_anti_JumpBaseZ = 0;
         //lets reset far teleport flag if it wasn't reset during chained teleports
         SetSemaphoreTeleportFar(false);
         //setup delayed teleport flag
@@ -1923,10 +2041,28 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this check not dependent from map instance copy and same for all instance copies of selected map
         if (!sMapMgr.CanPlayerEnter(mapid, this, false))
             return false;
+ 
+
+        // Start dalaran teleport Fix
+        // Get the instance id if exists
+        InstancePlayerBind *pBind = this->GetBoundInstance(mapid, this->GetDifficulty(mEntry->IsRaid()));
+        InstanceSave *pSave = pBind ? pBind->save : NULL;
+        // the player's permanent player bind is taken into consideration first
+        // then the player's group bind and finally the solo bind.
+        if (!pBind || !pBind->perm)
+        {
+            InstanceGroupBind *groupBind = NULL;
+            Group *group = this->GetGroup();
+            // use the player's difficulty setting (it may not be the same as the group's)
+            if (group && (groupBind = group->GetBoundInstance(this)))
+                pSave = groupBind->save;
+        }
+        uint32 instanceId = pSave ? pSave->GetInstanceId() : 0;
+        // End dalaran teleport Fix
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = sMapMgr.FindMap(mapid);
+        Map *map = sMapMgr.FindMap(mapid, instanceId); //Map *map = sMapMgr.FindMap(mapid);
         if (!map ||  map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
@@ -2017,6 +2153,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             m_teleport_dest = WorldLocation(mapid, final_x, final_y, final_z, final_o);
             SetFallInformation(0, final_z);
+            m_anti_JumpBaseZ = 0;
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
@@ -4528,6 +4665,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE PlayerGuid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_battleground_data WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_glyphs WHERE guid = '%u'",guid);
+            CharacterDatabase.PExecute("DELETE FROM jail WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_talent WHERE guid = '%u'",guid);
             CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
@@ -5090,11 +5228,19 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
+    bool bResurrect = false;
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -500.0f)
     {
-        ResurrectPlayer(0.5f);
         SpawnCorpseBones();
+        bResurrect = true;
+    }
+
+    // Naxxramas is unreachable as a ghost and the player must be automatically revived - HACK
+    if ((!isAlive() && zone && zone->ID == 4188 && GetPositionZ() > 240))
+    {
+        SpawnCorpseBones();
+        bResurrect = true;
     }
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
@@ -5125,6 +5271,10 @@ void Player::RepopAtGraveyard()
     }
     else if (GetPositionZ() < -500.0f)
         TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+
+    // player must be resurrected after teleport to avoid aggroing creatures at death location
+    if (bResurrect)
+        ResurrectPlayer(0.5f);
 }
 
 void Player::JoinedChannel(Channel *c)
@@ -6770,14 +6920,15 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     if (uVictim != NULL)
     {
+        honor *= sWorld.getRate(RATE_HONOR);
+
         if (groupsize > 1)
             honor_f /= groupsize;
 
         // apply honor multiplier from aura (not stacking-get highest)
         honor_f *= (GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HONOR_GAIN_PCT) + 100) / 100.0f;
     }
-
-    honor_f *= sWorld.getRate(RATE_HONOR);
+    
     // Back to int now
     honor = honor_f;
     // honor - for show honor points in log
@@ -6856,6 +7007,8 @@ void Player::ModifyHonorPoints(int32 value)
     }
     else
         SetHonorPoints(GetHonorPoints() < sWorld.getConfig(CONFIG_MAX_HONOR_POINTS) - value ? GetHonorPoints() + value : sWorld.getConfig(CONFIG_MAX_HONOR_POINTS));
+    
+    UpdateAllStats();
 }
 
 void Player::ModifyArenaPoints(int32 value)
@@ -6869,6 +7022,8 @@ void Player::ModifyArenaPoints(int32 value)
     }
     else
         SetArenaPoints(GetArenaPoints() < sWorld.getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld.getConfig(CONFIG_MAX_ARENA_POINTS));
+
+    UpdateAllStats();
 }
 
 uint32 Player::GetGuildIdFromDB(uint64 guid)
@@ -7203,6 +7358,12 @@ void Player::DuelComplete(DuelCompleteType type)
     else if (duel->opponent->GetComboTarget() == GetPetGUID())
         duel->opponent->ClearComboPoints();
 
+    if (type != DUEL_INTERUPTED)
+    {
+        RemoveArenaSpellCooldowns();
+        duel->opponent->RemoveArenaSpellCooldowns();
+    }
+
     // Honor points after duel (the winner) - ImpConfig
     if (uint32 amount = sWorld.getConfig(CONFIG_HONOR_AFTER_DUEL))
         duel->opponent->RewardHonor(NULL,1,amount);
@@ -7438,8 +7599,14 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
             case ITEM_MOD_SPELL_POWER:
                 ApplySpellPowerBonus(int32(val), apply);
                 break;
+            case ITEM_MOD_BLOCK_VALUE:
+                HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, float(val), apply);
+                break;
             case ITEM_MOD_HEALTH_REGEN:
                 ApplyHealthRegenBonus(int32(val), apply);
+                break;
+            case ITEM_MOD_SPELL_PENETRATION:
+                ApplySpellPenetrationBonus(int32(val), apply);
                 break;
             // depricated item mods
             case ITEM_MOD_SPELL_HEALING_DONE:
@@ -7899,8 +8066,23 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             {
                 if (IsPositiveSpell(pEnchant->spellid[s]))
                     CastSpell(this, pEnchant->spellid[s], true, item);
-                else
+                else 
+                {
                     CastSpell(target, pEnchant->spellid[s], true, item);
+                    // Deadly Poison
+                    if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags[0] == 0x10000 && spellInfo->SpellFamilyFlags[1] == 0x80000) 
+                    {
+                        if (Aura * aur = target->GetAura(pEnchant->spellid[s], GetGUID()))
+                            if (aur->GetStackAmount() == 5)
+                                if (Item* Weapon = GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK, true))
+                                    if (SpellItemEnchantmentEntry const *Poison = sSpellItemEnchantmentStore.LookupEntry(Weapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))) 
+                                    {
+                                        SpellEntry const* poisonEntry = sSpellStore.LookupEntry(Poison->spellid[s]);
+                                        if(poisonEntry && poisonEntry->Dispel == DISPEL_POISON)
+                                            CastSpell(target, poisonEntry, true, Weapon);
+                                    }
+                    }
+                }
             }
         }
     }
@@ -13232,7 +13414,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         case ITEM_MOD_SPELL_POWER:
                             ApplySpellPowerBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u SPELL_POWER", enchant_amount);
-                            break;
+                            break;                        
                         case ITEM_MOD_HEALTH_REGEN:
                             ApplyHealthRegenBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u HEALTH_REGENERATION", enchant_amount);
@@ -14419,8 +14601,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     if (pQuest->IsDaily())
     {
         SetDailyQuestStatus(quest_id);
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, quest_id);
-        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY, quest_id);
+        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
     }
 
     if (pQuest->IsWeekly())
@@ -16123,6 +16304,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             RelocateToHomebind();
         }
 
+    // Vault of Archavon
+    if (mapEntry->MapID == 624 && !sOutdoorPvPMgr.CanEnterVaultOfArchavon(this))
+  	    RelocateToHomebind();
+
         // fix crash (because of if (Map *map = _FindMap(instanceId)) in MapInstanced::CreateInstance)
         if (instanceId)
             if (InstanceSave * save = GetInstanceSave(mapId, mapEntry->IsRaid()))
@@ -16438,9 +16623,79 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     m_achievementMgr.LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
     m_achievementMgr.CheckAllAchievementCriteria();
 
-    _LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+	// Loads the jail datas and if jailed it corrects the position to the corresponding jail
+    _LoadJail();
+
+	_LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     return true;
+
+}
+
+void Player::_LoadJail(void)
+{
+    CharacterDatabase.BeginTransaction();
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GetGUIDLow());
+    CharacterDatabase.CommitTransaction();
+
+    if (!result)
+    {
+		m_jail_times = 0;
+        m_jail_isjailed = false;
+        return;
+    }
+
+		Field *fields = result->Fetch();
+		m_jail_warning = true;
+		m_jail_isjailed = true;
+		m_jail_guid = fields[0].GetUInt32();
+		m_jail_char = fields[1].GetString();
+		m_jail_release = fields[2].GetUInt32();
+		m_jail_amnestietime = fields[3].GetUInt32();
+		m_jail_reason = fields[4].GetString();
+		m_jail_times = fields[5].GetUInt32();
+		m_jail_gmacc = fields[6].GetUInt32();
+		m_jail_gmchar = fields[7].GetString();
+		m_jail_lasttime = fields[8].GetString();
+		m_jail_duration = fields[9].GetUInt32();
+
+    if (m_jail_release == 0)
+    {
+        m_jail_isjailed = false;
+        return;
+    }
+
+    time_t localtime;
+    localtime = time(NULL);
+
+    if (m_jail_release <= localtime)
+    {
+        m_jail_isjailed = false;
+        m_jail_release = 0;
+
+        _SaveJail();
+
+        sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+
+        CastSpell(this,8690,false);
+        return;
+    }
+
+    if (m_jail_isjailed)
+    {
+        if (m_team == ALLIANCE)
+        {
+            TeleportTo(sObjectMgr.m_jailconf_ally_m, sObjectMgr.m_jailconf_ally_x,
+                sObjectMgr.m_jailconf_ally_y, sObjectMgr.m_jailconf_ally_z, sObjectMgr.m_jailconf_ally_o);
+        }
+        else
+        {
+            TeleportTo(sObjectMgr.m_jailconf_horde_m, sObjectMgr.m_jailconf_horde_x,
+                sObjectMgr.m_jailconf_horde_y, sObjectMgr.m_jailconf_horde_z, sObjectMgr.m_jailconf_horde_o);
+        }
+         
+        sWorld.SendWorldText(LANG_JAIL_CHAR_TELE, GetName() );
+    }
 }
 
 bool Player::isAllowedToLoot(const Creature* creature)
@@ -17564,8 +17819,21 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 /***                   SAVE SYSTEM                     ***/
 /*********************************************************/
 
+// Saves the jail datas (added by WarHead).
+void Player::_SaveJail(void)
+{
+    CharacterDatabase.BeginTransaction();
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `guid` FROM `jail` WHERE `guid`='%u' LIMIT 1", m_jail_guid);
+    if (!result) CharacterDatabase.PExecute("INSERT INTO `jail` VALUES ('%u','%s','%u', '%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", m_jail_guid, m_jail_char.c_str(), m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration);
+    else CharacterDatabase.PExecute("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration, m_jail_guid);
+    CharacterDatabase.CommitTransaction();
+}
+
+
 void Player::SaveToDB()
 {
+	// Jail: Prevent saving of jailed players
+    if (m_jail_isjailed) return;
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -18632,7 +18900,8 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, rPlayer->GetName(), rPlayer->dndMsg.c_str());
     }
 
-    if (!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
+    // if (!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
+    if (!isAcceptWhispers() && !(isGameMaster() && rPlayer->isGameMaster()))
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
@@ -20415,6 +20684,23 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                     return false;
     }
 
+    // Arena Preparation Visibility
+    if (GetTypeId() == TYPEID_PLAYER && u->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (GetMap()->IsBattleArena() && u->GetMap()->IsBattleArena())
+        {        
+  	        if (HasAura(SPELL_ARENA_PREPARATION) || u->HasAura(SPELL_ARENA_PREPARATION))
+            {
+ 	            if ((HasAura(SPELL_ALLIANCE_GOLD_FLAG) || HasAura(SPELL_HORDE_GOLD_FLAG)) && (u->HasAura(SPELL_ALLIANCE_GOLD_FLAG) || u->HasAura(SPELL_HORDE_GOLD_FLAG)))
+  	                return true;
+  	            else if ((HasAura(SPELL_ALLIANCE_GREEN_FLAG) || HasAura(SPELL_HORDE_GREEN_FLAG)) && (u->HasAura(SPELL_ALLIANCE_GREEN_FLAG) || u->HasAura(SPELL_HORDE_GREEN_FLAG)))
+ 	                return true;
+ 	            else
+ 	                return false;
+            }
+        }
+    }
+
     // If use this server will be too laggy
     // Now check is target visible with LoS
     //return u->IsWithinLOS(GetPositionX(),GetPositionY(),GetPositionZ());
@@ -21245,7 +21531,6 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
         }
     }
 }
-
 
 void Player::SetWeeklyQuestStatus(uint32 quest_id)
 {
@@ -22414,6 +22699,14 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell *spell)
         cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
     else if (IsRangedWeaponSpell(spellInfo) && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
+
+    // Fix global cooldown
+    Unit::AuraEffectList const& gcd_mod_auras = GetAuraEffectsByType(SPELL_AURA_ADD_FLAT_MODIFIER);
+    for (Unit::AuraEffectList::const_iterator itr = gcd_mod_auras.begin(); itr != gcd_mod_auras.end(); ++itr)
+    {
+        if ((*itr)->GetMiscValue() == 21 && (*itr)->IsAffectedOnSpell(spellInfo))
+            cdTime += (*itr)->GetAmount();
+    }
 
     if (cdTime > 1500.0f)
         cdTime = 1500.0f;
@@ -23637,8 +23930,11 @@ void Player::ActivateSpec(uint8 spec)
 
     // TODO:
     // HACK: this shouldn't be checked at such a low level function but rather at the moment the spell is casted
-    if (GetMap()->IsBattleground() && !HasAura(44521)) // In Battleground with no Preparation buff
+    if (GetMap()->IsBattleground() && !HasAura(44521) && (GetMap()->GetId() != 30)) // In Battleground with no Preparation buff (You can change spec in Alterac)
         return;
+
+    if (HasAura(28682)) // HackFix for remove Combustion
+        RemoveAurasDueToSpell(28682);
 
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
@@ -23792,6 +24088,10 @@ void Player::SendTimeSync()
 void Player::SetReputation(uint32 factionentry, uint32 value)
 {
     GetReputationMgr().SetReputation(sFactionStore.LookupEntry(factionentry),value);
+}
+void Player::SetOneFactionReputation(uint32 factionentry, uint32 value)
+{
+    GetReputationMgr().SetOneFactionReputation(sFactionStore.LookupEntry(factionentry),value);
 }
 uint32 Player::GetReputation(uint32 factionentry)
 {

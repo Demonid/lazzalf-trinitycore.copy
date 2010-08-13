@@ -1,0 +1,1 @@
+INSERT INTO `trinity_string` VALUES ('773', 'Not enough players to begin the battle.', '', '', '', '', '', '', '', '');
