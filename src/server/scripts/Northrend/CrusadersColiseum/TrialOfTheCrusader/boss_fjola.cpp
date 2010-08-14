@@ -216,7 +216,7 @@ class boss_fjola : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_fjola(Creature* pCreature)
+    CreatureAI* GetAI_boss_fjola(Creature* pCreature) const
     {
         return new boss_fjolaAI(pCreature);
     };
@@ -382,7 +382,7 @@ class boss_eydis : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_eydis(Creature* pCreature)
+    CreatureAI* GetAI_boss_eydis(Creature* pCreature) const
     {
         return new boss_eydisAI(pCreature);
     };
@@ -430,7 +430,7 @@ class mob_light_essence : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_light_essence(Creature* pCreature)
+    CreatureAI* GetAI_mob_light_essence(Creature* pCreature) const
     {
         return new mob_light_essenceAI(pCreature);
     };
@@ -488,7 +488,7 @@ class mob_dark_essence : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_dark_essence(Creature* pCreature)
+    CreatureAI* GetAI_mob_dark_essence(Creature* pCreature) const
     {
         return new mob_dark_essenceAI(pCreature);
     };
@@ -578,7 +578,7 @@ class mob_unleashed_dark : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_mob_unleashed_dark(Creature *pCreature)
+    CreatureAI* GetAI_mob_unleashed_dark(Creature *pCreature) const
     {
         return new mob_unleashed_darkAI(pCreature);
     };
@@ -653,7 +653,7 @@ class mob_unleashed_light : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_mob_unleashed_light(Creature *pCreature)
+    CreatureAI* GetAI_mob_unleashed_light(Creature *pCreature) const
     {
         return new mob_unleashed_lightAI(pCreature);
     };

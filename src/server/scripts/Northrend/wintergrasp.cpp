@@ -20,7 +20,7 @@ class npc_demolisher_engineerer : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_demolisher_engineerer(Creature* pCreature)
+    CreatureAI* GetAI_npc_demolisher_engineerer(Creature* pCreature) const
     {
         return new npc_demolisher_engineererAI (pCreature);
     }
@@ -287,7 +287,7 @@ class npc_wg_misc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_wg_misc(Creature* pCreature)
+    CreatureAI* GetAI_npc_wg_misc(Creature* pCreature) const
     {
         return new npc_wg_miscAI (pCreature);
     }
@@ -347,7 +347,7 @@ class npc_winterguard : public CreatureScript
         void UpdateAI(const uint32 /*diff*/){}
     };
 
-    CreatureAI* GetAI_npc_winterguard(Creature* pCreature)
+    CreatureAI* GetAI_npc_winterguard(Creature* pCreature) const
     {
         return new npc_winterguardAI(pCreature);
     }

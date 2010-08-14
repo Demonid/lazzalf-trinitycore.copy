@@ -218,7 +218,7 @@ class boss_auriaya : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_auriaya(Creature* pCreature)
+    CreatureAI* GetAI_boss_auriaya(Creature* pCreature) const
     {
         return new boss_auriaya_AI (pCreature);
     };
@@ -265,7 +265,7 @@ class feral_defender_trigger : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_feral_defender_trigger(Creature* pCreature)
+    CreatureAI* GetAI_feral_defender_trigger(Creature* pCreature) const
     {
         return new feral_defender_triggerAI(pCreature);
     };
@@ -353,7 +353,7 @@ class mob_sanctum_sentry : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_sanctum_sentry(Creature* pCreature)
+    CreatureAI* GetAI_mob_sanctum_sentry(Creature* pCreature) const
     {
         return new mob_sanctum_sentryAI(pCreature);
     };
@@ -459,7 +459,7 @@ class mob_feral_defender : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_feral_defender(Creature* pCreature)
+    CreatureAI* GetAI_mob_feral_defender(Creature* pCreature) const
     {
         return new mob_feral_defenderAI(pCreature);
     };
@@ -494,7 +494,7 @@ class seeping_trigger : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_seeping_trigger(Creature* pCreature)
+    CreatureAI* GetAI_seeping_trigger(Creature* pCreature) const
     {
         return new seeping_triggerAI(pCreature);
     };

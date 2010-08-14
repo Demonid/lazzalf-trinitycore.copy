@@ -360,7 +360,7 @@ class boss_kologarn : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_kologarn(Creature* pCreature)
+    CreatureAI* GetAI_boss_kologarn(Creature* pCreature) const
     {
         return new boss_kologarnAI (pCreature);
     };
@@ -397,7 +397,7 @@ class mob_focused_eyebeam : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_focused_eyebeam(Creature* pCreature)
+    CreatureAI* GetAI_mob_focused_eyebeam(Creature* pCreature) const
     {
         return new mob_focused_eyebeamAI(pCreature);
     };
@@ -522,7 +522,7 @@ class mob_right_arm : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_right_arm(Creature* pCreature)
+    CreatureAI* GetAI_mob_right_arm(Creature* pCreature) const
     {
         return new mob_right_armAI(pCreature);
     };
@@ -570,7 +570,7 @@ class mob_left_arm : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_left_arm(Creature* pCreature)
+    CreatureAI* GetAI_mob_left_arm(Creature* pCreature) const
     {
         return new mob_left_armAI(pCreature);
     };

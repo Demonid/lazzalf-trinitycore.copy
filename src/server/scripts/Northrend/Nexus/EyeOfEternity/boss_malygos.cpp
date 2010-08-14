@@ -1331,7 +1331,7 @@ class boss_malygos : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_malygos(Creature* pCreature)
+    CreatureAI* GetAI_boss_malygos(Creature* pCreature) const
     {
         return new boss_malygosAI(pCreature);
     };
@@ -1476,7 +1476,7 @@ class mob_power_spark : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_power_spark(Creature* pCreature)
+    CreatureAI* GetAI_mob_power_spark(Creature* pCreature) const
     {
         return new mob_power_sparkAI(pCreature);
     };
@@ -1575,7 +1575,7 @@ class mob_scion_of_eternity : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_scion_of_eternity(Creature* pCreature)
+    CreatureAI* GetAI_mob_scion_of_eternity(Creature* pCreature) const
     {
         return new mob_scion_of_eternityAI(pCreature);
     };
@@ -1668,7 +1668,7 @@ class npc_arcane_overload : public CreatureScript
         }  
     };
 
-    CreatureAI* GetAI_npc_arcane_overload(Creature* pCreature)
+    CreatureAI* GetAI_npc_arcane_overload(Creature* pCreature) const
     {
         return new npc_arcane_overloadAI(pCreature);
     };
@@ -1742,7 +1742,7 @@ class mob_nexus_lord : public CreatureScript
         }  
     };
 
-    CreatureAI* GetAI_mob_nexus_lord(Creature* pCreature)
+    CreatureAI* GetAI_mob_nexus_lord(Creature* pCreature) const
     {
         return new mob_nexus_lordAI(pCreature);
     };

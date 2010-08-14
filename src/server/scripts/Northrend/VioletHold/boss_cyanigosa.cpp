@@ -94,12 +94,12 @@ public:
     }
 
     void EnterCombat(Unit* who)
-        {
-            DoScriptText(SAY_AGGRO, me);
+    {
+        DoScriptText(SAY_AGGRO, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
-        }
+        if (pInstance)
+            pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
+    }
 
     void MoveInLineOfSight(Unit* who) {}
 
