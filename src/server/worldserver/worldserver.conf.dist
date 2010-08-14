@@ -2142,6 +2142,10 @@ CharDelete.KeepDays = 30
 #        The required level of character to be able to send and receive mail
 #        Default: 1 (From level 1)
 #
+#   DungeonFinder.Enable
+#        Enable Dungeon Finder system. Will enable dungeon finder and raid finder
+#        Default: 0 - off
+#                 1 - on
 ###############################################################################
 
 PlayerStart.AllReputation = 0
@@ -2175,3 +2179,4 @@ LevelReq.Trade = 1
 LevelReq.Ticket = 1
 LevelReq.Auction = 1
 LevelReq.Mail = 1
+DungeonFinder.Enable = 0

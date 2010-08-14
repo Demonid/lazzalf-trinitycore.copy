@@ -25,6 +25,11 @@
 void WorldSession::HandleLfgJoinOpcode(WorldPacket &recv_data)
 {
     sLog.outDebug("CMSG_LFG_JOIN");
+    if (!sWorld.getConfig(CONFIG_DUNGEON_FINDER_ENABLE))
+    {
+        recv_data.rpos(recv_data.wpos());
+        return;
+    }
 
     uint8 numDungeons;
     uint32 dungeon;
@@ -103,7 +108,7 @@ void WorldSession::HandleLfgLeaveOpcode(WorldPacket & /*recv_data*/)
 
     // Check cheating - only leader can leave the queue
     if (!grp || grp->GetLeaderGUID() == GetPlayer()->GetGUID())
-        sLFGMgr.Leave(GetPlayer());
+        sLFGMgr.Leave(GetPlayer(), grp);
 }
 
 void WorldSession::HandleLfgProposalResultOpcode(WorldPacket &recv_data)
