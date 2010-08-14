@@ -179,7 +179,7 @@ class boss_koralon : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_koralon(Creature* pCreature)
+    CreatureAI* GetAI_boss_koralon(Creature* pCreature) const
     {
         return new boss_koralonAI (pCreature);
     };
@@ -242,7 +242,7 @@ class mob_flame_warder : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_flame_warder(Creature* pCreature)
+    CreatureAI* GetAI_mob_flame_warder(Creature* pCreature) const
     {
         return new mob_flame_warderAI (pCreature);
     };

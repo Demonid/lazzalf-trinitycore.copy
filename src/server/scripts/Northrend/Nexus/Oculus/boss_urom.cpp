@@ -378,7 +378,7 @@ class boss_urom : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_urom(Creature* pCreature)
+    CreatureAI* GetAI_boss_urom(Creature* pCreature) const
     {
         return new boss_uromAI (pCreature);
     };

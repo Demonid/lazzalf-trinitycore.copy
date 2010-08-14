@@ -170,7 +170,7 @@ class boss_archavon : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_archavon(Creature* pCreature)
+    CreatureAI* GetAI_boss_archavon(Creature* pCreature) const
     {
         return new boss_archavonAI (pCreature);
     };
@@ -237,7 +237,7 @@ class mob_archavon_warder : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_archavon_warder(Creature* pCreature)
+    CreatureAI* GetAI_mob_archavon_warder(Creature* pCreature) const
     {
         return new mob_archavon_warderAI(pCreature);
     };

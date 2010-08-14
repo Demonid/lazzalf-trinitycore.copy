@@ -221,7 +221,7 @@ class boss_eadric : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_eadric(Creature* pCreature)
+    CreatureAI* GetAI_boss_eadric(Creature* pCreature) const
     {
         return new boss_eadricAI(pCreature);
     };
@@ -476,7 +476,7 @@ class boss_paletress : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_paletress(Creature* pCreature)
+    CreatureAI* GetAI_boss_paletress(Creature* pCreature) const
     {
         return new boss_paletressAI(pCreature);
     };
@@ -549,7 +549,7 @@ class npc_memory : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_memory(Creature* pCreature)
+    CreatureAI* GetAI_npc_memory(Creature* pCreature) const
     {
         return new npc_memoryAI(pCreature);
     };
@@ -784,7 +784,7 @@ class npc_argent_soldier : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_argent_soldier(Creature* pCreature)
+    CreatureAI* GetAI_npc_argent_soldier(Creature* pCreature) const
     {
         return new npc_argent_soldierAI(pCreature);
     };
