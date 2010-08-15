@@ -1,4 +1,4 @@
-DELETE FROM `outdoorpvp_template` WHERE `TypeId` IN (1,2,3,4,5,6);
+DELETE FROM `outdoorpvp_template` WHERE `TypeId` IN (1,2,3,4,5,6,7);
 INSERT INTO `outdoorpvp_template` (`TypeId`, `ScriptName`, `Comment`) VALUES
 (1, 'outdoorpvp_hp', 'Hellfire Peninsula'),
 (2, 'outdoorpvp_na', 'Nagrand'),
@@ -6,3 +6,5 @@ INSERT INTO `outdoorpvp_template` (`TypeId`, `ScriptName`, `Comment`) VALUES
 (4, 'outdoorpvp_zm', 'Zangarmarsh'),
 (5, 'outdoorpvp_si', 'Silithus'),
 (6, 'outdoorpvp_ep', 'Eastern Plaguelands');
+(7, 'outdoorpvp_wg', 'Wintergrasp');
+
