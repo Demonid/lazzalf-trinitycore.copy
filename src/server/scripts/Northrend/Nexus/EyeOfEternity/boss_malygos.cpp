@@ -1,11 +1,11 @@
  /* ScriptData
 SDName: Malygos
-Author: 
+Author:
 SD%Complete: 90%
-SDComment: 
+SDComment:
 Need to be implemented:
 Visual Effect for discs - Nexus Lord, Scion of Eternity does not flying on this discs, need to implement visual of discs while flying
-EndScriptData 
+EndScriptData
 */
 
 /*
@@ -14,7 +14,7 @@ Phase1:
   Arcane Breath - implemented normal, heroic
   Vortex - Visual AOE dummy, debuff (dealt 2k dmg every sec, for 10sec
   Power Spark - Following Malygos and if they are in distance of malygos, starts to buff him
-  
+ 
 Phase2:
   Nexus Lord - casts Arcane Shock (normal, heroic) on random target, casts haste (not blizzlike timer)
   Scion of Eternity - flying, after Arcane Barrage they go at another place
@@ -27,7 +27,7 @@ Phase 3:
   after malygos destroy platform, raid fall into drakes, drake stats are modified based player's stats [hp = drakeHP  (PlayerHP*2)]
   Static Field   - implemented
   Surge of Power  - implemented for normal, hero
-  
+ 
 --------------
 */
 
@@ -68,8 +68,8 @@ enum
     SPELL_ARCANE_SHOCK             = 57058,
     SPELL_ARCANE_SHOCK_H           = 60073,
     SPELL_HASTE                    = 57060,
-    SPELL_ARCANE_BARRAGE           = 56397, 
-    SPELL_ARCANE_BARRAGE_H         = 63934, 
+    SPELL_ARCANE_BARRAGE           = 56397,
+    SPELL_ARCANE_BARRAGE_H         = 63934,
     BP_BARRAGE0                    = 14138,
     BP_BARRAGE0_H                  = 16965,
  
@@ -77,7 +77,7 @@ enum
     SPELL_STATIC_FIELD             = 57428, // Summon trigger and cast this on them should be enought
     SPELL_SURGE_OF_POWER           = 57407, // this is on one target
     SPELL_SURGE_OF_POWER_H         = 60936, // this is on unlimited tagets, must limit it in mangos
-    
+   
     SPELL_ARCANE_PULSE             = 57432,
     //Dragons spells
     SPELL_FLAME_SPIKE              = 56091,
@@ -91,7 +91,6 @@ enum
     ITEM_KEY_TO_FOCUSING_IRIS      = 44582,
     ITEM_KEY_TO_FOCUSING_IRIS_H    = 44581,
     GO_FOCUSING_IRIS               = 193958,
-	GO_FOCUSING_IRIS_H			   = 193960,
     GO_EXIT_PORTAL                 = 193908,
     //////////////// PHASE 1 ////////////////
     NPC_AOE_TRIGGER                = 22517,
@@ -116,7 +115,7 @@ enum
     NPC_ALEXSTRASZA                = 32295,  // The Life-Binder
     GO_ALEXSTRASZAS_GIFT           = 193905, // Loot chest
     GO_ALEXSTRASZAS_GIFT_H         = 193967, // Loot chest
-      
+     
     CHASE_MOTION_TYPE              = 5,
  
     SAY_INTRO1                     = -1616000,
@@ -129,7 +128,7 @@ enum
     SAY_AGGRO2                     = -1616013,
     SAY_AGGRO3                     = -1616019,
     SAY_VORTEX                     = -1616006,
-    SAY_POWER_SPARK                = -1616035,
+    WHISPER_POWER_SPARK            = -1616035,
     SAY_POWER_SPARK_BUFF           = -1616007,
     SAY_KILL1_1                    = -1616008,
     SAY_KILL1_2                    = -1616009,
@@ -168,6 +167,7 @@ enum
     PHASE_NOSTART                  = 0,
         SUBPHASE_FLY_DOWN1         = 04,
         SUBPHASE_FLY_DOWN2         = 05,
+        SUBPHASE_WAIT              = 06,
     PHASE_FLOOR                    = 1,
         SUBPHASE_VORTEX            = 11,
     PHASE_ADDS                     = 2,
@@ -198,10 +198,10 @@ static Locations GOPositions[]=
 };
 static LocationsXY SparkLoc[]=
 {
-    {652.417, 1200.52},
-    {847.67, 1408.05},
-    {647.675, 1403.8},
-    {843.182, 1215.42},
+    {681.772, 1232.393},
+    {815.205, 1373.234},
+    {680.982, 1363.125},
+    {827.01, 1232.649},
 };
  
 //Also spawn locations for scions of eternity
@@ -231,17 +231,19 @@ static LocationsXY VortexLoc[]=
 };
 static Locations OtherLoc[]=
 {
-    {808, 1301, 268, 0},          // Phase 3 position 
+    {808, 1301, 268, 0},          // Phase 3 position
     {749, 1244, 332, 1.544},      // Vortex FarSight loc
     {754.29, 1301.18, 266.17, 0}, // Center of the platform, ground.
     {823, 1241, 299, 0},          // Alexstrasza's  position
-    {749, 1244, 268, 5.33},       // Aggro position after Subphase fly down
+    {749, 1244, 266.17, 5.33},       // Aggro position after Subphase fly down
 };
-#define MAX_VORTEX              21
-#define VORTEX_Z                268
- 
-#define FLOOR_Z                 268.17
-#define AIR_Z                   297.24   
+
+
+#define MAX_VORTEX      21
+#define VORTEX_Z        268
+#define FLOOR_Z         266.18
+#define FALL_FROM_Z     287.20
+#define AIR_Z           297.24
 
 /*######
 ## boss_malygos
@@ -250,37 +252,39 @@ static Locations OtherLoc[]=
 class boss_malygos : public CreatureScript
 {
     public:
-        boss_malygos(): CreatureScript("boss_malygos") {} 
+        boss_malygos(): CreatureScript("boss_malygos") {}
+     
+    CreatureAI* GetAI_boss_malygos(Creature* pCreature) const
+    {
+        return new boss_malygosAI(pCreature);
+    };
 
     struct boss_malygosAI : public ScriptedAI
     {
         boss_malygosAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();
             me->setActive(true);
-		    me->setFaction(35);
             Reset();
             m_uiIs10Man = RAID_MODE(true, false);
         }
      
         InstanceScript* m_pInstance;
-        
+       
         uint64 m_AlexstraszaGUID;
-        
+       
         uint8 m_uiPhase; //Fight Phase
         uint8 m_uiSubPhase; //Subphase if needed
         uint8 m_uiSpeechCount;
         uint8 m_uiVortexPhase;
         std::list<uint64> m_lDiscGUIDList;
         std::list<std::pair<uint64, uint64> > m_uiMounts; // Vehicle(GUID)-Player(GUID) pairs
-        
+       
         bool m_uiIsDown;
-        bool m_uiIsMounted; 
+        bool m_uiIsMounted;
         bool m_uiIs10Man;
-	    bool m_iris_on;
-        
+       
         uint32 m_uiFallToMountTimer;
-        uint32 m_uiIsDownTimer;
         uint32 m_uiEnrageTimer;
         uint32 m_uiSpeechTimer[5];
         uint32 m_uiTimer;
@@ -296,7 +300,7 @@ class boss_malygos : public CreatureScript
         uint32 m_uiCheckDisksTimer;
         uint32 m_uiWipeCheckTimer;
         uint32 m_uiSurgeVisual;
-        
+       
         void Reset()
         {
             if(m_pInstance)
@@ -305,22 +309,19 @@ class boss_malygos : public CreatureScript
                 me->ForcedDespawn();
 
             me->SetFlying(true);
-            me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-		    me->setFaction(35);
+            me->setActive(true);
+            me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
 
             m_uiPhase = PHASE_NOSTART;
             m_uiSubPhase = 0;
             m_uiSpeechCount = 0;
             m_uiVortexPhase = 0;
-            m_lDiscGUIDList.clear();
             m_uiMounts.clear();
-            
-		    m_iris_on=false;
+           
             m_uiIsDown = false;        
-            m_uiIsMounted = false; 
-                
+            m_uiIsMounted = false;
+               
             m_uiFallToMountTimer = 3000;
-            m_uiIsDownTimer = 90000;
             m_uiEnrageTimer = 600000;
             m_uiSpeechTimer[0] = 15000;
             m_uiSpeechTimer[1] = 18000;
@@ -329,7 +330,7 @@ class boss_malygos : public CreatureScript
             m_uiSpeechTimer[4] = 18000;
             m_uiSpeechTimer[5] = 17000;
             m_uiTimer = 7000;
-            m_uiVortexTimer = 60000;
+            m_uiVortexTimer = 10000;//60000;
             m_uiArcaneBreathTimer = 15000;
             m_uiPowerSparkTimer = 30000;
             m_uiDeepBreathTimer = 70000;
@@ -342,13 +343,21 @@ class boss_malygos : public CreatureScript
             m_uiWipeCheckTimer = 2500;
             m_uiSurgeVisual = 0;
             m_AlexstraszaGUID = 0;
-            
+           
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
             me->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
             me->SetSpeed(MOVE_FLIGHT, 3.5f, true);
             me->SetSpeed(MOVE_RUN, 3.5f, true);
             me->SetSpeed(MOVE_WALK, 3.5f, true);
+
+            //Despawn all summoned creatures
+            DespawnCreatures(NPC_POWER_SPARK, 300.0f);
+            DespawnCreatures(NPC_ARCANE_OVERLOAD, 300.0f);
+            DespawnCreatures(NPC_NEXUS_LORD, 300.0f);
+            DespawnCreatures(NPC_SCION_OF_ETERNITY, 300.0f);
+            DespawnCreatures(NPC_HOVER_DISC, 300.0f, true);
+            DespawnCreatures(NPC_STATIC_FIELD, 300.0f);
         }
 
         void MoveInLineOfSight(Unit* who)
@@ -359,39 +368,6 @@ class boss_malygos : public CreatureScript
             }
         }
 
-        void JustReachedHome()
-        {
-            Reset();
-
-            //Summon Platform
-            if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_PLATFORM, 200.0f))
-            {
-                pGo->Respawn();
-                m_pInstance->SetData(TYPE_DESTROY_PLATFORM, NOT_STARTED);
-            }
-            else
-                me->SummonGameObject(GO_PLATFORM, GOPositions[0].x, GOPositions[0].y, GOPositions[0].z, GOPositions[0].o, 0, 0, 0, 0, 0);
-     
-            //Summon focusing iris
-		    if(GameObject* pGo = GetClosestGameObjectWithEntry(me, m_uiIs10Man ? GO_FOCUSING_IRIS : GO_FOCUSING_IRIS_H, 200.0f))
-                pGo->Respawn();
-            else
-                me->SummonGameObject(m_uiIs10Man ? GO_FOCUSING_IRIS : GO_FOCUSING_IRIS_H, GOPositions[1].x, GOPositions[1].y, GOPositions[1].z, GOPositions[1].o, 0, 0, 0, 0, 0);
-     
-            //Summon exit portal
-            if(GameObject* pGo = GetClosestGameObjectWithEntry(me, GO_EXIT_PORTAL, 200.0f))
-                pGo->Respawn();
-            else
-                me->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0, 0, 0, 0, 0);
-     
-            //Despawn all summoned creatures	 
-            DespawnCreatures(NPC_POWER_SPARK, 300.0f);
-            DespawnCreatures(NPC_ARCANE_OVERLOAD, 300.0f);
-            DespawnCreatures(NPC_NEXUS_LORD, 300.0f);
-            DespawnCreatures(NPC_SCION_OF_ETERNITY, 300.0f);
-            DespawnCreatures(NPC_HOVER_DISC, 300.0f, true);
-            DespawnCreatures(NPC_STATIC_FIELD, 300.0f);      
-        }
         void AttackStart(Unit* pWho)
         {
             if(m_uiPhase != PHASE_FLOOR && m_uiPhase != PHASE_DRAGONS && !me->HasAura(SPELL_BERSERK))
@@ -408,6 +384,7 @@ class boss_malygos : public CreatureScript
         }
         void EnterCombat(Unit* pWho)
         {
+            me->SetInCombatWithZone();
             me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
             me->SetSpeed(MOVE_RUN, 1.0f, true);
             me->SetSpeed(MOVE_WALK, 1.0f, true);
@@ -417,7 +394,6 @@ class boss_malygos : public CreatureScript
             if(m_pInstance->GetData(TYPE_OUTRO_CHECK) == 1) //Should be enought to trigger outro immediatly
             {
                 me->SetFlying(true);
-                me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
                 //Destroy Platform
                 CastSpellToTrigger(SPELL_DESTROY_PLATFROM_BOOM, false);            
                 m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);
@@ -425,7 +401,7 @@ class boss_malygos : public CreatureScript
                 //Mount Players
                 PrepareMounts();
                 MountPlayers();
-                
+               
                 m_uiPhase = PHASE_OUTRO;
                 m_uiSubPhase = SUBPHASE_STOP_COMBAT;
             }
@@ -482,21 +458,16 @@ class boss_malygos : public CreatureScript
                 case 8: DoScriptText(SAY_KILL3_3, me); break;
             }
 
+
             if(m_uiPhase == PHASE_DRAGONS)
-            {
                 if(pVictim->GetEntry() == NPC_WYRMREST_SKYTALON)
-                {
                     for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); ++iter)
-                    {
                         if(pVictim->GetGUID() == (*iter).first)
                         {
                             m_uiMounts.erase(iter);
                             return;
                         }
-                    }
-                }
-            }
-                
+               
         }
         void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
         {
@@ -506,24 +477,51 @@ class boss_malygos : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_POWER_SPARK);
         }
 
-        void SummonedCreatureDespawn(Creature* pDespawned)
+        void MoveFly(bool up)
         {
-            if(pDespawned->GetEntry() != NPC_SCION_OF_ETERNITY && pDespawned->GetEntry() != NPC_NEXUS_LORD)
-                return;
-     
-            float x,y,z;
-            pDespawned->GetPosition(x,y,z);
-            z = FLOOR_Z;
-            if(Unit *pDisc = me->SummonCreature(NPC_HOVER_DISC, x, y, z, 0))
+            if (up)
             {
-                ((Creature*)pDisc)->SetSpeed(MOVE_FLIGHT, 3.5f, true);
-                ((Creature*)pDisc)->SetSpeed(MOVE_RUN, 3.5f, true);
-                ((Creature*)pDisc)->SetSpeed(MOVE_WALK, 3.5f, true);
-                ((Creature*)pDisc)->SetHealth(me->GetMaxHealth());
-                ((Creature*)pDisc)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                m_lDiscGUIDList.push_back(((Creature*)pDisc)->GetGUID());
+                SetCombatMovement(false);
+                me->SetFlying(true);
+                //me->HandleEmoteCommand(EMOTE_ONESHOT_FLY_SIT_GROUND_UP);
+                //me->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                me->SendMovementFlagUpdate();
+                me->GetMotionMaster()->MoveJump(OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+20, 1.0f, 1.0f);
+            }
+            else //down
+            {
+                me->Relocate(OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z);
+                me->SendMovementFlagUpdate();
+                me->HandleEmoteCommand(EMOTE_ONESHOT_FLY_SIT_GROUND_DOWN);
+                me->SetFlying(false);
+                SetCombatMovement(true);
             }
         }
+
+        void HoverDisk(Position &pos)
+        {
+            pos.m_positionZ = FLOOR_Z;
+            Creature * pDisc = me->SummonCreature(NPC_HOVER_DISC, pos);
+            if (pDisc)
+            {
+                pDisc->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+                pDisc->SetSpeed(MOVE_RUN, 3.5f, true);
+                pDisc->SetSpeed(MOVE_WALK, 3.5f, true);
+                m_lDiscGUIDList.push_back(pDisc->GetGUID());
+            }
+        }
+
+        void SummonedCreatureDespawn(Creature* pWho)
+        {
+            uint32 entry = pWho->GetEntry();
+            if ((entry == NPC_SCION_OF_ETERNITY) || (entry == NPC_NEXUS_LORD))
+            {
+                Position pos;
+                pWho->GetPosition(&pos);
+                HoverDisk(pos);
+            }
+        }
+
         void CastSpellToTrigger(uint32 uiSpellId, bool triggered = true, bool triggerCast = false)
         {      
             if(Creature *pTrigger = me->SummonCreature(NPC_VORTEX, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
@@ -535,24 +533,18 @@ class boss_malygos : public CreatureScript
                  pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                  pTrigger->setFaction(me->getFaction());
                  pTrigger->CastSpell(pTrigger, uiSpellId, triggered);
-               }else 
+               }else
                {
                    pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                    DoCast(pTrigger, uiSpellId, triggered);
                }
             }      
-        }     
+        }    
         void DoVortex(uint8 phase)
         {
             if(phase == 0)
-            {
-                me->SetFlying(true);
-                me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-                me->GetMotionMaster()->Clear(false);
-                SetCombatMovement(false);
-                me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+20);
-            }
-            else if(phase == 1)
+                MoveFly(true);
+            else if (phase == 1)
             {
                 CastSpellToTrigger(SPELL_VORTEX_AOE_VISUAL, false);
 
@@ -565,7 +557,7 @@ class boss_malygos : public CreatureScript
                 {
                     if(!itr->getSource()->isAlive())
                         continue;
-                    itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, VORTEX_Z, 0); 
+                    itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, FALL_FROM_Z, 0);
                     itr->getSource()->CastSpell(itr->getSource(), SPELL_VORTEX, true, NULL, NULL, me->GetGUID());
                     if(Creature *pVortex = me->SummonCreature(NPC_VORTEX, OtherLoc[1].x, OtherLoc[1].y, OtherLoc[1].z, OtherLoc[1].o, TEMPSUMMON_TIMED_DESPAWN, 11000))
                     {                    
@@ -599,7 +591,6 @@ class boss_malygos : public CreatureScript
                 if(phase == 31)
                 {
                     me->SetFlying(false);
-                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
                     if(me->getVictim())
                         me->GetMotionMaster()->MoveChase(me->getVictim());
 
@@ -608,7 +599,7 @@ class boss_malygos : public CreatureScript
                     {
                         pVortex->ForcedDespawn();
                     }
-                    
+                   
                     m_uiSubPhase = 0;
                     return;
                 }
@@ -619,20 +610,22 @@ class boss_malygos : public CreatureScript
                 for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
                 {
                     itr->getSource()->SetUInt64Value(PLAYER_FARSIGHT, 0);
-                    itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, VORTEX_Z, 0);
+                    itr->getSource()->NearTeleportTo(VortexLoc[0].x, VortexLoc[0].y, FALL_FROM_Z, 0);
                 }
-                
-                me->GetMotionMaster()->Clear(false);
-                SetCombatMovement(true);
-                float x, y, z;
-                me->GetPosition(x, y, z);
-                z = FLOOR_Z;
-                me->GetMotionMaster()->MovePoint(0, x, y, z);
+                MoveFly(false);
             }
-            
         }
+
         void PowerSpark(uint8 action)
         {
+            if (m_pInstance && m_pInstance->instance)
+            {
+                Map::PlayerList const &PlayerList = m_pInstance->instance->GetPlayers();
+                if (!PlayerList.isEmpty())
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        DoScriptText(WHISPER_POWER_SPARK, me, i->getSource());
+            }
+
             uint8 random = urand(0, 3);
             if(Creature *pSpark = me->SummonCreature(NPC_POWER_SPARK, SparkLoc[random].x, SparkLoc[random].y, FLOOR_Z+10, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
             {
@@ -640,18 +633,15 @@ class boss_malygos : public CreatureScript
                 pSpark->GetMotionMaster()->MoveFollow(me, 0, 0);
             }
         }
+
         void DoSpawnAdds()
         {
             //Nexus lords
-            
             int max_lords = m_uiIs10Man ? NEXUS_LORD_COUNT :NEXUS_LORD_COUNT_H;
             for(int i=0; i < max_lords;i++)
             {
                 if(Creature *pLord = me->SummonCreature(NPC_NEXUS_LORD, me->getVictim()->GetPositionX()-5+rand()%10, me->getVictim()->GetPositionY()-5+rand()%10, me->getVictim()->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
-                {
                     pLord->AI()->AttackStart(me->getVictim());
-                    pLord->SetInCombatWithZone();
-                }
             }
             //Scions of eternity
             int max_scions = m_uiIs10Man ? SCION_OF_ETERNITY_COUNT : SCION_OF_ETERNITY_COUNT_H;
@@ -660,14 +650,12 @@ class boss_malygos : public CreatureScript
                 uint32 tmp = urand(1, 10);
                 if(Creature *pScion = me->SummonCreature(NPC_SCION_OF_ETERNITY, VortexLoc[tmp].x, VortexLoc[tmp].y, FLOOR_Z+10, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
-                    pScion->SetInCombatWithZone();
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    {
                         pScion->AI()->AttackStart(pTarget);
-                    }
                 }
-            }       
+            }      
         }
+
         bool IsThereAnyAdd()
         {
             //Search for Nexus lords
@@ -680,6 +668,8 @@ class boss_malygos : public CreatureScript
      
             return false;
         }
+
+
         void DoSpawnShell()
         {
             uint32 x = urand(SHELL_MIN_X, SHELL_MAX_X);
@@ -689,6 +679,7 @@ class boss_malygos : public CreatureScript
                 pShell->CastSpell(pShell, SPELL_ARCANE_BOMB, false);
             }
         }
+
         void PrepareMounts()
         {
             Map *pMap = me->GetMap();
@@ -699,11 +690,11 @@ class boss_malygos : public CreatureScript
             Map::PlayerList const &lPlayers = pMap->GetPlayers();
             if (lPlayers.isEmpty())
                 return;
-            
+           
             for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
             {
                 if (Player* pPlayer = itr->getSource())
-                { 
+                {
                     if(Creature *pTemp = me->SummonCreature(NPC_WYRMREST_SKYTALON, pPlayer->GetPositionX(), pPlayer->GetPositionY(), 210, 0))
                     {
                         //m_uiMounts.push_back(pTemp);
@@ -712,6 +703,7 @@ class boss_malygos : public CreatureScript
                 }
             }
         }
+
         void MountPlayers()
         {
             Map *pMap = me->GetMap();
@@ -722,7 +714,7 @@ class boss_malygos : public CreatureScript
             Map::PlayerList const &lPlayers = pMap->GetPlayers();
             if (lPlayers.isEmpty())
                 return;
-            
+           
             for(std::list<std::pair<uint64, uint64> >::iterator iter = m_uiMounts.begin(); iter != m_uiMounts.end(); ++iter)
             {
                 Creature *pTemp = (Creature*)Unit::GetUnit(*me, (*iter).first);
@@ -750,7 +742,7 @@ class boss_malygos : public CreatureScript
             {
                 if(m_lDiscGUIDList.empty())
                     return;
-                    
+                   
                 for(std::list<uint64>::iterator iter = m_lDiscGUIDList.begin(); iter != m_lDiscGUIDList.end(); ++iter)
                 {
                     Creature* pDisk = ObjectAccessor::GetCreatureOrPetOrVehicle(*me,*iter);
@@ -759,7 +751,7 @@ class boss_malygos : public CreatureScript
                         pDisk->ForcedDespawn();
                     }
                 }
-                    
+                   
                 m_lDiscGUIDList.clear();
                 return;
             }
@@ -796,7 +788,7 @@ class boss_malygos : public CreatureScript
         void CastSurgeOfPower()
         {
             Creature* SurgeOfPower = NULL;
-            
+           
             SurgeOfPower = GetClosestCreatureWithEntry(me, NPC_SURGE_OF_POWER, 200.0f, true);
             if(!SurgeOfPower)
             {
@@ -806,7 +798,6 @@ class boss_malygos : public CreatureScript
             }
 
             SurgeOfPower->SetFlying(true);
-            SurgeOfPower->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE_ELEVATION);
             SurgeOfPower->SetHealth(100000);
             SurgeOfPower->setFaction(14);
             SurgeOfPower->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -819,42 +810,44 @@ class boss_malygos : public CreatureScript
             SurgeOfPower->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
+        void DoAction(const int32 id)
+        {
+            if (id==0)
+                m_uiSubPhase = SUBPHASE_FLY_DOWN1;
+        }
+
+        void MovementInform(uint32, uint32 id)
+        {
+            switch (id)
+            {
+            case 1:
+                m_uiSubPhase = SUBPHASE_FLY_DOWN2;
+                break;
+            }
+        }
+
         void UpdateAI(const uint32 uiDiff)
         {
-            if (m_uiPhase == PHASE_NOSTART && m_iris_on)
+            if (m_uiPhase == PHASE_NOSTART)
             {
-                //TODO: This is wrong, the event starts when players klick on Focusing Iris! This is just the event begin
-                if (!m_uiIsDown && m_uiIsDownTimer <= uiDiff )       
-                {
-                   m_uiSubPhase = SUBPHASE_FLY_DOWN1;
-                   m_uiIsDown = true;
-                }
-                else m_uiIsDownTimer -= uiDiff;
+                if (m_uiSubPhase == SUBPHASE_WAIT)
+                    return;
 
-                if(m_uiSubPhase == SUBPHASE_FLY_DOWN1)
+                if (m_uiSubPhase == SUBPHASE_FLY_DOWN1)
                 {
                     me->InterruptNonMeleeSpells(false);
                     me->RemoveAurasDueToSpell(SPELL_PORTAL_BEAM);
                     me->GetMotionMaster()->Clear(false);
-                    me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5);
-                    m_uiSubPhase = SUBPHASE_FLY_DOWN2;
-                    m_uiTimer = 3500;
+                    me->GetMotionMaster()->MovePoint(1, OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+25);
+                    m_uiSubPhase = SUBPHASE_WAIT;
                 }
                 else if (m_uiSubPhase == SUBPHASE_FLY_DOWN2)
                 {
-                    if(m_uiTimer <= uiDiff)
-                    {
-					    me->NearTeleportTo(OtherLoc[2].x, OtherLoc[2].y, FLOOR_Z+5,0,false);
-					    me->setFaction(16);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        m_uiSubPhase = 0;
-                        m_uiPhase = PHASE_FLOOR;
-                        me->SetFlying(false);
-                        me->RemoveUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-                        me->SetInCombatWithZone();
-                        return;
-                    }
-                    else m_uiTimer -= uiDiff;
+                    MoveFly(false);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    m_uiSubPhase = 0;
+                    m_uiPhase = PHASE_FLOOR;
+                    return;
                 }  
                 else
                 {
@@ -879,13 +872,14 @@ class boss_malygos : public CreatureScript
                     if(m_uiTimer <= uiDiff)
                     {
                         uint8 tmp = urand(0,3);
-                        me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x-10, SparkLoc[tmp].y-10, AIR_Z);
+                        me->GetMotionMaster()->MovePoint(0, SparkLoc[tmp].x, SparkLoc[tmp].y, AIR_Z);
                         m_uiTimer = 25000;
                     }else m_uiTimer -= uiDiff;
                 }
             }
             if (!UpdateVictim())
                 return;
+
 
             if(m_uiPhase == PHASE_DRAGONS)
             {
@@ -937,7 +931,7 @@ class boss_malygos : public CreatureScript
                     if(m_uiTimer <= uiDiff)
                     {
                         DoVortex(m_uiVortexPhase);
-                        
+                       
                         if(m_uiVortexPhase == 1 || m_uiVortexPhase == 11)
                         {
                             if(m_uiVortexPhase == 1)
@@ -968,9 +962,7 @@ class boss_malygos : public CreatureScript
                     //PowerSpark(3);
                     if(m_pInstance)
                         m_pInstance->SetData(TYPE_VORTEX, 1);
-
-                    me->SetFlying(true);
-                    me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
+                    MoveFly(true);
                     this->DespawnCreatures(NPC_VORTEX, 200.0f);
                     DoVortex(0);
                     m_uiVortexPhase = 1;
@@ -992,7 +984,6 @@ class boss_malygos : public CreatureScript
                 if(m_uiPowerSparkTimer<= uiDiff)
                 {
                     PowerSpark(1);
-                    DoScriptText(SAY_POWER_SPARK, me);
                     m_uiPowerSparkTimer = 30000;
                 }else m_uiPowerSparkTimer -= uiDiff;
      
@@ -1002,11 +993,9 @@ class boss_malygos : public CreatureScript
                     uint8 health = me->GetHealth()*100 / me->GetMaxHealth();                    
                     if(health <= 50)
                     {
-                        me->SetFlying(true);
-                        me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
                         me->InterruptNonMeleeSpells(true);
-                        SetCombatMovement(false);
-                        me->GetMotionMaster()->Clear(false);
+                        MoveFly(true);
+
                         DoScriptText(SAY_END_PHASE1, me);
                         me->GetMotionMaster()->MovePoint(0, OtherLoc[2].x, OtherLoc[2].y, OtherLoc[2].z+40);
                         //Despawn power sparks
@@ -1020,7 +1009,8 @@ class boss_malygos : public CreatureScript
                 }else m_uiTimer -= uiDiff;  
      
                 DoMeleeAttackIfReady();
-            }else if(m_uiPhase == PHASE_ADDS)
+            }
+            else if (m_uiPhase == PHASE_ADDS)
             {
                 if(m_uiSubPhase == SUBPHASE_TALK)
                 {
@@ -1036,7 +1026,7 @@ class boss_malygos : public CreatureScript
                     }else m_uiTimer -= uiDiff;
                     return;
                 }
-                
+               
                 //Arcane overload (bubble)
                 if(m_uiShellTimer <= uiDiff)
                 {
@@ -1121,7 +1111,7 @@ class boss_malygos : public CreatureScript
                 {
                     if(m_uiTimer <= uiDiff)
                     {
-                        m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);   
+                        m_pInstance->SetData(TYPE_DESTROY_PLATFORM, IN_PROGRESS);  
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
                         if (Creature* m_uiSafeZone = me->SummonCreature(30494, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 360000)) //safe zone.. raid do not leave combat while mounting
                         {
@@ -1134,15 +1124,16 @@ class boss_malygos : public CreatureScript
                         DoScriptText(SAY_INTRO_PHASE3, me);                    
                         m_uiTimer = 14900;
                         m_uiFallToMountTimer = 1000;
-                    }else 
+                    }else
                         m_uiTimer -= uiDiff;
+
 
                     if(!m_uiIsMounted && m_uiFallToMountTimer <= uiDiff)
                     {
                         MountPlayers();
                         m_uiSubPhase = SUBPHASE_DESTROY_PLATFORM3;
                         m_uiIsMounted = true;
-                    }else 
+                    }else
                         m_uiFallToMountTimer -= uiDiff;
                     return;
 
@@ -1181,7 +1172,6 @@ class boss_malygos : public CreatureScript
                         {
                             pField->SetMaxHealth(1000000);
                             pField->SetFlying(true);
-                            pField->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
 
                             pField->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                             pField->SetDisplayId(11686);
@@ -1207,7 +1197,7 @@ class boss_malygos : public CreatureScript
 
                         for(int j = 0; j < random; ++j)
                             ++itr;
-                        
+                       
                         Creature *pTarget = (Creature*)Unit::GetUnit(*me, (*itr).first);
                         Player *pPlayer = (Player*)Unit::GetUnit(*me, (*itr).second);
 
@@ -1229,7 +1219,6 @@ class boss_malygos : public CreatureScript
                             if(Creature* pSurge = DoSpawnCreature(NPC_SURGE_OF_POWER, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
                             {
                                 pSurge->SetFlying(true);
-                                pSurge->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE_ELEVATION);
                                 pSurge->Attack(pTarget, true);
                                 pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                                 pSurge->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -1242,7 +1231,7 @@ class boss_malygos : public CreatureScript
                     }
 
                     m_uiSurgeOfPowerTimer = 9000+rand()%6000;
-                }else m_uiSurgeOfPowerTimer -= uiDiff;	
+                }else m_uiSurgeOfPowerTimer -= uiDiff;      
      
                 if(me->HasAura(SPELL_BERSERK))
                     DoMeleeAttackIfReady();
@@ -1264,7 +1253,7 @@ class boss_malygos : public CreatureScript
                        me->GetMotionMaster()->MovementExpired();
      
                     DespawnCreatures(NPC_STATIC_FIELD, 120.0f);
-                
+               
                     me->SetHealth(1);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->GetMotionMaster()->Clear(false);        // No moving!
@@ -1281,7 +1270,6 @@ class boss_malygos : public CreatureScript
                         pTemp->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
                         pTemp->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
                         pTemp->SetFlying(true);
-                        pTemp->SetUnitMovementFlags(MOVEMENTFLAG_SPLINE_ELEVATION);
                         pTemp->SetFacingToObject(me);
                         pTemp->SetVisibility(VISIBILITY_OFF);
                         m_AlexstraszaGUID = pTemp->GetGUID();
@@ -1326,24 +1314,25 @@ class boss_malygos : public CreatureScript
                     }
                     m_uiSpeechCount++;
                 }else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
-                
+               
             }
         }
-    };
-
-    CreatureAI* GetAI_boss_malygos(Creature* pCreature) const
-    {
-        return new boss_malygosAI(pCreature);
     };
 };
 
 /*######
 ## mob_power_spark
 ######*/
+
 class mob_power_spark : public CreatureScript
 {
     public:
         mob_power_spark(): CreatureScript("mob_power_spark") {}
+
+    CreatureAI* GetAI_mob_power_spark(Creature* pCreature) const
+    {
+        return new mob_power_sparkAI(pCreature);
+    };
 
     struct mob_power_sparkAI : public ScriptedAI
     {
@@ -1361,6 +1350,7 @@ class mob_power_spark : public CreatureScript
         void Reset()
         {
             isDead = false;
+
 
             Creature* pMalygos = GetClosestCreatureWithEntry(me, NPC_MALYGOS, 200.0f);
             if(pMalygos)
@@ -1475,21 +1465,22 @@ class mob_power_spark : public CreatureScript
             }else m_uiCheckTimer -= uiDiff;
         }
     };
-
-    CreatureAI* GetAI_mob_power_spark(Creature* pCreature) const
-    {
-        return new mob_power_sparkAI(pCreature);
-    };
 };
 
 /*######
 ## mob_scion_of_eternity
 ######*/
+
 class mob_scion_of_eternity : public CreatureScript
 {
     public:
         mob_scion_of_eternity(): CreatureScript("mob_scion_of_eternity") {}
 
+    CreatureAI* GetAI_mob_scion_of_eternity(Creature* pCreature) const
+    {
+        return new mob_scion_of_eternityAI(pCreature);
+    };
+     
     struct mob_scion_of_eternityAI : public ScriptedAI
     {
         mob_scion_of_eternityAI(Creature* pCreature) : ScriptedAI(pCreature)
@@ -1498,7 +1489,7 @@ class mob_scion_of_eternity : public CreatureScript
             Reset();
             m_uiIs10Man = RAID_MODE(true, false);
         }
-        
+       
         bool m_uiIs10Man;
 
         InstanceScript* m_pInstance;
@@ -1509,7 +1500,6 @@ class mob_scion_of_eternity : public CreatureScript
         void Reset()
         {
             me->SetFlying(true);
-            me->AddUnitMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
             me->SetSpeed(MOVE_WALK, 0.7f, true);
             me->SetSpeed(MOVE_RUN, 0.7f, true);
             me->SetSpeed(MOVE_FLIGHT, 0.7f, true);
@@ -1532,7 +1522,7 @@ class mob_scion_of_eternity : public CreatureScript
                 me->GetMotionMaster()->MoveChase(pWho, 15.0f);
             }
         }
-        
+       
         void DoNextMovement()
         {
             WorldPacket heart;
@@ -1543,12 +1533,12 @@ class mob_scion_of_eternity : public CreatureScript
             uint32 y = urand(SHELL_MIN_Y, SHELL_MAX_Y);
             me->GetMotionMaster()->MovePoint(m_uiMovePoint, x, y, FLOOR_Z+10);
         }
-        
+
         void UpdateAI(const uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
-            
+           
             if(m_uiArcaneBarrageTimer <= uiDiff)
             {
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
@@ -1574,11 +1564,6 @@ class mob_scion_of_eternity : public CreatureScript
             }else m_uiMoveTimer -= uiDiff;
         }
     };
-
-    CreatureAI* GetAI_mob_scion_of_eternity(Creature* pCreature) const
-    {
-        return new mob_scion_of_eternityAI(pCreature);
-    };
 };
 /*######
 ## npc_arcane_overload
@@ -1589,6 +1574,11 @@ class npc_arcane_overload : public CreatureScript
     public:
         npc_arcane_overload(): CreatureScript("npc_arcane_overload") {}
 
+    CreatureAI* GetAI_npc_arcane_overload(Creature* pCreature) const
+    {
+        return new npc_arcane_overloadAI(pCreature);
+    };
+
     struct npc_arcane_overloadAI : public ScriptedAI
     {
         npc_arcane_overloadAI(Creature* pCreature) : ScriptedAI(pCreature)
@@ -1596,20 +1586,20 @@ class npc_arcane_overload : public CreatureScript
             m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
             Reset();
         }
-        
+       
         InstanceScript* m_pInstance;
-        
+       
         uint32 m_uiProtectTimer;    
         bool m_uiAOCasted;    
         float range;
-        
+       
         void Reset()
         {
             m_uiProtectTimer = 1000;
             m_uiAOCasted = false;
             range = 45.0f;
         }
-        
+       
         void ProtectAllPlayersInRange(float range)
         {
           Map* pMap = me->GetMap();
@@ -1618,7 +1608,7 @@ class npc_arcane_overload : public CreatureScript
 
           // The range of the bubble is 12 yards, decreases to 0 yards, linearly, over time.
           float realRange = (range/45.0f) * 12.0f;
-          
+         
           Map::PlayerList const &lPlayers = pMap->GetPlayers();
           for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
           {
@@ -1632,7 +1622,7 @@ class npc_arcane_overload : public CreatureScript
                 if(itr->getSource()->IsWithinDist2d(me->GetPositionX(), me->GetPositionY(), 12))
                     itr->getSource()->RemoveAurasDueToSpell(SPELL_ARCANE_OVERLOAD_PROTECT);
             }
-            else 
+            else
             {
                 if(!itr->getSource()->HasAura(SPELL_ARCANE_OVERLOAD_PROTECT))
                 {
@@ -1649,7 +1639,7 @@ class npc_arcane_overload : public CreatureScript
             }
           }
         }    
-        
+       
         void UpdateAI(const uint32 uiDiff)
         {    
             if(!m_uiAOCasted)
@@ -1667,34 +1657,35 @@ class npc_arcane_overload : public CreatureScript
 
         }  
     };
-
-    CreatureAI* GetAI_npc_arcane_overload(Creature* pCreature) const
-    {
-        return new npc_arcane_overloadAI(pCreature);
-    };
 };
 
 /*######
 ## mob_nexus_lord
 ######*/
+
 class mob_nexus_lord : public CreatureScript
 {
     public:
         mob_nexus_lord(): CreatureScript("mob_nexus_lord") {}
 
+    CreatureAI* GetAI_mob_nexus_lord(Creature* pCreature) const
+    {
+        return new mob_nexus_lordAI(pCreature);
+    }
+
     struct mob_nexus_lordAI : public ScriptedAI
     {
         mob_nexus_lordAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            m_pInstance = pCreature->GetInstanceScript();
+            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
             Reset();
             m_uiIs10Man = RAID_MODE(true, false);
         }
-        
+       
         InstanceScript* m_pInstance;
-        
+       
         bool m_uiIs10Man;
-        
+       
         uint32 m_uiArcaneShockTimer;
         uint32 m_uiHasteTimer;
         uint32 attackNow;
@@ -1708,7 +1699,7 @@ class mob_nexus_lord : public CreatureScript
             m_uiArcaneShockTimer = 5000 + rand()%15000;
             attackNow = 4000;
         }
-        
+
         void UpdateAI(const uint32 uiDiff)
         {        
             if (!UpdateVictim())
@@ -1716,14 +1707,14 @@ class mob_nexus_lord : public CreatureScript
 
             if(m_pInstance->GetData(TYPE_MALYGOS) == NOT_STARTED)
                 me->ForcedDespawn();
-            
+           
             if(m_uiArcaneShockTimer <= uiDiff)
             {
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, m_uiIs10Man ? SPELL_ARCANE_SHOCK : SPELL_ARCANE_SHOCK_H);
                 m_uiArcaneShockTimer = 3000 + rand()%19000;
             }else m_uiArcaneShockTimer -= uiDiff;
-            
+           
             if(m_uiHasteTimer <= uiDiff)
             {
               DoCast(me, SPELL_HASTE);
@@ -1741,34 +1732,26 @@ class mob_nexus_lord : public CreatureScript
                 DoMeleeAttackIfReady();
         }  
     };
-
-    CreatureAI* GetAI_mob_nexus_lord(Creature* pCreature) const
-    {
-        return new mob_nexus_lordAI(pCreature);
-    };
 };
 
-/*######
-## go_focusing_iris
-######*/
-class go_focusing_iris : public GameObjectScript
+class go_malygos_iris : public GameObjectScript
 {
     public:
-    go_focusing_iris() : GameObjectScript("go_focusing_iris") {}
+    go_malygos_iris() : GameObjectScript("go_malygos_iris") {}
 
-    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+    bool OnGossipHello(Player *pPlayer, GameObject* pGO)
     {
-        //Creature *pMalygos = ((Creature*)Unit::GetUnit(*pGo, pGo->GetInstanceScript()->GetData64(NPC_MALYGOS)));
-        Creature *pMalygos = GetClosestCreatureWithEntry(pGo, NPC_MALYGOS, 1550.0f);
-        if(pMalygos)
-        {
-            ((boss_malygos::boss_malygosAI*)pMalygos->AI())->m_iris_on = true;
-            pGo->Delete();
-        }
+        if (Creature *malygos = pGO->FindNearestCreature(NPC_MALYGOS, 300.0f, true))
+            if (malygos->AI())
+            {
+                malygos->AI()->DoAction(0);
+                pGO->CastSpell(NULL,61012);
+                pGO->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
+            }
         return true;
     };
 };
-
+ 
 void AddSC_boss_malygos()
 {
     new boss_malygos();
@@ -1776,5 +1759,6 @@ void AddSC_boss_malygos()
     new mob_scion_of_eternity();
     new mob_nexus_lord();
     new npc_arcane_overload();
-    new go_focusing_iris();
+    new go_malygos_iris();
 }
+
