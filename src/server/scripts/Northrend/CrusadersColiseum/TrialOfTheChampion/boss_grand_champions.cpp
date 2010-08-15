@@ -379,7 +379,7 @@ class generic_vehicleAI_toc5 : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_generic_vehicleAI_toc5(Creature* pCreature)
+    CreatureAI* GetAI_generic_vehicleAI_toc5(Creature* pCreature) const
     {
         return new generic_vehicleAI_toc5AI(pCreature);
     };
@@ -557,7 +557,7 @@ class boss_warrior_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_warrior_toc5(Creature* pCreature)
+    CreatureAI* GetAI_boss_warrior_toc5(Creature* pCreature) const
     {
         return new boss_warrior_toc5AI(pCreature);
     };
@@ -728,7 +728,7 @@ class boss_mage_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_mage_toc5(Creature* pCreature)
+    CreatureAI* GetAI_boss_mage_toc5(Creature* pCreature) const
     {
         return new boss_mage_toc5AI(pCreature);
     };
@@ -907,17 +907,12 @@ class boss_shaman_toc5 : public CreatureScript
 
 		    //what a nonsense! -.-
 		    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE1)))
-                        pInstance->HandleGameObject(pGO->GetGUID(),true);
-    		
+                        pInstance->HandleGameObject(pGO->GetGUID(),true);   		
 
         }
-    	
-    	
-
-
     };
 
-    CreatureAI* GetAI_boss_shaman_toc5(Creature* pCreature)
+    CreatureAI* GetAI_boss_shaman_toc5(Creature* pCreature) const
     {
         return new boss_shaman_toc5AI(pCreature);
     };
@@ -1131,7 +1126,7 @@ class boss_hunter_toc5 : public CreatureScript
     	
     };
 
-    CreatureAI* GetAI_boss_hunter_toc5(Creature* pCreature)
+    CreatureAI* GetAI_boss_hunter_toc5(Creature* pCreature) const
     {
         return new boss_hunter_toc5AI(pCreature);
     };
@@ -1294,7 +1289,7 @@ class boss_rouge_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_rouge_toc5(Creature* pCreature)
+    CreatureAI* GetAI_boss_rouge_toc5(Creature* pCreature) const
     {
         return new boss_rouge_toc5AI(pCreature);
     };

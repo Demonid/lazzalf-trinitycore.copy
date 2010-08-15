@@ -301,7 +301,7 @@ class boss_algalon : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_algalon(Creature* pCreature)
+    CreatureAI* GetAI_boss_algalon(Creature* pCreature) const
     {
         return new boss_algalonAI(pCreature);
     };
@@ -343,7 +343,7 @@ class mob_collapsing_star : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_collapsing_star(Creature* pCreature)
+    CreatureAI* GetAI_mob_collapsing_star(Creature* pCreature) const
     {
         return new mob_collapsing_starAI(pCreature);
     };
