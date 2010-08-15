@@ -31,16 +31,16 @@ class instance_eye_of_eternity : public InstanceMapScript
      
         uint64 m_uiMalygosGUID;
         uint64 m_uiPlayerCheckGUID;
-        
+       
         bool m_bVortex;
-        
+       
      
         void Initialize()
         {
             memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
-                    
+                   
             m_uiMalygosGUID = 0;
-            m_uiOutroCheck = 0; 
+            m_uiOutroCheck = 0;
             m_uiMalygosPlatformData = 0;
             m_uiMalygosPlatformGUID = 0;
             m_uiFocusingIrisGUID = 0;
@@ -48,7 +48,7 @@ class instance_eye_of_eternity : public InstanceMapScript
             m_uiPlayerCheckGUID = 0;
             m_bVortex = false;
         }
-        
+       
         void OnCreatureCreate(Creature* pCreature)
         {
             switch(pCreature->GetEntry())
@@ -60,13 +60,13 @@ class instance_eye_of_eternity : public InstanceMapScript
                     break;
             }
         }
-        
+       
         void OnGameObjectCreate(GameObject *pGo, bool bAdd)
         {
             switch(pGo->GetEntry())
             {
                 case 193070: m_uiMalygosPlatformGUID = pGo->GetGUID(); break;
-                case 193958: m_uiFocusingIrisGUID = pGo->GetGUID(); break;//normal,hero
+                case 193958: //normal,hero
                 case 193960: m_uiFocusingIrisGUID = pGo->GetGUID(); break;
                 case 193908: m_uiExitPortalGUID = pGo->GetGUID(); break;
                 default:
@@ -88,12 +88,23 @@ class instance_eye_of_eternity : public InstanceMapScript
             switch(uiType)
             {
                 case TYPE_MALYGOS:
-                    if(uiData == IN_PROGRESS)
+                    if (uiData == IN_PROGRESS)
                     {
                         if(GameObject* m_uiExitPortal = instance->GetGameObject(m_uiExitPortalGUID))
-                            m_uiExitPortal->Delete();
+                            m_uiExitPortal->SetPhaseMask(2, true);
                         if(GameObject* m_uiFocusingIris = instance->GetGameObject(m_uiFocusingIrisGUID))
-                            m_uiFocusingIris->Delete();
+                            m_uiFocusingIris->SetPhaseMask(2, true);
+                    }
+                    if (uiData == NOT_STARTED)
+                    {
+                        //Summon Platform
+                        SetData(TYPE_DESTROY_PLATFORM, NOT_STARTED);
+                        //Summon focusing iris
+                        if(GameObject* pGo = instance->GetGameObject(m_uiFocusingIrisGUID))
+                            pGo->SetPhaseMask(1, true);
+                        //Summon exit portal
+                        if(GameObject* pGo = instance->GetGameObject(m_uiExitPortalGUID))
+                            pGo->SetPhaseMask(1, true);
                     }
                     m_auiEncounter[0] = uiData;
                     break;
@@ -194,6 +205,7 @@ class instance_eye_of_eternity : public InstanceMapScript
         void dropAllPlayers()
         {
             Map::PlayerList const &PlayerList = instance->GetPlayers();
+
 
             if (!PlayerList.isEmpty())
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
