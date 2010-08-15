@@ -44,7 +44,6 @@
 #include "TargetedMovementGenerator.h"
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
-#include "SystemConfig.h"
 #include "Config.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
@@ -3811,6 +3810,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
         return false;
 
     uint32 glId   = target ? target->GetGuildId () : Player::GetGuildIdFromDB (target_guid);
+
     if (!glId)
         return false;
 
@@ -3818,7 +3818,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (!targetGuild)
         return false;
 
-    targetGuild->DelMember (target_guid);
+    targetGuild->DelMember (target_guid, false, true);
     return true;
 }
 
@@ -6205,7 +6205,7 @@ bool ChatHandler::HandleServerPLimitCommand(const char *args)
         else if (strncmp(param,"administrator",l) == 0)
             sWorld.SetPlayerSecurityLimit(SEC_ADMINISTRATOR);
         else if (strncmp(param,"reset",l) == 0)
-            sWorld.SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
+            sWorld.SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", 100));
         else
         {
             int val = atoi(param);

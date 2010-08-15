@@ -31,7 +31,8 @@
 #include "Language.h"
 #include "World.h"
 #include "Config.h"
-#include "Custom/GuildHouse.h"
+#include "GuildHouse.h"
+#include "ScriptMgr.h"
 
 Guild::Guild()
 {
@@ -127,6 +128,8 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
             return false;
     }
 
+    sScriptMgr.OnGuildAddMember(this, pl, plRank);
+
     // remove all player signs from another petitions
     // this will be prevent attempt joining player to many guilds and corrupt guild data integrity
     Player::RemovePetitionsAndSigns(plGuid, 9);
@@ -197,6 +200,8 @@ void Guild::SetMOTD(std::string motd)
 {
     MOTD = motd;
 
+    sScriptMgr.OnGuildMOTDChanged(this, motd);
+
     // motd now can be used for encoding to DB
     CharacterDatabase.escape_string(motd);
     CharacterDatabase.PExecute("UPDATE guild SET motd='%s' WHERE guildid='%u'", motd.c_str(), m_Id);
@@ -205,6 +210,8 @@ void Guild::SetMOTD(std::string motd)
 void Guild::SetGINFO(std::string ginfo)
 {
     GINFO = ginfo;
+
+    sScriptMgr.OnGuildInfoChanged(this, ginfo);
 
     // ginfo now can be used for encoding to DB
     CharacterDatabase.escape_string(ginfo);
@@ -449,8 +456,11 @@ void Guild::SetLeader(uint64 guid)
     CharacterDatabase.PExecute("UPDATE guild SET leaderguid='%u' WHERE guildid='%u'", GUID_LOPART(guid), m_Id);
 }
 
-void Guild::DelMember(uint64 guid, bool isDisbanding)
+void Guild::DelMember(uint64 guid, bool isDisbanding, bool isKicked)
 {
+    Player *player = sObjectMgr.GetPlayer(guid);
+    sScriptMgr.OnGuildRemoveMember(this, player, isDisbanding, isKicked);
+
     //guild master can be deleted when loading guild and guid doesn't exist in characters table
     //or when he is removed from guild by gm command
     if (m_LeaderGuid == guid && !isDisbanding)
@@ -495,7 +505,6 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
 
     members.erase(GUID_LOPART(guid));
 
-    Player *player = sObjectMgr.GetPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
     if (player)
     {
@@ -693,6 +702,7 @@ int32 Guild::GetRank(uint32 LowGuid)
 
 void Guild::Disband()
 {
+    sScriptMgr.OnGuildDisband(this);
     BroadcastEvent(GE_DISBANDED, 0, 0, "", "", "");
 
     while (!members.empty())
