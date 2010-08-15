@@ -434,7 +434,7 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
         virtual bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt) { return false; }
 
         // Called when the dialog status between a player and the creature is requested.
-        virtual uint32 GetDialogStatus(Player* player, Creature* creature) { return 0; }
+        virtual uint32 GetDialogStatus(Player* player, Creature* creature) { return 100; }
 
         // Called when a CreatureAI object is needed for the creature.
         virtual CreatureAI* GetAI(Creature* creature) const { return NULL; }
@@ -469,7 +469,7 @@ class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
         virtual bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt) { return false; }
 
         // Called when the dialog status between a player and the gameobject is requested.
-        virtual uint32 GetDialogStatus(Player* player, GameObject* go) { return 0; }
+        virtual uint32 GetDialogStatus(Player* player, GameObject* go) { return 100; }
 
         // Called when the gameobject is destroyed (destructible buildings only).
         virtual void OnDestroyed(Player* player, GameObject* go, uint32 eventId) { }
@@ -486,7 +486,7 @@ class AreaTriggerScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when the area trigger is activated by a player.
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) { return false; }
+        virtual bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) { return false; }
 };
 
 class BattlegroundScript : public ScriptObject
@@ -552,16 +552,16 @@ class AuctionHouseScript : public ScriptObject
     public:
 
         // Called when an auction is added to an auction house.
-        void OnAuctionAdd(AuctionHouseObject* ah, AuctionEntry* entry) { }
+        virtual void OnAuctionAdd(AuctionHouseObject* ah, AuctionEntry* entry) { }
 
         // Called when an auction is removed from an auction house.
-        void OnAuctionRemove(AuctionHouseObject* ah, AuctionEntry* entry) { }
+        virtual void OnAuctionRemove(AuctionHouseObject* ah, AuctionEntry* entry) { }
 
         // Called when an auction was succesfully completed.
-        void OnAuctionSuccessful(AuctionHouseObject* ah, AuctionEntry* entry) { }
+        virtual void OnAuctionSuccessful(AuctionHouseObject* ah, AuctionEntry* entry) { }
 
         // Called when an auction expires.
-        void OnAuctionExpire(AuctionHouseObject* ah, AuctionEntry* entry) { }
+        virtual void OnAuctionExpire(AuctionHouseObject* ah, AuctionEntry* entry) { }
 };
 
 class ConditionScript : public ScriptObject
@@ -575,7 +575,7 @@ class ConditionScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when a single condition is checked for a player.
-        bool OnConditionCheck(Condition* condition, Player* player, Unit* targetOverride) { return true; }
+        virtual bool OnConditionCheck(Condition* condition, Player* player, Unit* targetOverride) { return true; }
 };
 
 class VehicleScript : public ScriptObject
@@ -700,6 +700,21 @@ public:
     // Both of the below are called on emote opcodes
     virtual void OnEmote(Player* player, uint32 emote) { }
     virtual void OnTextEmote(Player* player, uint32 text_emote, uint32 emoteNum, uint64 guid) { }
+};
+
+class GuildScript : public ScriptObject
+{
+protected:
+    GuildScript(const char* name);
+
+public:
+    bool IsDatabaseBound() const { return false; }
+
+    virtual void OnAddMember(Guild *guild, Player *player, uint32& plRank) { }
+    virtual void OnRemoveMember(Guild *guild, Player *player, bool isDisbanding, bool isKicked) { }
+    virtual void OnMOTDChanged(Guild *guild, std::string newMotd) { }
+    virtual void OnGInfoChanged(Guild *guild, std::string newGInfo) { }
+    virtual void OnDisband(Guild *guild) { }
 };
 
 // Placed here due to ScriptRegistry::AddScript dependency.
@@ -875,6 +890,7 @@ class ScriptMgr
         bool OnCriteriaCheck(AchievementCriteriaData const* data, Player* source, Unit* target);
 
     public: /* PlayerScript */
+
         void OnPVPKill(Player *killer, Player *killed);
         void OnCreatureKill(Player *killer, Creature *killed);
         void OnPlayerKilledByCreature(Creature *killer, Player *killed);
@@ -887,6 +903,13 @@ class ScriptMgr
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, void* param = NULL);
         void OnPlayerEmote(Player* player, uint32 emote);
         void OnPlayerTextEmote(Player* player, uint32 text_emote, uint32 emoteNum, uint64 guid);
+
+    public: /* GuildScript */
+        void OnGuildAddMember(Guild *guild, Player *player, uint32& plRank);
+        void OnGuildRemoveMember(Guild *guild, Player *player, bool isDisbanding, bool isKicked);
+        void OnGuildMOTDChanged(Guild *guild, std::string newMotd);
+        void OnGuildInfoChanged(Guild *guild, std::string newGInfo);
+        void OnGuildDisband(Guild *guild);
 
     public: /* ScriptRegistry */
 

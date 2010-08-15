@@ -802,7 +802,7 @@ public:
         }
     };
 
-    CreatureAI *GetAI(Creature *creature)
+    CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_injured_patientAI(creature);
     }
@@ -1117,7 +1117,7 @@ public:
         }
     };
 
-    CreatureAI *GetAI(Creature *creature)
+    CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_guardianAI(creature);
     }
@@ -1844,7 +1844,7 @@ public:
         }
     };
 
-    CreatureAI *GetAI(Creature *creature)
+    CreatureAI *GetAI(Creature *creature) const
     {
         return new mob_mojoAI(creature);
     }
