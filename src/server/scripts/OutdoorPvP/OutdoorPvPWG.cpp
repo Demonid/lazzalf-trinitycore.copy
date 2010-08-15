@@ -2318,3 +2318,23 @@ void OPvPCapturePointWG::ChangeTeam(TeamId oldTeam)
 
     sLog.outDebug("Wintergrasp workshop now belongs to %u.", (uint32)m_buildingState->GetTeamId());
 }
+
+class OutdoorPvP_wintergrasp : public OutdoorPvPScript
+{
+    public:
+
+        OutdoorPvP_wintergrasp()
+            : OutdoorPvPScript("outdoorpvp_wg")
+        {
+        }
+
+        OutdoorPvP* GetOutdoorPvP() const
+        {
+            return new OutdoorPvPWG();
+        }
+};
+
+void AddSC_outdoorpvp_wg()
+{
+    new OutdoorPvP_wintergrasp();
+}
