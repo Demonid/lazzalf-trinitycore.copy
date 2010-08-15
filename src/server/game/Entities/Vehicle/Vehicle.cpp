@@ -316,7 +316,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
         switch (GetVehicleInfo()->m_ID)
         {
             case 342: //Ignis
-            case 353: //XT-002
+            case 335: //XT-002
             case 380: //Kologarn's Right Arm
                 break;
             default: 
