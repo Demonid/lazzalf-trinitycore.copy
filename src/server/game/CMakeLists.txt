@@ -50,7 +50,16 @@ file(GLOB_RECURSE sources_Weather Weather/*.cpp Weather/*.h)
 file(GLOB_RECURSE sources_World World/*.cpp World/*.h)
 
 # Create game-libary
+
+if( GAMEPCH AND MSVC )
+  set(game_STAT_SRCS
+    PrecompiledHeaders/gamePCH.cpp
+    PrecompiledHeaders/gamePCH.h
+  )
+endif()
+
 set(game_STAT_SRCS
+  ${game_STAT_SRCS}
   ${sources_Accounts}
   ${sources_Achievements}
   ${sources_Addons}
@@ -88,14 +97,6 @@ set(game_STAT_SRCS
   ${sources_Weather}
   ${sources_World}
 )
-
-if(MSVC)
-  set(game_STAT_SRCS
-    ${game_STAT_SRCS}
-    PrecompiledHeaders/gamePCH.cpp
-    PrecompiledHeaders/gamePCH.h
-  )
-endif()
 
 include_directories(
   ${CMAKE_BINARY_DIR}
@@ -196,8 +197,8 @@ add_dependencies(game genrev)
 # Generate precompiled header
 if( GAMEPCH )
   if(CMAKE_COMPILER_IS_GNUCXX)
-    add_precompiled_header(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/gamePCH.h)
+    add_precompiled_header(game ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders/gamePCH.h)
   elseif(MSVC)
-    add_native_precompiled_header(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/gamePCH)
+    add_native_precompiled_header(game ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders/gamePCH)
   endif()
 endif()
