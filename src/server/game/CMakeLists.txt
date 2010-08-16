@@ -98,9 +98,6 @@ if(MSVC)
 endif()
 
 include_directories(
-  ${ACE_INCLUDE_DIR}
-  ${MYSQL_INCLUDE_DIR}
-  ${OPENSSL_INCLUDE_DIR}
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/externals/mersennetwister
   ${CMAKE_SOURCE_DIR}/externals/zlib
@@ -188,6 +185,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Weather
   ${CMAKE_SOURCE_DIR}/src/server/game/World
   ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
+  ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
+  ${OPENSSL_INCLUDE_DIR}
 )
 add_library(game STATIC ${game_STAT_SRCS})
 
