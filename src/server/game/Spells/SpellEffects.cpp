@@ -5385,6 +5385,19 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     }
                     return;
                 }
+                //Remove one layer of defend
+                case 63010:
+                case 65147:
+                {
+                    if (!unitTarget)
+                        return;
+
+                    if (unitTarget->HasAura(62552))
+                        unitTarget->RemoveAuraFromStack(62552);
+                    if (unitTarget->HasAura(66482))
+                        unitTarget->RemoveAuraFromStack(66482);
+                    return;
+                }
                 case 71342:                                     // Big Love Rocket
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
