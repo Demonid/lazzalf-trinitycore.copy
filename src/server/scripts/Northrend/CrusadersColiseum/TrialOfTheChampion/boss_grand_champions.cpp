@@ -297,7 +297,7 @@ class generic_vehicleAI_toc5 : public CreatureScript
 					    me->RemoveFromWorld();
 				    }
     				
-		    uiCheckTimer=5000;
+		        uiCheckTimer = 5000;
 		    }else uiCheckTimer -= uiDiff;
     		
             if (!UpdateVictim())
@@ -306,14 +306,14 @@ class generic_vehicleAI_toc5 : public CreatureScript
 		    if (uiTimerSpell1 <= uiDiff)
             {
 			    DoCast(SPELL_THRUST);
-			    uiTimerSpell1=urand(7000,20000);
+			    uiTimerSpell1 = urand(7000,20000);
 
 		    }else uiTimerSpell1-=uiDiff;
 
 		    if (uiTimerSpell2 <= uiDiff)
             {
 			    DoCast(SPELL_SHIELD_1);
-			    uiTimerSpell2=urand(80000,90000);
+			    uiTimerSpell2 = urand(30000,45000);
 
 		    }else uiTimerSpell2-=uiDiff;
 

@@ -1342,7 +1342,7 @@ class mob_acolyte_of_shadron : public CreatureScript
             uiShiftEffectTimer = 1000;
             shield = false;
             me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
-            me->SetPhaseMask(16, true);
+            //me->SetPhaseMask(16, true);
         }
 
         void JustDied(Unit* killer)
@@ -1456,7 +1456,7 @@ class mob_acolyte_of_vesperon : public CreatureScript
             {
                 me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);
             }
-            me->SetPhaseMask(2, true);
+            //me->SetPhaseMask(2, true);
         }
         
         void EnterCombat(Unit* who)
