@@ -182,7 +182,7 @@ class boss_anubarak_trial : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_anubarak_trial(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_anubarak_trialAI(pCreature);
     };
@@ -241,7 +241,7 @@ class mob_swarm_scarab : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_swarm_scarab(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_swarm_scarabAI(pCreature);
     };
@@ -323,7 +323,7 @@ class mob_nerubian_borrower : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_nerubian_borrower(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_nerubian_borrowerAI(pCreature);
     };
@@ -366,7 +366,7 @@ class mob_frost_sphere : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_frost_sphere(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_frost_sphereAI(pCreature);
     };
@@ -424,7 +424,7 @@ class mob_anubarak_spike : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_anubarak_spike(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_anubarak_spikeAI(pCreature);
     };

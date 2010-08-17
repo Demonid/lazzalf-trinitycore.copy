@@ -201,7 +201,7 @@ class npc_keeper_image : public CreatureScript
         return true;
     };
 
-    CreatureAI* GetAI_keeper_image(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new keeper_imageAI (pCreature);
     };
@@ -249,7 +249,7 @@ class npc_ys_freya : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_ys_freya(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_ys_freyaAI(pCreature);
     };
@@ -272,7 +272,7 @@ class npc_sanity_well : public CreatureScript
         InstanceScript* pInstance;
     };
 
-    CreatureAI* GetAI_npc_sanity_well(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_sanity_wellAI(pCreature);
     };
@@ -311,7 +311,7 @@ class npc_ys_thorim : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_ys_thorim(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_ys_thorimAI(pCreature);
     }
@@ -359,7 +359,7 @@ class npc_ys_mimiron : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_ys_mimiron(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_ys_mimironAI(pCreature);
     };
@@ -395,7 +395,7 @@ class npc_ys_hodir : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_ys_hodir(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_ys_hodirAI(pCreature);
     };

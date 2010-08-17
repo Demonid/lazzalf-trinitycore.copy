@@ -664,7 +664,7 @@ class boss_sartharion : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_sartharion(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_sartharionAI(pCreature);
     };
@@ -736,7 +736,7 @@ class npc_disciple_of_vesperon : public CreatureScript
             }
         }
     };
-    CreatureAI* GetAI_npc_disciple_of_vesperon(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_disciple_of_vesperonAI(pCreature);
     };
@@ -1083,7 +1083,7 @@ class mob_tenebron : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_tenebron(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_tenebronAI(pCreature);
     };
@@ -1209,7 +1209,7 @@ class mob_shadron : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_shadron(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_shadronAI(pCreature);
     };
@@ -1309,7 +1309,7 @@ class mob_vesperon : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_vesperon(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_vesperonAI(pCreature);
     };
@@ -1426,7 +1426,7 @@ class mob_acolyte_of_shadron : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_acolyte_of_shadron(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_acolyte_of_shadronAI(pCreature);
     };
@@ -1528,7 +1528,7 @@ class mob_acolyte_of_vesperon : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_acolyte_of_vesperon(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_acolyte_of_vesperonAI(pCreature);
     };
@@ -1596,7 +1596,7 @@ class mob_twilight_eggs : public CreatureScript
         void MoveInLineOfSight(Unit* pWho) {}
     };
 
-    CreatureAI* GetAI_mob_twilight_eggs(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_twilight_eggsAI(pCreature);
     };
@@ -1648,7 +1648,7 @@ class npc_flame_tsunami : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_flame_tsunami(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_flame_tsunamiAI(pCreature);
     };    
@@ -1689,7 +1689,7 @@ class npc_twilight_fissure : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_twilight_fissure(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_twilight_fissureAI(pCreature);
     };
@@ -1740,7 +1740,7 @@ class mob_twilight_whelp : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_twilight_whelp(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_twilight_whelpAI(pCreature);
     };

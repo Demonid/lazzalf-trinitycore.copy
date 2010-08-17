@@ -363,7 +363,7 @@ class boss_hodir : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_hodir(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_hodir_AI (pCreature);
     };
@@ -400,7 +400,7 @@ class mob_icicle : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_icicle(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_icicleAI(pCreature);
     };
@@ -437,7 +437,7 @@ class mob_icicle_snowdrift : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_icicle_snowdrift(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_icicle_snowdriftAI(pCreature);
     };
@@ -488,7 +488,7 @@ class mob_hodir_priest : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_hodir_priest(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_hodir_priestAI(pCreature);
     };
@@ -536,7 +536,7 @@ class mob_hodir_shaman : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_hodir_shaman(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_hodir_shamanAI(pCreature);
     };
@@ -584,7 +584,7 @@ class mob_hodir_druid : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_hodir_druid(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_hodir_druidAI(pCreature);
     };
@@ -632,7 +632,7 @@ class mob_hodir_mage : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_hodir_mage(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_hodir_mageAI(pCreature);
     };
@@ -656,7 +656,7 @@ class toasty_fire : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_toasty_fire(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new toasty_fireAI(pCreature);
     };

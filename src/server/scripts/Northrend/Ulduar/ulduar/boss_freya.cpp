@@ -538,7 +538,7 @@ class boss_freya : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_freya(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_freyaAI(pCreature);
     };
@@ -635,7 +635,7 @@ class boss_elder_brightleaf : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_elder_brightleaf(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_elder_brightleafAI(pCreature);
     };
@@ -658,7 +658,7 @@ class creature_sun_beam : public CreatureScript
         InstanceScript* m_pInstance;
     };
 
-    CreatureAI* GetAI_creature_sun_beam(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_sun_beamAI(pCreature);
     };
@@ -680,7 +680,7 @@ class creature_unstable_sun_beam : public CreatureScript
         InstanceScript* m_pInstance;
     };
 
-    CreatureAI* GetAI_creature_unstable_sun_beam(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_unstable_sun_beamAI(pCreature);
     };
@@ -760,7 +760,7 @@ class boss_elder_ironbranch : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_elder_ironbranch(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_elder_ironbranchAI(pCreature);
     };
@@ -789,7 +789,7 @@ class creature_iron_roots : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_iron_roots(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_iron_rootsAI(pCreature);
     };
@@ -865,7 +865,7 @@ class boss_elder_stonebark : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_elder_stonebark(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_elder_stonebarkAI(pCreature);
     };
@@ -914,7 +914,7 @@ class creature_eonars_gift : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_eonars_gift(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_eonars_giftAI(pCreature);
     };
@@ -954,7 +954,7 @@ class creature_nature_bomb : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_nature_bomb(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_nature_bombAI(pCreature);
     };
@@ -1015,7 +1015,7 @@ class creature_detonating_lasher : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_detonating_lasher(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_detonating_lasherAI(pCreature);
     };
@@ -1099,7 +1099,7 @@ class creature_ancient_conservator : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_ancient_conservator(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_ancient_conservatorAI(pCreature);
     };
@@ -1123,7 +1123,7 @@ class creature_healthy_spore : public CreatureScript
         InstanceScript* m_pInstance;
     };
 
-    CreatureAI* GetAI_creature_healthy_spore(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_healthy_sporeAI(pCreature);
     };
@@ -1182,7 +1182,7 @@ class creature_storm_lasher : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_storm_lasher(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_storm_lasherAI(pCreature);
     };
@@ -1219,7 +1219,7 @@ class creature_snaplasher : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_snaplasher(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_snaplasherAI(pCreature);
     };
@@ -1267,7 +1267,7 @@ class creature_ancient_water_spirit : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_creature_ancient_water_spirit(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new creature_ancient_water_spiritAI(pCreature);
     };

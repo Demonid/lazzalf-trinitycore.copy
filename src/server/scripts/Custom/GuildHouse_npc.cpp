@@ -651,7 +651,7 @@ class guild_guard : public CreatureScript
         }           
     };
 
-    CreatureAI* GetAI_guild_guardAI(Creature *_Creature)
+    CreatureAI* GetAI(Creature *_Creature) const
     {
         return new guild_guardAI(_Creature);
     };

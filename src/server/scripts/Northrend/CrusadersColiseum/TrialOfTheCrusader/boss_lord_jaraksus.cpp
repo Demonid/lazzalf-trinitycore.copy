@@ -156,7 +156,7 @@ class boss_jaraxxus : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_jaraxxus(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new boss_jaraxxusAI(pCreature);
     };
@@ -233,7 +233,7 @@ class mob_legion_flame : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_legion_flame(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_legion_flameAI(pCreature);
     };
@@ -312,7 +312,7 @@ class mob_infernal_volcano : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_infernal_volcano(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_infernal_volcanoAI(pCreature);
     };
@@ -371,7 +371,7 @@ class mob_fel_infernal : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_fel_infernal(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_fel_infernalAI(pCreature);
     };
@@ -449,7 +449,7 @@ class mob_nether_portal : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_nether_portal(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_nether_portalAI(pCreature);
     };
@@ -510,7 +510,7 @@ class mob_mistress_of_pain : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_mistress_of_pain(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_mistress_of_painAI(pCreature);
     };

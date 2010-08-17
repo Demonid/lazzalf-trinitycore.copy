@@ -325,7 +325,7 @@ class boss_ignis : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_ignis(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_ignis_AI (pCreature);
     };
@@ -409,7 +409,7 @@ class mob_iron_construct : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_iron_construct(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_iron_constructAI (pCreature);
     };
@@ -433,7 +433,7 @@ class mob_scorch_ground : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_scorch_ground(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_scorch_groundAI(pCreature);
     };
@@ -473,7 +473,7 @@ class mob_scorch_ground : public CreatureScript
     }
 };
 
-CreatureAI* GetAI_mob_scorch_ground(Creature* pCreature)
+CreatureAI* GetAI(Creature* pCreature)
 {
     return new mob_scorch_groundAI(pCreature);
 };*/

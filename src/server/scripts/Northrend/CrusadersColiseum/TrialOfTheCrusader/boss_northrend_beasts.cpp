@@ -131,7 +131,7 @@ class boss_gormok : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_gormok(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_gormokAI(pCreature);
     };
@@ -205,7 +205,7 @@ class mob_snobold_vassal : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_snobold_vassal(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_snobold_vassalAI(pCreature);
     };
@@ -325,7 +325,7 @@ class boss_acidmaw : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_acidmaw(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_acidmawAI(pCreature);
     };
@@ -444,7 +444,7 @@ class boss_dreadscale : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_dreadscale(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_dreadscaleAI(pCreature);
     };
@@ -505,7 +505,7 @@ class mob_slime_pool : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_slime_pool(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_slime_poolAI(pCreature);
     };
@@ -672,7 +672,7 @@ class boss_icehowl : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_icehowl(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_icehowlAI(pCreature);
     };
