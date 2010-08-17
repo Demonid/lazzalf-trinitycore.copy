@@ -13650,6 +13650,7 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId, bool showQue
                         bCanTalk = false;
                     break;
                 case GOSSIP_OPTION_GOSSIP:
+                case GOSSIP_OPTION_QUESTGIVER:
                 case GOSSIP_OPTION_SPIRITGUIDE:
                 case GOSSIP_OPTION_INNKEEPER:
                 case GOSSIP_OPTION_BANKER:
@@ -16473,6 +16474,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
+    UpdateSkillsForLevel (); //update skills after load, to make sure they are correctly update at player load
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
