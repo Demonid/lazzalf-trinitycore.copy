@@ -142,6 +142,8 @@ class ChatHandler
         bool HandleCharacterDeletedListCommand(const char* args);
         bool HandleCharacterDeletedRestoreCommand(const char* args);
         bool HandleCharacterDeletedOldCommand(const char* args);
+        bool HandleCharacterChangeFactionCommand(const char* args);
+        bool HandleCharacterChangeRaceCommand(const char* args);
         bool HandleCharacterEraseCommand(const char* args);
         bool HandleCharacterLevelCommand(const char* args);
         bool HandleCharacterRenameCommand(const char * args);
