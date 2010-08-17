@@ -510,7 +510,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI_npc_argent_champion(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_argent_championAI (pCreature);
     };

@@ -230,7 +230,7 @@ class boss_eregos : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_eregos(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new boss_eregosAI (pCreature);
     };
@@ -269,7 +269,7 @@ class npc_planar_anomaly : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_planar_anomaly(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new npc_planar_anomalyAI (pCreature);
     };

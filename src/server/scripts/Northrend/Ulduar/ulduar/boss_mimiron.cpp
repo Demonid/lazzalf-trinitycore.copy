@@ -677,7 +677,7 @@ class boss_mimiron : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_mimiron(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_mimironAI(pCreature);
     };
@@ -861,7 +861,7 @@ class boss_leviathan_mk : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_leviathan_mk(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_leviathan_mkAI(pCreature);
     };
@@ -912,7 +912,7 @@ class boss_leviathan_mk_turret : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_leviathan_mk_turret(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_leviathan_mk_turretAI(pCreature);
     };
@@ -961,7 +961,7 @@ class mob_proximity_mine : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_proximity_mine(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_proximity_mineAI(pCreature);
     };
@@ -1158,7 +1158,7 @@ class boss_vx_001 : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_vx_001(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_vx_001AI(pCreature);
     };
@@ -1179,7 +1179,7 @@ class rocket_strike : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_rocket_strike(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new rocket_strikeAI(pCreature);
     };
@@ -1413,7 +1413,7 @@ class boss_aerial_unit : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_aerial_unit(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_aerial_unitAI(pCreature);
     };
@@ -1440,7 +1440,7 @@ class magnetic_core : public CreatureScript
         InstanceScript *pInstance;
     };
 
-    CreatureAI* GetAI_magnetic_core(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new magnetic_coreAI(pCreature);
     };
@@ -1468,7 +1468,7 @@ class mob_boom_bot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_boom_bot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_boom_botAI(pCreature);
     };
@@ -1488,7 +1488,7 @@ class mob_junk_bot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_junk_bot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_junk_botAI(pCreature);
     };
@@ -1534,7 +1534,7 @@ class mob_assault_bot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_assault_bot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_assault_botAI(pCreature);
     };
@@ -1572,7 +1572,7 @@ class mob_emergency_bot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_emergency_bot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_emergency_botAI(pCreature);
     };
@@ -1614,7 +1614,7 @@ class mob_mimiron_flame : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_mimiron_flame(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_mimiron_flameAI(pCreature);
     };
@@ -1654,7 +1654,7 @@ class mob_frost_bomb : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_frost_bomb(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_frost_bombAI(pCreature);
     };

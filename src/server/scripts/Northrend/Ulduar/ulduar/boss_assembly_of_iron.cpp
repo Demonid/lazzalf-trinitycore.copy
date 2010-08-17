@@ -339,7 +339,7 @@ class boss_steelbreaker : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_steelbreaker(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_steelbreakerAI (pCreature);
     };
@@ -512,7 +512,7 @@ class boss_runemaster_molgeim : public CreatureScript
         }
     };
     
-    CreatureAI* GetAI_boss_runemaster_molgeim(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_runemaster_molgeimAI (pCreature);
     };
@@ -729,7 +729,7 @@ class boss_stormcaller_brundir : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_stormcaller_brundir(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_stormcaller_brundirAI (pCreature);
     };
@@ -767,7 +767,7 @@ class mob_lightning_elemental : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_lightning_elemental(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature)
     {
         return new mob_lightning_elementalAI (pCreature);
     };
@@ -811,7 +811,7 @@ class mob_rune_of_summoning : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_rune_of_summoning(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_rune_of_summoningAI (pCreature);
     };
@@ -841,7 +841,7 @@ class mob_rune_of_power : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_rune_of_power(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_rune_of_powerAI (pCreature);
     };

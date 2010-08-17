@@ -260,7 +260,7 @@ class mob_toc_druid : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_druid(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_druidAI (pCreature);
     };
@@ -325,7 +325,7 @@ class mob_toc_shaman : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_shaman(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_shamanAI (pCreature);
     };
@@ -393,7 +393,7 @@ class mob_toc_paladin : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_paladin(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_paladinAI (pCreature);
     };
@@ -454,7 +454,7 @@ class mob_toc_priest : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_priest(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_priestAI (pCreature);
     };
@@ -530,7 +530,7 @@ class mob_toc_shadow_priest : public CreatureScript
         }
     };
     
-    CreatureAI* GetAI_mob_toc_shadow_priest(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_shadow_priestAI (pCreature);
     };
@@ -596,7 +596,7 @@ class mob_toc_warlock : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_warlock(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_warlockAI (pCreature);
     };
@@ -664,7 +664,7 @@ class mob_toc_mage : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_mage(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_mageAI (pCreature);
     };
@@ -731,7 +731,7 @@ class mob_toc_hunter : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_hunter(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_hunterAI (pCreature);
     };
@@ -795,7 +795,7 @@ class mob_toc_boomkin : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_boomkin(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_boomkinAI (pCreature);
     };
@@ -855,7 +855,7 @@ class mob_toc_warrior : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_warrior(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_warriorAI (pCreature);
     };
@@ -908,7 +908,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI_mob_toc_dk(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_dkAI (pCreature);
     };
@@ -963,7 +963,7 @@ class mob_toc_rogue : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_rogue(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_rogueAI (pCreature);
     };
@@ -1003,7 +1003,7 @@ class mob_toc_enh_shaman : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_enh_shaman(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_enh_shamanAI (pCreature);
     };
@@ -1060,7 +1060,7 @@ class mob_toc_retro_paladin : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_retro_paladin(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_retro_paladinAI (pCreature);
     };
@@ -1096,7 +1096,7 @@ class mob_toc_pet_warlock : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_pet_warlock(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_pet_warlockAI (pCreature);
     };
@@ -1127,7 +1127,7 @@ class mob_toc_pet_hunter : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_toc_pet_hunter(Creature *pCreature) 
+    CreatureAI* GetAI(Creature *pCreature) 
     {
         return new mob_toc_pet_hunterAI (pCreature);
     };

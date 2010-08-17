@@ -353,7 +353,7 @@ class boss_flame_leviathan : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_flame_leviathan(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_flame_leviathanAI (pCreature);
     };
@@ -422,7 +422,7 @@ class boss_flame_leviathan_seat : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_flame_leviathan_seat(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_flame_leviathan_seatAI (pCreature);
     };
@@ -451,7 +451,7 @@ class boss_flame_leviathan_defense_turret : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_flame_leviathan_defense_turret(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_flame_leviathan_defense_turretAI (pCreature);
     };
@@ -486,7 +486,7 @@ class boss_flame_leviathan_overload_device : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_flame_leviathan_overload_device(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_flame_leviathan_overload_deviceAI (pCreature);
     };
@@ -518,7 +518,7 @@ class boss_flame_leviathan_safety_container : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_flame_leviathan_safety_containerAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_flame_leviathan_safety_containerAI(pCreature);
     };
@@ -548,7 +548,7 @@ class spell_pool_of_tar : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_spell_pool_of_tar(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new spell_pool_of_tarAI (pCreature);
     };
@@ -669,7 +669,7 @@ class npc_keeper_norgannon : public CreatureScript
         return true;
     };
 
-    CreatureAI* GetAI_keeper_norgannon(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new keeper_norgannonAI (pCreature);
     };
@@ -717,7 +717,7 @@ class mob_colossus : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_colossus(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_colossusAI(pCreature);
     };

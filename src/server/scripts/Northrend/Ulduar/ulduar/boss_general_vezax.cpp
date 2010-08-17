@@ -265,7 +265,7 @@ class boss_general_vezax : public CreatureScript
         }
     };
      
-    CreatureAI* GetAI_boss_general_vezax(Creature *pCreature) const
+    CreatureAI* GetAI(Creature *pCreature) const
     {
         return new boss_general_vezaxAI(pCreature);
     };
@@ -306,7 +306,7 @@ class mob_saronite_vapors : public CreatureScript
         }
     };
      
-    CreatureAI* GetAI_mob_saronite_vapors(Creature *pCreature) const
+    CreatureAI* GetAI(Creature *pCreature) const
     {
         return new mob_saronite_vaporsAI(pCreature);
     };
@@ -363,7 +363,7 @@ class mob_saronite_animus : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_saronite_animus(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_saronite_animusAI(pCreature);
     };

@@ -468,7 +468,7 @@ class boss_thorim : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_thorim(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_thorimAI(pCreature);
     };
@@ -538,7 +538,7 @@ class mob_pre_phase : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_pre_phase(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_pre_phaseAI(pCreature);
     };
@@ -657,7 +657,7 @@ class mob_arena_phase : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_arena_phase(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_arena_phaseAI(pCreature);
     };
@@ -755,7 +755,7 @@ class mob_runic_colossus : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_runic_colossus(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_runic_colossusAI(pCreature);
     };
@@ -844,7 +844,7 @@ class mob_rune_giant : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_rune_giant(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_rune_giantAI(pCreature);
     };
@@ -883,7 +883,7 @@ class thorim_phase_trigger : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_thorim_phase_trigger(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new thorim_phase_triggerAI(pCreature);
     };
@@ -925,7 +925,7 @@ class thorim_energy_source : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_thorim_energy_source(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new thorim_energy_sourceAI(pCreature);
     };
@@ -994,7 +994,7 @@ class npc_sif : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_sif(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_sifAI(pCreature);
     };

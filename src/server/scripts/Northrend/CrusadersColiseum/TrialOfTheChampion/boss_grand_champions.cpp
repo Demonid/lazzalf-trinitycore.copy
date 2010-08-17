@@ -379,7 +379,7 @@ class generic_vehicleAI_toc5 : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_generic_vehicleAI_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new generic_vehicleAI_toc5AI(pCreature);
     };
@@ -557,7 +557,7 @@ class boss_warrior_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_warrior_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_warrior_toc5AI(pCreature);
     };
@@ -728,7 +728,7 @@ class boss_mage_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_mage_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_mage_toc5AI(pCreature);
     };
@@ -912,7 +912,7 @@ class boss_shaman_toc5 : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_shaman_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_shaman_toc5AI(pCreature);
     };
@@ -1126,7 +1126,7 @@ class boss_hunter_toc5 : public CreatureScript
     	
     };
 
-    CreatureAI* GetAI_boss_hunter_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_hunter_toc5AI(pCreature);
     };
@@ -1289,7 +1289,7 @@ class boss_rouge_toc5 : public CreatureScript
 
     };
 
-    CreatureAI* GetAI_boss_rouge_toc5(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_rouge_toc5AI(pCreature);
     };

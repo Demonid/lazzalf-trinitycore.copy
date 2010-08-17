@@ -203,7 +203,7 @@ class boss_toravon : public CreatureScript
         }
     };
     
-    CreatureAI* GetAI_boss_toravon(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_toravonAI (pCreature);
     };
@@ -259,7 +259,7 @@ class mob_frost_warder : public CreatureScript
         }
     };
     
-    CreatureAI* GetAI_mob_frost_warder(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_frost_warderAI (pCreature);
     };
@@ -315,7 +315,7 @@ class mob_frozen_orb : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_frozen_orb(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_frozen_orbAI (pCreature);
     };
@@ -342,7 +342,7 @@ class mob_frozen_orb_stalker : public CreatureScript
         void UpdateAI(const uint32 diff) {}
     };
 
-    CreatureAI* GetAI_mob_frozen_orb_stalker(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_frozen_orb_stalkerAI (pCreature);
     };

@@ -192,7 +192,7 @@ class npc_toc_announcer : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_toc_announcer(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_toc_announcerAI(pCreature);
     };
@@ -511,7 +511,7 @@ class boss_lich_king_toc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_lich_king_toc(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_lich_king_tocAI(pCreature);
     };
@@ -650,7 +650,7 @@ class npc_fizzlebang_toc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_fizzlebang_toc(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_fizzlebang_tocAI(pCreature);
     };
@@ -1228,7 +1228,7 @@ class npc_tirion_toc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_tirion_toc(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_tirion_tocAI(pCreature);
     };
@@ -1314,7 +1314,7 @@ class npc_garrosh_toc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_garrosh_toc(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_garrosh_tocAI(pCreature);
     };
@@ -1400,7 +1400,7 @@ class npc_rinn_toc : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_npc_rinn_toc(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_rinn_tocAI(pCreature);
     };

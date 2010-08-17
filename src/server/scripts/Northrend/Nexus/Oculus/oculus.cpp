@@ -100,7 +100,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI_mob_CentrifigeConstruct(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_CentrifigeConstructAI (pCreature);
     };

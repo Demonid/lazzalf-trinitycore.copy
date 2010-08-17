@@ -146,7 +146,7 @@ class boss_varos : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_varos(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_varosAI (pCreature);
     };

@@ -485,7 +485,7 @@ class boss_xt002 : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_boss_xt002(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_xt002_AI(pCreature);
     };
@@ -571,7 +571,7 @@ class mob_xt002_heart : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_xt002_heart(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_xt002_heartAI(pCreature);
     };
@@ -629,7 +629,7 @@ class mob_scrapbot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_scrapbot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_scrapbotAI(pCreature);
     };
@@ -694,7 +694,7 @@ class mob_pummeller : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_pummeller(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_pummellerAI(pCreature);
     };
@@ -738,7 +738,7 @@ class mob_boombot : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_boombot(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_boombotAI(pCreature);
     };
@@ -780,7 +780,7 @@ class mob_void_zone : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_void_zone(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_void_zoneAI(pCreature);
     };
@@ -829,7 +829,7 @@ class mob_life_spark : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI_mob_life_spark(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_life_sparkAI(pCreature);
     };
