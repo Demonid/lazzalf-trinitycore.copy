@@ -35,15 +35,163 @@
 #include "PoolMgr.h"
 #include "AccountMgr.h"
 #include "WaypointManager.h"
+#include "WaypointMovementGenerator.h"
+#include "math.h"
 #include "Util.h"
 #include <cctype>
 #include <iostream>
 #include <fstream>
 #include <map>
+#include "../../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 #include "Transport.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "CreatureGroups.h"
+
+bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG || !sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    PSendSysMessage(LANG_BG_WG_STATUS, sObjectMgr.GetTrinityStringForDBCLocale(
+        pvpWG->getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE),
+        secsToTimeString(pvpWG->GetTimer(), true).c_str(),
+        pvpWG->isWarTime() ? "Yes" : "No",
+        pvpWG->GetNumPlayersH(),
+        pvpWG->GetNumPlayersA());
+    return true;
+}
+
+bool ChatHandler::HandleWintergraspStartCommand(const char* args)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG || !sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    pvpWG->forceStartBattle();
+    PSendSysMessage(LANG_BG_WG_BATTLE_FORCE_START);
+    return true;
+}
+
+bool ChatHandler::HandleWintergraspStopCommand(const char* args)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG || !sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    pvpWG->forceStopBattle();
+    PSendSysMessage(LANG_BG_WG_BATTLE_FORCE_STOP);
+    return true;
+}
+
+bool ChatHandler::HandleWintergraspEnableCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG || !sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!strncmp(args, "on", 3))
+    {
+        if (!sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        {
+            pvpWG->forceStopBattle();
+            sWorld.setConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, true);
+        }
+        PSendSysMessage(LANG_BG_WG_ENABLE);
+        return true;
+    }
+    else if (!strncmp(args, "off", 4))
+    {
+        if (sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        {
+            pvpWG->forceStopBattle();
+            sWorld.setConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, false);
+        }
+        PSendSysMessage(LANG_BG_WG_DISABLE);
+        return true;
+    }
+    else
+    {
+        SendSysMessage(LANG_USE_BOL);
+        SetSentErrorMessage(true);
+        return false;
+    }
+}
+
+bool ChatHandler::HandleWintergraspTimerCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG)
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    int32 time = atoi (args);
+
+    // Min value 1 min
+    if (1 > time)
+        time = 1;
+    // Max value during wartime = 60. No wartime = 1440 (day)
+    if (pvpWG->isWarTime())
+    {
+        if (60 < time)
+            return false;
+    }
+    else
+        if (1440 < time)
+            return false;
+    time *= MINUTE * IN_MILLISECONDS;
+
+    pvpWG->setTimer((uint32)time);
+
+    PSendSysMessage(LANG_BG_WG_CHANGE_TIMER, secsToTimeString(pvpWG->GetTimer(), true).c_str());
+    return true;
+}
+
+bool ChatHandler::HandleWintergraspSwitchTeamCommand(const char* args)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
+    if (!pvpWG)
+    {
+        SendSysMessage(LANG_BG_WG_DISABLE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    uint32 timer = pvpWG->GetTimer();
+    pvpWG->forceChangeTeam();
+    pvpWG->setTimer(timer);
+    PSendSysMessage(LANG_BG_WG_SWITCH_FACTION, GetTrinityString(pvpWG->getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE));
+    return true;
+}
 
 //mute player for some times
 bool ChatHandler::HandleMuteCommand(const char* args)
@@ -587,6 +735,9 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     obj->Delete();
     obj->DeleteFromDB();
 
+    // GuidHouse
+    WorldDatabase.PQuery("DELETE FROM guildhouses_add WHERE guid = %u AND type = 1", obj->GetDBTableGUIDLow());   
+
     PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, obj->GetGUIDLow());
 
     return true;
@@ -787,6 +938,99 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     return true;
 }
 
+//spawn go
+bool ChatHandler::HandleGameObjectAddGuildCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+    char* cId = extractKeyFromLink((char*)args,"Hgameobject_entry");
+    if (!cId)
+        return false;
+
+    char* guildhouse = strtok(NULL, " ");
+    if (!guildhouse)
+        return false;
+
+    char* guildhouseadd = strtok(NULL, " ");
+    if (!guildhouseadd)
+        return false;
+
+    uint32 id = atol(cId);
+    uint32 guildhouseid = atoi(guildhouse);
+    uint32 guildhouseaddid = atoi(guildhouseadd);
+
+    if (!id || !guildhouseid || !guildhouseaddid)
+        return false;
+
+    char* spawntimeSecs = strtok(NULL, " ");
+
+    const GameObjectInfo *gInfo = sObjectMgr.GetGameObjectInfo(id);
+
+    if (!gInfo)
+    {
+        PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+    {
+        // report to DB errors log as in loading case
+        sLog.outErrorDb("Gameobject (Entry %u GoType: %u) have invalid displayId (%u), not spawned.",id, gInfo->type, gInfo->displayId);
+        PSendSysMessage(LANG_GAMEOBJECT_HAVE_INVALID_DATA,id);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player *chr = m_session->GetPlayer();
+    float x = float(chr->GetPositionX());
+    float y = float(chr->GetPositionY());
+    float z = float(chr->GetPositionZ());
+    float o = float(chr->GetOrientation());
+    Map *map = chr->GetMap();
+
+    GameObject* pGameObj = new GameObject;
+    uint32 db_lowGUID = sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+
+    if (!pGameObj->Create(db_lowGUID, gInfo->id, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    if (spawntimeSecs)
+    {
+        uint32 value = atoi((char*)spawntimeSecs);
+        pGameObj->SetRespawnTime(value);
+        //sLog.outDebug("*** spawntimeSecs: %d", value);
+    }
+
+    // fill the gameobject data and save to the db
+    pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()),chr->GetPhaseMaskForSpawn());
+
+    // this will generate a new guid if the object is in an instance
+    if (!pGameObj->LoadFromDB(db_lowGUID, map))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
+
+    map->Add(pGameObj);
+
+    WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')", 
+                              pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
+
+    // TODO: is it really necessary to add both the real and DB table guid here ?
+    sObjectMgr.AddGameobjectToGrid(db_lowGUID, sObjectMgr.GetGOData(db_lowGUID));
+
+    PSendSysMessage(LANG_GAMEOBJECT_ADD,id,gInfo->name,db_lowGUID,x,y,z);
+    return true;
+}
+
 //set pahsemask for selected object
 bool ChatHandler::HandleGameObjectPhaseCommand(const char* args)
 {
@@ -974,7 +1218,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
         return false;
     }
 
-    target->GetReputationMgr().SetReputation(factionEntry,amount);
+    target->GetReputationMgr().SetOneFactionReputation(factionEntry,amount);
     PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId,
         GetNameLink(target).c_str(), target->GetReputationMgr().GetReputation(factionEntry));
     return true;
@@ -1026,6 +1270,63 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         }
         return true;
     }
+    
+    Creature* pCreature = new Creature;
+    if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
+    {
+        delete pCreature;
+        return false;
+    }
+
+    pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
+
+    uint32 db_guid = pCreature->GetDBTableGUIDLow();
+
+    // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
+    pCreature->LoadFromDB(db_guid, map);
+
+    map->Add(pCreature);
+    sObjectMgr.AddCreatureToGrid(db_guid, sObjectMgr.GetCreatureData(db_guid));
+    return true;
+}
+
+
+//add spawn of creature for a GuildHouse
+bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    char* charID = extractKeyFromLink((char*)args,"Hcreature_entry");
+    if (!charID)
+        return false;
+
+    char* guildhouse = strtok(NULL, " ");
+    if (!guildhouse)
+        return false;
+
+    char* guildhouseadd = strtok(NULL, " ");
+    if (!guildhouseadd)
+        return false;
+
+    char* team = strtok(NULL, " ");
+    int32 teamval = 0;
+    if (team) { teamval = atoi(team); }
+    if (teamval < 0) { teamval = 0; }
+    
+    uint32 id  = atoi(charID);
+    uint32 guildhouseid = atoi(guildhouse);
+    uint32 guildhouseaddid = atoi(guildhouseadd);
+
+    if (!id || !guildhouseid || !guildhouseaddid)
+        return false;
+
+    Player *chr = m_session->GetPlayer();
+    float x = chr->GetPositionX();
+    float y = chr->GetPositionY();
+    float z = chr->GetPositionZ();
+    float o = chr->GetOrientation();
+    Map *map = chr->GetMap();
 
     Creature* pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
@@ -1040,6 +1341,9 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map);
+
+    WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 0, %u, %u, '%s')", 
+                           pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
 
     map->Add(pCreature);
     sObjectMgr.AddCreatureToGrid(db_guid, sObjectMgr.GetCreatureData(db_guid));
@@ -1292,6 +1596,9 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     unit->CombatStop();
     unit->DeleteFromDB();
     unit->AddObjectToRemoveList();
+
+    // GuidHouse
+    WorldDatabase.PQuery("DELETE FROM guildhouses_add WHERE guid = %u AND type = 0", unit->GetDBTableGUIDLow());   
 
     SendSysMessage(LANG_COMMAND_DELCREATMESSAGE);
 
@@ -3334,6 +3641,51 @@ bool ChatHandler::HandleCharacterReputationCommand(const char* args)
         SendSysMessage(ss.str().c_str());
     }
     return true;
+}
+
+bool ChatHandler::HandleCharacterJailpinfoCommand(const char* args)
+{
+
+	Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if(!extractPlayerTarget((char*)args,&target,&target_guid,&target_name))
+        return false;
+
+        if (target->m_jail_times > 0)
+        {
+            if(target->m_jail_release > 0)
+            {
+                time_t localtime;
+                localtime = time(NULL);
+                uint32 min_left = (uint32)floor(float(target->m_jail_release - localtime) / 60);
+
+                if (min_left <= 0)
+                {
+                    target->m_jail_release = 0;
+                    target->_SaveJail();
+                    PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, 0, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                    return true;
+                }
+                else
+                {
+                    PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, min_left, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                    return true;
+                }
+            }
+            else
+            {
+                PSendSysMessage(LANG_JAIL_GM_INFO, target->m_jail_char.c_str(), target->m_jail_times, 0, target->m_jail_gmchar.c_str(), target->m_jail_reason.c_str());
+                return true;
+            }
+        }
+        else
+        {
+            PSendSysMessage(LANG_JAIL_GM_NOINFO, target->GetName());
+            return true;
+        }
+
+	return true;
 }
 
 //change standstate
