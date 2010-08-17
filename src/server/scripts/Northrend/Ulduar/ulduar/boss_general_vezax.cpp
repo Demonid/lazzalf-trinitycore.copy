@@ -72,7 +72,8 @@ enum Events
 
 enum Actions
 {
-    ACTION_VAPOR_DEAD                           = 0
+    ACTION_VAPOR_DEAD                           = 0,
+    ACTION_ANIMUS_DEAD
 };
 
 // Saronite Vapors
@@ -223,6 +224,7 @@ class boss_general_vezax : public CreatureScript
                             me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                             DespawnCreatures(MOB_SARONITE_VAPORS, 100);
                             events.CancelEvent(EVENT_SARONITE_VAPORS);
+                            events.CancelEvent(EVENT_SEARING_FLAMES);
                         }
                         if (VaporsCount == 8)
                             events.CancelEvent(EVENT_SARONITE_VAPORS);
@@ -245,6 +247,8 @@ class boss_general_vezax : public CreatureScript
                 case ACTION_VAPOR_DEAD:
                     HardMode = false;
                     break;
+                case ACTION_ANIMUS_DEAD:
+                    events.ScheduleEvent(EVENT_SEARING_FLAMES, 10000);
             }
         }
         
@@ -329,7 +333,10 @@ class mob_saronite_animus : public CreatureScript
         void JustDied(Unit * killer)
         {
             if (Creature* Vezax = me->GetCreature(*me, pInstance->GetData64(DATA_VEZAX)))
+            {
                 Vezax->RemoveAurasDueToSpell(SPELL_SARONITE_BARRIER);
+                Vezax->AI()->DoAction(ACTION_ANIMUS_DEAD);
+            }
         }
 
         void EnterCombat(Unit* pWho){}
