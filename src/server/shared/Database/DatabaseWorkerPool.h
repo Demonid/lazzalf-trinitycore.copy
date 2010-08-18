@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
  * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,56 +16,47 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef _DATABASEWORKERPOOL_H
+#define _DATABASEWORKERPOOL_H
 
-#include "Threading/Threading.h"
-#include "Dynamic/UnorderedMap.h"
-#include "Database/SqlDelayThread.h"
-#include "ace/Thread_Mutex.h"
-#include "ace/Guard_T.h"
+#include "Common.h"
 
-#ifdef _WIN32
-  #define FD_SETSIZE 1024
-  #include <winsock2.h>
-  #include <mysql.h>
-#else
-  #include <mysql/mysql.h>
-#endif
+#include <ace/Atomic_Op_T.h>
+#include <ace/Thread_Mutex.h>
 
-class SqlTransaction;
-class SqlResultQueue;
-class SqlQueryHolder;
+#include "SQLOperation.h"
+#include "QueryResult.h"
+#include "MySQLConnection.h"
 
-typedef UNORDERED_MAP<ACE_Based::Thread* , SqlTransaction*> TransactionQueues;
-typedef UNORDERED_MAP<ACE_Based::Thread* , SqlResultQueue*> QueryQueues;
-
-#define MAX_QUERY_LEN   32*1024
-
-class Database
+enum MySQLThreadBundle
 {
-    protected:
-        TransactionQueues m_tranQueues;                     ///< Transaction queues from diff. threads
-        QueryQueues m_queryQueues;                          ///< Query queues from diff threads
-        SqlDelayThread* m_threadBody;                       ///< Pointer to delay sql executer (owned by m_delayThread)
-        ACE_Based::Thread* m_delayThread;                   ///< Pointer to executer thread
+    MYSQL_BUNDLE_NONE   = 0x00,     //- Each task will run their own MySQL connection
+    MYSQL_BUNDLE_CLI    = 0x01,     //- Commandline interface thread
+    MYSQL_BUNDLE_RA     = 0x02,     //- Remote admin thread
+    MYSQL_BUNDLE_RAR    = 0x04,     //- Reactor runnable thread
+    MYSQL_BUNDLE_WORLD  = 0x08,     //- WorldRunnable
+    MYSQL_BUNDLE_ALL    = MYSQL_BUNDLE_CLI | MYSQL_BUNDLE_RA | MYSQL_BUNDLE_RAR | MYSQL_BUNDLE_WORLD,
+};
 
+class DatabaseWorkerPool
+{
     public:
+        DatabaseWorkerPool();
+        ~DatabaseWorkerPool();
 
-        Database();
-        ~Database();
+        bool Open(const std::string& infoString, uint8 num_threads);
+        void Close();
 
-        /*! infoString should be formated like hostname;username;password;database. */
-        bool Initialize(const char *infoString);
+        void Init_MySQL_Connection();
+        void End_MySQL_Connection();
 
-        void InitDelayThread();
-        void HaltDelayThread();
-
-        QueryResult_AutoPtr Query(const char *sql);
-        QueryResult_AutoPtr PQuery(const char *format,...) ATTR_PRINTF(2,3);
-        QueryNamedResult* QueryNamed(const char *sql);
-        QueryNamedResult* PQueryNamed(const char *format,...) ATTR_PRINTF(2,3);
-
+        void Execute(const char* sql);
+        void PExecute(const char* sql, ...);
+        void DirectExecute(const char* sql);
+        void DirectPExecute(const char* sql, ...);
+        QueryResult_AutoPtr Query(const char* sql);
+        QueryResult_AutoPtr PQuery(const char* sql, ...);
+       
         /// Async queries and query holders, implemented in DatabaseImpl.h
 
         // Query / member
@@ -104,51 +93,63 @@ class Database
             bool AsyncPQuery(void (*method)(QueryResult_AutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *format,...) ATTR_PRINTF(6,7);
         template<class Class>
         // QueryHolder
-            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult_AutoPtr, SqlQueryHolder*), SqlQueryHolder *holder);
+            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult_AutoPtr, SQLQueryHolder*), SQLQueryHolder *holder);
         template<class Class, typename ParamType1>
-            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult_AutoPtr, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1);
+            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult_AutoPtr, SQLQueryHolder*, ParamType1), SQLQueryHolder *holder, ParamType1 param1);
 
-        bool Execute(const char *sql);
-        bool PExecute(const char *format,...) ATTR_PRINTF(2,3);
-        bool DirectExecute(const char* sql);
-        bool DirectPExecute(const char *format,...) ATTR_PRINTF(2,3);
+        void SetResultQueue(SQLResultQueue * queue)
+        {
+            m_queryQueues[ACE_Based::Thread::current()] = queue;
+        }
 
-        bool _UpdateDataBlobValue(const uint32 guid, const uint32 field, const int32 value);
-        bool _SetDataBlobValue(const uint32 guid, const uint32 field, const uint32 value);
+        void BeginTransaction();
+        void RollbackTransaction();
+        void CommitTransaction();
 
-        // Writes SQL commands to a LOG file (see worldserver.conf "LogSQL")
-        bool PExecuteLog(const char *format,...) ATTR_PRINTF(2,3);
+        void escape_string(std::string& str)
+        {
+            if (str.empty())
+                return;
 
-        bool BeginTransaction();
-        bool CommitTransaction();
-        bool RollbackTransaction();
+            char* buf = new char[str.size()*2+1];
+            escape_string(buf,str.c_str(),str.size());
+            str = buf;
+            delete[] buf;
+        }
 
-        operator bool () const { return mMysql != NULL; }
-        unsigned long escape_string(char *to, const char *from, unsigned long length);
-        void escape_string(std::string& str);
-
-        void ThreadStart();
-        void ThreadEnd();
-
-        // sets the result queue of the current thread, be careful what thread you call this from
-        void SetResultQueue(SqlResultQueue * queue);
-
-        bool CheckRequiredField(char const* table_name, char const* required_name);
+        unsigned long escape_string(char *to, const char *from, unsigned long length)
+        {
+            if (!to || !from || !length)
+                return 0;
+            return (mysql_real_escape_string(GetConnection()->GetHandle(), to, from, length));
+        }
 
     private:
-        bool m_logSQL;
-        std::string m_logsDir;
-        ACE_Thread_Mutex mMutex;        // For thread safe operations between core and mySQL server
-        ACE_Thread_Mutex nMutex;        // For thread safe operations on m_transQueues
+        void Enqueue(SQLOperation* op)
+        {
+            m_queue->enqueue(op);
+        }
 
-        ACE_Based::Thread * tranThread;
+        MySQLConnection* GetConnection();
 
-        MYSQL *mMysql;
+    private:
+        typedef UNORDERED_MAP<ACE_Based::Thread*, MySQLConnection*> ConnectionMap;
+        typedef UNORDERED_MAP<ACE_Based::Thread*, TransactionTask*> TransactionQueues;
+        typedef UNORDERED_MAP<ACE_Based::Thread*, SQLResultQueue*> QueryQueues;
+        typedef ACE_Atomic_Op<ACE_SYNCH_MUTEX, uint32> AtomicUInt;
 
-        static size_t db_count;
-
-        bool _TransactionCmd(const char *sql);
-        bool _Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD **pFields, uint64* pRowCount, uint32* pFieldCount);
+    private:
+        ACE_Activation_Queue*           m_queue;             //! Queue shared by async worker threads.
+        ACE_Thread_Mutex                m_queue_mtx;         //! For thread safe enqueues of delayed statements. 
+        std::vector<MySQLConnection*>   m_async_connections;
+        ConnectionMap                   m_sync_connections;  //! Holds a mysql connection+thread per mapUpdate thread and unbundled runnnables.
+        ACE_Thread_Mutex                m_connectionMap_mtx; //! For thread safe access to the synchroneous connection map
+        MySQLConnection*                m_bundle_conn;       //! Bundled connection (see Database.ThreadBundleMask config)
+        AtomicUInt                      m_connections;       //! Counter of MySQL connections; 
+        std::string                     m_infoString;        //! Infostring that is passed on to child connections.
+        TransactionQueues               m_tranQueues;        //! Transaction queues from diff. threads
+        ACE_Thread_Mutex                m_transQueues_mtx;   //! To guard m_transQueues
+        QueryQueues                     m_queryQueues;       //! Query queues from diff threads
 };
-#endif
 
+#endif
