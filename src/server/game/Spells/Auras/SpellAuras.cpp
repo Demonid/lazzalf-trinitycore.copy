@@ -672,7 +672,7 @@ void Aura::RefreshDuration()
 {
     SetDuration(GetMaxDuration());
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_effects[i])
+        if(m_effects[i])
             m_effects[i]->ResetPeriodic();
 
     if (m_spellProto->manaPerSecond || m_spellProto->manaPerSecondPerLevel)
@@ -1092,6 +1092,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         // Remove the immunity shield marker on Avenging Wrath removal if Forbearance is not present
                         if (target->HasAura(61988) && !target->HasAura(25771))
                             target->RemoveAura(61988);
+                        break;
+                    case 61990: // Hodir Flash Freeze immunity remove
+               	    if (removeMode == AURA_REMOVE_BY_DEATH)
+                        target->RemoveAura(7940);
                         break;
                     case 72368: // Shared Suffering
                     case 72369:

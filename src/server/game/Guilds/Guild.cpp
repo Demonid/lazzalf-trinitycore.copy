@@ -31,6 +31,7 @@
 #include "Language.h"
 #include "World.h"
 #include "Config.h"
+#include "GuildHouse.h"
 #include "ScriptMgr.h"
 
 Guild::Guild()
@@ -722,7 +723,11 @@ void Guild::Disband()
     CharacterDatabase.PExecute("DELETE FROM guild_bank_right WHERE guildid = '%u'", m_Id);
     CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid = '%u'", m_Id);
     CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE guildid = '%u'", m_Id);
+    CharacterDatabase.PExecute("DELETE FROM gh_guildadd WHERE guildId = '%u'", m_Id);
     CharacterDatabase.CommitTransaction();
+
+    GHobj.ChangeGuildHouse(m_Id,0); //Sell GuildHouse
+
     sObjectMgr.RemoveGuild(m_Id);
 }
 

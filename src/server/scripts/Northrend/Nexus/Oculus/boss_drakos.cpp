@@ -219,8 +219,10 @@ public:
 };
 
 
+
 void AddSC_boss_drakos()
 {
     new boss_drakos();
     new npc_unstable_sphere();
 }
+
