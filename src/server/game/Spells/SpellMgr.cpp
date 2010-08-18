@@ -162,6 +162,7 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_CONE_ENTRY:
             case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
             case TARGET_UNIT_AREA_PATH:
+            case TARGET_GAMEOBJECT_AREA_PATH:
                 SpellTargetType[i] = TARGET_TYPE_AREA_CONE;
                 break;
             case TARGET_DST_CASTER:
@@ -216,8 +217,9 @@ SpellMgr::SpellMgr()
             case TARGET_DST_NEARBY_ENTRY:
                 SpellTargetType[i] = TARGET_TYPE_DEST_SPECIAL;
                 break;
-            case TARGET_UNIT_CHANNEL:
-            case TARGET_DEST_CHANNEL:
+            case TARGET_UNIT_CHANNEL_TARGET:
+            case TARGET_DEST_CHANNEL_TARGET:
+            case TARGET_DEST_CHANNEL_CASTER:
                 SpellTargetType[i] = TARGET_TYPE_CHANNEL;
                 break;
             default:
@@ -225,7 +227,7 @@ SpellMgr::SpellMgr()
         }
     }
 
-    for (int i = 0; i < TOTAL_SPELL_TARGETS; ++i)
+    for (int32 i = 0; i < TOTAL_SPELL_TARGETS; ++i)
     {
         switch(i)
         {
@@ -243,6 +245,7 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_CONE_ALLY:
             case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
             case TARGET_UNIT_AREA_PATH:
+            case TARGET_GAMEOBJECT_AREA_PATH:
             case TARGET_UNIT_RAID_CASTER:
                 IsAreaEffectTarget[i] = true;
                 break;
@@ -736,7 +739,6 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
         case TARGET_UNIT_CONE_ENEMY:
         case TARGET_DEST_DYNOBJ_ENEMY:
         case TARGET_DST_TARGET_ENEMY:
-        case TARGET_UNIT_CHANNEL:
             return false;
         default:
             break;
@@ -3932,12 +3934,38 @@ void SpellMgr::LoadSpellCustomAttr()
         case 63702:     // Focused Eyebeam Visual Right Eye
             spellInfo->EffectImplicitTargetA[0] = 92;
             count++;
-            break;           
+            break;
         case 64321: // Potent Pheromones
             // spell should dispel area aura, but doesn't have the attribute
             // may be db data bug, or blizz may keep reapplying area auras every update with checking immunity
             // that will be clear if we get more spells with problem like this
             spellInfo->AttributesEx |= SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY;
+            count++;
+            break;
+        case 69055:     // Saber Lash
+        case 70814:     // Saber Lash
+            spellInfo->EffectRadiusIndex[0] = 8;
+            count++;
+            break;
+        case 69075:     // Bone Storm
+        case 70834:     // Bone Storm
+        case 70835:     // Bone Storm
+        case 70836:     // Bone Storm
+            spellInfo->EffectRadiusIndex[0] = 12;
+            count++;
+            break;           
+        case 18500: // Wing Buffet
+        case 33086: // Wild Bite
+        case 49749: // Piercing Blow
+        case 53454: // Impale
+        case 59446: // Impale
+        case 62383: // Shatter
+        case 64777: // Machine Gun
+        case 65239: // Machine Gun
+        case 65919: // Pursuing Spikes
+        case 69293: // Wing Buffet
+        case 74439: // Machine Gun
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             count++;
             break;    
         default:

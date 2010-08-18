@@ -2079,6 +2079,9 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
         case 57879:
             originalCaster = m_originalCaster;
             break;
+        // Coldflame
+        case 33801:
+            return; // just make the core stfu
     }
 
     // normal case
@@ -4248,6 +4251,24 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
 
     switch (m_spellInfo->SpellFamilyName)
     {
+        case SPELLFAMILY_GENERIC:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 69055:     // Saber Lash
+                case 70814:     // Saber Lash
+                {
+                    uint32 count = 0;
+                    for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                        if (ihit->effectMask & (1 << i))
+                            ++count;
+
+                    totalDamagePercentMod /= count;
+                    break;
+                }
+            }
+            break;
+        }
         case SPELLFAMILY_WARRIOR:
         {
             // Devastate (player ones)
@@ -4888,15 +4909,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     cTarget->RemoveCorpse();
                     break;
                 }
-                /*// Flame Crash
-                case 41126:
-                {
-                    if (!unitTarget)
-                        return;
-
-                    unitTarget->CastSpell(unitTarget, 41131, true);
-                    break;
-                }*/
                 case 48025:                                     // Headless Horseman's Mount
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -7424,7 +7436,7 @@ void Spell::EffectRechargeManaGem(uint32 /*i*/)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    Player *player = (Player*)m_caster;
+    Player *player = m_caster->ToPlayer();
 
     if (!player)
         return;
