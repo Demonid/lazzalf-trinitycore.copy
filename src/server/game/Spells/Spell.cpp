@@ -1412,6 +1412,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     // Deterrence Hack for delayed spells
     if (m_spellInfo->speed && unit->HasAura(19263))
         return SPELL_MISS_DEFLECT;
+        
+    PrepareTargetHitForScripts();	
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -1649,6 +1651,8 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo *target)
     if (!go)
         return;
 
+    PrepareTargetHitForScripts();
+
     for (uint32 effectNumber = 0; effectNumber < 3; ++effectNumber)
         if (effectMask & (1 << effectNumber))
             HandleEffects(NULL, NULL, go, effectNumber);
@@ -1667,6 +1671,8 @@ void Spell::DoAllEffectOnTarget(ItemTargetInfo *target)
     uint32 effectMask = target->effectMask;
     if (!target->item || !effectMask)
         return;
+
+    PrepareTargetHitForScripts();
 
     for (uint32 effectNumber = 0; effectNumber < 3; ++effectNumber)
         if (effectMask & (1 << effectNumber))
@@ -3277,6 +3283,8 @@ void Spell::cast(bool skipCheck)
     // CAST SPELL
     SendSpellCooldown();
 
+    PrepareTargetHitForScripts();
+
     for (uint32 i = 0; i < 3; ++i)
     {
         switch(m_spellInfo->Effect[i])
@@ -3440,6 +3448,8 @@ void Spell::_handle_immediate_phase()
     m_spellAura = NULL;
     // handle some immediate features of the spell here
     HandleThreatSpells(m_spellInfo->Id);
+
+    PrepareTargetHitForScripts();
 
     m_needSpellLog = IsNeedSendToClient();
     for (uint32 j = 0; j < 3; ++j)
@@ -4689,17 +4699,22 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     //we do not need DamageMultiplier here.
     damage = CalculateDamage(i, NULL);
 
+    // execute script effect handler hooks and check if effects was prevented
+    bool preventDefault = false;
     for(std::list<SpellScript *>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end() ; ++scritr)
     {
         std::list<SpellScript::EffectHandler>::iterator effEndItr = (*scritr)->EffectHandlers.end(), effItr = (*scritr)->EffectHandlers.begin();
         for(; effItr != effEndItr ; ++effItr)
         {
-            if ((*effItr).IsEffectAffected(m_spellInfo, i))
+            // effect execution can be prevented
+            if (!(*scritr)->_IsEffectPrevented((SpellEffIndex)i) && (*effItr).IsEffectAffected(m_spellInfo, i))
                 (*effItr).Call(*scritr, (SpellEffIndex)i);
         }
+        if (!preventDefault)
+            preventDefault = (*scritr)->_IsDefaultEffectPrevented((SpellEffIndex)i);
     }
 
-    if (eff < TOTAL_SPELL_EFFECTS)
+    if (!preventDefault && eff < TOTAL_SPELL_EFFECTS)
     {
         (this->*SpellEffects[eff])(i);
     }
@@ -4858,11 +4873,12 @@ SpellCastResult Spell::CheckCast(bool strict)
 
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
             {
-                // Not allow banish not self target
-                /*if (m_spellInfo->Mechanic == MECHANIC_BANISH)
-                    if (target->GetTypeId() == TYPEID_UNIT &&
-                        !m_caster->ToPlayer()->isAllowedToLoot(target->ToCreature()))
-                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;*/
+                // Do not allow to banish target tapped by someone not in caster's group
+                if (m_spellInfo->Mechanic == MECHANIC_BANISH)
+                    if (Creature *targetCreature = target->ToCreature())
+                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(m_caster->ToPlayer()))
+                            return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                            
                 if (m_spellInfo->Mechanic == MECHANIC_BANISH)
                     if (target->GetTypeId() == TYPEID_PLAYER &&
                         (target->HasAura(642) || target->HasAura(45438)))
@@ -4881,7 +4897,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 {
                     if (target->GetTypeId() == TYPEID_PLAYER)
                     {
-                        if (!target->ToPlayer()->GetWeaponForAttack(BASE_ATTACK) || !target->ToPlayer()->IsUseEquipedWeapon(true))
+                        Player *player = target->ToPlayer();
+                        if (!player->GetWeaponForAttack(BASE_ATTACK) || !player->IsUseEquipedWeapon(true))
                             return SPELL_FAILED_TARGET_NO_WEAPONS;
                     }
                     else if (!target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID))
@@ -7337,5 +7354,13 @@ void Spell::LoadScripts()
         }
         (*itr)->Register();
         ++itr;
+    }
+}
+
+void Spell::PrepareTargetHitForScripts()
+{
+    for(std::list<SpellScript *>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end() ; ++scritr)
+    {
+        (*scritr)->_InitHit();
     }
 }
