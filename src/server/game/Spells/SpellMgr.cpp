@@ -3191,6 +3191,10 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
             || spellInfo_1->AttributesEx3 & SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS)
             return true;
 
+        // Replenishment should not stack, Hackfix
+        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 57669)
+            return false;
+
         // check same periodic auras
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
