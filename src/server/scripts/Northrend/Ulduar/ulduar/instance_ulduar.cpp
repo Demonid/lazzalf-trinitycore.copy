@@ -41,11 +41,7 @@ const DoorData doorData[] =
 enum eGameObjects
 {
     GO_Leviathan_DOOR        = 194630,
-    GO_Kologarn_CHEST_HERO   = 195047,
-    GO_Kologarn_CHEST        = 195046,
     GO_Kologarn_BRIDGE       = 194232,
-    GO_Hodir_CHEST_HERO      = 194308,
-    GO_Hodir_CHEST           = 194307,
     GO_Hodir_Rare_CHEST      = 194200,
     GO_Hodir_Rare_CHEST_HERO = 194201,
     GO_Runic_DOOR            = 194557,
@@ -111,8 +107,7 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiMimironYS;
         uint64 uiHodirYS;
             
-        GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *HodirRareChestHero, *pRunicDoor, *pStoneDoor, *pThorimLever,
-            *MimironTram, *MimironElevator;
+        GameObject* pLeviathanDoor, *HodirRareChest, *HodirRareChestHero, *pRunicDoor, *pStoneDoor, *pThorimLever, *MimironTram, *MimironElevator;
 
         void OnGameObjectCreate(GameObject* pGo, bool add)
         {
@@ -120,11 +115,7 @@ class instance_ulduar : public InstanceMapScript
             switch(pGo->GetEntry())
             {
                 case GO_Leviathan_DOOR: pLeviathanDoor = add ? pGo : NULL; break;
-                case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
-                case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
                 case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
-                case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
-                case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;
                 case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
                 case GO_Hodir_Rare_CHEST_HERO: HodirRareChestHero = add ? pGo : NULL; break;
                 case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
@@ -377,14 +368,9 @@ class instance_ulduar : public InstanceMapScript
             {
                 case BOSS_KOLOGARN:
                     if (state == DONE)
-                    {
                         HandleGameObject(uiKologarnBridge, false);
-                        KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
-                    }
                     break;
                 case BOSS_HODIR:
-                    if (state == DONE)
-                        HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
                     CheckKeepersState();
                     break;
                 case BOSS_THORIM:
