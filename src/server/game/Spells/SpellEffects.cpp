@@ -1804,7 +1804,7 @@ void Spell::EffectDummy(uint32 i)
         }
 
         targets.setUnitTarget(unitTarget);
-        Spell* spell = new Spell(m_caster, spellInfo, triggered, m_originalCasterGUID, NULL, true);
+        Spell* spell = new Spell(m_caster, spellInfo, triggered, m_originalCasterGUID, true);
         if (bp) spell->m_currentBasePoints[0] = SpellMgr::CalculateSpellEffectBaseAmount(bp, spellInfo, 0);
         spell->prepare(&targets);
     }
@@ -1995,8 +1995,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
             if (unitTarget->ToPlayer()->HasSpellCooldown(spellId))
                 unitTarget->ToPlayer()->RemoveSpellCooldown(spellId);
 
-            // Push stealth to list because it must be handled after combat remove
-            m_TriggerSpells.push_back(spellInfo);
+            triggered_spell_id =  spellId;
             return;
         }
         // Demonic Empowerment -- succubus
@@ -6292,7 +6291,7 @@ void Spell::EffectBlock(uint32 /*i*/)
         unitTarget->ToPlayer()->SetCanBlock(true);
 }
 
-void Spell::EffectLeap(uint32 i)
+void Spell::EffectLeap(uint32 /*i*/)
 {
     if (unitTarget->isInFlight())
         return;

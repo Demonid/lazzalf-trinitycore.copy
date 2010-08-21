@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Common.h"
 #include "DatabaseEnv.h"
 #include "SQLOperation.h"
 #include "MySQLConnection.h"
@@ -28,8 +29,8 @@ m_has_result(false)
 }
 
 BasicStatementTask::BasicStatementTask(const char* sql, QueryResultFuture result) :
-m_result(result),
-m_has_result(true)
+m_has_result(true),
+m_result(result)
 {
     m_sql = strdup(sql);
 }

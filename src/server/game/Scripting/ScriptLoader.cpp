@@ -442,6 +442,7 @@ void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
 void AddSC_boss_marwyn();
 void AddSC_boss_lord_marrowgar();       // Icecrown Citadel
+void AddSC_boss_lady_deathwhisper();
 void AddSC_instance_icecrown_citadel();
 
 void AddSC_dalaran();
@@ -1130,6 +1131,7 @@ void AddNorthrendScripts()
     AddSC_boss_falric();
     AddSC_boss_marwyn();
     AddSC_boss_lord_marrowgar();        // Icecrown Citadel
+    AddSC_boss_lady_deathwhisper();
     AddSC_instance_icecrown_citadel();
 
     AddSC_dalaran();

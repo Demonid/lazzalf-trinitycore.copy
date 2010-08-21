@@ -375,10 +375,11 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //316 SPELL_AURA_PERIODIC_HASTE implemented in AuraEffect::CalculatePeriodic
 };
 
-AuraEffect::AuraEffect(Aura * base, uint8 effIndex, int32 *baseAmount, Unit * caster) :
-    m_base(base), m_spellProto(base->GetSpellProto()), m_spellmod(NULL), m_periodicTimer(0),
-    m_tickNumber(0), m_effIndex(effIndex), m_isPeriodic(false), m_canBeRecalculated(true),
-    m_baseAmount (baseAmount ? *baseAmount : m_spellProto->EffectBasePoints[m_effIndex])
+AuraEffect::AuraEffect(Aura * base, uint8 effIndex, int32 *baseAmount, Unit * caster):
+m_base(base), m_spellProto(base->GetSpellProto()), m_effIndex(effIndex),
+m_baseAmount(baseAmount ? *baseAmount : m_spellProto->EffectBasePoints[m_effIndex]),
+m_canBeRecalculated(true), m_spellmod(NULL), m_isPeriodic(false), 
+m_periodicTimer(0), m_tickNumber(0)
 {
     CalculatePeriodic(caster, true);
 
@@ -543,6 +544,8 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         // 0.75 from sp bonus
                         DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto)) * 0.75f;
                     }
+                    break;
+                default:
                     break;
             }
             break;
@@ -728,6 +731,9 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             // Dash - do not set speed if not in cat form
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008)
                 amount = GetBase()->GetUnitOwner()->m_form == FORM_CAT ? amount : 0;
+            break;
+        default:
+            break;
     }
     if (DoneActualBenefit != 0.0f)
     {
@@ -788,6 +794,8 @@ void AuraEffect::CalculatePeriodic(Unit * caster, bool create)
                 m_amplitude = irand (0, 60) + 30;
                 m_amplitude *= IN_MILLISECONDS;
             }
+            break;
+        default:
             break;
     }
 
@@ -870,6 +878,8 @@ void AuraEffect::CalculateSpellMod()
                         break;
                     }
                     break;
+                default:
+                    break;
             }
         case SPELL_AURA_PROC_TRIGGER_SPELL:
             switch(GetId())
@@ -887,6 +897,8 @@ void AuraEffect::CalculateSpellMod()
                     }
                     m_spellmod->value = GetBase()->GetUnitOwner()->CalculateSpellDamage(GetBase()->GetUnitOwner(), GetSpellProto(), 1);
                     break;
+                default:
+                    break;
             }
             break;
         case SPELL_AURA_ADD_FLAT_MODIFIER:
@@ -903,6 +915,8 @@ void AuraEffect::CalculateSpellMod()
                 m_spellmod->charges = GetBase()->GetCharges();
             }
             m_spellmod->value = GetAmount();
+            break;
+        default:
             break;
     }
 }
@@ -1057,6 +1071,8 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                     if (m_tickNumber % 11 == 0)
                         SetAmount(GetAmount() * 2);
                     break;
+                default:
+                    break;
             }
             break;
         case SPELL_AURA_DUMMY:
@@ -1172,6 +1188,8 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                                 slow->ChangeAmount(newAmount);
                             }
                             break;
+                        default:
+                            break;
                     }
                     break;
                 case SPELLFAMILY_MAGE:
@@ -1192,7 +1210,12 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                         }
                         return;
                     }
+                    break;
+                default:
+                    break;
            }
+       default:
+           break;
     }
 }
 
@@ -1822,6 +1845,8 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
             TriggerSpellWithValue(target, caster);
             break;
+        default:
+            break;
     }
 }
 
@@ -2127,6 +2152,8 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 target->ToPlayer()->RemoveRunesByAuraEffect(this);
             }
             break;
+        default:
+            break;
     }
 }
 
@@ -2290,6 +2317,14 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case 39857: triggerSpellId = 39856; break;
                     // Personalized Weather
                     case 46736: triggerSpellId = 46737; break;
+                    // Mana Barrier - Lady Deathwhisper
+                    case 70842:
+                    {
+                        int32 missingHealth = caster->GetMaxHealth() - caster->GetHealth();
+                        caster->ModifyHealth(missingHealth);
+                        caster->ModifyPower(POWER_MANA, -missingHealth);
+                        return;
+                    }
                 }
                 break;
             }
@@ -2370,6 +2405,8 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 }
                 break;
             }
+            default:
+                break;
         }
 
         // Reget trigger spell proto
@@ -2556,6 +2593,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
         case FORM_STEALTH:
         case FORM_CREATURECAT:
         case FORM_CREATUREBEAR:
+            break;
+        default:
             break;
     }
 

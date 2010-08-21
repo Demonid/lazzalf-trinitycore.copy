@@ -1987,9 +1987,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // The player was ported to another map and looses the duel immediately.
     // We have to perform this check before the teleport, otherwise the
     // ObjectAccessor won't find the flag.
-    if (duel && GetMapId() != mapid)
-        if (GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER)))
-            DuelComplete(DUEL_FLED);
+    if (duel && GetMapId() != mapid && GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER)))
+        DuelComplete(DUEL_FLED);
 
     if (GetMapId() == mapid && !m_transport)
     {
@@ -2375,6 +2374,8 @@ void Player::Regenerate(Powers power)
         case POWER_HAPPINESS:
         case POWER_HEALTH:
             break;
+        default:
+            break;
     }
 
     // Mana regen calculated in Player::UpdateManaRegen()
@@ -2731,7 +2732,7 @@ void Player::RemoveFromGroup(Group* group, uint64 guid)
     }
 }
 
-void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 BonusXP, bool recruitAFriend, float group_rate)
+void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 BonusXP, bool recruitAFriend, float /*group_rate*/)
 {
     WorldPacket data(SMSG_LOG_XPGAIN, 21); // guess size?
     data << uint64(victim ? victim->GetGUID() : 0);         // guid
@@ -3850,8 +3851,8 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
             if (!pSkill)
                 continue;
 
-            if (_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL &&
-                pSkill->categoryId != SKILL_CATEGORY_CLASS ||// not unlearn class skills (spellbook/talent pages)
+            if ((_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL &&
+                pSkill->categoryId != SKILL_CATEGORY_CLASS) ||// not unlearn class skills (spellbook/talent pages)
                 // lockpicking/runeforging special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
                 ((pSkill->id == SKILL_LOCKPICKING || pSkill->id == SKILL_RUNEFORGING) && _spell_idx->second->max_value == 0))
             {
@@ -5658,6 +5659,8 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
             ApplyCastTimePercentMod(RatingChange,apply);
             break;
         }
+        default:
+            break;
     }
 
     UpdateRating(cr);
@@ -5990,6 +5993,8 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
                 UpdateSkill(tmpitem->GetSkill(), weapon_skill_gain);
             break;
         }
+        default:
+            break;
     }
     UpdateAllCritPercentages();
 }
@@ -7351,6 +7356,8 @@ void Player::DuelComplete(DuelCompleteType type)
                     duel->opponent->CastSpell(duel->opponent, 52994, true);
             }
             break;
+        default:
+            break;
     }
 
     //Remove Duel Flag object
@@ -8495,6 +8502,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                             break;
                         case MASTER_LOOT:
                             group->MasterLoot(loot, go);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -10122,7 +10131,7 @@ uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, 
         return EQUIP_ERR_ALREADY_LOOTED;
 
     // no maximum
-    if (pProto->MaxCount <= 0 && pProto->ItemLimitCategory == 0 || pProto->MaxCount == 2147483647)
+    if ((pProto->MaxCount <= 0 && pProto->ItemLimitCategory == 0) || pProto->MaxCount == 2147483647)
         return EQUIP_ERR_OK;
 
     if (pProto->MaxCount > 0)
@@ -10216,7 +10225,7 @@ uint8 Player::_CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVe
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
             // prevent cheating
-            if (slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END || slot >= PLAYER_SLOT_END)
+            if ((slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END) || slot >= PLAYER_SLOT_END)
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
         }
         else
@@ -14073,7 +14082,7 @@ void Player::SendPreparedQuest(uint64 guid)
             else
             {
                 Object* pObject = ObjectAccessor::GetObjectByTypeMask(*this, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM);
-                if (!pObject||!pObject->hasQuest(quest_id) && !pObject->hasInvolvedQuest(quest_id))
+                if (!pObject || (!pObject->hasQuest(quest_id) && !pObject->hasInvolvedQuest(quest_id)))
                 {
                     PlayerTalkClass->CloseGossip();
                     return;
@@ -14893,8 +14902,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
 
                     // alternative quest from group also must be active
                     if (i_exstatus == mQuestStatus.end() ||
-                        i_exstatus->second.m_status != QUEST_STATUS_INCOMPLETE &&
-                        (i_prevstatus->second.m_status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId)))
+                        (i_exstatus->second.m_status != QUEST_STATUS_INCOMPLETE &&
+                        (i_prevstatus->second.m_status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId))))
                     {
                         if (msg)
                             SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
@@ -15202,7 +15211,7 @@ bool Player::CanShareQuest(uint32 quest_id) const
 
 void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 {
-    if (Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id))
+    if (sObjectMgr.GetQuestTemplate(quest_id))
     {
         QuestStatusData& q_status = mQuestStatus[quest_id];
 
@@ -17753,10 +17762,6 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
             return false;
         }
 
-        bool isNormalTargetMap = mapEntry->IsRaid()
-            ? (GetRaidDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
-            : (GetDungeonDifficulty() == DUNGEON_DIFFICULTY_NORMAL);
-
         uint32 missingQuest = 0;
         if (GetTeam() == ALLIANCE && ar->quest_A && !GetQuestRewardStatus(ar->quest_A))
             missingQuest = ar->quest_A;
@@ -18395,7 +18400,9 @@ void Player::_SaveSkills(SQLTransaction& trans)
                 trans->PAppend("UPDATE character_skills SET value = '%u',max = '%u'WHERE guid = '%u' AND skill = '%u' ",
                     value, max, GetGUIDLow(), itr->first);
                 break;
-        };
+            default:
+                break;
+        }
         itr->second.uState = SKILL_UNCHANGED;
 
         ++itr;
@@ -20241,7 +20248,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
     {
         // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
         // prevent 0 cooldowns set by another way
-        if (rec <= 0 && catrec <= 0 && (cat == 76 || IsAutoRepeatRangedSpell(spellInfo) && spellInfo->Id != 75))
+        if (rec <= 0 && catrec <= 0 && (cat == 76 || (IsAutoRepeatRangedSpell(spellInfo) && spellInfo->Id != 75)))
             rec = GetAttackTime(RANGED_ATTACK);
 
         // Now we have cooldown data (if found any), time to apply mods
@@ -21270,6 +21277,8 @@ void Player::SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8
         case TRANSFER_ABORT_UNIQUE_MESSAGE:
             // these are the ONLY cases that have an extra argument in the packet!!!
             data << uint8(arg);
+            break;
+        default:
             break;
     }
     GetSession()->SendPacket(&data);
@@ -22355,8 +22364,8 @@ void Player::SendCorpseReclaimDelay(bool load)
             return;
 
         uint32 count;
-        if (pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP) ||
-           !pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE))
+        if ((pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP)) ||
+           (!pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)))
         {
             count = (m_deathExpireTime-corpse->GetGhostTime())/DEATH_EXPIRE_STEP;
             if (count >= MAX_DEATH_COUNT)
