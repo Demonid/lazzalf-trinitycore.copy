@@ -1162,6 +1162,16 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                         case 59911: // Tenacity (vehicle)
                            GetBase()->RefreshDuration();
                            break;
+                        case 66823: case 67618: case 67619: case 67620: // Paralytic Toxin
+                            // Get 0 effect aura
+                            if (AuraEffect *slow = GetBase()->GetEffect(0))
+                            {
+                                int32 newAmount = slow->GetAmount() - 10;
+                                if (newAmount < -100)
+                                    newAmount = -100;
+                                slow->ChangeAmount(newAmount);
+                            }
+                            break;
                     }
                     break;
                 case SPELLFAMILY_MAGE:
@@ -1910,6 +1920,14 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->RemoveAura(64821);
                 }
                 break;
+            case 66118: // Leeching Swarm (Anub'arak)
+                int32 lifeLeeched = target->GetHealth() * GetAmount() / 100;
+                if (lifeLeeched < 250) lifeLeeched = 250;
+                // Damage
+                caster->CastCustomSpell(target, 66240, &lifeLeeched, 0, 0, false);
+                // Heal
+                caster->CastCustomSpell(caster, 66125, &lifeLeeched, 0, 0, false);
+                break;
             case 63276: // Mark of the Faceless
                 if (caster) 
                 {
@@ -2362,6 +2380,17 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
         // Spell exist but require custom code
         switch(auraId)
         {
+            case 66869:
+                switch(caster->GetMap()->GetDifficulty())
+                {
+                    case RAID_DIFFICULTY_10MAN_NORMAL: triggerSpellId = 66870; break;
+                    case RAID_DIFFICULTY_10MAN_HEROIC: triggerSpellId = 67621; break;
+                    case RAID_DIFFICULTY_25MAN_NORMAL: triggerSpellId = 67622; break;
+                    case RAID_DIFFICULTY_25MAN_HEROIC: triggerSpellId = 67623; break;
+                }
+                // Reget trigger spell proto
+                triggeredSpellInfo = sSpellStore.LookupEntry(triggerSpellId);
+                break;
             // Mana Tide
             case 16191:
             {
@@ -2375,6 +2404,8 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
             // Poison (Grobbulus)
             case 28158:
             case 54362:
+            // Slime Pool (Dreadscale & Acidmaw)
+            case 66882:
                 target->CastCustomSpell(triggerSpellId, SPELLVALUE_RADIUS_MOD, (int32)((((float)m_tickNumber / 60) * 0.9f + 0.1f) * 10000), NULL, true, NULL, this);
                 return;
             // Beacon of Light
