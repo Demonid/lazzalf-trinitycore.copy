@@ -2415,9 +2415,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 	    std::string jail_reason = jailreason;
 	    uint32 jail_times = 0;
 
-	    CharacterDatabase.BeginTransaction();
 	    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", jail_guid);
-	    CharacterDatabase.CommitTransaction();
 
         if (!result)
         {
@@ -2432,12 +2430,12 @@ bool ChatHandler::HandleJailCommand(const char *args)
         uint32 jail_gmacc = m_session->GetAccountId();
         std::string jail_gmchar = m_session->GetPlayerName();
 
-        CharacterDatabase.BeginTransaction();
         CharacterDatabase.escape_string(jail_char);
         CharacterDatabase.escape_string(jail_reason);
-		if (!result) CharacterDatabase.PExecute("INSERT INTO `jail` VALUES ('%u','%s','%u','%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", jail_guid, jail_char.c_str(), jail_release, jail_amnestietime, jail_reason.c_str(), jail_times, jail_gmacc, jail_gmchar.c_str(), jailtime);
-        else CharacterDatabase.PExecute("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", jail_release, jail_amnestietime, jail_reason.c_str(), jail_times, jail_gmacc, jail_gmchar.c_str(), jailtime, jail_guid);
-        CharacterDatabase.CommitTransaction();
+		if (!result) 
+            CharacterDatabase.PExecute("INSERT INTO `jail` VALUES ('%u','%s','%u','%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", jail_guid, jail_char.c_str(), jail_release, jail_amnestietime, jail_reason.c_str(), jail_times, jail_gmacc, jail_gmchar.c_str(), jailtime);
+        else 
+            CharacterDatabase.PExecute("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", jail_release, jail_amnestietime, jail_reason.c_str(), jail_times, jail_gmacc, jail_gmchar.c_str(), jailtime, jail_guid);
 
         PSendSysMessage(LANG_JAIL_WAS_JAILED, cname.c_str(), jailtime);
 
@@ -2454,9 +2452,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
         if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 2) )
         {
-            CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
-            CharacterDatabase.CommitTransaction();
 
             if (!result)
             {
@@ -2470,9 +2466,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
         }
         else if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 1) )
         {
-            CharacterDatabase.BeginTransaction();
             QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
-            CharacterDatabase.CommitTransaction();
 
             if (!result)
             {
@@ -2482,9 +2476,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
             Field *fields = result->Fetch();
             uint32 acc_id = fields[1].GetUInt32();
 
-            LoginDatabase.BeginTransaction();
             result = LoginDatabase.PQuery("SELECT * FROM `account` WHERE `id`='%u' LIMIT 1", acc_id);
-            LoginDatabase.CommitTransaction();
 
             if (!result)
             {
@@ -2494,16 +2486,12 @@ bool ChatHandler::HandleJailCommand(const char *args)
             ban_reason = GetTrinityString(LANG_JAIL_BAN_REASON);
             ban_by = GetTrinityString(LANG_JAIL_BAN_BY);
 
-            LoginDatabase.BeginTransaction();
             LoginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
-            LoginDatabase.CommitTransaction();
         }
         return true;
     }
 
-    CharacterDatabase.BeginTransaction();
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", chr->GetGUIDLow());
-    CharacterDatabase.CommitTransaction();
 
     if (!result)
     {
@@ -2560,9 +2548,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
         ban_reason = GetTrinityString(LANG_JAIL_BAN_REASON);
         ban_by = GetTrinityString(LANG_JAIL_BAN_BY);
 
-	    LoginDatabase.BeginTransaction();
         LoginDatabase.PExecute("INSERT IGNORE INTO `account_banned` (`id`,`bandate`,`unbandate`,`bannedby`,`banreason`) VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+864000,'%s','%s')", acc_id, ban_by.c_str(), ban_reason.c_str());
-        LoginDatabase.CommitTransaction();
 
         chr->GetSession()->LogoutPlayer(false);
     }
@@ -2600,9 +2586,7 @@ bool ChatHandler::HandleUnJailCommand(const char *args)
 
             if (chr->m_jail_times == 0)
             {
-                CharacterDatabase.BeginTransaction();
-                CharacterDatabase.PQuery("DELETE FROM `jail` WHERE `guid`='%u' LIMIT 1", chr->GetGUIDLow());
-                CharacterDatabase.CommitTransaction();
+                CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid`='%u' LIMIT 1", chr->GetGUIDLow());
             }
 
             PSendSysMessage(LANG_JAIL_WAS_UNJAILED, cname.c_str());
@@ -2614,9 +2598,7 @@ bool ChatHandler::HandleUnJailCommand(const char *args)
     }
     else
     {
-        CharacterDatabase.BeginTransaction();
         QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
-        CharacterDatabase.CommitTransaction();
 
         if (!result)
         {
@@ -2630,15 +2612,11 @@ bool ChatHandler::HandleUnJailCommand(const char *args)
 
             if (jail_times == 0)
             {
-                CharacterDatabase.BeginTransaction();
-                CharacterDatabase.PQuery("DELETE FROM `jail` WHERE `guid`='%u' LIMIT 1", fields[0].GetUInt32());
-                CharacterDatabase.CommitTransaction();
+                CharacterDatabase.PExecute("DELETE FROM `jail` WHERE `guid`='%u' LIMIT 1", fields[0].GetUInt32());
             }
             else
             {
-                CharacterDatabase.BeginTransaction();
-                CharacterDatabase.PQuery("UPDATE `jail` SET `release`='0',`times`='%u' WHERE `guid`='%u' LIMIT 1", jail_times, fields[0].GetUInt32());
-                CharacterDatabase.CommitTransaction();
+                CharacterDatabase.PExecute("UPDATE `jail` SET `release`='0',`times`='%u' WHERE `guid`='%u' LIMIT 1", jail_times, fields[0].GetUInt32());
             }
 
             PSendSysMessage(LANG_JAIL_WAS_UNJAILED, cname.c_str());
