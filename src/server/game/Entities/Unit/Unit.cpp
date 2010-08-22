@@ -673,7 +673,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         return damage;
     }
 
-    DEBUG_LOG("DealDamageStart");
+    sLog.outStaticDebug("DealDamageStart");
 
     uint32 health = pVictim->GetHealth();
     sLog.outDetail("deal dmg:%d to health:%d ",damage,health);
@@ -721,7 +721,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     if (health <= damage)
     {
-        DEBUG_LOG("DealDamage: victim just died");
+        sLog.outStaticDebug("DealDamage: victim just died");
 
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
         {
@@ -761,7 +761,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
     else                                                    // if (health <= damage)
     {
-        DEBUG_LOG("DealDamageAlive");
+        sLog.outStaticDebug("DealDamageAlive");
 
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
             pVictim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_TOTAL_DAMAGE_RECEIVED, damage);
@@ -858,7 +858,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    DEBUG_LOG("DealDamageEnd returned %d damage", damage);
+    sLog.outStaticDebug("DealDamageEnd returned %d damage", damage);
 
     return damage;
 }
@@ -899,7 +899,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     targets.setUnitTarget(Victim);
 
     if (castItem)
-        DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
+        sLog.outStaticDebug("WORLD: cast Item spellId - %i", spellInfo->Id);
 
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -948,7 +948,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
 
     if (castItem)
     {
-        DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
+        sLog.outStaticDebug("WORLD: cast Item spellId - %i", spellInfo->Id);
         spell->m_CastItem = castItem;
     }
 
@@ -970,7 +970,7 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
     }
 
     if (castItem)
-        DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
+        sLog.outStaticDebug("WORLD: cast Item spellId - %i", spellInfo->Id);
 
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -1006,7 +1006,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     }
 
     if (castItem)
-        DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
+        sLog.outStaticDebug("WORLD: cast Item spellId - %i", spellInfo->Id);
 
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -2390,10 +2390,10 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool /*
     DealMeleeDamage(&damageInfo,true);
 
     if (GetTypeId() == TYPEID_PLAYER)
-        DEBUG_LOG("AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+        sLog.outStaticDebug("AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
             GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
     else
-        DEBUG_LOG("AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+        sLog.outStaticDebug("AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
             GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
 
     // if damage pVictim call AI reaction
@@ -2419,7 +2419,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
     float parry_chance = pVictim->GetUnitParryChance();
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed
-    DEBUG_LOG("MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
+    sLog.outStaticDebug("MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
 
     return RollMeleeOutcomeAgainst(pVictim, attType, int32(crit_chance*100), int32(miss_chance*100), int32(dodge_chance*100),int32(parry_chance*100),int32(block_chance*100));
 }
@@ -2440,22 +2440,22 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     int32    sum = 0, tmp = 0;
     int32    roll = urand (0, 10000);
 
-    DEBUG_LOG ("RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
-    DEBUG_LOG ("RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
+    sLog.outStaticDebug ("RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
+    sLog.outStaticDebug ("RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
         roll, miss_chance, dodge_chance, parry_chance, block_chance, crit_chance);
 
     tmp = miss_chance;
 
     if (tmp > 0 && roll < (sum += tmp))
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: MISS");
+        sLog.outStaticDebug ("RollMeleeOutcomeAgainst: MISS");
         return MELEE_HIT_MISS;
     }
 
     // always crit against a sitting target (except 0 crit chance)
     if (pVictim->GetTypeId() == TYPEID_PLAYER && crit_chance > 0 && !pVictim->IsStandState())
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT (sitting victim)");
+        sLog.outStaticDebug ("RollMeleeOutcomeAgainst: CRIT (sitting victim)");
         return MELEE_HIT_CRIT;
     }
 
@@ -2464,7 +2464,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // only players can't dodge if attacker is behind
     if (pVictim->GetTypeId() == TYPEID_PLAYER && !pVictim->HasInArc(M_PI,this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
+        sLog.outStaticDebug ("RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
     }
     else
     {
@@ -2483,7 +2483,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             && ((tmp -= skillBonus) > 0)
             && roll < (sum += tmp))
         {
-            DEBUG_LOG ("RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-tmp, sum);
+            sLog.outStaticDebug ("RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-tmp, sum);
             return MELEE_HIT_DODGE;
         }
     }
@@ -2493,7 +2493,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // check if attack comes from behind, nobody can parry or block if attacker is behind
     if (!pVictim->HasInArc(M_PI,this) && !pVictim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: attack came from behind.");
+        sLog.outStaticDebug ("RollMeleeOutcomeAgainst: attack came from behind.");
     }
     else
     {
@@ -2510,7 +2510,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 && (tmp2 -= skillBonus) > 0
                 && roll < (sum += tmp2))
             {
-                DEBUG_LOG ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-tmp2, sum);
+                sLog.outStaticDebug ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-tmp2, sum);
                 return MELEE_HIT_PARRY;
             }
         }
@@ -2522,7 +2522,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 && (tmp -= skillBonus) > 0
                 && roll < (sum += tmp))
             {
-                DEBUG_LOG ("RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-tmp, sum);
+                sLog.outStaticDebug ("RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-tmp, sum);
                 return MELEE_HIT_BLOCK;
             }
         }
@@ -2533,9 +2533,9 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
 
     if (tmp > 0 && roll < (sum += tmp))
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-tmp, sum);
+        sLog.outStaticDebug ("RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-tmp, sum);
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
-            DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT DISABLED)");
+            sLog.outStaticDebug ("RollMeleeOutcomeAgainst: CRIT DISABLED)");
         else
             return MELEE_HIT_CRIT;
     }
@@ -2555,7 +2555,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         tmp = tmp > 4000 ? 4000 : tmp;
         if (roll < (sum += tmp))
         {
-            DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+            sLog.outStaticDebug ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             return MELEE_HIT_GLANCING;
         }
     }
@@ -2579,13 +2579,13 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             tmp = tmp * 200 - 1500;
             if (roll < (sum += tmp))
             {
-                DEBUG_LOG ("RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
+                sLog.outStaticDebug ("RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
                 return MELEE_HIT_CRUSHING;
             }
         }
     }
 
-    DEBUG_LOG ("RollMeleeOutcomeAgainst: NORMAL");
+    sLog.outStaticDebug ("RollMeleeOutcomeAgainst: NORMAL");
     return MELEE_HIT_NORMAL;
 }
 
@@ -2653,7 +2653,7 @@ void Unit::SendMeleeAttackStart(Unit* pVictim)
     data << uint64(pVictim->GetGUID());
 
     SendMessageToSet(&data, true);
-    DEBUG_LOG("WORLD: Sent SMSG_ATTACKSTART");
+    sLog.outStaticDebug("WORLD: Sent SMSG_ATTACKSTART");
 }
 
 void Unit::SendMeleeAttackStop(Unit* victim)
@@ -2878,7 +2878,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
             case MELEE_HIT_BLOCK: canBlock = false; break;
             case MELEE_HIT_PARRY: canParry = false; break;
             default:
-                DEBUG_LOG("Spell %u SPELL_AURA_IGNORE_COMBAT_RESULT have unhandled state %d", (*i)->GetId(), (*i)->GetMiscValue());
+                sLog.outStaticDebug("Spell %u SPELL_AURA_IGNORE_COMBAT_RESULT have unhandled state %d", (*i)->GetId(), (*i)->GetMiscValue());
                 break;
         }
     }
@@ -15200,7 +15200,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     if (!SpiritOfRedemption)
     {
-        DEBUG_LOG("SET JUST_DIED");
+        sLog.outStaticDebug("SET JUST_DIED");
         pVictim->setDeathState(JUST_DIED);
     }
 
@@ -15215,7 +15215,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // only if not player and not controlled by player pet. And not at BG
         if ((durabilityLoss && !player && !pVictim->ToPlayer()->InBattleground()) || (player && sWorld.getConfig(CONFIG_DURABILITY_LOSS_IN_PVP)))
         {
-            DEBUG_LOG("We are dead, losing %u percent durability", sWorld.getRate(RATE_DURABILITY_LOSS_ON_DEATH));
+            sLog.outStaticDebug("We are dead, losing %u percent durability", sWorld.getRate(RATE_DURABILITY_LOSS_ON_DEATH));
             pVictim->ToPlayer()->DurabilityLossAll(sWorld.getRate(RATE_DURABILITY_LOSS_ON_DEATH),false);
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
@@ -15235,7 +15235,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     }
     else                                                // creature died
     {
-        DEBUG_LOG("DealDamageNotPlayer");
+        sLog.outStaticDebug("DealDamageNotPlayer");
 
         if (!creature->isPet())
         {

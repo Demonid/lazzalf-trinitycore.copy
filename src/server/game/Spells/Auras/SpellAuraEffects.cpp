@@ -2408,9 +2408,6 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
             default:
                 break;
         }
-
-        // Reget trigger spell proto
-        triggeredSpellInfo = sSpellStore.LookupEntry(triggerSpellId);
     }
     else
     {
@@ -2425,8 +2422,21 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case RAID_DIFFICULTY_25MAN_NORMAL: triggerSpellId = 67622; break;
                     case RAID_DIFFICULTY_25MAN_HEROIC: triggerSpellId = 67623; break;
                 }
-                // Reget trigger spell proto
-                triggeredSpellInfo = sSpellStore.LookupEntry(triggerSpellId);
+                break;
+            // Pursuing Spikes (Anub'arak)
+            case 65920:
+            case 65922:
+            case 65923:
+                if (caster->HasAura(66193))
+                {
+                    if (Unit* permafrostCaster = caster->GetAura(66193)->GetCaster())
+                        if (permafrostCaster->ToCreature())
+                            permafrostCaster->ToCreature()->ForcedDespawn(3000);
+                    caster->CastSpell(caster,66181,false);
+                    caster->RemoveAllAuras();
+                    if (caster->ToCreature())
+                        caster->ToCreature()->DisappearAndDie();
+                }
                 break;
             // Mana Tide
             case 16191:
@@ -2452,6 +2462,9 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 return;
         }
     }
+
+    // Reget trigger spell proto
+    triggeredSpellInfo = sSpellStore.LookupEntry(triggerSpellId);
 
     if (triggeredSpellInfo)
     {
