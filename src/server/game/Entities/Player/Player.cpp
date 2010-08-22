@@ -16684,9 +16684,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
 void Player::_LoadJail(void)
 {
-    CharacterDatabase.BeginTransaction();
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GetGUIDLow());
-    CharacterDatabase.CommitTransaction();
 
     if (!result)
     {
@@ -17873,18 +17871,21 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 // Saves the jail datas (added by WarHead).
 void Player::_SaveJail(void)
 {
-    CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `guid` FROM `jail` WHERE `guid`='%u' LIMIT 1", m_jail_guid);
-    if (!result) CharacterDatabase.PExecute("INSERT INTO `jail` VALUES ('%u','%s','%u', '%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", m_jail_guid, m_jail_char.c_str(), m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration);
-    else CharacterDatabase.PExecute("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration, m_jail_guid);
-    CharacterDatabase.CommitTransaction();
+    if (!result) 
+        trans->PAppend("INSERT INTO `jail` VALUES ('%u','%s','%u', '%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", m_jail_guid, m_jail_char.c_str(), m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration);
+    else 
+        trans->PAppend("UPDATE `jail` SET `release`='%u', `amnestietime`='%u',`reason`='%s',`times`='%u',`gmacc`='%u',`gmchar`='%s',`duration`='%u' WHERE `guid`='%u' LIMIT 1", m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration, m_jail_guid);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 
 void Player::SaveToDB()
 {
 	// Jail: Prevent saving of jailed players
-    if (m_jail_isjailed) return;
+    if (m_jail_isjailed) 
+        return;
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 

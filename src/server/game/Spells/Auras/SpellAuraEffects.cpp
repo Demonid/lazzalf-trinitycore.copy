@@ -1946,12 +1946,15 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 }
                 break;
             case 66118: // Leeching Swarm (Anub'arak)
-                int32 lifeLeeched = target->GetHealth() * GetAmount() / 100;
-                if (lifeLeeched < 250) lifeLeeched = 250;
-                // Damage
-                caster->CastCustomSpell(target, 66240, &lifeLeeched, 0, 0, false);
-                // Heal
-                caster->CastCustomSpell(caster, 66125, &lifeLeeched, 0, 0, false);
+                if (caster) 
+                {
+                    int32 lifeLeeched = target->GetHealth() * GetAmount() / 100;
+                    if (lifeLeeched < 250) lifeLeeched = 250;
+                    // Damage
+                    caster->CastCustomSpell(target, 66240, &lifeLeeched, 0, 0, false);
+                    // Heal
+                    caster->CastCustomSpell(caster, 66125, &lifeLeeched, 0, 0, false);
+                }
                 break;
             case 63276: // Mark of the Faceless
                 if (caster) 

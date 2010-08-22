@@ -7000,9 +7000,7 @@ uint32 ObjectMgr::GeneratePetNumber()
 // Loads the jail conf out of the database
 void ObjectMgr::LoadJailConf(void)
 {
-    CharacterDatabase.BeginTransaction();
     QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail_conf`");
-    CharacterDatabase.CommitTransaction();
 
     if (!result)
     {
