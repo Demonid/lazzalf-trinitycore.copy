@@ -1061,8 +1061,9 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if (Item* markItem = Item::CreateItem(mark,count,plr))
     {
         // save new item before send
-        markItem->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
-
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+        
         // subject: item name
         std::string subject = markProto->Name1;
         int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
@@ -1078,7 +1079,9 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
 
         MailDraft(subject, textBuf)
             .AddItem(markItem)
-            .SendMailTo(plr, MailSender(MAIL_CREATURE, bmEntry));
+            .SendMailTo(trans, plr, MailSender(MAIL_CREATURE, bmEntry));
+
+        CharacterDatabase.CommitTransaction(trans);
     }
 }
 
