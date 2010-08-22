@@ -51,10 +51,16 @@ public:
 
         InstanceScript* pInstance;
 
+        uint32 uiCorruptingBlight;
+        uint32 uiVoidStrike;
+
         void Reset()
         {
             if (pInstance)
                 pInstance->SetData(DATA_INFINITE_EVENT, NOT_STARTED);
+
+            uiCorruptingBlight = 7000;
+            uiVoidStrike = 5000;
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -70,6 +76,19 @@ public:
             //Return since we have no target
             if (!UpdateVictim())
                 return;
+
+            if (uiCorruptingBlight <= diff)
+            {
+                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    DoCast(pTarget, SPELL_CORRUPTING_BLIGHT);
+                uiCorruptingBlight = 17000;
+            } else uiCorruptingBlight -= diff;
+
+            if (uiVoidStrike <= diff)
+            {
+                DoCast(me->getVictim(), SPELL_VOID_STRIKE);
+                uiVoidStrike = 5000;
+            } else uiVoidStrike -= diff;
 
             DoMeleeAttackIfReady();
         }
