@@ -152,7 +152,7 @@ public:
                         events.ScheduleEvent(EVENT_BERSERK, 5*60000);
                         break;
                     case EVENT_SUMMON:
-                        for (uint32 i = 0; i < RAID_MODE(1,2); ++i)
+                        for (int32 i = 0; i < RAID_MODE(1, 2); ++i)
                         {
                             Creature* current = DoSummon(MOB_ZOMBIE, PosSummon[rand()%3]);
                             if(current)
