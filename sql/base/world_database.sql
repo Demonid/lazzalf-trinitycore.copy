@@ -6313,7 +6313,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 66870,-66823, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 ( 67621,-67618, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 ( 67622,-67619, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
-( 67623,-67620, 1, 'Remove Paralytic Toxin when hit by Burning Bite');
+( 67623,-67620, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 (-66683, 68667, 0, 'Icehowl - Surge of Adrenaline'),
 (-67661, 68667, 0, 'Icehowl - Surge of Adrenaline'),
 -- Warsong Gulch
@@ -14747,6 +14747,7 @@ LOCK TABLES `spell_script_names` WRITE;
 INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 -- generic
 ( 58601, 'spell_gen_remove_flight_auras'),
+(  6962, 'spell_gen_pet_summoned'),
 -- instances
 ( 69057, 'spell_marrowgar_bone_spike_graveyard'),
 ( 69140, 'spell_marrowgar_coldflame'),
