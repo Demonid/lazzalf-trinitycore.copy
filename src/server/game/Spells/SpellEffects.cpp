@@ -739,7 +739,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                 damage += int32(dmg_min);
                             else
                                 damage += irand(int32(dmg_min), int32(dmg_max));
-                            damage += m_caster->ToPlayer()->GetAmmoDPS()*item->GetProto()->Delay*0.001f;
+                            damage += int32(m_caster->ToPlayer()->GetAmmoDPS()*item->GetProto()->Delay*0.001f);
                         }
                     }
                     // Glyph of Steady Shot
@@ -768,14 +768,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 else if (m_spellInfo->Id == 20187)
                 {
                     float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    float sp = m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
+                    float sp = (float)m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
                     damage += int32(0.2f*ap + 0.32f*sp);
                 }
                 // Judgement of Wisdom, Light, Justice
                 else if (m_spellInfo->SpellFamilyFlags[0] & 0x00800000 && m_spellInfo->Id != 31804 && m_spellInfo->Id != 53733)//else if(m_spellInfo->Id == 54158)
                 {
                     float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    float sp = m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
+                    float sp = (float)m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo));
                     damage += int32(0.14f*ap + 0.22f*sp);
                 }
                 break;
@@ -1312,7 +1312,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget && unitTarget->GetEntry() != 26452 && ((unitTarget->GetHealth() / unitTarget->GetMaxHealth()) * 100.0f) > 95.0f)
                     return;
 
-                    m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth()*0.93f);
+                    m_caster->DealDamage(unitTarget, uint32(unitTarget->GetMaxHealth()*0.93f));
                     return;
                 }
                 case 49357:                                 // Brewfest Mount Transformation
@@ -1580,16 +1580,15 @@ void Spell::EffectDummy(uint32 i)
             // Life Tap
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_WARLOCK_LIFETAP)
             {
-                float spFactor = 0;
+                float spFactor = 0.0f;
                 switch (m_spellInfo->Id)
                 {
-                    case 11689: spFactor = 0.2; break;
+                    case 11689: spFactor = 0.2f; break;
                     case 27222:
-                    case 57946: spFactor = 0.5; break;
-                    default:    spFactor = 0; break;
+                    case 57946: spFactor = 0.5f; break;
                 }
-                int32 damage = m_spellInfo->EffectBasePoints[0] + (6.3875 * m_spellInfo->baseLevel);
-                int32 mana = damage + (m_caster->ToPlayer()->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+SPELL_SCHOOL_SHADOW) * spFactor);
+                int32 damage = int32(m_spellInfo->EffectBasePoints[0] + (6.3875 * m_spellInfo->baseLevel));
+                int32 mana = int32(damage + (m_caster->ToPlayer()->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+SPELL_SCHOOL_SHADOW) * spFactor));
 
                 if (unitTarget && (int32(unitTarget->GetHealth()) > damage))
                 {
@@ -1725,10 +1724,10 @@ void Spell::EffectDummy(uint32 i)
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
             {
                 uint32 count = unitTarget->GetDiseasesByCaster(m_caster->GetGUID());
-                int32 bp = count * m_caster->GetMaxHealth() * m_spellInfo->DmgMultiplier[0] / 100;
+                int32 bp = int32(count * m_caster->GetMaxHealth() * m_spellInfo->DmgMultiplier[0] / 100);
                 // Improved Death Strike
                 if (AuraEffect const * aurEff = m_caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 2751, 0))
-                    bp = bp * (m_caster->CalculateSpellDamage(m_caster, aurEff->GetSpellProto(), 2) + 100.0f) / 100.0f;
+                    bp = int32(bp * (m_caster->CalculateSpellDamage(m_caster, aurEff->GetSpellProto(), 2) + 100.0f) / 100.0f);
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
                 return;
             }
@@ -1737,7 +1736,7 @@ void Spell::EffectDummy(uint32 i)
             {
                 if (m_caster->IsFriendlyTo(unitTarget))
                 {
-                    int32 bp = damage * 1.5f;
+                    int32 bp = int32(damage * 1.5f);
                     m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
                 }
                 else
@@ -2603,7 +2602,7 @@ void Spell::SpellDamageHeal(uint32 /*i*/)
             addhealth = caster->SpellHealingBonus(unitTarget, m_spellInfo, addhealth, HEAL);
             if (AuraEffect * aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, m_originalCasterGUID))
             {
-                addhealth *= 1.25f;
+                addhealth = int32(addhealth * 1.25f);
                 // consume aura
                 unitTarget->RemoveAura(aurEff->GetBase());
             }
@@ -2637,7 +2636,7 @@ void Spell::EffectHealPct(uint32 /*i*/)
         if (m_spellInfo->Id == 59754 && unitTarget == m_caster)
             return;
 
-        uint32 addhealth = caster->SpellHealingBonus(unitTarget, m_spellInfo, unitTarget->GetMaxHealth() * damage / 100.0f, HEAL);
+        uint32 addhealth = caster->SpellHealingBonus(unitTarget, m_spellInfo, uint32(unitTarget->GetMaxHealth() * damage / 100.0f), HEAL);
         //if (Player *modOwner = m_caster->GetSpellModOwner())
         //    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DAMAGE, addhealth, this);
 
@@ -3721,7 +3720,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     if (unitTarget->isInFlight())
         return;
 
-    float dis = m_caster->GetSpellRadiusForTarget(unitTarget, sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+    float dis = (float)m_caster->GetSpellRadiusForTarget(unitTarget, sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
     float fx,fy,fz;
     m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
@@ -4193,7 +4192,7 @@ void Spell::EffectTaunt(uint32 /*i*/)
 
     if (m_spellInfo->Id == 62124)
     {
-        int32 damageDone = 1 + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f;
+        int32 damageDone = int32(1 + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f);
         m_caster->DealDamage(unitTarget, damageDone, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_HOLY, m_spellInfo, false);
         m_caster->SendSpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, damageDone, SPELL_SCHOOL_MASK_HOLY, 0, 0, false, false, false);
     }
@@ -4703,38 +4702,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         }
                     break;
                 }
-                case 6962:
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    Player* plr = m_caster->ToPlayer();
-                    if (plr && plr->GetLastPetNumber())
-                    {
-                        PetType NewPetType = (plr->getClass() == CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
-                        if (Pet* NewPet = new Pet(plr,NewPetType))
-                        {
-                            if (NewPet->LoadPetFromDB(plr, 0, plr->GetLastPetNumber(), true))
-                            {
-                                NewPet->SetHealth(NewPet->GetMaxHealth());
-                                NewPet->SetPower(NewPet->getPowerType(),NewPet->GetMaxPower(NewPet->getPowerType()));
-
-                                switch (NewPet->GetEntry())
-                                {
-                                    case 11859:
-                                    case    89:
-                                        NewPet->SetEntry(416);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            else
-                                delete NewPet;
-                        }
-                    }
-                    return;
-                }
                 // Glyph of Backstab
                 case 63975:
                 {
@@ -4855,7 +4822,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 54426:
                     if (unitTarget)
                     {
-                        int32 damage = (int32)unitTarget->GetHealth() - (int32)unitTarget->GetMaxHealth() * 0.05f;
+                        int32 damage = int32((int32)unitTarget->GetHealth() - (int32)unitTarget->GetMaxHealth() * 0.05f);
                         if (damage > 0)
                             m_caster->CastCustomSpell(28375, SPELLVALUE_BASE_POINT0, damage, unitTarget);
                     }
@@ -6267,7 +6234,7 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
 
     // attack prevented
     // fixme, some attacks may not target current victim, this is right now not handled
-    if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(2*M_PI/3, victim))
+    if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(static_cast<float>(2*M_PI/3), victim))
         return;
 
     // Only for proc/log informations
@@ -6320,7 +6287,7 @@ void Spell::EffectReputation(uint32 i)
 
     if (RepRewardRate const * repData = sObjectMgr.GetRepRewardRate(faction_id))
     {
-        rep_change = (float)rep_change * repData->spell_rate;
+        rep_change = int32((float)rep_change * repData->spell_rate);
     }
 
     _player->GetReputationMgr().ModifyReputation(factionEntry, rep_change);
@@ -6560,8 +6527,8 @@ void Spell::EffectPullTowards(uint32 i)
     if (!unitTarget)
         return;
 
-    float speedZ = m_spellInfo->EffectBasePoints[i]/10;
-    float speedXY = m_spellInfo->EffectMiscValue[i]/10;
+    float speedZ = (float)(m_spellInfo->EffectBasePoints[i]/10);
+    float speedXY = (float)(m_spellInfo->EffectMiscValue[i]/10);
     Position pos;
     if (m_spellInfo->Effect[i] == SPELL_EFFECT_PULL_TOWARDS_DEST)
     {
@@ -6744,7 +6711,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         //GO is always friendly to it's creator, get range for friends
         float min_dis = GetSpellMinRangeForFriend(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
         float max_dis = GetSpellMaxRangeForFriend(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
-        float dis = rand_norm() * (max_dis - min_dis) + min_dis;
+        float dis = (float)rand_norm() * (max_dis - min_dis) + min_dis;
 
         m_caster->GetClosePoint(fx, fy, fz, DEFAULT_WORLD_OBJECT_SIZE, dis);
     }
@@ -7294,7 +7261,7 @@ void Spell::GetSummonPosition(uint32 i, Position &pos, float radius, uint32 coun
             {
                 case TARGET_MINION:
                 case TARGET_DEST_CASTER_RANDOM:
-                    m_caster->GetNearPosition(pos, radius * rand_norm(), rand_norm()*2*M_PI);
+                    m_caster->GetNearPosition(pos, radius * (float)rand_norm(), (float)rand_norm()*static_cast<float>(2*M_PI));
                     break;
                 case TARGET_DEST_DEST_RANDOM:
                 case TARGET_DEST_TARGET_RANDOM:

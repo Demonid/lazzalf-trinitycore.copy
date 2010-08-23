@@ -653,9 +653,9 @@ class mob_pummeller : public CreatureScript
         }
 
         InstanceScript* m_pInstance;
-        int32 uiArcingSmashTimer;
-        int32 uiTrampleTimer;
-        int32 uiUppercutTimer;
+        uint32 uiArcingSmashTimer;
+        uint32 uiTrampleTimer;
+        uint32 uiUppercutTimer;
 
         void Reset()
         {

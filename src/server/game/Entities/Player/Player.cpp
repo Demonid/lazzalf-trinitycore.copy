@@ -638,7 +638,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_ChampioningFaction = 0;
 
-    for (int i = 0; i < MAX_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS; ++i)
         m_powerFraction[i] = 0;
 
     m_globalCooldowns.clear();
@@ -918,7 +918,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
                         count = 2;
                         break;
                 }
-                if (iProto->Stackable < count)
+                if (uint32(iProto->Stackable) < count)
                     count = iProto->Stackable;
             }
             StoreNewItemInBestSlots(item_id, count);
@@ -1079,7 +1079,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
             return MINUTE*IN_MILLISECONDS;
         case BREATH_TIMER:
         {
-            if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
+            if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= AccountTypes(sWorld.getConfig(CONFIG_DISABLE_BREATHING)))
                 return DISABLED_MIRROR_TIMER;
             int32 UnderWaterTime = 3*MINUTE*IN_MILLISECONDS;
             AuraEffectList const& mModWaterBreathing = GetAuraEffectsByType(SPELL_AURA_MOD_WATER_BREATHING);
@@ -1503,7 +1503,7 @@ void Player::Update(uint32 p_time)
             int time_inn = time(NULL)-GetTimeInnEnter();
             if (time_inn >= 10)                             // freeze update
             {
-                float bubble = 0.125*sWorld.getRate(RATE_REST_INGAME);
+                float bubble = 0.125f*sWorld.getRate(RATE_REST_INGAME);
                                                             // speed collect rest bonus (section/in hour)
                 SetRestBonus(GetRestBonus()+ time_inn*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
                 UpdateInnerTime(time(NULL));
@@ -2455,7 +2455,7 @@ void Player::RegenerateHealth()
 
     // polymorphed case
     if (IsPolymorphed())
-        addvalue = GetMaxHealth()/3;
+        addvalue = (float)GetMaxHealth()/3;
     // normal regen case (maybe partly in combat case)
     else if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT))
     {
@@ -2627,7 +2627,11 @@ void Player::SetGameMaster(bool on)
     {
         // restore phase
         AuraEffectList const& phases = GetAuraEffectsByType(SPELL_AURA_PHASE);
-        SetPhaseMask(!phases.empty() ? phases.front()->GetMiscValue() : PHASEMASK_NORMAL,false);
+        if (!phases.empty())
+            SetPhaseMask(phases.front()->GetMiscValue(), false);
+        else
+            SetPhaseMask(PHASEMASK_NORMAL, false);
+            
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
@@ -2770,8 +2774,8 @@ void Player::GiveXP(uint32 xp, Unit *victim, float group_rate)
     uint32 zone = GetZoneId();
     float favored_exp_mult = 0;
     if ((HasAura(32096) || HasAura(32098)) && (zone == 3483 || zone == 3562 || zone == 3836 || zone == 3713 || zone == 3714))
-        favored_exp_mult = 0.05; // Thrallmar's Favor and Honor Hold's Favor
-    xp *= (1 + favored_exp_mult);
+        favored_exp_mult = 0.05f; // Thrallmar's Favor and Honor Hold's Favor
+    xp = uint32(xp * (1 + favored_exp_mult));
     // Favored experience increase END
 
     // XP to money conversion processed in Player::RewardQuest
@@ -4740,7 +4744,7 @@ void Player::DeleteOldCharacters(uint32 keepDays)
     QueryResult_AutoPtr resultChars = CharacterDatabase.PQuery("SELECT guid, deleteInfos_Account FROM characters WHERE deleteDate IS NOT NULL AND deleteDate < '" UI64FMTD "'", uint64(time(NULL) - time_t(keepDays * DAY)));
     if (resultChars)
     {
-         sLog.outString("Player::DeleteOldChars: Found %u character(s) to delete",resultChars->GetRowCount());
+         sLog.outString("Player::DeleteOldChars: Found " UI64FMTD " character(s) to delete",resultChars->GetRowCount());
          do
          {
             Field *charFields = resultChars->Fetch();
@@ -5191,7 +5195,7 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
             uint32 dmultiplier = dcost->multiplier[ItemSubClassToDurabilityMultiplierId(ditemProto->Class,ditemProto->SubClass)];
             uint32 costs = uint32(LostDurability*dmultiplier*double(dQualitymodEntry->quality_mod));
 
-            costs = uint32(costs * discountMod) * sWorld.getRate(RATE_REPAIRCOST);
+            costs = uint32(costs * discountMod * sWorld.getRate(RATE_REPAIRCOST));
 
             if (costs == 0)                                   //fix for ITEM_QUALITY_ARTIFACT
                 costs = 1;
@@ -6830,12 +6834,12 @@ void Player::RewardReputation(Quest const *pQuest)
 void Player::UpdateHonorFields()
 {
     /// called when rewarding honor and at each save
-    uint64 now = time(NULL);
-    uint64 today = uint64(time(NULL) / DAY) * DAY;
+    time_t now = time_t(time(NULL));
+    time_t today = time_t(time(NULL) / DAY) * DAY;
 
     if (m_lastHonorUpdateTime < today)
     {
-        uint64 yesterday = today - DAY;
+        time_t yesterday = today - DAY;
 
         uint16 kills_today = PAIR32_LOPART(GetUInt32Value(PLAYER_FIELD_KILLS));
 
@@ -6891,7 +6895,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
         return true;
 
     // Promote to float for calculations
-    float honor_f = honor;
+    float honor_f = (float)honor;
 
     if (honor_f <= 0)
     {
@@ -6967,7 +6971,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
     }
     
     // Back to int now
-    honor = honor_f;
+    honor = int32(honor_f);
     // honor - for show honor points in log
     // victim_guid - for show victim name in log
     // victim_rank [1..4]  HK: <dishonored rank>
@@ -8021,7 +8025,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
                 return;
 
-            float chance = spellInfo->procChance;
+            float chance = (float)spellInfo->procChance;
 
             if (spellData.SpellPPMRate)
             {
@@ -8091,7 +8095,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 if (entry->PPMChance)
                     chance = GetPPMProcChance(proto->Delay, entry->PPMChance, spellInfo);
                 else if (entry->customChance)
-                    chance = entry->customChance;
+                    chance = (float)entry->customChance;
             }
 
             // Apply spell mods
@@ -11158,7 +11162,12 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 return EQUIP_ERR_NO_EQUIPMENT_SLOT_AVAILABLE;
 
             // if swap ignore item (equipped also)
-            if (uint8 res2 = CanEquipUniqueItem(pItem, swap ? eslot : NULL_SLOT))
+            uint8 res2 = 0;
+            if (swap)
+                res2 = CanEquipUniqueItem(pItem, eslot);
+            else
+                res2 = CanEquipUniqueItem(pItem, NULL_SLOT);
+            if (res2)
                 return res2;
 
             // check unique-equipped special item classes
@@ -12811,7 +12820,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
         if (IsBagPos(src))
         {
             Bag* bag = (Bag*)pSrcItem;
-            for (int i=0; i < bag->GetBagSize(); ++i)
+            for (uint32 i = 0; i < bag->GetBagSize(); ++i)
             {
                 if (Item *bagItem = bag->GetItemByPos(i))
                 {
@@ -12828,7 +12837,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
         if (!released && IsBagPos(dst) && pDstItem)
         {
             Bag* bag = (Bag*)pDstItem;
-            for (int i=0; i < bag->GetBagSize(); ++i)
+            for (uint32 i = 0; i < bag->GetBagSize(); ++i)
             {
                 if (Item *bagItem = bag->GetItemByPos(i))
                 {
@@ -13301,27 +13310,27 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         case ITEM_MOD_AGILITY:
                             sLog.outDebug("+ %u AGILITY",enchant_amount);
                             HandleStatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, float(enchant_amount), apply);
-                            ApplyStatBuffMod(STAT_AGILITY, enchant_amount, apply);
+                            ApplyStatBuffMod(STAT_AGILITY, (float)enchant_amount, apply);
                             break;
                         case ITEM_MOD_STRENGTH:
                             sLog.outDebug("+ %u STRENGTH",enchant_amount);
                             HandleStatModifier(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE, float(enchant_amount), apply);
-                            ApplyStatBuffMod(STAT_STRENGTH, enchant_amount, apply);
+                            ApplyStatBuffMod(STAT_STRENGTH, (float)enchant_amount, apply);
                             break;
                         case ITEM_MOD_INTELLECT:
                             sLog.outDebug("+ %u INTELLECT",enchant_amount);
                             HandleStatModifier(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE, float(enchant_amount), apply);
-                            ApplyStatBuffMod(STAT_INTELLECT, enchant_amount, apply);
+                            ApplyStatBuffMod(STAT_INTELLECT, (float)enchant_amount, apply);
                             break;
                         case ITEM_MOD_SPIRIT:
                             sLog.outDebug("+ %u SPIRIT",enchant_amount);
                             HandleStatModifier(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE, float(enchant_amount), apply);
-                            ApplyStatBuffMod(STAT_SPIRIT, enchant_amount, apply);
+                            ApplyStatBuffMod(STAT_SPIRIT, (float)enchant_amount, apply);
                             break;
                         case ITEM_MOD_STAMINA:
                             sLog.outDebug("+ %u STAMINA",enchant_amount);
                             HandleStatModifier(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE, float(enchant_amount), apply);
-                            ApplyStatBuffMod(STAT_STAMINA, enchant_amount, apply);
+                            ApplyStatBuffMod(STAT_STAMINA, (float)enchant_amount, apply);
                             break;
                         case ITEM_MOD_DEFENSE_SKILL_RATING:
                             ApplyRatingMod(CR_DEFENSE_SKILL, enchant_amount, apply);
@@ -14133,11 +14142,12 @@ void Player::SendPreparedQuest(uint64 guid)
                     int loc_idx = GetSession()->GetSessionDbLocaleIndex();
                     if (loc_idx >= 0)
                     {
+                        uint8 uloc_idx = uint8(loc_idx);
                         NpcTextLocale const *nl = sObjectMgr.GetNpcTextLocale(textid);
                         if (nl)
                         {
-                            if (nl->Text_0[0].size() > loc_idx && !nl->Text_0[0][loc_idx].empty())
-                                title = nl->Text_0[0][loc_idx];
+                            if (nl->Text_0[0].size() > uloc_idx && !nl->Text_0[0][uloc_idx].empty())
+                                title = nl->Text_0[0][uloc_idx];
                         }
                     }
                 }
@@ -14148,11 +14158,12 @@ void Player::SendPreparedQuest(uint64 guid)
                     int loc_idx = GetSession()->GetSessionDbLocaleIndex();
                     if (loc_idx >= 0)
                     {
+                        uint8 uloc_idx = uint8(loc_idx);
                         NpcTextLocale const *nl = sObjectMgr.GetNpcTextLocale(textid);
                         if (nl)
                         {
-                            if (nl->Text_1[0].size() > loc_idx && !nl->Text_1[0][loc_idx].empty())
-                                title = nl->Text_1[0][loc_idx];
+                            if (nl->Text_1[0].size() > uloc_idx && !nl->Text_1[0][uloc_idx].empty())
+                                title = nl->Text_1[0][uloc_idx];
                         }
                     }
                 }
@@ -16151,7 +16162,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     uint32 transGUID = fields[30].GetUInt32();
     Relocate(fields[12].GetFloat(),fields[13].GetFloat(),fields[14].GetFloat(),fields[16].GetFloat());
     uint32 mapId = fields[15].GetUInt32();
-    uint32 instanceId = fields[58].GetFloat();
+    uint32 instanceId = fields[58].GetUInt32();
 
     uint32 dungeonDiff = fields[38].GetUInt32() & 0x0F;
     if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
@@ -18450,9 +18461,9 @@ void Player::_SaveStats(SQLTransaction& trans)
         "blockPct, dodgePct, parryPct, critPct, rangedCritPct, spellCritPct, attackPower, rangedAttackPower, spellPower) VALUES ("
         << GetGUIDLow() << ", "
         << GetMaxHealth() << ", ";
-    for (int i = 0; i < MAX_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS; ++i)
         ss << GetMaxPower(Powers(i)) << ", ";
-    for (int i = 0; i < MAX_STATS; ++i)
+    for (uint8 i = 0; i < MAX_STATS; ++i)
         ss << GetStat(Stats(i)) << ", ";
     // armor + school resistances
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
@@ -18903,7 +18914,7 @@ void Player::Say(const std::string& text, const uint32 language)
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_SAY, text, language);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    SendMessageToSetInRange(&data,(float)sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
 void Player::Yell(const std::string& text, const uint32 language)
@@ -18912,7 +18923,7 @@ void Player::Yell(const std::string& text, const uint32 language)
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_YELL, text, language);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    SendMessageToSetInRange(&data,(float)sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void Player::TextEmote(const std::string& text)
@@ -18921,7 +18932,7 @@ void Player::TextEmote(const std::string& text)
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_EMOTE, text, LANG_UNIVERSAL);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true, !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT));
+    SendMessageToSetInRange(&data,(float)sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true, !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT));
 }
 
 void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
@@ -19433,7 +19444,7 @@ void Player::SetRestBonus (float rest_bonus_new)
     if (rest_bonus_new < 0)
         rest_bonus_new = 0;
 
-    float rest_bonus_max = (float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)*1.5/2;
+    float rest_bonus_max = (float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)*1.5f/2;
 
     if (rest_bonus_new > rest_bonus_max)
         m_rest_bonus = rest_bonus_max;
@@ -20052,7 +20063,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
     }
 
-    int32 price  = crItem->IsGoldRequired(pProto) ? pProto->BuyPrice * count : 0;
+    uint32 price  = crItem->IsGoldRequired(pProto) ? pProto->BuyPrice * count : 0;
 
     // reputation discount
     if (price)
@@ -22029,7 +22040,7 @@ bool Player::GetsRecruitAFriendBonus(bool forXP)
 
                     // level difference must be small enough to get RaF bonus, UNLESS we are lower level
                     if (pGroupGuy->getLevel() < getLevel())
-                        if ((getLevel() - pGroupGuy->getLevel()) > sWorld.getConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE))
+                        if (uint8(getLevel() - pGroupGuy->getLevel()) > sWorld.getConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE))
                             continue;
                 }
 
@@ -23100,7 +23111,7 @@ void Player::_LoadSkills(QueryResult_AutoPtr result)
 
             if (count >= PLAYER_MAX_SKILLS)                      // client limit
             {
-                sLog.outError("Character %u has more than %u skills.", PLAYER_MAX_SKILLS);
+                sLog.outError("Character %u has more than %u skills.", GetGUIDLow(), PLAYER_MAX_SKILLS);
                 break;
             }
         } while (result->NextRow());
