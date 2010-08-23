@@ -366,7 +366,7 @@ class npc_guild_master : public CreatureScript
         Field *fields = result->Fetch();
         int32 price = fields[0].GetInt32();
 
-        if (player->GetMoney() < price * 10000)
+        if (player->GetMoney() < uint32(price) * 10000)
         {
             //show how much money player need to buy GH (in gold)
             char msg[200];
@@ -417,7 +417,7 @@ class npc_guild_master : public CreatureScript
         Field *fields = result->Fetch();
         int32 price = fields[0].GetInt32();
 
-        if (player->GetMoney() < price * 10000)
+        if (player->GetMoney() < uint32(price) * 10000)
         {
             //show how much money player need to buy GH (in gold)
             char msg[200];
@@ -872,43 +872,43 @@ class npc_portal : public CreatureScript
         {
             case 1005: //Dalaran
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(571, 5804.15, 624.77, 647.8, 1.64);
+                player->TeleportTo(571, 5804.15f, 624.77f, 647.8f, 1.64f);
                 break;
             case 1010: // Shattrath
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, -1838.16, 5301.79, -12.5, 5.95);
+                player->TeleportTo(530, -1838.16f, 5301.79f, -12.5f, 5.95f);
                 break;
             case 1015: // Stormwind
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, -8992.20, 848.46, 29.63, 0);
+                player->TeleportTo(0, -8992.20f, 848.46f, 29.63f, 0);
                 break;
             case 1020: // Ironforge
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, -4602.75, -906.53, 502.76, 0);
+                player->TeleportTo(0, -4602.75f, -906.53f, 502.76f, 0);
                 break;
             case 1025: // Darnassus
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, 9952.13, 2283.35, 1341.40, 0);
+                player->TeleportTo(1, 9952.13f, 2283.35f, 1341.40f, 0);
                 break;
             case 1030: // Exodar
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, -4021.21, -11561.82, -138.14, 0);
+                player->TeleportTo(530, -4021.21f, -11561.82f, -138.14f, 0);
                 break;
             case 1035: // Orgrimmar
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, 1469.64, -4221.07, 59.23, 0);
+                player->TeleportTo(1, 1469.64f, -4221.07f, 59.23f, 0);
                 break;
             case 1040: // Undercity
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(0, 1769.64, 64.17, -46.33, 0);
+                player->TeleportTo(0, 1769.64f, 64.17f, -46.33f, 0);
                 break;
             case 1045: // Thunder Bluff
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(1, -970.36, 284.84, 111.41, 0);
+                player->TeleportTo(1, -970.36f, 284.84f, 111.41f, 0);
                 break;
             case 1050: // Silvermoon
                 player->CLOSE_GOSSIP_MENU();
-                player->TeleportTo(530, 10000.25, -7112.02, 47.71, 0);
+                player->TeleportTo(530, 10000.25f, -7112.02f, 47.71f, 0);
                 break;
             case 1100: //Wintergrasp
                 player->CLOSE_GOSSIP_MENU();
@@ -916,9 +916,9 @@ class npc_portal : public CreatureScript
                 {
                     if ((player->GetTeam() == ALLIANCE && pvpWG->getDefenderTeamId() == TEAM_ALLIANCE)
                         || (player->GetTeam() == TEAM_HORDE && pvpWG->getDefenderTeamId() == TEAM_HORDE))
-                        player->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress                
+                        player->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress                
                     else
-                        player->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+                        player->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress
                         
                 }
                 break;

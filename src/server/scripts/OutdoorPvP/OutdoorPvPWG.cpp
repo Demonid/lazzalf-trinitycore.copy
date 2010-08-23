@@ -196,73 +196,73 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                     spiritGuids.push_back(fields[0].GetUInt32());
                     break;
                 case 31051:
-                    posHorde.Relocate(5081.7, 2173.73, 365.878, 0.855211);
-                    posAlli.Relocate(5296.56, 2789.87, 409.275, 0.733038);
+                    posHorde.Relocate(5081.7f, 2173.73f, 365.878f, 0.855211f);
+                    posAlli.Relocate(5296.56f, 2789.87f, 409.275f, 0.733038f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31101:
-                    posHorde.Relocate(5296.56, 2789.87, 409.275, 0.733038);
-                    posAlli.Relocate(5016.57, 3677.53, 362.982, 5.7525);
+                    posHorde.Relocate(5296.56f, 2789.87f, 409.275f, 0.733038f);
+                    posAlli.Relocate(5016.57f, 3677.53f, 362.982f, 5.7525f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31052:
-                    posHorde.Relocate(5100.07, 2168.89, 365.779, 1.97222);
-                    posAlli.Relocate(5298.43, 2738.76, 409.316, 3.97174);
+                    posHorde.Relocate(5100.07f, 2168.89f, 365.779f, 1.97222f);
+                    posAlli.Relocate(5298.43f, 2738.76f, 409.316f, 3.97174f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31102:
-                    posHorde.Relocate(5298.43, 2738.76, 409.316, 3.97174);
-                    posAlli.Relocate(5030.44, 3659.82, 363.194, 1.83336);
+                    posHorde.Relocate(5298.43f, 2738.76f, 409.316f, 3.97174f);
+                    posAlli.Relocate(5030.44f, 3659.82f, 363.194f, 1.83336f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31109:
-                    posHorde.Relocate(5080.4, 2199, 359.489, 2.96706);
-                    posAlli.Relocate(5234.97, 2883.4, 409.275, 4.29351);
+                    posHorde.Relocate(5080.4f, 2199, 359.489f, 2.96706f);
+                    posAlli.Relocate(5234.97f, 2883.4f, 409.275f, 4.29351f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31107:
-                    posHorde.Relocate(5234.97, 2883.4, 409.275, 4.29351);
-                    posAlli.Relocate(5008.64, 3659.91, 361.07, 4.0796);
+                    posHorde.Relocate(5234.97f, 2883.4f, 409.275f, 4.29351f);
+                    posAlli.Relocate(5008.64f, 3659.91f, 361.07f, 4.0796f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31153:
-                    posHorde.Relocate(5088.49, 2188.18, 365.647, 5.25344);
-                    posAlli.Relocate(5366.13, 2833.4, 409.323, 3.14159);
+                    posHorde.Relocate(5088.49f, 2188.18f, 365.647f, 5.25344f);
+                    posAlli.Relocate(5366.13f, 2833.4f, 409.323f, 3.14159f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31151:
-                    posHorde.Relocate(5366.13, 2833.4, 409.323, 3.14159);
-                    posAlli.Relocate(5032.33, 3680.7, 363.018, 3.43167);
+                    posHorde.Relocate(5366.13f, 2833.4f, 409.323f, 3.14159f);
+                    posAlli.Relocate(5032.33f, 3680.7f, 363.018f, 3.43167f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31108:
-                    posHorde.Relocate(5095.67, 2193.28, 365.924, 4.93928);
-                    posAlli.Relocate(5295.56, 2926.67, 409.275, 0.872665);
+                    posHorde.Relocate(5095.67f, 2193.28f, 365.924f, 4.93928f);
+                    posAlli.Relocate(5295.56f, 2926.67f, 409.275f, 0.872665f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31106:
-                    posHorde.Relocate(5295.56, 2926.67, 409.275, 0.872665);
-                    posAlli.Relocate(5032.66, 3674.28, 363.053, 2.9447);
+                    posHorde.Relocate(5295.56f, 2926.67f, 409.275f, 0.872665f);
+                    posAlli.Relocate(5032.66f, 3674.28f, 363.053f, 2.9447f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31054:
-                    posHorde.Relocate(5088.61, 2167.66, 365.689, 0.680678);
-                    posAlli.Relocate(5371.4, 3026.51, 409.206, 3.25003);
+                    posHorde.Relocate(5088.61f, 2167.66f, 365.689f, 0.680678f);
+                    posAlli.Relocate(5371.4f, 3026.51f, 409.206f, 3.25003f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31053:
-                    posHorde.Relocate(5371.4, 3026.51, 409.206, 3.25003);
-                    posAlli.Relocate(5032.44, 3668.66, 363.11, 2.87402);
+                    posHorde.Relocate(5371.4f, 3026.51f, 409.206f, 3.25003f);
+                    posAlli.Relocate(5032.44f, 3668.66f, 363.11f, 2.87402f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31036:
-                    posHorde.Relocate(5078.28, 2183.7, 365.029, 1.46608);
-                    posAlli.Relocate(5359.13, 2837.99, 409.364, 4.69893);
+                    posHorde.Relocate(5078.28f, 2183.7f, 365.029f, 1.46608f);
+                    posAlli.Relocate(5359.13f, 2837.99f, 409.364f, 4.69893f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 case 31091:
-                    posHorde.Relocate(5359.13, 2837.99, 409.364, 4.69893);
-                    posAlli.Relocate(5022.43, 3659.91, 361.61, 1.35426);
+                    posHorde.Relocate(5359.13f, 2837.99f, 409.364f, 4.69893f);
+                    posAlli.Relocate(5022.43f, 3659.91f, 361.61f, 1.35426f);
                     LoadQuestGiverMap(fields[0].GetUInt32(), posHorde, posAlli);
                     break;
                 default:
@@ -1280,7 +1280,7 @@ bool OutdoorPvPWG::UpdateGameObjectInfo(GameObject *go) const
             go->SetUInt32Value(GAMEOBJECT_FACTION, attFaction);
             return false;
         case 8208: // Goblin Workshop
-            if (OPvPCapturePointWG *workshop = GetWorkshopByGOGuid(go->GetGUID()))
+            if (OPvPCapturePointWG *workshop = GetWorkshopByGOGuid(go->GetGUIDLow())) //go->GetGUIDlow()
                 go->SetUInt32Value(GAMEOBJECT_FACTION, WintergraspFaction[workshop->m_buildingState->GetTeamId()]);
             return false;
     }
@@ -1379,14 +1379,14 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
                 plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                 plr->RemoveAurasByType(SPELL_AURA_FLY);
                 plr->CastSpell(plr, 61286, true);
-                plr->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
+                plr->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress
             }
             else
             {
                 plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                 plr->RemoveAurasByType(SPELL_AURA_FLY);
                 plr->CastSpell(plr, 61286, true);
-                plr->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+                plr->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress
             }
         }
                 //plr->CastSpell(plr, 58730, true);
@@ -1628,14 +1628,14 @@ void OutdoorPvPWG::UpdateClockDigit(uint32 &timer, uint32 digit, uint32 mod)
     if (m_clock[digit] != value)
     {
         m_clock[digit] = value;
-        SendUpdateWorldState(ClockWorldState[digit], (timer + time(NULL)));
-        sWorld.SetWintergrapsTimer(timer + time(NULL), digit);
+        SendUpdateWorldState(ClockWorldState[digit], uint32(timer + time(NULL)));
+        sWorld.SetWintergrapsTimer(uint32(timer + time(NULL)), digit);
     }
 }
 
 void OutdoorPvPWG::UpdateClock()
 {
-    uint32 timer = m_timer / 1000;
+    uint32 timer = uint32(m_timer / 1000);
 
     if (!isWarTime())
         UpdateClockDigit(timer, 1, 10);
@@ -1849,7 +1849,7 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
         (*itr)->CastSpell((*itr), 61286, true);
-        (*itr)->TeleportTo(571, 4525.60, 2828.08, 390, 0.28); //Out the Fortress
+        (*itr)->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress
        
         //(*itr)->CastSpell((*itr), 58730, true);        
     }
@@ -1873,7 +1873,7 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
         (*itr)->CastSpell((*itr), 61286, true);
-        (*itr)->TeleportTo(571, 5333.40, 2841.76, 410, 3.23); //In the Fortress
+        (*itr)->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress
         //(*itr)->CastSpell((*itr), 58730, true); 
     }
     UpdateTenacityStack();
