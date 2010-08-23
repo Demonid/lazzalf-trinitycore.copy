@@ -625,7 +625,7 @@ class OutdoorPvPWG : public OutdoorPvP
         void SetData(uint32 id, uint32 value) {};
 
         void ModifyWorkshopCount(TeamId team, bool add);
-        uint32 GetTimer() const { return m_timer / 1000; };
+        uint32 GetTimer() const { return uint32(m_timer / 1000); };
         bool isWarTime() const { return m_wartime; };
         void setTimer(uint32 timer) { if (timer >= 0) m_timer = timer; };
         uint32 GetNumPlayersA() const { return m_players[TEAM_ALLIANCE].size(); };

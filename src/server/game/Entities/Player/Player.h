@@ -1607,7 +1607,7 @@ class Player : public Unit, public GridObject<Player>
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
             time_t t = time(NULL);
-            return itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0;
+            return itr != m_spellCooldowns.end() && itr->second.end > t ? uint32(itr->second.end - t) : 0;
         }
         void AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
