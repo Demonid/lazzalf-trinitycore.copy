@@ -635,7 +635,7 @@ public:
                 Reset();
         }
 
-        void PatientSaved(Creature* soldier, Player* pPlayer, Location* Point)
+        void PatientSaved(Creature* /*soldier*/, Player* pPlayer, Location* Point)
         {
             if (pPlayer && PlayerGUID == pPlayer->GetGUID())
             {
