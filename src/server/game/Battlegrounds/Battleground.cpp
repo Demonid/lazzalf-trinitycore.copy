@@ -861,7 +861,7 @@ void Battleground::EndBattleground(uint32 winner)
         // per player calculation
         if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
-            bool enabled = getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+            bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
             if(enabled)
             {
