@@ -712,7 +712,7 @@ void Battleground::EndBattleground(uint32 winner)
 
 	bool controll_ip = true;
 
-    if (sWorld.getConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
+    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
     {	
 	    bool virgolat = false;
         bool virgolaa = false;
@@ -789,7 +789,7 @@ void Battleground::EndBattleground(uint32 winner)
     // arena rating calculation
     if (isArena() && isRated())
     {
-        bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+        bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
         winner_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
@@ -861,7 +861,7 @@ void Battleground::EndBattleground(uint32 winner)
         // per player calculation
         if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
-            bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+            bool enabled = getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
             if(enabled)
             {

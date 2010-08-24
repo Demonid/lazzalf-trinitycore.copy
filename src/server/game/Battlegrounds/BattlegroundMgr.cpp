@@ -176,7 +176,7 @@ void BattlegroundMgr::Update(uint32 diff)
             m_AutoDistributionTimeChecker -= diff;
     }
 
-    if (sWorld.getConfig(CONFIG_ARENAMOD_ENABLE))
+    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE))
     {
         if (m_ArenaModResetChecker < diff)
         {
@@ -816,7 +816,7 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
 
 void BattlegroundMgr::InitAutomaticArenaModTimer()
 {
-    bool enabled = sWorld.getConfig(CONFIG_ARENAMOD_ENABLE);
+    bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
     if(enabled)
     {
         sLog.outDebug("Initializing Automatic Arena Mod Timer");
