@@ -443,7 +443,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     ///- Read the player limit and the Message of the day from the config file
-    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", 100), true);
+    SetPlayerAmountLimit(sConfig.GetIntDefault("PlayerLimit", 100));
     SetMotd(sConfig.GetStringDefault("Motd", "Welcome to a Trinity Core Server."));
 
     ///- Get string for new logins (newly created characters)
@@ -1338,6 +1338,9 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize config settings
     LoadConfigSettings();
+    
+    ///- Initialize Allowed Security Level
+    LoadDBAllowedSecurityLevel();
 
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
     sObjectMgr.SetHighestGuids();
@@ -2697,14 +2700,20 @@ void World::ResetDailyQuests()
     sObjectMgr.ResetQuestPool(true);
 }
 
-void World::UpdateAllowedSecurity()
+void World::LoadDBAllowedSecurityLevel()
 {
     QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
     if (result)
-    {
-        m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
-        sLog.outDebug("Allowed Level: %u Result %u", m_allowedSecurityLevel, result->Fetch()->GetUInt16());
-    }
+        SetPlayerSecurityLimit(AccountTypes(result->Fetch()->GetUInt16()));
+}
+
+void World::SetPlayerSecurityLimit(AccountTypes _sec)
+{
+    AccountTypes sec = _sec < SEC_CONSOLE ? _sec : SEC_PLAYER;
+    bool update = sec > m_allowedSecurityLevel;
+    m_allowedSecurityLevel = sec;
+    if (update)
+        KickAllLess(m_allowedSecurityLevel);
 }
 
 void World::ResetWeeklyQuests()
@@ -2730,11 +2739,6 @@ void World::ResetRandomBG()
 
     m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
     sWorld.setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
-}
-
-void World::SetPlayerLimit(int32 limit, bool /*needUpdate*/)
-{
-    m_playerLimit = limit;
 }
 
 void World::UpdateMaxSessionCounters()
