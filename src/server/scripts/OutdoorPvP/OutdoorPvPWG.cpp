@@ -1975,7 +1975,7 @@ void OutdoorPvPWG::EndBattle()
                 if ((*itr)->getLevel() > 69 && ((*itr)->HasAura(SPELL_LIEUTENANT) || (*itr)->HasAura(SPELL_CORPORAL)))
                     ++playersWithRankNum;
 
-            baseHonor = team == getDefenderTeamId() ? sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld.getConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
+            baseHonor = team == getDefenderTeamId() ? sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
             baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER) * m_towerDamagedCount[OTHER_TEAM(team)]);
             baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER) * m_towerDestroyedCount[OTHER_TEAM(team)]);
             baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING) * intactNum);
