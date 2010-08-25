@@ -156,25 +156,25 @@ class boss_hodir : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
-            if (Helper[0] = me->SummonCreature(NPC_FIELD_MEDIC_PENNY, 1983.75, -243.36, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[0] = me->SummonCreature(NPC_FIELD_MEDIC_PENNY, 1983.75f, -243.36f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[0]->GetPositionX(), Helper[0]->GetPositionY(), Helper[0]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[0], SPELL_BLOCK_OF_ICE, true);
                     Helper[0]->AddThreat(me, 100);
                 }
-            if (Helper[1] = me->SummonCreature(NPC_EIVI_NIGHTFEATHER, 1999.90, -230.49, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[1] = me->SummonCreature(NPC_EIVI_NIGHTFEATHER, 1999.90f, -230.49f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[1]->GetPositionX(), Helper[1]->GetPositionY(), Helper[1]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[1], SPELL_BLOCK_OF_ICE, true);
                     Helper[1]->AddThreat(me, 100);
                 }
-            if (Helper[2] = me->SummonCreature(NPC_ELEMENTALIST_MAHFUUN, 2010.06, -243.45, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[2] = me->SummonCreature(NPC_ELEMENTALIST_MAHFUUN, 2010.06f, -243.45f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[2]->GetPositionX(), Helper[2]->GetPositionY(), Helper[2]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[2], SPELL_BLOCK_OF_ICE, true);
                     Helper[2]->AddThreat(me, 100);
                 }
-            if (Helper[3] = me->SummonCreature(NPC_MISSY_FLAMECUFFS, 2021.12, -236.65, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+            if (Helper[3] = me->SummonCreature(NPC_MISSY_FLAMECUFFS, 2021.12f, -236.65f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[3]->GetPositionX(), Helper[3]->GetPositionY(), Helper[3]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                 {
                     pIceBlock->CastSpell(Helper[3], SPELL_BLOCK_OF_ICE, true);
@@ -183,25 +183,25 @@ class boss_hodir : public CreatureScript
                     
             if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
             {
-                if (Helper[4] = me->SummonCreature(NPC_FIELD_MEDIC_JESSY, 1976.60, -233.53, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                if (Helper[4] = me->SummonCreature(NPC_FIELD_MEDIC_JESSY, 1976.60f, -233.53f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[4]->GetPositionX(), Helper[4]->GetPositionY(), Helper[4]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                     {
                         pIceBlock->CastSpell(Helper[4], SPELL_BLOCK_OF_ICE, true);
                         Helper[4]->AddThreat(me, 100);
                     }            
-                if (Helper[5] = me->SummonCreature(NPC_ELLIE_NIGHTFEATHER, 1992.90, -237.54, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                if (Helper[5] = me->SummonCreature(NPC_ELLIE_NIGHTFEATHER, 1992.90f, -237.54f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[5]->GetPositionX(), Helper[5]->GetPositionY(), Helper[5]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                     {
                         pIceBlock->CastSpell(Helper[5], SPELL_BLOCK_OF_ICE, true);
                         Helper[5]->AddThreat(me, 100);
                     }            
-                if (Helper[6] = me->SummonCreature(NPC_ELEMENTALIST_AVUUN, 2014.18, -232.80, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                if (Helper[6] = me->SummonCreature(NPC_ELEMENTALIST_AVUUN, 2014.18f, -232.80f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[6]->GetPositionX(), Helper[6]->GetPositionY(), Helper[6]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                     {
                         pIceBlock->CastSpell(Helper[6], SPELL_BLOCK_OF_ICE, true);
                         Helper[6]->AddThreat(me, 100);
                     }            
-                if (Helper[7] = me->SummonCreature(NPC_SISSY_FLAMECUFFS, 2028.10, -244.66, 432.767, 1.57, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                if (Helper[7] = me->SummonCreature(NPC_SISSY_FLAMECUFFS, 2028.10f, -244.66f, 432.767f, 1.57f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, Helper[7]->GetPositionX(), Helper[7]->GetPositionY(), Helper[7]->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN))
                     {
                         pIceBlock->CastSpell(Helper[7], SPELL_BLOCK_OF_ICE, true);
@@ -258,7 +258,7 @@ class boss_hodir : public CreatureScript
                         pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
                 }
                 // Chest spawn
-                me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43, -203.906, 432.687, -0.90757, 0, 0, 0.7, 0.7, 604800);
+                me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43f, -203.906f, 432.687f, -0.90757f, 0, 0, 0.7f, 0.7f, 604800);
             }
         }
 
@@ -311,7 +311,7 @@ class boss_hodir : public CreatureScript
                     case EVENT_FLASH_CAST:
                         DoScriptText(SAY_FLASH_FREEZE, me);
                         me->MonsterTextEmote(EMOTE_FREEZE, 0, true);
-                        for (uint32 i = 0; i < RAID_MODE(2,3); ++i)
+                        for (int32 i = 0; i < RAID_MODE(2,3); ++i)
                             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                                 if (pTarget->isAlive())
                                     pTarget->CastSpell(pTarget, SPELL_ICICLE_SNOWDRIFT, true);
@@ -396,7 +396,7 @@ class mob_icicle : public CreatureScript
         
         void UpdateAI(const uint32 diff)
         {
-            if (IcicleTimer <= diff)
+            if (IcicleTimer <= int32(diff))
             {
                 DoCast(me, SPELL_FALL_DAMAGE);
                 DoCast(me, SPELL_ICICLE_FALL);
@@ -433,7 +433,7 @@ class mob_icicle_snowdrift : public CreatureScript
         
         void UpdateAI(const uint32 diff)
         {
-            if (IcicleTimer <= diff)
+            if (IcicleTimer <= int32(diff))
             {
                 DoCast(me, SPELL_FALL_SNOWDRIFT);
                 DoCast(me, SPELL_ICICLE_FALL);
@@ -487,7 +487,7 @@ class mob_hodir_priest : public CreatureScript
             if (HealthBelowPct(35))
                 DoCastAOE(SPELL_GREATER_HEAL);
 
-            if (HealTimer <= uiDiff)
+            if (HealTimer <= int32(uiDiff))
             {
                 DoCastAOE(SPELL_GREATER_HEAL);
                 HealTimer = urand(12000, 14000);
@@ -535,7 +535,7 @@ class mob_hodir_shaman : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (StormTimer <= uiDiff)
+            if (StormTimer <= int32(uiDiff))
             {
                 DoCast(me, RAID_MODE(SPELL_STORM_CLOUD_10, SPELL_STORM_CLOUD_25));
                 StormTimer = urand(25000, 30000);
@@ -583,7 +583,7 @@ class mob_hodir_druid : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (StarlightTimer <= uiDiff)
+            if (StarlightTimer <= int32(uiDiff))
             {
                 DoCast(me, SPELL_STARLIGHT);
                 StarlightTimer = urand(25000, 35000);
@@ -631,7 +631,7 @@ class mob_hodir_mage : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (FireTimer <= uiDiff)
+            if (FireTimer <= int32(uiDiff))
             {
                 DoCast(me, SPELL_CONJURE_FIRE);
                 FireTimer = urand(25000, 35000);

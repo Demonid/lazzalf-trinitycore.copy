@@ -655,14 +655,14 @@ class boss_stormcaller_brundir : public CreatureScript
                     break;
                     case EVENT_ENDFLIGHT:
                         me->GetMotionMaster()->Initialize();
-                        me->GetMotionMaster()->MovePoint(0, 1586.920166, 119.848984, 440);
+                        me->GetMotionMaster()->MovePoint(0, 1586.920166f, 119.848984f, 440);
                         events.CancelEvent(EVENT_FLIGHT);
                         events.CancelEvent(EVENT_ENDFLIGHT);
                         events.ScheduleEvent(EVENT_LAND, 4000);
                     break;
                     case EVENT_LAND:
                         me->GetMotionMaster()->Initialize();
-                        me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28);
+                        me->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), 427.28f);
                         events.CancelEvent(EVENT_LAND);
                         events.ScheduleEvent(EVENT_GROUND, 2500);
                     break;
@@ -708,16 +708,16 @@ class boss_stormcaller_brundir : public CreatureScript
             switch(Position)
             {
                 case 0:
-                    me->GetMotionMaster()->MovePoint(0, 1587.28, 97.030, me->GetPositionZ());
+                    me->GetMotionMaster()->MovePoint(0, 1587.28f, 97.030f, me->GetPositionZ());
                     break;
                 case 1:
-                    me->GetMotionMaster()->MovePoint(0, 1587.18, 121.03, me->GetPositionZ());
+                    me->GetMotionMaster()->MovePoint(0, 1587.18f, 121.03f, me->GetPositionZ());
                     break;
                 case 2:
-                    me->GetMotionMaster()->MovePoint(0, 1587.34, 142.58, me->GetPositionZ());
+                    me->GetMotionMaster()->MovePoint(0, 1587.34f, 142.58f, me->GetPositionZ());
                     break;
                 case 3:
-                    me->GetMotionMaster()->MovePoint(0, 1587.18, 121.03, me->GetPositionZ());
+                    me->GetMotionMaster()->MovePoint(0, 1587.18f, 121.03f, me->GetPositionZ());
                     break;
             }
 
@@ -767,7 +767,7 @@ class mob_lightning_elemental : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_lightning_elementalAI (pCreature);
     };

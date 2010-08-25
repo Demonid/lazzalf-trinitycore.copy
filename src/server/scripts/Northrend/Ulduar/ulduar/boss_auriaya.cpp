@@ -250,7 +250,7 @@ class feral_defender_trigger : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (SummomTimer <= uiDiff)
+            if (SummomTimer <= int32(uiDiff))
             {
                 DoCast(me, SPELL_SUMMON_DEFENDER);
                 SummomTimer = 30000;
@@ -300,13 +300,13 @@ class mob_sanctum_sentry : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (RipTimer <= uiDiff)
+            if (RipTimer <= int32(uiDiff))
             {
                 DoCastVictim(SPELL_RIP_FLESH);
                 RipTimer = urand(14000, 18000);
             } else RipTimer -= uiDiff;
             
-            if (PounceTimer <= uiDiff)
+            if (PounceTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
@@ -319,7 +319,7 @@ class mob_sanctum_sentry : public CreatureScript
             
             // Increases the damage of all Sanctum Sentries within 10 yards by 30%
             uint8 aura = -1;
-            if (CheckTimer < uiDiff)
+            if (CheckTimer < int32(uiDiff))
             {
                 std::list<Creature*> Sanctum;
                 GetCreatureListWithEntryInGrid(Sanctum, me, SANCTUM_SENTRY, 100.0f);
@@ -395,7 +395,7 @@ class mob_feral_defender : public CreatureScript
             if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
                 me->ForcedDespawn();
 
-            if (PounceTimer <= uiDiff)
+            if (PounceTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
@@ -407,7 +407,7 @@ class mob_feral_defender : public CreatureScript
             } 
             else PounceTimer -= uiDiff;
             
-            if (RushTimer <= uiDiff)
+            if (RushTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
@@ -419,7 +419,7 @@ class mob_feral_defender : public CreatureScript
             } 
             else RushTimer -= uiDiff;
             
-            if (RessTimer <= uiDiff)
+            if (RessTimer <= int32(uiDiff))
             {
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 for (uint8 i = 0; i < Lifes; ++i)

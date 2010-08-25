@@ -52,44 +52,44 @@ enum Spells
     SPELL_FLAMED                    = 62696,
     SPELL_STUN                      = 9032,
     SPELL_BERSERK                   = 47008
-};
+}; 
 
 const Position PosHarpoon[4] =
 {
-{594.317, -136.953, 391.517, 4.544},
-{577.449, -136.953, 391.517, 4.877},
-{607.726, -146.857, 391.517, 4.041},
-{561.449, -146.857, 391.517, 5.426}
+{594.317f, -136.953f, 391.517f, 4.544f},
+{577.449f, -136.953f, 391.517f, 4.877f},
+{607.726f, -146.857f, 391.517f, 4.041f},
+{561.449f, -146.857f, 391.517f, 5.426f}
 };
 
-const Position PosEngSpawn = {591.951477, -95.968292, 391.516998, 0};
+const Position PosEngSpawn = {591.951477f, -95.968292f, 391.516998f, 0};
 
 const Position PosEngRepair[4] =
 {
-{590.442, -130.550, 391.517, 4.789},
-{574.850, -133.687, 391.517, 4.252},
-{606.567, -143.369, 391.517, 4.434},
-{560.609, -142.967, 391.517, 5.074}
+{590.442f, -130.550f, 391.517f, 4.789f},
+{574.850f, -133.687f, 391.517f, 4.252f},
+{606.567f, -143.369f, 391.517f, 4.434f},
+{560.609f, -142.967f, 391.517f, 5.074f}
 };
 
 const Position PosDefSpawn[4] =
 {
-{600.75, -104.850, 391.5169, 0},
-{596.38, -110.262, 391.5169, 0},
-{566.47, -103.633, 391.5169, 0},
-{570.41, -108.791, 391.5169, 0}
+{600.75f, -104.850f, 391.5169f, 0},
+{596.38f, -110.262f, 391.5169f, 0},
+{566.47f, -103.633f, 391.5169f, 0},
+{570.41f, -108.791f, 391.5169f, 0}
 };
 
 const Position PosDefCombat[4] =
 {
-{614.975, -155.138, 391.517, 4.154},
-{609.814, -204.968, 391.517, 5.385},
-{563.531, -201.557, 391.517, 4.108},
-{560.231, -153.677, 391.517, 5.403}
+{614.975f, -155.138f, 391.517f, 4.154f},
+{609.814f, -204.968f, 391.517f, 5.385f},
+{563.531f, -201.557f, 391.517f, 4.108f},
+{560.231f, -153.677f, 391.517f, 5.403f}
 };
 
-const Position RazorFlight = {588.050, -251.191, 470.535980, 1.605303};
-const Position RazorGround = {586.966, -175.534, 391.516998, 1.691704};
+const Position RazorFlight = {588.050f, -251.191f, 470.535980f, 1.605303f};
+const Position RazorGround = {586.966f, -175.534f, 391.516998f, 1.691704f};
 
 enum Mobs
 {
@@ -266,7 +266,7 @@ class boss_razorscale : public CreatureScript
                             return;
                         case EVENT_LAND:
                             me->SetFlying(false);
-                            me->NearTeleportTo(586.966, -175.534, 391.516998, 1.691704);
+                            me->NearTeleportTo(586.966f, -175.534f, 391.516998f, 1.691704f);
                             DoCast(me, SPELL_STUN, true);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             if (Creature *pCommander = me->GetCreature(*me, pInstance->GetData64(DATA_EXP_COMMANDER)))
@@ -397,8 +397,8 @@ class boss_razorscale : public CreatureScript
             uint8 random = urand(1,4);
             for (uint8 i = 0; i < random; ++i)
             {
-                float x = irand(540.0f, 640.0f);   // Safe range is between 500 and 650
-                float y = irand(-230.0f, -195.0f); // Safe range is between -235 and -145
+                float x = float(irand(540, 640));   // Safe range is between 500 and 650
+                float y = float(irand(-230, -195)); // Safe range is between -235 and -145
                 float z = 391.5f;                  // Ground level
                 MoleTrigger = me->SummonCreature(MOLE_MACHINE_TRIGGER, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
             }
@@ -648,13 +648,13 @@ class mob_darkrune_watcher : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (ChainTimer <= uiDiff)
+            if (ChainTimer <= int32(uiDiff))
             {
                 DoCastVictim(RAID_MODE(SPELL_CHAIN_LIGHTNING_10, SPELL_CHAIN_LIGHTNING_25));
                 ChainTimer = urand(10000, 15000);
             } else ChainTimer -= uiDiff;
             
-            if (LightTimer <= uiDiff)
+            if (LightTimer <= int32(uiDiff))
             {
                 DoCastVictim(RAID_MODE(SPELL_LIGHTNING_BOLT_10, SPELL_LIGHTNING_BOLT_25));
                 LightTimer = urand(5000, 7000);
@@ -695,7 +695,7 @@ class mob_darkrune_guardian : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (StormTimer <= uiDiff)
+            if (StormTimer <= int32(uiDiff))
             {
                 DoCastVictim(SPELL_STORMSTRIKE);
                 StormTimer = urand(4000, 8000);
@@ -740,19 +740,19 @@ class mob_darkrune_sentinel : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (HeroicTimer <= uiDiff)
+            if (HeroicTimer <= int32(uiDiff))
             {
                 DoCastVictim(SPELL_HEROIC_STRIKE);
                 HeroicTimer = urand(4000, 6000);
             } else HeroicTimer -= uiDiff;
             
-            if (WhirlTimer <= uiDiff)
+            if (WhirlTimer <= int32(uiDiff))
             {
                 DoCastVictim(RAID_MODE(SPELL_WHIRLWIND_10, SPELL_WHIRLWIND_25));
                 WhirlTimer = urand(20000, 30000);
             } else WhirlTimer -= uiDiff;
             
-            if (ShoutTimer <= uiDiff)
+            if (ShoutTimer <= int32(uiDiff))
             {
                 DoCast(me, RAID_MODE(SPELL_BATTLE_SHOUT_10, SPELL_BATTLE_SHOUT_25));
                 ShoutTimer = urand(30000, 40000);
@@ -788,7 +788,7 @@ class mole_machine_trigger : public CreatureScript
 
         void Reset()
         {
-            MoleMachine = me->SummonGameObject(GOB_MOLE_MACHINE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), urand(0,6), 0, 0, 0, 0, 300);
+            MoleMachine = me->SummonGameObject(GOB_MOLE_MACHINE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), float(urand(0,6)), 0, 0, 0, 0, 300);
             if (MoleMachine)
                 MoleMachine->SetGoState(GO_STATE_ACTIVE);
             SummomTimer = 6000;
@@ -799,7 +799,7 @@ class mole_machine_trigger : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (SummomTimer <= uiDiff)
+            if (SummomTimer <= int32(uiDiff))
             {
                 float x = me->GetPositionX();
                 float y = me->GetPositionY();
