@@ -145,14 +145,14 @@ Position m_aTene[]=
 
 Position m_aShad[]=
 {
-    {3293.238, 472.223, 106.968},
-    {3271.669, 526.907, 61.931}
+    {3293.238f, 472.223f, 106.968f},
+    {3271.669f, 526.907f, 61.931f}
 };
 
 Position m_aVesp[]=
 {
-    {3193.310, 472.861, 102.697},
-    {3227.268, 533.238, 59.995}
+    {3193.310f, 472.861f, 102.697f},
+    {3227.268f, 533.238f, 59.995f}
 };
 
 #define ACTION_TELEPORT_BACK_SAR 70
@@ -178,28 +178,28 @@ static Position FlameSpawn[] =
     { 3210.609131f, 579.359375f, 59.120803f, 0.00f }
 };
 
-static Position AcolyteofShadron =     { 3363.92, 534.703, 97.2683 };
-static Position AcolyteofShadron2 =    { 3246.57, 551.263, 58.6164 };
-static Position AcolyteofVesperon =    { 3145.68, 520.71, 89.7 };
-static Position AcolyteofVesperon2 =   { 3246.57, 551.263, 58.6164 };
+static Position AcolyteofShadron =     { 3363.92f, 534.703f, 97.2683f };
+static Position AcolyteofShadron2 =    { 3246.57f, 551.263f, 58.6164f };
+static Position AcolyteofVesperon =    { 3145.68f, 520.71f, 89.7f };
+static Position AcolyteofVesperon2 =   { 3246.57f, 551.263f, 58.6164f };
 
 Position TwilightEggs[] =
 {
-    {3219.28, 669.121 , 88.5549},
-    {3221.55, 682.852 , 90.5361},
-    {3239.77, 685.94 , 90.3168},
-    {3250.33, 669.749 , 88.7637},
-    {3246.6, 642.365 , 84.8752},
-    {3233.68, 653.117 , 85.7051}
+    {3219.28f, 669.121f , 88.5549f},
+    {3221.55f, 682.852f , 90.5361f},
+    {3239.77f, 685.94f , 90.3168f},
+    {3250.33f, 669.749f , 88.7637f},
+    {3246.6f, 642.365f , 84.8752f},
+    {3233.68f, 653.117f , 85.7051f}
 };
 Position TwilightEggsSarth[] =
 {
-    {3261.75, 539.14 , 58.6082},
-    {3257.41, 512.939 , 58.5432},
-    {3231.04, 498.281 , 58.6439},
-    {3264.90, 525.865 , 58.6436},
-    {3257.54, 502.285 , 58.2077},
-    {3264.26, 516.364 , 58.8011}
+    {3261.75f, 539.14f , 58.6082f},
+    {3257.41f, 512.939f , 58.5432f},
+    {3231.04f, 498.281f , 58.6439f},
+    {3264.90f, 525.865f , 58.6436f},
+    {3257.54f, 502.285f , 58.2077f},
+    {3264.26f, 516.364f , 58.8011f}
 };
 
 enum Events
@@ -254,7 +254,7 @@ class boss_sartharion : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
 
             me->ResetLootMode();
-            me->SetHomePosition(3246.57, 551.263, 58.6164, 4.66003); 
+            me->SetHomePosition(3246.57f, 551.263f, 58.6164f, 4.66003f); 
 
             Creature* pTenebron = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
             Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
@@ -417,7 +417,7 @@ class boss_sartharion : public CreatureScript
             Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
             if (pTenebron)
             {
-                pTenebron->SetHomePosition(3239.07, 657.235, 86.8775, 4.74729);
+                pTenebron->SetHomePosition(3239.07f, 657.235f, 86.8775f, 4.74729f);
                 if(pTenebron->isAlive())
                 {
                     if (pTenebron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -430,14 +430,14 @@ class boss_sartharion : public CreatureScript
                     if(instance->GetData(TYPE_TENEBRON_PREKILLED) == false)
                     {
                         pTenebron->Respawn();
-                        pTenebron->SetHomePosition(3239.07, 657.235, 86.8775, 4.74729);
+                        pTenebron->SetHomePosition(3239.07f, 657.235f, 86.8775f, 4.74729f);
                         pTenebron->GetMotionMaster()->MoveTargetedHome();
                     }
                 }
             }
             if (pShadron)
             {
-                pShadron->SetHomePosition(3363.06, 525.28, 98.362, 4.76475);
+                pShadron->SetHomePosition(3363.06f, 525.28f, 98.362f, 4.76475f);
                 if(pShadron->isAlive())
                 {
                     if (pShadron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -450,14 +450,14 @@ class boss_sartharion : public CreatureScript
                     if(instance->GetData(TYPE_SHADRON_PREKILLED) == false)
                     {
                         pShadron->Respawn();
-                        pShadron->SetHomePosition(3363.06, 525.28, 98.362, 4.76475);
+                        pShadron->SetHomePosition(3363.06f, 525.28f, 98.362f, 4.76475f);
                         pShadron->GetMotionMaster()->MoveTargetedHome();
                     }
                 }
             }
             if (pVesperon)
             {
-                pVesperon->SetHomePosition(3145.68, 520.71, 89.7, 4.64258);
+                pVesperon->SetHomePosition(3145.68f, 520.71f, 89.7f, 4.64258f);
                 if(pVesperon->isAlive())
                 {
                     if (pVesperon->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -470,7 +470,7 @@ class boss_sartharion : public CreatureScript
                     if(instance->GetData(TYPE_VESPERON_PREKILLED) == false)
                     {
                         pVesperon->Respawn();
-                        pVesperon->SetHomePosition(3145.68, 520.71, 89.7, 4.64258);
+                        pVesperon->SetHomePosition(3145.68f, 520.71f, 89.7f, 4.64258f);
                         pVesperon->GetMotionMaster()->MoveTargetedHome();
                     }
                 }

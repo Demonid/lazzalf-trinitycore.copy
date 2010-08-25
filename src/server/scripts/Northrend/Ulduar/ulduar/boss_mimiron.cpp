@@ -182,15 +182,15 @@ enum MimironChests
 
 const Position SummonPos[9] =
 {
-{2703.93, 2569.32, 364.397, 0},
-{2715.33, 2569.23, 364.397, 0},
-{2726.85, 2569.28, 364.397, 0},
-{2765.24, 2534.38, 364.397, 0},
-{2759.54, 2544.30, 364.397, 0},
-{2753.82, 2554.22, 364.397, 0},
-{2764.95, 2604.11, 364.397, 0},
-{2759.19, 2594.26, 364.397, 0},
-{2753.56, 2584.30, 364.397, 0}
+{2703.93f, 2569.32f, 364.397f, 0},
+{2715.33f, 2569.23f, 364.397f, 0},
+{2726.85f, 2569.28f, 364.397f, 0},
+{2765.24f, 2534.38f, 364.397f, 0},
+{2759.54f, 2544.30f, 364.397f, 0},
+{2753.82f, 2554.22f, 364.397f, 0},
+{2764.95f, 2604.11f, 364.397f, 0},
+{2759.19f, 2594.26f, 364.397f, 0},
+{2753.56f, 2584.30f, 364.397f, 0}
 };
 
 
@@ -283,11 +283,11 @@ class boss_mimiron : public CreatureScript
                 if (MimironHardMode)
                 {
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_FIREFIGHTER);
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_HARDMODE_10, CACHE_OF_INNOVATION_HARDMODE_25), 2744.65, 2569.46, 364.314, 3.14159, 0, 0, 0.7, 0.7, 604800);
+                    me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_HARDMODE_10, CACHE_OF_INNOVATION_HARDMODE_25), 2744.65f, 2569.46f, 364.314f, 3.14159f, 0, 0, 0.7f, 0.7f, 604800);
                 }
                 else
                 {
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_10, CACHE_OF_INNOVATION_25), 2744.65, 2569.46, 364.314, 3.14159, 0, 0, 0.7, 0.7, 604800);
+                    me->SummonGameObject(RAID_MODE(CACHE_OF_INNOVATION_10, CACHE_OF_INNOVATION_25), 2744.65f, 2569.46f, 364.314f, 3.14159f, 0, 0, 0.7f, 0.7f, 604800);
                 }
             }
         }
@@ -542,7 +542,7 @@ class boss_mimiron : public CreatureScript
                         break;
                     case 4:
                         me->ExitVehicle();
-                        me->GetMotionMaster()->MoveJump(2745.06, 2569.36, 379.90, 10, 15);
+                        me->GetMotionMaster()->MoveJump(2745.06f, 2569.36f, 379.90f, 10, 15);
                         JumpToNextStep(2000);
                         break;
                     case 5:
@@ -579,7 +579,7 @@ class boss_mimiron : public CreatureScript
                         {
                             me->SetVisibility(VISIBILITY_ON);
                             if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                               pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65, 2569.46, 364.397);
+                               pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65f, 2569.46f, 364.397f);
                             if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                             {
                                 me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
@@ -747,7 +747,7 @@ class boss_leviathan_mk : public CreatureScript
                     if (Creature *turret = CAST_CRE(me->GetVehicleKit()->GetPassenger(3)))
                         turret->Kill(turret, false);
                     me->SetSpeed(MOVE_RUN, 1.5f, true);
-                    me->GetMotionMaster()->MovePoint(0, 2790.11, 2595.83, 364.32);
+                    me->GetMotionMaster()->MovePoint(0, 2790.11f, 2595.83f, 364.32f);
                 }
                 
             if (phase == PHASE_LEVIATHAN_ASSEMBLED)
@@ -1262,7 +1262,7 @@ class boss_aerial_unit : public CreatureScript
                     DoCast(me, SPELL_MAGNETIC_CORE_VISUAL);
                     if (Creature *pMagneticCore = Creature::GetCreature((*me), pInstance->GetData64(DATA_MAGNETIC_CORE)))
                         if (pMagneticCore->isAlive())
-                            me->NearTeleportTo(pMagneticCore->GetPositionX(), pMagneticCore->GetPositionY(), 368.965, 0, false);
+                            me->NearTeleportTo(pMagneticCore->GetPositionX(), pMagneticCore->GetPositionY(), 368.965f, 0, false);
                     events.RescheduleEvent(EVENT_PLASMA_BALL, 22000, 0, PHASE_AERIAL_SOLO);
                     events.RescheduleEvent(EVENT_SUMMON_BOTS, 24000, 0, PHASE_AERIAL_SOLO);
                     events.ScheduleEvent(EVENT_REACTIVATE_AERIAL, 20000, 0, PHASE_AERIAL_SOLO);
@@ -1311,7 +1311,7 @@ class boss_aerial_unit : public CreatureScript
                                     me->GetMotionMaster()->Initialize();
                                     DoCastVictim(RAID_MODE(SPELL_PLASMA_BALL_10, SPELL_PLASMA_BALL_25));
                                 }
-                                else me->GetMotionMaster()->MovePoint(0, x, y, 380.040);
+                                else me->GetMotionMaster()->MovePoint(0, x, y, 380.040f);
                             }
                             else if (phase == PHASE_AERIAL_ASSEMBLED && me->getVictim())
                             {
@@ -1324,7 +1324,7 @@ class boss_aerial_unit : public CreatureScript
                             break;
                         case EVENT_REACTIVATE_AERIAL:
                             me->RemoveAurasDueToSpell(SPELL_MAGNETIC_CORE_VISUAL);
-                            me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), 380.040, 3.14159, false);
+                            me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), 380.040f, 3.14159f, false);
                             me->SetReactState(REACT_AGGRESSIVE);
                             events.CancelEvent(EVENT_REACTIVATE_AERIAL);
                             break;
@@ -1355,7 +1355,7 @@ class boss_aerial_unit : public CreatureScript
                             me->SummonCreature(NPC_EMERGENCY_BOT, SummonPos[rand()%9], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                     break;
                 case 2:
-                    me->SummonCreature(NPC_BOOM_BOT, 2744.65, 2569.46, 364.397, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                    me->SummonCreature(NPC_BOOM_BOT, 2744.65f, 2569.46f, 364.397f, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                     break;
             }
 

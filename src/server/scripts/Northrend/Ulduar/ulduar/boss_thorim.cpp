@@ -177,35 +177,35 @@ enum ThorimChests
 
 const Position Pos[7] =
 {
-{2095.53, -279.48, 419.84, 0.504},
-{2092.93, -252.96, 419.84, 6.024},
-{2097.86, -240.97, 419.84, 5.643},
-{2113.14, -225.94, 419.84, 5.259},
-{2156.87, -226.12, 419.84, 4.202},
-{2172.42, -242.70, 419.84, 3.583},
-{2171.92, -284.59, 419.84, 2.691}
+{2095.53f, -279.48f, 419.84f, 0.504f},
+{2092.93f, -252.96f, 419.84f, 6.024f},
+{2097.86f, -240.97f, 419.84f, 5.643f},
+{2113.14f, -225.94f, 419.84f, 5.259f},
+{2156.87f, -226.12f, 419.84f, 4.202f},
+{2172.42f, -242.70f, 419.84f, 3.583f},
+{2171.92f, -284.59f, 419.84f, 2.691f}
 };
 
 const Position PosOrbs[7] =
 {
-{2104.99, -233.484, 433.576, 5.49779},
-{2092.64, -262.594, 433.576, 6.26573},
-{2104.76, -292.719, 433.576, 0.78539},
-{2164.97, -293.375, 433.576, 2.35619},
-{2164.58, -233.333, 433.576, 3.90954},
-{2145.81, -222.196, 433.576, 4.45059},
-{2123.91, -222.443, 433.576, 4.97419}
+{2104.99f, -233.484f, 433.576f, 5.49779f},
+{2092.64f, -262.594f, 433.576f, 6.26573f},
+{2104.76f, -292.719f, 433.576f, 0.78539f},
+{2164.97f, -293.375f, 433.576f, 2.35619f},
+{2164.58f, -233.333f, 433.576f, 3.90954f},
+{2145.81f, -222.196f, 433.576f, 4.45059f},
+{2123.91f, -222.443f, 433.576f, 4.97419f}
 };
 
 const Position PosCharge[7] =
 {
-{2104.99, -233.484, 419.573, 5.49779},
-{2092.64, -262.594, 419.573, 6.26573},
-{2104.76, -292.719, 419.573, 0.78539},
-{2164.97, -293.375, 419.573, 2.35619},
-{2164.58, -233.333, 419.573, 3.90954},
-{2145.81, -222.196, 419.573, 4.45059},
-{2123.91, -222.443, 419.573, 4.97419}
+{2104.99f, -233.484f, 419.573f, 5.49779f},
+{2092.64f, -262.594f, 419.573f, 6.26573f},
+{2104.76f, -292.719f, 419.573f, 0.78539f},
+{2164.97f, -293.375f, 419.573f, 2.35619f},
+{2164.58f, -233.333f, 419.573f, 3.90954f},
+{2145.81f, -222.196f, 419.573f, 4.45059f},
+{2123.91f, -222.443f, 419.573f, 4.97419f}
 };
 
 #define POS_X_ARENA  2181.19f
@@ -259,15 +259,15 @@ class boss_thorim : public CreatureScript
                 pRuneGiant->Respawn(true);
             
             // Spawn Thorim Phase Trigger
-            me->SummonCreature(32892, 2135.04, -310.787, 438.23, 0, TEMPSUMMON_MANUAL_DESPAWN);
+            me->SummonCreature(32892, 2135.04f, -310.787f, 438.23f, 0, TEMPSUMMON_MANUAL_DESPAWN);
                     
             // Spawn Pre-Phase Adds
-            me->SummonCreature(PRE_PHASE_ADD[0], 2134.79, -263.03, 419.84, 5.377, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(PRE_PHASE_ADD[1], 2141.60, -271.64, 419.84, 2.188, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(PRE_PHASE_ADD[2], 2127.24, -251.31, 419.84, 5.89, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(PRE_PHASE_ADD[2], 2123.32, -254.77, 419.84, 6.17, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(PRE_PHASE_ADD[2], 2120.10, -258.99, 419.84, 6.25, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(PRE_PHASE_ADD[3], 2130.28, -274.60, 419.84, 1.22, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[0], 2134.79f, -263.03f, 419.84f, 5.377f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[1], 2141.60f, -271.64f, 419.84f, 2.188f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[2], 2127.24f, -251.31f, 419.84f, 5.89f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[2], 2123.32f, -254.77f, 419.84f, 6.17f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[2], 2120.10f, -258.99f, 419.84f, 6.25f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(PRE_PHASE_ADD[3], 2130.28f, -274.60f, 419.84f, 1.22f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
         }
 
         void KilledUnit(Unit * victim)
@@ -291,11 +291,11 @@ class boss_thorim : public CreatureScript
                 if (HardMode)
                 {
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_LOSE_ILLUSION);
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_HARDMODE_10, CACHE_OF_STORMS_HARDMODE_25), 2134.58, -286.908, 419.495, 1.55988, 0, 0, 0.7, 0.7, 604800);
+                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_HARDMODE_10, CACHE_OF_STORMS_HARDMODE_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 604800);
                 }
                 else
                 {
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58, -286.908, 419.495, 1.55988, 0, 0, 0.7, 0.7, 604800);
+                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 604800);
                 }
             }
         }
@@ -417,7 +417,7 @@ class boss_thorim : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_SHEAT_OF_LIGHTNING);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                    me->GetMotionMaster()->MoveJump(2134.79, -263.03, 419.84, 10.0f, 20.0f);
+                    me->GetMotionMaster()->MoveJump(2134.79f, -263.03f, 419.84f, 10.0f, 20.0f);
                     events.ScheduleEvent(EVENT_UNBALANCING_STRIKE, 15000, 0, PHASE_2);
                     events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 20000, 0, PHASE_2);
                     //events.ScheduleEvent(EVENT_TRANSFER_ENERGY, 20000, 0, PHASE_2);
@@ -428,7 +428,7 @@ class boss_thorim : public CreatureScript
                     {
                         HardMode = true;
                         // Summon Sif
-                        me->SummonCreature(33196, 2149.27, -260.55, 419.69, 2.527, TEMPSUMMON_CORPSE_DESPAWN);
+                        me->SummonCreature(33196, 2149.27f, -260.55f, 419.69f, 2.527f, TEMPSUMMON_CORPSE_DESPAWN);
                         // Achievement Siffed
                         if (pInstance)
                             pInstance->DoCompleteAchievement(ACHIEVEMENT_SIFFED);
@@ -510,14 +510,14 @@ class mob_pre_phase : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
                 
-            if (PrimaryTimer <= uiDiff)
+            if (PrimaryTimer <= int32(uiDiff))
             {
                 DoCast(SPELL_PRE_PRIMARY(id));
                 PrimaryTimer = urand(15000, 20000);
             }
             else PrimaryTimer -= uiDiff;
             
-            if (SecondaryTimer <= uiDiff)
+            if (SecondaryTimer <= int32(uiDiff))
             {
                 DoCast(SPELL_PRE_SECONDARY(id));
                 SecondaryTimer = urand(4000, 8000);
@@ -630,21 +630,21 @@ class mob_arena_phase : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
                 
-            if (PrimaryTimer <= uiDiff)
+            if (PrimaryTimer <= int32(uiDiff))
             {
                 DoCast(SPELL_ARENA_PRIMARY(id));
                 PrimaryTimer = urand(3000, 6000);
             }
             else PrimaryTimer -= uiDiff;
             
-            if (SecondaryTimer <= uiDiff)
+            if (SecondaryTimer <= int32(uiDiff))
             {
                 DoCast(SPELL_ARENA_SECONDARY(id));
                 SecondaryTimer = urand(12000, 16000);
             }
             else SecondaryTimer -= uiDiff;
             
-            if (ChargeTimer <= uiDiff)
+            if (ChargeTimer <= int32(uiDiff))
             {
                 if (id == DARK_RUNE_CHAMPION)
                     if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
@@ -696,12 +696,12 @@ class mob_runic_colossus : public CreatureScript
                 
             // Spawn trashes
             summons.DespawnAll();
-            me->SummonCreature(32874, 2218.38, -297.50, 412.18, 1.030, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(32874, 2235.07, -297.98, 412.18, 1.613, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(32874, 2235.26, -338.34, 412.18, 1.589, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(32874, 2217.69, -337.39, 412.18, 1.241, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(33110, 2227.58, -308.30, 412.18, 1.591, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(33110, 2227.47, -345.37, 412.18, 1.566, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32874, 2218.38f, -297.50f, 412.18f, 1.030f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32874, 2235.07f, -297.98f, 412.18f, 1.613f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32874, 2235.26f, -338.34f, 412.18f, 1.589f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32874, 2217.69f, -337.39f, 412.18f, 1.241f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(33110, 2227.58f, -308.30f, 412.18f, 1.591f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(33110, 2227.47f, -345.37f, 412.18f, 1.566f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
         }
         
         void UpdateAI(const uint32 uiDiff)
@@ -716,7 +716,7 @@ class mob_runic_colossus : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
                 
-            if (BarrierTimer <= uiDiff)
+            if (BarrierTimer <= int32(uiDiff))
             {
                 me->MonsterTextEmote(EMOTE_MIGHT, 0, true);
                 DoCast(me, SPELL_RUNIC_BARRIER);
@@ -724,14 +724,14 @@ class mob_runic_colossus : public CreatureScript
             }
             else BarrierTimer -= uiDiff;
             
-            if (SmashTimer <= uiDiff)
+            if (SmashTimer <= int32(uiDiff))
             {
                 DoCast(me, SPELL_SMASH);
                 SmashTimer = urand (15000, 18000);
             }
             else SmashTimer -= uiDiff;
             
-            if (ChargeTimer <= uiDiff)
+            if (ChargeTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true))
                     DoCast(pTarget, RAID_MODE(SPELL_CHARGE_10, SPELL_CHARGE_25));
@@ -792,11 +792,11 @@ class mob_rune_giant : public CreatureScript
                 
             // Spawn trashes
             summons.DespawnAll();
-            me->SummonCreature(32875, 2198.05, -428.77, 419.95, 6.056, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(32875, 2220.31, -436.22, 412.26, 1.064, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(32875, 2158.88, -441.73, 438.25, 0.127, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(33110, 2198.29, -436.92, 419.95, 0.261, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-            me->SummonCreature(33110, 2230.93, -434.27, 412.26, 1.931, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32875, 2198.05f, -428.77f, 419.95f, 6.056f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32875, 2220.31f, -436.22f, 412.26f, 1.064f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(32875, 2158.88f, -441.73f, 438.25f, 0.127f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(33110, 2198.29f, -436.92f, 419.95f, 0.261f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+            me->SummonCreature(33110, 2230.93f, -434.27f, 412.26f, 1.931f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
         }
         
         void EnterCombat(Unit* pWho)
@@ -813,14 +813,14 @@ class mob_rune_giant : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
                 
-            if (StompTimer <= uiDiff)
+            if (StompTimer <= int32(uiDiff))
             {
                 DoCast(me, RAID_MODE(SPELL_STOMP_10, SPELL_STOMP_25));
                 StompTimer = urand(10000, 12000);
             }
             else StompTimer -= uiDiff;
             
-            if (DetonationTimer <= uiDiff)
+            if (DetonationTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
                     DoCast(pTarget, SPELL_RUNE_DETONATION);
@@ -964,7 +964,7 @@ class npc_sif : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
                 
-            if (VolleyTimer <= uiDiff)
+            if (VolleyTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
                 {
@@ -976,14 +976,14 @@ class npc_sif : public CreatureScript
             }
             else VolleyTimer -= uiDiff;
             
-            if (BlizzardTimer <= uiDiff)
+            if (BlizzardTimer <= int32(uiDiff))
             {
                 DoCast(me, RAID_MODE(SPELL_BLIZZARD_10, SPELL_BLIZZARD_25));
                 BlizzardTimer = 45000;
             }
             else BlizzardTimer -= uiDiff;
             
-            if (NovaTimer <= uiDiff)
+            if (NovaTimer <= int32(uiDiff))
             {
                 DoCastAOE(RAID_MODE(SPELL_FROSTNOVA_10, SPELL_FROSTNOVA_25));
                 NovaTimer = urand(20000, 25000);

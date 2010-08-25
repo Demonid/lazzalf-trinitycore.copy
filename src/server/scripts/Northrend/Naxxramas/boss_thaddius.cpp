@@ -99,12 +99,12 @@ enum Events
 // If Feugen or Stalagg gets too far from the Tesla Coil behind him, the raid will start taking unhealable AoE
 #define SPELL_TESLA           32309 // similar spell from Patchwerk
 
-#define TESLA_S_X             3450.45 // Stalagg - Tesla
-#define TESLA_S_Y            -2931.42
-#define TESLA_S_Z             312.091
-#define TESLA_F_X             3508.14 // Feugen - Tesla
-#define TESLA_F_Y            -2988.65
-#define TESLA_F_Z             312.092
+#define TESLA_S_X             3450.45f // Stalagg - Tesla
+#define TESLA_S_Y            -2931.42f
+#define TESLA_S_Z             312.091f
+#define TESLA_F_X             3508.14f // Feugen - Tesla
+#define TESLA_F_Y            -2988.65f
+#define TESLA_F_Z             312.092f
 
 class boss_thaddius : public CreatureScript
 {
@@ -154,7 +154,7 @@ class boss_thaddius : public CreatureScript
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
-            me->SummonCreature(39000, 3517.93, -2942.52, 303.12, 2.096, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
+            me->SummonCreature(39000, 3517.93f, -2942.52f, 303.12f, 2.096f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
         }
 
         void Reset()
@@ -381,8 +381,8 @@ class mob_stalagg : public CreatureScript
                     if (pFeugenVictim && pStalaggVictim)
                     {
                         // store tank threat before any other change is made
-                        int32 threatStalaggVictim = me->getThreatManager().getThreat(pStalaggVictim);
-                        int32 threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
+                        float threatStalaggVictim = me->getThreatManager().getThreat(pStalaggVictim);
+                        float threatFeugenVictim = pFeugen->getThreatManager().getThreat(pFeugenVictim);
     						
                         // magnetic pull is not working. So just jump.
                         // reset aggro to be sure that feugen will not follow the jump
@@ -470,7 +470,7 @@ class mob_feugen : public CreatureScript
                 return;
 
             // Tesla distance check
-            if(me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 28)
+            if (me->GetDistance(TESLA_F_X, TESLA_F_Y, TESLA_F_Z) >= 28)
             {
                 me->MonsterTextEmote(EMOTE_TESLA, 0, true);
                 DoCastAOE(SPELL_TESLA);

@@ -111,35 +111,35 @@ enum Yells
 
 const Position PosSiege[5] =
 {
-{-814.59,-64.54,429.92,5.969},
-{-784.37,-33.31,429.92,5.096},
-{-808.99,-52.10,429.92,5.668},
-{-798.59,-44.00,429.92,5.663},
-{-812.83,-77.71,429.92,0.046}
+{-814.59f,-64.54f,429.92f,5.969f},
+{-784.37f,-33.31f,429.92f,5.096f},
+{-808.99f,-52.10f,429.92f,5.668f},
+{-798.59f,-44.00f,429.92f,5.663f},
+{-812.83f,-77.71f,429.92f,0.046f}
 };
 
 const Position PosChopper[5] =
 {
-{-717.83,-106.56,430.02,0.122},
-{-717.83,-114.23,430.44,0.122},
-{-717.83,-109.70,430.22,0.122},
-{-718.45,-118.24,430.26,0.052},
-{-718.45,-123.58,430.41,0.085}
+{-717.83f,-106.56f,430.02f,0.122f},
+{-717.83f,-114.23f,430.44f,0.122f},
+{-717.83f,-109.70f,430.22f,0.122f},
+{-718.45f,-118.24f,430.26f,0.052f},
+{-718.45f,-123.58f,430.41f,0.085f}
 };
 
 const Position PosDemolisher[5] =
 {
-{-724.12,-176.64,430.03,2.543},
-{-766.70,-225.03,430.50,1.710},
-{-729.54,-186.26,430.12,1.902},
-{-756.01,-219.23,430.50,2.369},
-{-798.01,-227.24,429.84,1.446}
+{-724.12f,-176.64f,430.03f,2.543f},
+{-766.70f,-225.03f,430.50f,1.710f},
+{-729.54f,-186.26f,430.12f,1.902f},
+{-756.01f,-219.23f,430.50f,2.369f},
+{-798.01f,-227.24f,429.84f,1.446f}
 };
 
 const Position PosColossus[2] =
 {
-{367.031, 12.784,409.886,3.263},
-{368.768,-46.847,409.886,3.036}
+{367.031f, 12.784f,409.886f,3.263f},
+{368.768f,-46.847f,409.886f,3.036f}
 };
 
 class boss_flame_leviathan : public CreatureScript
@@ -317,7 +317,7 @@ class boss_flame_leviathan : public CreatureScript
                     
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
                 me->SetReactState(REACT_AGGRESSIVE);
-                me->SetHomePosition(318.74, -13.75, 409.803, 3.12723); // new Home Position
+                me->SetHomePosition(318.74f, -13.75f, 409.803f, 3.12723f); // new Home Position
                 me->GetMotionMaster()->MoveTargetedHome();
                 DoZoneInCombat();
             }
@@ -586,7 +586,7 @@ class npc_keeper_norgannon : public CreatureScript
             {
                 case ACTION_VEHICLE_RESPAWN:
                     summons.DespawnAll();
-                    for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    for(int32 i = 0; i < (RAID_MODE(2, 5)); ++i)
                     {
                         if (Creature* summon = DoSummon(VEHICLE_SIEGE, PosSiege[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
                         {
@@ -595,7 +595,7 @@ class npc_keeper_norgannon : public CreatureScript
                             summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
                         }
                     }
-                    for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    for(int32 i = 0; i < (RAID_MODE(2, 5)); ++i)
                     {
                         if (Creature* summon = DoSummon(VEHICLE_CHOPPER, PosChopper[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
                         {
@@ -604,7 +604,7 @@ class npc_keeper_norgannon : public CreatureScript
                             summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
                         }
                     }
-                    for(uint32 i = 0; i < (RAID_MODE(2, 5)); ++i)
+                    for(int32 i = 0; i < (RAID_MODE(2, 5)); ++i)
                     {
                         if (Creature* summon = DoSummon(VEHICLE_DEMOLISHER, PosDemolisher[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
                         {
@@ -707,7 +707,7 @@ class mob_colossus : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (uiGroundSlamTimer <= diff)
+            if (uiGroundSlamTimer <= int32(diff))
             {
                 DoCast(me->getVictim(), SPELL_GROUND_SLAM);
                 uiGroundSlamTimer = 12000;

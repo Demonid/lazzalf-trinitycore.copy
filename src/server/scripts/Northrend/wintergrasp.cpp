@@ -339,7 +339,7 @@ class npc_winterguard : public CreatureScript
 
             if ((pPlayer->GetTeam() == ALLIANCE && pvpWG->getDefenderTeamId() != TEAM_ALLIANCE)
                 || (pPlayer->GetTeam() == TEAM_HORDE && pvpWG->getDefenderTeamId() != TEAM_HORDE))
-                    pPlayer->TeleportTo(571, 5047.93, 2848.57, 393, 0);  // Out the Fortress
+                    pPlayer->TeleportTo(571, 5047.93f, 2848.57f, 393, 0);  // Out the Fortress
 
             return;
         }
