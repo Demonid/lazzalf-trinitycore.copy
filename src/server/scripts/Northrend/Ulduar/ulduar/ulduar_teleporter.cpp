@@ -102,10 +102,10 @@ class ulduar_teleporter : public GameObjectScript
             pPlayer->TeleportTo(603, 2086.27f, -24.3134f, 421.239f, 0.0f);
             pPlayer->CLOSE_GOSSIP_MENU(); break;
         case SPARK_IMAGINATION:
-            pPlayer->TeleportTo(603, 2518.16, 2569.03, 412.299, 0);
+            pPlayer->TeleportTo(603, 2518.16f, 2569.03f, 412.299f, 0);
             pPlayer->CLOSE_GOSSIP_MENU(); break;
         case DESCENT_MADNESS:
-            pPlayer->TeleportTo(603, 1854.82, -11.5608, 334.175, 0);
+            pPlayer->TeleportTo(603, 1854.82f, -11.5608f, 334.175f, 0);
             pPlayer->CLOSE_GOSSIP_MENU(); break;
         }
 
@@ -136,7 +136,7 @@ class kologarn_teleporter : public GameObjectScript
         switch(action)
         {
             case KOLOGARN:
-                pPlayer->TeleportTo(603, 1765.40, -24.40, 449.00, 6.27);
+                pPlayer->TeleportTo(603, 1765.40f, -24.40f, 449.00f, 6.27f);
                 pPlayer->CLOSE_GOSSIP_MENU(); break;
         }
 

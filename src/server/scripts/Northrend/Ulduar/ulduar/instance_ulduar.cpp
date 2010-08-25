@@ -318,7 +318,7 @@ class instance_ulduar : public InstanceMapScript
                     if (MimironTram && instance)
                     {
                         // Load Mimiron Tram (unfortunally only server side)
-                        instance->LoadGrid(2307, 284.632);
+                        instance->LoadGrid(2307, 284.632f);
                     
                         if (value == 0)
                             MimironTram->SetGoState(GO_STATE_READY);
