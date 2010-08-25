@@ -7013,26 +7013,11 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
                 || (MapType == 3 && !InBattleground()))
                 return true;
 
-            uint32 noSpaceForCount = 0;
             uint32 itemId = sWorld.getIntConfig(CONFIG_PVP_TOKEN_ID);
             int32 count = sWorld.getIntConfig(CONFIG_PVP_TOKEN_COUNT);
 
-            // check space and find places
-            ItemPosCountVec dest;
-            uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
-            if (msg != EQUIP_ERR_OK)   // convert to possible store amount
-                count = noSpaceForCount;
-
-            if (count == 0 || dest.empty()) // can't add any
-            {
-                // -- TODO: Send to mailbox if no space
-                ChatHandler(this).PSendSysMessage("You don't have any space in your bags for a token.");
-                return true;
-            }
-
-            Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-            SendNewItem(item,count,true,false);
-            ChatHandler(this).PSendSysMessage("You have been awarded a token for slaying another player.");
+            if(AddItem(itemId, count))
+                ChatHandler(this).PSendSysMessage("You have been awarded a token for slaying another player.");
         }
     }
 
@@ -13768,22 +13753,6 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId, bool showQue
             pMenu->GetGossipMenu().AddGossipMenuItemData(itr->second.action_menu_id, itr->second.action_poi_id, itr->second.action_script_id);
         }
     }
-
-    // some gossips aren't handled in normal way ... so we need to do it this way .. TODO: handle it in normal way ;-)
-    /*if (pMenu->Empty())
-    {
-        if (pCreature->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_TRAINER))
-        {
-            // output error message if need
-            pCreature->isCanTrainingOf(this, true);
-        }
-
-        if (pCreature->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_BATTLEMASTER))
-        {
-            // output error message if need
-            pCreature->isCanInteractWithBattleMaster(this, true);
-        }
-    }*/
 }
 
 void Player::SendPreparedGossip(WorldObject *pSource)
@@ -24323,6 +24292,29 @@ void Player::SendRefundInfo(Item *item)
     GetSession()->SendPacket(&data);
 }
 
+bool Player::AddItem(uint32 itemId, uint32 count)
+{
+    uint32 noSpaceForCount = 0;
+    ItemPosCountVec dest;
+    uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
+    if (msg != EQUIP_ERR_OK)
+        count = noSpaceForCount;
+
+    if (count == 0 || dest.empty())
+    {
+        // -- TODO: Send to mailbox if no space
+        ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
+        return false;
+    }
+
+    Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
+    if(item)
+        SendNewItem(item,count,true,false);
+    else
+        return false;
+    return true;
+}
+
 void Player::RefundItem(Item *item)
 {
     if (!item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
@@ -24447,7 +24439,7 @@ void Player::_LoadRandomBGStatus(QueryResult_AutoPtr result)
 
 float Player::GetAverageItemLevel()
 {
-    uint32 sum = 0;
+    float sum = 0;
     uint32 count = 0;
 
     for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
@@ -24457,7 +24449,7 @@ float Player::GetAverageItemLevel()
             continue;
 
         if (m_items[i] && m_items[i]->GetProto())
-            sum += m_items[i]->GetProto()->ItemLevel;
+            sum += m_items[i]->GetProto()->GetItemLevelIncludingQuality();
 
         count++;
     }

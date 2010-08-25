@@ -1927,10 +1927,6 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->CastSpell(target, 61286, true);
                 }
                 break;
-            case 62292: // Blaze (Pool of Tar)
-                // should we use custom damage?
-                target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
-                break;
             case 51685: // Prey on the Weak
             case 51686:
             case 51687:
@@ -1940,12 +1936,16 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 {
                     if (!target->HasAura(58670)) 
                     {
-                        int32 basepoints = GetSpellProto()->EffectBasePoints[0];
+                        int32 basepoints = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), 0);
                         target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
                     }
                 }
                 else
                     target->RemoveAurasDueToSpell(58670);
+                break;
+            case 62292: // Blaze (Pool of Tar)
+                // should we use custom damage?
+                target->CastSpell((Unit*)NULL, m_spellProto->EffectTriggerSpell[m_effIndex], true);
                 break;
             case 62399: // Overload Circuit
                 if (target->GetMap()->IsDungeon() && target->GetAppliedAuras().count(62399) >= (target->GetMap()->IsHeroic() ? 4 : 2))
