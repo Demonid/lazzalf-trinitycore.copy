@@ -98,11 +98,11 @@ enum Yells
 #define ACHIEVEMENT_WITH_OPEN_ARMS            RAID_MODE(2951, 2952)
 #define MAX_DISARMED_TIME                     12000
 
-uint32 GripTargetGUID;
+uint64 GripTargetGUID[3];
 
 // Positiones
-const Position RubbleRight = {1781.814, -3.716, 448.808, 4.211};
-const Position RubbleLeft  = {1781.814, -45.07, 448.808, 2.260};
+const Position RubbleRight = {1781.814f, -3.716f, 448.808f, 4.211f};
+const Position RubbleLeft  = {1781.814f, -45.07f, 448.808f, 2.260f};
 
 enum KologarnChests
 {
@@ -176,7 +176,7 @@ class boss_kologarn : public CreatureScript
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->setFaction(35);
             // Chest spawn
-            me->SummonGameObject(RAID_MODE(CACHE_OF_LIVING_STONE_10, CACHE_OF_LIVING_STONE_25), 1836.52, -36.1111, 448.81, 0.558504, 0, 0, 0.7, 0.7, 604800);
+            me->SummonGameObject(RAID_MODE(CACHE_OF_LIVING_STONE_10, CACHE_OF_LIVING_STONE_25), 1836.52f, -36.1111f, 448.81f, 0.558504f, 0, 0, 0.7f, 0.7f, 604800);
         }
 
         void PassengerBoarded(Unit *who, int8 seatId, bool apply)
@@ -197,7 +197,8 @@ class boss_kologarn : public CreatureScript
             DoScriptText(SAY_AGGRO, me);
             _EnterCombat();
             RubbleCount = 0;
-            GripTargetGUID = NULL;
+            for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                GripTargetGUID[n] = NULL;
             Gripped = false;
             
             if (Creature *LeftArm = CAST_CRE(me->GetVehicleKit()->GetPassenger(0)))
@@ -269,16 +270,20 @@ class boss_kologarn : public CreatureScript
                 case EVENT_GRIP:
                     if (right)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                        me->MonsterTextEmote(EMOTE_STONE, 0, true);
+                        DoScriptText(SAY_GRAB_PLAYER, me);
+
+                        for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
                         {
-                            me->MonsterTextEmote(EMOTE_STONE, 0, true);
-                            DoScriptText(SAY_GRAB_PLAYER, me);
-                            GripTargetGUID = pTarget->GetGUID();
-                            
-                            if (pInstance)
-                                if (Creature* RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM)))
-                                    if (RightArm->AI())
-                                        RightArm->AI()->DoAction(ACTION_GRIP);
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                                GripTargetGUID[n] = pTarget->GetGUID();
+                        }
+
+                        if (pInstance)
+                        {
+                            if (Creature* RightArm = me->GetCreature(*me, pInstance->GetData64(DATA_RIGHT_ARM)))
+                                if (RightArm->AI())
+                                    RightArm->AI()->DoAction(ACTION_GRIP);
                         }
                     }
                     events.RescheduleEvent(EVENT_GRIP, 40000);
@@ -446,12 +451,15 @@ class mob_right_arm : public CreatureScript
 
             if (Gripped)
             {
-                if (SqueezeTimer <= diff)
+                if (SqueezeTimer <= int32(diff))
                 {
-                    if (me->GetVehicleKit()->GetPassenger(0) && me->GetVehicleKit()->GetPassenger(0)->isAlive())
-                        me->Kill(me->GetVehicleKit()->GetPassenger(0), true);
+                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                    {
+                        if (me->GetVehicleKit()->GetPassenger(n) && me->GetVehicleKit()->GetPassenger(n)->isAlive())
+                            me->Kill(me->GetVehicleKit()->GetPassenger(n), true);
+                    }
                     Gripped = false;
-                }
+                }  
                 else SqueezeTimer -= diff;
             }
         }
@@ -461,7 +469,7 @@ class mob_right_arm : public CreatureScript
             if (Victim)
             {
                 Victim->ExitVehicle();
-                Victim->GetMotionMaster()->MoveJump(1767.80, -18.38, 448.808, 10, 10);
+                Victim->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 448.808f, 10, 10);
             }
         }
         
@@ -490,19 +498,22 @@ class mob_right_arm : public CreatureScript
             switch (action)
             {
                 case ACTION_GRIP:
-                    if (Unit* GripTarget = Unit::GetUnit(*me, GripTargetGUID))
+                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
                     {
-                        if (GripTarget && GripTarget->isAlive())
+                        if (Unit* GripTarget = Unit::GetUnit(*me, GripTargetGUID[n]))
                         {
-                            GripTarget->EnterVehicle(me, 0);
-                            me->AddAura(SPELL_STONE_GRIP, GripTarget);
-                            me->AddAura(SPELL_STONE_GRIP_STUN, GripTarget);
-                            ArmDamage = 0;
-                            SqueezeTimer = 16000;
-                            GripTargetGUID = NULL;
-                            Gripped = true;
+                            if (GripTarget && GripTarget->isAlive())
+                            {
+                                GripTarget->EnterVehicle(me, n);
+                                me->AddAura(SPELL_STONE_GRIP, GripTarget);
+                                me->AddAura(SPELL_STONE_GRIP_STUN, GripTarget);
+                                GripTargetGUID[n] = NULL;
+                            }
                         }
-                    }
+                    }  
+                    ArmDamage = 0;
+                    SqueezeTimer = 16000;
+                    Gripped = true;
                     break;
             }
         }
@@ -514,17 +525,19 @@ class mob_right_arm : public CreatureScript
                 ArmDamage += damage;
                 int dmg = RAID_MODE(100000, 480000);
                 
-                if (ArmDamage > dmg || damage >= me->GetHealth())
+                if (ArmDamage >= uint32(dmg) || damage >= me->GetHealth())
                 {
-                    Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(0);
-                    if (pGripTarget && pGripTarget->isAlive())
+                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
                     {
-                        pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
-                        pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
-                        pGripTarget->ExitVehicle();
-                        pGripTarget->GetMotionMaster()->MoveJump(1767.80, -18.38, 448.808, 10, 10);
+                        Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(n);
+                        if (pGripTarget && pGripTarget->isAlive())
+                        {
+                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
+                            pGripTarget->ExitVehicle();
+                            pGripTarget->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 448.808f, 10, 10);
+                        }
                     }
-                    pGripTarget = 0;
                     Gripped = false;
                 }
             }
