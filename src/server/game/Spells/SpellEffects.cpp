@@ -1933,10 +1933,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                m_caster->CastSpell(m_caster, 65047, true); // Mirror Image
 
             break;
-        }        
-        case 11327: //Vanish 1
-        case 11329: //Vanish 2
-        case 26888: //Vanish 3
+        }
         case 18461: // Vanish (not exist)
         {
             unitTarget->RemoveMovementImpairingAuras();
@@ -5770,6 +5767,22 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         && (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VANISH))
     {
         //m_caster->ToPlayer()->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
+        m_caster->RemoveMovementImpairingAuras();
+        m_caster->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
+
+        // Stealth spell
+        uint32 spellId = 1784;
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+
+        if (!spellInfo)
+            return;
+
+        // reset cooldown on it if needed
+        if (m_caster->ToPlayer()->HasSpellCooldown(spellId))
+            m_caster->ToPlayer()->RemoveSpellCooldown(spellId);
+
+        m_caster->CastSpell(m_caster, spellId, true);
+
         // Overkill
         if (m_caster->ToPlayer()->HasSpell(58426))
            m_caster->CastSpell(m_caster, 58427, true);
