@@ -221,7 +221,7 @@ class boss_black_knight : public CreatureScript
             if (bEventInProgress)
                 if (uiResurrectTimer <= uiDiff)
                 {
-                    me->SetHealth(me->GetMaxHealth());
+                    me->SetFullHealth();
                     me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                     me->AttackStop();                              
                             DoScriptText(RAND(SAY_DEATH_1,SAY_DEATH), me);
@@ -340,7 +340,7 @@ class boss_black_knight : public CreatureScript
                 } break;
             }
 
-            if (!me->hasUnitState(UNIT_STAT_ROOT) && !me->GetHealth()*100 / me->GetMaxHealth() <= 0)
+            if (!me->hasUnitState(UNIT_STAT_ROOT) && !me->HealthBelowPct(1))
                 DoMeleeAttackIfReady();
         }
 
