@@ -350,6 +350,9 @@ public:
 
         uint32 uiExorcismTimer;
 
+        uint32 EventMinute;
+        uint32 EventTimer;
+
         void Reset()
         {
             uiUtherGUID = 0;
@@ -369,6 +372,9 @@ public:
             uiEpochGUID = 0;
             uiMalganisGUID = 0;
             uiInfiniteGUID = 0;
+
+            EventMinute = 0;
+            EventTimer = 60000;
 
             if (pInstance) {
                 pInstance->SetData(DATA_ARTHAS_EVENT, NOT_STARTED);
@@ -565,6 +571,13 @@ public:
             npc_escortAI::UpdateAI(diff);
 
             DoMeleeAttackIfReady();
+
+            if (EventTimer <= diff)
+ 	        {
+ 	            EventMinute++;
+  	            EventTimer += 60000;
+  	        }
+  	        else EventTimer -= diff;
 
             if (bStepping)
             {
@@ -1116,6 +1129,8 @@ public:
                             DoScriptText(SAY_PHASE404,me);
                             SetHoldState(false);
                             bStepping = false;
+                            if (EventMinute <= 25 && IsHeroic())
+                                 me->SummonCreature(NPC_INFINITE, 2335.47f, 1262.04f, 132.921, 1.42079f, TEMPSUMMON_TIMED_DESPAWN, 87000);
                             break;
                         //After Gossip 5
                         case 85:
