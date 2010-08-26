@@ -1933,9 +1933,11 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                m_caster->CastSpell(m_caster, 65047, true); // Mirror Image
 
             break;
-        }
-        // Vanish (not exist)
-        case 18461:
+        }        
+        case 11327: //Vanish 1
+        case 11329: //Vanish 2
+        case 26888: //Vanish 3
+        case 18461: // Vanish (not exist)
         {
             unitTarget->RemoveMovementImpairingAuras();
             unitTarget->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
