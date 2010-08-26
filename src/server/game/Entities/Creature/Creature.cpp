@@ -1511,7 +1511,7 @@ void Creature::setDeathState(DeathState s)
     {
         //if (isPet())
         //    setActive(true);
-        SetHealth(GetMaxHealth());
+        SetFullHealth();
         SetLootRecipient(NULL);
         ResetPlayerDamageReq();
         CreatureInfo const *cinfo = GetCreatureInfo();
@@ -1604,7 +1604,7 @@ void Creature::Respawn(bool force)
         if (IsAIEnabled)
             AI()->JustRespawned();
 
-        uint16 poolid = GetDBTableGUIDLow() ? sPoolMgr.IsPartOfAPool<Creature>(GetDBTableGUIDLow()) : 0;
+        uint32 poolid = GetDBTableGUIDLow() ? sPoolMgr.IsPartOfAPool<Creature>(GetDBTableGUIDLow()) : 0;
         if (poolid)
             sPoolMgr.UpdatePool<Creature>(poolid, GetDBTableGUIDLow());
 
@@ -2276,12 +2276,12 @@ uint8 Creature::getLevelForTarget(Unit const* target) const
     if (!isWorldBoss())
         return Unit::getLevelForTarget(target);
 
-    uint16 level = target->getLevel()+sWorld.getIntConfig(CONFIG_WORLD_BOSS_LEVEL_DIFF);
+    uint16 level = target->getLevel() + sWorld.getIntConfig(CONFIG_WORLD_BOSS_LEVEL_DIFF);
     if (level < 1)
         return 1;
     if (level > 255)
         return 255;
-    return level;
+    return uint8(level);
 }
 
 std::string Creature::GetAIName() const
