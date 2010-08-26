@@ -913,8 +913,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         case SUMMON_PET:
         {
             //the damage bonus used for pets is either fire or shadow damage, whatever is higher
-            uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-            uint32 shadow = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+            uint32 fire  = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) : 0;
+            uint32 shadow = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) : 0;
             uint32 val  = (fire > shadow) ? fire : shadow;
             SetBonusDamage(int32 (val * 0.15f));
             //bonusAP += val * 0.57;
@@ -943,7 +943,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 case 510: // mage Water Elemental
                 {
                     //40% damage bonus of mage's frost damage
-                    float val = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4f;
+                    float val = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4f : 0;
                     if (val < 0)
                         val = 0;
                     SetBonusDamage(int32(val));
@@ -952,7 +952,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 				case 89: // Infernal
                 {
                     //60% damage bonus of warlock's fire damage
-                    float val = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6;
+                    float val = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6 : 0;
                     SetBonusDamage( int32(val));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((val) - petlevel));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((val) + petlevel));
