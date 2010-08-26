@@ -1229,9 +1229,9 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recv_data)
         trans->PAppend("DELETE FROM `character_queststatus` WHERE `status` = 3 AND guid ='%u'",GUID_LOPART(guid));
         // Delete record of the faction old completed quests
         if (team == BG_TEAM_ALLIANCE)
-            trans->PAppend("DELETE FROM `character_queststatus` WHERE guid= '%u' AND quest IN (SELECT entry FROM world.quest_template AS quest WHERE RequiredRaces IN (1,4,8,64,1024,1101))",GUID_LOPART(guid));
+            trans->PAppend("DELETE FROM `character_queststatus` WHERE guid= '%u' AND quest IN (SELECT entry FROM trinity_world.quest_template AS quest WHERE RequiredRaces IN (1,4,8,64,1024,1101))",GUID_LOPART(guid));
         else
-            trans->PAppend("DELETE FROM `character_queststatus` WHERE guid= '%u' AND quest IN (SELECT entry FROM world.quest_template AS quest WHERE RequiredRaces IN (2,16,32,128,512,690))",GUID_LOPART(guid));
+            trans->PAppend("DELETE FROM `character_queststatus` WHERE guid= '%u' AND quest IN (SELECT entry FROM trinity_world.quest_template AS quest WHERE RequiredRaces IN (2,16,32,128,512,690))",GUID_LOPART(guid));
         // Reset guild
         trans->PAppend("DELETE FROM `guild_member` WHERE `guid`= '%u'",GUID_LOPART(guid));
         // Delete Friend List
