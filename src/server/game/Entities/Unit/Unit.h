@@ -111,14 +111,14 @@ enum SpellModOp
     SPELLMOD_JUMP_TARGETS           = 17,
     SPELLMOD_CHANCE_OF_SUCCESS      = 18,
     SPELLMOD_ACTIVATION_TIME        = 19,
-    SPELLMOD_EFFECT_PAST_FIRST      = 20,
+    SPELLMOD_DAMAGE_MULTIPLIER      = 20,
     SPELLMOD_GLOBAL_COOLDOWN        = 21,
     SPELLMOD_DOT                    = 22,
     SPELLMOD_EFFECT3                = 23,
-    SPELLMOD_SPELL_BONUS_DAMAGE     = 24,
+    SPELLMOD_BONUS_MULTIPLIER       = 24,
     // spellmod 25
     SPELLMOD_PROC_PER_MINUTE        = 26,
-    SPELLMOD_MULTIPLE_VALUE         = 27,
+    SPELLMOD_VALUE_MULTIPLIER       = 27,
     SPELLMOD_RESIST_DISPEL_CHANCE   = 28,
     SPELLMOD_CRIT_DAMAGE_BONUS_2    = 29, //one not used spell
     SPELLMOD_SPELL_COST_REFUND_ON_FAIL = 30
@@ -1695,7 +1695,7 @@ class Unit : public WorldObject
         // set withDelayed to true to account delayed spells as casted
         // delayed+channeled spells are always accounted as casted
         // we can skip channeled or delayed checks using flags
-        bool IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false, bool isAutoshoot = false) const;
+        bool IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false, bool isAutoshoot = false, bool checkInstant = false) const;
 
         // set withDelayed to true to interrupt delayed spells too
         // delayed+channeled spells are always interrupted

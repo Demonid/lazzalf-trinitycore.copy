@@ -28,7 +28,7 @@
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), chatLogfile(NULL), arenaLogFile(NULL), cheatLogFile(NULL),
+    dberLogfile(NULL), chatLogfile(NULL), arenaLogFile(NULL), cheatLogFile(NULL), sqlLogFile(NULL),
     m_gmlog_per_account(false), m_enableLogDBLater(false), 
     m_enableLogDB(false), m_colored(false)
 {
@@ -68,6 +68,10 @@ Log::~Log()
     if (cheatLogFile != NULL)
         fclose(cheatLogFile);
     cheatLogFile = NULL;
+    
+    if (sqlLogFile != NULL)
+        fclose(sqlLogFile);
+    sqlLogFile = NULL;
 }
 
 void Log::SetLogLevel(char *Level)
@@ -154,13 +158,13 @@ void Log::Initialize()
         }
     }
 
-    charLogfile = openLogFile("CharLogFile","CharLogTimestamp","a");
-
-    dberLogfile = openLogFile("DBErrorLogFile",NULL,"a");
-    raLogfile = openLogFile("RaLogFile",NULL,"a");
-    chatLogfile = openLogFile("ChatLogFile","ChatLogTimestamp","a");
-    arenaLogFile = openLogFile("ArenaLogFile",NULL,"a");
+    charLogfile = openLogFile("CharLogFile", "CharLogTimestamp", "a");
+    dberLogfile = openLogFile("DBErrorLogFile", NULL, "a");
+    raLogfile = openLogFile("RaLogFile", NULL, "a");
+    chatLogfile = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
+    arenaLogFile = openLogFile("ArenaLogFile", NULL,"a");
     cheatLogFile = openLogFile("CheatLogFile",NULL,"a");
+    sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
 
     // Main log file settings
     m_logLevel     = sConfig.GetIntDefault("LogLevel", LOGL_NORMAL);
@@ -550,6 +554,30 @@ void Log::outCheat(const char * str, ...)
         va_end(ap);
         fflush(cheatLogFile);
     }
+}
+
+void Log::outSQLDriver(const char* str, ...)
+{
+    if (!str)
+        return;
+
+    va_list ap;
+    va_start(ap, str);
+    vutf8printf(stdout, str, &ap);
+    va_end(ap);
+
+    printf("\n");
+    if (sqlLogFile)
+    {
+        outTimestamp(sqlLogFile);
+        va_start(ap, str);
+        vfprintf(sqlLogFile, str, ap);
+        fprintf(sqlLogFile, "\n");
+        va_end(ap);
+
+        fflush(sqlLogFile);
+    }
+    fflush(stdout);
 }
 
 void Log::outErrorDb(const char * err, ...)

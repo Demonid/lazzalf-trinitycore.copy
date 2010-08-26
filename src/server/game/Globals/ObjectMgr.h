@@ -1047,6 +1047,14 @@ class ObjectMgr
 
         // for wintergrasp only
         GraveYardMap        mGraveYardMap;
+
+        void AddLocaleString(std::string& s, LocaleConstant locale, StringVector& data);
+        inline void GetLocaleString(const StringVector& data, int loc_idx, std::string& value) const
+        {
+            if (data.size() > size_t(loc_idx) && !data[loc_idx].empty())
+                value = data[loc_idx];
+        }
+
     protected:
 
         // first free id for selected id type
@@ -1126,8 +1134,6 @@ class ObjectMgr
         LocalForIndex        m_LocalForIndex;
 
         int DBCLocaleIndex;
-
-        void AddLocaleString(std::string& s, LocaleConstant locale, StringVector& data);
 
     private:
         void LoadScripts(ScriptsType type);
