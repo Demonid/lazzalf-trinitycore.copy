@@ -8138,7 +8138,7 @@ void Player::CastItemUseSpell(Item *item,SpellCastTargets const& targets,uint8 c
         Spell *spell = new Spell(this, spellInfo,false);
         spell->m_CastItem = item;
         spell->m_cast_count = cast_count;                   //set count of casts
-        spell->m_currentBasePoints[0] = SpellMgr::CalculateSpellEffectBaseAmount(learning_spell_id, spellInfo, 0);
+        spell->SetSpellValue(SPELLVALUE_BASE_POINT0, learning_spell_id);
         spell->prepare(&targets);
         return;
     }
@@ -20579,6 +20579,11 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // Always can see self
     if (m_mover == u || this == u)
         return true;
+
+    // Arena visibility before arena start
+    if (InArena() && GetBattleground() && GetBattleground()->GetStatus() == STATUS_WAIT_JOIN)
+        if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself())
+            return GetBGTeam() == target->GetBGTeam();
 
     // phased visibility (both must phased in same way)
     if (!InSamePhase(u))
