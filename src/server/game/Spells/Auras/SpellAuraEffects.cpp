@@ -1497,7 +1497,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
             uint32 heal = uint32(caster->SpellHealingBonus(caster, GetSpellProto(), uint32(new_damage * gainMultiplier), DOT, GetBase()->GetStackAmount()));
 
-            int32 gain = caster->DealHeal(caster, heal, GetSpellProto());
+            int32 gain = caster->HealBySpell(caster, GetSpellProto(), heal);
             caster->getHostileRefManager().threatAssist(caster, gain * 0.5f, GetSpellProto());
             break;
         }
@@ -1521,7 +1521,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
             damage = int32(damage * gainMultiplier);
 
-            caster->DealHeal(target, damage, GetSpellProto());
+            caster->HealBySpell(target, GetSpellProto(), damage);
             break;
         }
         case SPELL_AURA_PERIODIC_HEAL:
@@ -1591,15 +1591,13 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), damage, GetId());
 
-            int32 gain = target->ModifyHealth(damage);
+            uint32 absorb = 0;
+            uint32 heal = uint32(damage);
+            caster->CalcHealAbsorb(target, GetSpellProto(), heal, absorb);
+            int32 gain = caster->DealHeal(target, heal);
 
-            SpellPeriodicAuraLogInfo pInfo(this, damage, damage - gain, 0, 0, 0.0f, crit);
+            SpellPeriodicAuraLogInfo pInfo(this, damage, damage - gain, absorb, 0, 0.0f, crit);
             target->SendPeriodicAuraLog(&pInfo);
-
-            // add HoTs to amount healed in bgs
-            if (caster->GetTypeId() == TYPEID_PLAYER)
-                if (Battleground *bg = caster->ToPlayer()->GetBattleground())
-                    bg->UpdatePlayerScore(caster->ToPlayer(), SCORE_HEALING_DONE, gain);
 
             target->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, GetSpellProto());
 
@@ -1684,7 +1682,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             SpellPeriodicAuraLogInfo pInfo(this, drain_amount, 0, 0, 0, gain_multiplier, false);
             target->SendPeriodicAuraLog(&pInfo);
 
-            int32 gain_amount = int32(drain_amount*gain_multiplier);
+            int32 gain_amount = int32(drain_amount * gain_multiplier);
 
             if (gain_amount)
             {
@@ -2212,7 +2210,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     case 23493:
                     {
                         int32 heal = caster->CountPctFromMaxHealth(10);
-                        caster->DealHeal(target, heal, auraSpellInfo);
+                        caster->HealBySpell(target, auraSpellInfo, heal);
 
                         int32 mana = caster->GetMaxPower(POWER_MANA);
                         if (mana)
@@ -5651,7 +5649,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                 if (target->GetTypeId() != TYPEID_PLAYER)
                     return;
                 //  ..while they are casting
-                if (target->IsNonMeleeSpellCasted(false, false, true, false, true))
+                if (target->IsNonMeleeSpellCasted(false, false, true, false, false))
                     if (AuraEffect * aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARRIOR, 2775, 0))
                         switch (aurEff->GetId())
                         {
