@@ -471,6 +471,8 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
                 m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage[0].DamageType);
         }
     }
+    // Set health leech amount to zero
+    m_healthLeech = 0;
 
     if (originalCasterGUID)
         m_originalCasterGUID = originalCasterGUID;
@@ -2419,6 +2421,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
         if (maxTargets > 1)
         {
+            //otherwise, this multiplier is used for something else
+            m_damageMultipliers[i] = 1.0f;
+            m_applyMultiplierMask |= 1 << i;
+
             float range;
             std::list<Unit*> unitList;
 
@@ -3720,6 +3726,10 @@ void Spell::finish(bool ok)
     // Okay to remove extra attacks
     if (IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         m_caster->m_extraAttacks = 0;
+
+    // Heal caster for all health leech from all targets
+    if (m_healthLeech)
+        m_caster->DealHeal(m_caster, uint32(m_healthLeech), m_spellInfo);
 
     if (IsMeleeAttackResetSpell())
     {
@@ -6929,11 +6939,18 @@ bool Spell::IsValidSingleTargetSpell(Unit const* target) const
 
 void Spell::CalculateDamageDoneForAllTargets()
 {
-    float multiplier[MAX_SPELL_EFFECTS];
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    float multiplier[3];
+    for (uint8 i = 0; i < 3; ++i)
     {
-        // Get multiplier
-        multiplier[i] = SpellMgr::CalculateSpellEffectDamageMultiplier(m_spellInfo, i, m_originalCaster, this);
+        if (m_applyMultiplierMask & (1 << i))
+        {
+            // Get multiplier
+            multiplier[i] = m_spellInfo->DmgMultiplier[i];
+            // Apply multiplier mods
+            if (m_originalCaster)
+                if (Player* modOwner = m_originalCaster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_EFFECT_PAST_FIRST, multiplier[i], this);
+        }
     }
 
     bool usesAmmo = true;
@@ -7036,6 +7053,11 @@ int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float *mul
                             m_damage = m_damage * 10/targetAmount;
                     }
                 }
+            }
+            if (m_applyMultiplierMask & (1 << i))
+            {
+                m_damage = int32(m_damage * m_damageMultipliers[i]);
+                m_damageMultipliers[i] *= multiplier[i];
             }
 
             damageDone += m_damage;
