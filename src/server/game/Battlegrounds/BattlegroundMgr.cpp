@@ -121,22 +121,23 @@ void BattlegroundMgr::Update(uint32 diff)
     // update scheduled queues
     if (!m_QueueUpdateScheduler.empty())
     {
-        std::vector<uint64> scheduled;
+        std::vector<QueueUpdateInfo> scheduled;
         {
             //copy vector and clear the other
-            scheduled = std::vector<uint64>(m_QueueUpdateScheduler);
+            scheduled = std::vector<QueueUpdateInfo>(m_QueueUpdateScheduler);
             m_QueueUpdateScheduler.clear();
             //release lock
         }
 
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            uint32 arenaRating = scheduled[i] >> 32;
-            uint8 arenaType = scheduled[i] >> 24 & 255;
-            BattlegroundQueueTypeId bgQueueTypeId = BattlegroundQueueTypeId(scheduled[i] >> 16 & 255);
-            BattlegroundTypeId bgTypeId = BattlegroundTypeId((scheduled[i] >> 8) & 255);
-            BattlegroundBracketId bracket_id = BattlegroundBracketId(scheduled[i] & 255);
-            m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id, arenaType, arenaRating > 0, arenaRating);
+            uint32 arenaRating = scheduled[i].schedule_id >> 32;
+            uint8 arenaType = scheduled[i].schedule_id >> 24 & 255;
+            BattlegroundQueueTypeId bgQueueTypeId = BattlegroundQueueTypeId(scheduled[i].schedule_id >> 16 & 255);
+            BattlegroundTypeId bgTypeId = BattlegroundTypeId((scheduled[i].schedule_id >> 8) & 255);
+            BattlegroundBracketId bracket_id = BattlegroundBracketId(scheduled[i].schedule_id & 255);
+			uint32 ateamId = scheduled[i].ateamId;
+            m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id, arenaType, arenaRating > 0, arenaRating, ateamId);
         }
     }
 
@@ -174,9 +175,28 @@ void BattlegroundMgr::Update(uint32 diff)
         else
             m_AutoDistributionTimeChecker -= diff;
     }
+
+    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE))
+    {
+        if (m_ArenaModResetChecker < diff)
+        {
+            if (time(NULL)/*sWorld.GetGameTime()*/ > m_NextArenaModResetTime)
+            {
+                CharacterDatabase.PExecute("DELETE FROM arena_mod");
+                m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+                //CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaModReset = '"UI64FMTD"'", m_NextArenaModResetTime);
+                sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+            }
+            m_ArenaModResetChecker = 600000; // check 10 minutes
+        }
+        else
+        {
+            m_ArenaModResetChecker -= diff;
+        }
+    }
 }
 
-void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battleground *bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype)
+void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battleground *bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
 {
     // we can be in 2 queues in same time...
 
@@ -221,7 +241,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
             *data << uint64(0);                             // 3.3.5, unknown
             *data << uint32(Time1);                         // time to bg auto leave, 0 at bg start, 120000 after bg end, milliseconds
             *data << uint32(Time2);                         // time from bg start, milliseconds
-            *data << uint8(/*bg->isArena() ? 0 :*/ 1);      // unk, possibly 0 == preparation phase, 1 == battle
+            *data << uint8(uiFrame);
             break;
         default:
             sLog.outError("Unknown BG status!");
@@ -794,6 +814,29 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
     sLog.outDebug("Automatic Arena Point Distribution initialized.");
 }
 
+void BattlegroundMgr::InitAutomaticArenaModTimer()
+{
+    bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+    if(enabled)
+    {
+        sLog.outDebug("Initializing Automatic Arena Mod Timer");
+        uint64 m_NextArenaModResetTime_temp = sWorld.getWorldState(LAST_TIME_MOD_RESET);
+        //QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
+        if(!m_NextArenaModResetTime_temp)
+        {
+            sLog.outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");
+            m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
+            //CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaModReset) VALUES ('"UI64FMTD"')", m_NextArenaModResetTime);
+            sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+        }
+        else
+        {
+            m_NextArenaModResetTime = time_t(m_NextArenaModResetTime_temp);
+        }
+        sLog.outDebug("Automatic Arena Mod Reset initialized.");
+    }
+}
+
 void BattlegroundMgr::DistributeArenaPoints()
 {
     // used to distribute arena points based on last week's stats
@@ -1058,22 +1101,24 @@ void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
     }
 }
 
-void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
+void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint32 ateamId)
 {
     //This method must be atomic, TODO add mutex
     //we will use only 1 number created of bgTypeId and bracket_id
-    uint64 schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
-    bool found = false;
+    QueueUpdateInfo schedule;
+	schedule.schedule_id = ((uint64)arenaRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
+	schedule.ateamId = ateamId;
+	bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {
-        if (m_QueueUpdateScheduler[i] == schedule_id)
+        if ((m_QueueUpdateScheduler[i].schedule_id == schedule.schedule_id) && (m_QueueUpdateScheduler[i].ateamId == schedule.ateamId)) //if ((m_QueueUpdateScheduler[i]) == (schedule))
         {
             found = true;
             break;
         }
     }
     if (!found)
-        m_QueueUpdateScheduler.push_back(schedule_id);
+        m_QueueUpdateScheduler.push_back(schedule);
 }
 
 uint32 BattlegroundMgr::GetMaxRatingDifference() const
