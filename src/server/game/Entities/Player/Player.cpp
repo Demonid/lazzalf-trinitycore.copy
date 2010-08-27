@@ -20699,24 +20699,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 if (!detect || !m_mover->canDetectStealthOf(u, GetDistance(u)))
                     return false;
     }
-
-    // Arena Preparation Visibility
-    if (GetTypeId() == TYPEID_PLAYER && u->GetTypeId() == TYPEID_PLAYER)
-    {
-        if (GetMap()->IsBattleArena() && u->GetMap()->IsBattleArena())
-        {        
-  	        if (HasAura(SPELL_ARENA_PREPARATION) || u->HasAura(SPELL_ARENA_PREPARATION))
-            {
- 	            if ((HasAura(SPELL_ALLIANCE_GOLD_FLAG) || HasAura(SPELL_HORDE_GOLD_FLAG)) && (u->HasAura(SPELL_ALLIANCE_GOLD_FLAG) || u->HasAura(SPELL_HORDE_GOLD_FLAG)))
-  	                return true;
-  	            else if ((HasAura(SPELL_ALLIANCE_GREEN_FLAG) || HasAura(SPELL_HORDE_GREEN_FLAG)) && (u->HasAura(SPELL_ALLIANCE_GREEN_FLAG) || u->HasAura(SPELL_HORDE_GREEN_FLAG)))
- 	                return true;
- 	            else
- 	                return false;
-            }
-        }
-    }
-
+    
     // If use this server will be too laggy
     // Now check is target visible with LoS
     //return u->IsWithinLOS(GetPositionX(),GetPositionY(),GetPositionZ());
