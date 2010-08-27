@@ -1977,7 +1977,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                         count++;
                     }
                     if (count > 0 && caster->isAlive()) // prevent healing after death
-                        caster->DealHeal(caster, bp * 20);
+                        caster->HealBySpell(caster, GetSpellProto(), bp * 20);
                 }
                 break;
             case 63382: // Rapid Burst
