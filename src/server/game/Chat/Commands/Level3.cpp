@@ -61,6 +61,13 @@
 #include "ScriptMgr.h"
 
 //reload commands
+bool ChatHandler::HandleJailReloadCommand(const char* arg)
+{
+    sObjectMgr.LoadJailConf();
+    SendSysMessage(LANG_JAIL_RELOAD);
+    return true;
+}
+
 bool ChatHandler::HandleReloadAllCommand(const char*)
 {
     HandleReloadSkillFishingBaseLevelCommand("");
@@ -2948,8 +2955,7 @@ bool ChatHandler::HandleLookupItemCommand(const char *args)
         if (loc_idx >= 0)
         {
             uint8 uloc_idx = uint8(loc_idx);
-            ItemLocale const *il = sObjectMgr.GetItemLocale(pProto->ItemId);
-            if (il)
+            if (ItemLocale const *il = sObjectMgr.GetItemLocale(pProto->ItemId))
             {
                 if (il->Name.size() > uloc_idx && !il->Name[uloc_idx].empty())
                 {
@@ -3263,8 +3269,7 @@ bool ChatHandler::HandleLookupQuestCommand(const char *args)
         if (loc_idx >= 0)
         {
             uint8 uloc_idx = uint8(loc_idx);
-            QuestLocale const *il = sObjectMgr.GetQuestLocale(qinfo->GetQuestId());
-            if (il)
+            if (QuestLocale const *il = sObjectMgr.GetQuestLocale(qinfo->GetQuestId()))
             {
                 if (il->Title.size() > uloc_idx && !il->Title[uloc_idx].empty())
                 {
@@ -3368,8 +3373,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
         if (loc_idx >= 0)
         {
             uint8 uloc_idx = uint8(loc_idx);
-            CreatureLocale const *cl = sObjectMgr.GetCreatureLocale (id);
-            if (cl)
+            if (CreatureLocale const *cl = sObjectMgr.GetCreatureLocale (id))
             {
                 if (cl->Name.size() > uloc_idx && !cl->Name[uloc_idx].empty ())
                 {
@@ -3439,8 +3443,7 @@ bool ChatHandler::HandleLookupObjectCommand(const char *args)
         if (loc_idx >= 0)
         {
             uint8 uloc_idx = uint8(loc_idx);
-            GameObjectLocale const *gl = sObjectMgr.GetGameObjectLocale(id);
-            if (gl)
+            if (GameObjectLocale const *gl = sObjectMgr.GetGameObjectLocale(id))
             {
                 if (gl->Name.size() > uloc_idx && !gl->Name[uloc_idx].empty())
                 {
@@ -7088,7 +7091,6 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         if (player->IsNonMeleeSpellCasted(true))
             player->InterruptNonMeleeSpells(true);
         player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        player->SetUInt32Value(PLAYER_DUEL_TEAM, 1);
 
         //if player class = hunter || warlock remove pet if alive
         if ((player->getClass() == CLASS_HUNTER) || (player->getClass() == CLASS_WARLOCK))

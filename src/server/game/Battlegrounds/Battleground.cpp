@@ -428,6 +428,13 @@ void Battleground::Update(uint32 diff)
                 for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                     if (Player *plr = sObjectMgr.GetPlayer(itr->first))
                     {
+                        // BG Status packet
+                        WorldPacket status;
+                        BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr.BGQueueTypeId(m_TypeID, GetArenaType());
+                        uint32 queueSlot = plr->GetBattlegroundQueueIndex(bgQueueTypeId);
+                        sBattlegroundMgr.BuildBattlegroundStatusPacket(&status, this, queueSlot, STATUS_IN_PROGRESS, 0, GetStartTime(), GetArenaType());
+                        plr->GetSession()->SendPacket(&status);
+
                         plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                         // remove auras with duration lower than 30s
                         Unit::AuraApplicationMap & auraMap = plr->GetAppliedAuras();
@@ -710,13 +717,96 @@ void Battleground::EndBattleground(uint32 winner)
     //we must set it this way, because end time is sent in packet!
     m_EndTime = TIME_TO_AUTOREMOVE;
 
+	bool controll_ip = true;
+
+    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
+    {	
+	    bool virgolat = false;
+        bool virgolaa = false;
+        bool virgolab = false;
+        std::stringstream total;
+        std::stringstream teamA;
+        std::stringstream teamB;
+
+	    for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+	    { 
+            Player *plr = sObjectMgr.GetPlayer(itr->first);
+            uint32 team = itr->second.Team;
+	        if (plr && plr->GetSession())
+            {
+                if(virgolat)
+	                total << ',';
+	            virgolat = true;               
+                total << plr->GetSession()->GetAccountId();
+
+                if( team == winner )
+                {
+                    if(virgolaa)
+	                    teamA << ',';
+	                virgolaa = true; 
+                    teamA << plr->GetSession()->GetAccountId();
+                }
+                else
+                {
+                    if(virgolab)
+	                    teamB << ',';
+	                virgolab = true; 
+                    teamB << plr->GetSession()->GetAccountId();
+                }
+	        } 
+        }
+        std::string queryt = total.str();
+        std::string querya = teamA.str();
+        std::string queryb = teamB.str();
+	    QueryResult_AutoPtr resultt = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryt.c_str());
+        QueryResult_AutoPtr resulta = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", querya.c_str());
+        QueryResult_AutoPtr resultb = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryb.c_str());
+       	if(resultt && resulta && resultb)
+        {
+            if( resultt->GetRowCount() != (resulta->GetRowCount() + resultb->GetRowCount()) )
+            {
+                sLog.outArena("Partita con ip uguali");
+                controll_ip = false;
+            }
+            else 
+            {
+                sLog.outArena("Partita con ip diversi");
+                controll_ip = true;
+            }
+        }
+
+        if(!resultt)
+        {
+            sLog.outArena("No result total");
+        }
+
+        if(!resulta)
+        {
+            sLog.outArena("No result A");
+            controll_ip = false;
+        }
+
+        if(!resultb)
+        {
+            sLog.outArena("No result B"); 
+            controll_ip = false;
+        }
+    }
+
     // arena rating calculation
     if (isArena() && isRated())
     {
+        bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+
         winner_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
-        if (winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+        if (controll_ip && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
+            if(enabled)
+            {
+                winner_arena_team->SaveToDBArenaModTeam(winner_arena_team->GetId(), loser_arena_team->GetId());
+            }
+
             loser_rating = loser_arena_team->GetStats().rating;
             winner_rating = winner_arena_team->GetStats().rating;
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
@@ -740,7 +830,7 @@ void Battleground::EndBattleground(uint32 winner)
         if (itr->second.OfflineRemoveTime)
         {
             //if rated arena match - make member lost!
-            if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+            if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
             {
                 if (team == winner)
                     winner_arena_team->OfflineMemberLost(itr->first, loser_rating);
@@ -776,8 +866,18 @@ void Battleground::EndBattleground(uint32 winner)
         //if (!team) team = plr->GetTeam();
 
         // per player calculation
-        if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+        if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
+            bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+
+            if(enabled)
+            {
+                if(winner_arena_team->GetId() == plr->GetArenaTeamId(winner_arena_team->GetSlot()))
+                {
+                    winner_arena_team->SaveToDBArenaModPlayer(plr->GetGUID(), winner_arena_team->GetId(), loser_arena_team->GetId());
+                }
+            }
+
             if (team == winner)
             {
                 // update achievement BEFORE personal rating update
@@ -796,6 +896,10 @@ void Battleground::EndBattleground(uint32 winner)
             }
         }
 
+        // Reward winner team new 3.3.3a
+        //if (team == winner)
+        //    plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
+        
         uint32 win_kills = plr->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST;
         uint32 loos_kills = plr->GetRandomWinner() ? BG_REWARD_LOOSER_HONOR_LAST : BG_REWARD_LOOSER_HONOR_FIRST;
         uint32 win_arena = plr->GetRandomWinner() ? BG_REWARD_WINNER_ARENA_LAST : BG_REWARD_WINNER_ARENA_FIRST;
@@ -803,6 +907,8 @@ void Battleground::EndBattleground(uint32 winner)
         // Reward winner team
         if (team == winner)
         {
+            RewardMark(plr,ITEM_WINNER_COUNT);
+            RewardQuestComplete(plr);
             if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
             {
                 UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(win_kills));
@@ -814,6 +920,8 @@ void Battleground::EndBattleground(uint32 winner)
 
             plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
         }
+        else if (winner)
+            RewardMark(plr,ITEM_LOSER_COUNT);
         else
         {
             if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
@@ -836,7 +944,7 @@ void Battleground::EndBattleground(uint32 winner)
         plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
     }
 
-    if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+    if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
     {
         // update arena points only after increasing the player's match count!
         //obsolete: winner_arena_team->UpdateArenaPointsHelper();
@@ -872,6 +980,143 @@ uint32 Battleground::GetBattlemasterEntry() const
         case BATTLEGROUND_NA: return 20200;
         default:              return 0;
     }
+}
+
+void Battleground::RewardMark(Player *plr,uint32 count)
+{
+    BattlegroundMarks mark;
+    switch(GetTypeID())
+    {
+        case BATTLEGROUND_AV:
+            mark = ITEM_AV_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_WS:
+            mark = ITEM_WS_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_AB:
+            mark = ITEM_AB_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_EY:
+            mark = ITEM_EY_MARK_OF_HONOR;
+            break;
+        case BATTLEGROUND_SA:
+            mark = ITEM_SA_MARK_OF_HONOR;
+            break;
+        default:
+            return;
+    }
+
+    //if (IsSpell)
+    //    RewardSpellCast(plr,mark);
+    //else
+        RewardItem(plr,mark,count);
+}
+
+void Battleground::RewardSpellCast(Player *plr, uint32 spell_id)
+{
+    // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
+    if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
+        return;
+
+    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+    if (!spellInfo)
+    {
+        sLog.outError("Battleground reward casting spell %u not exist.",spell_id);
+        return;
+    }
+
+    plr->CastSpell(plr, spellInfo, true);
+}
+
+void Battleground::RewardItem(Player *plr, uint32 item_id, uint32 count)
+{
+    // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
+    if (plr->HasAura(SPELL_AURA_PLAYER_INACTIVE))
+        return;
+
+    ItemPosCountVec dest;
+    uint32 no_space_count = 0;
+    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_id, count, &no_space_count);
+
+    if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
+    {
+        sLog.outErrorDb("Battleground reward item (Entry %u) not exist in `item_template`.",item_id);
+        return;
+    }
+
+    if (msg != EQUIP_ERR_OK)                               // convert to possible store amount
+        count -= no_space_count;
+
+    if (count != 0 && !dest.empty())                        // can add some
+        if (Item* item = plr->StoreNewItem(dest, item_id, true, 0))
+            plr->SendNewItem(item,count,true,false);
+
+    if (no_space_count > 0)
+        SendRewardMarkByMail(plr,item_id,no_space_count);
+}
+
+void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
+{
+    uint32 bmEntry = GetBattlemasterEntry();
+    if (!bmEntry)
+        return;
+
+    ItemPrototype const* markProto = sObjectMgr.GetItemPrototype(mark);
+    if (!markProto)
+        return;
+
+    if (Item* markItem = Item::CreateItem(mark,count,plr))
+    {
+        // save new item before send
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+        
+        // subject: item name
+        std::string subject = markProto->Name1;
+        int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
+        if (loc_idx >= 0)
+            if (ItemLocale const *il = sObjectMgr.GetItemLocale(markProto->ItemId))
+                if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
+                    subject = il->Name[loc_idx];
+
+        // text
+        std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
+        char textBuf[300];
+        snprintf(textBuf, 300, textFormat.c_str(), GetName(), GetName());
+
+        MailDraft(subject, textBuf)
+            .AddItem(markItem)
+            .SendMailTo(trans, plr, MailSender(MAIL_CREATURE, bmEntry));
+
+        CharacterDatabase.CommitTransaction(trans);
+    }
+}
+
+void Battleground::RewardQuestComplete(Player *plr)
+{
+    uint32 quest;
+    switch(GetTypeID())
+    {
+        case BATTLEGROUND_AV:
+            quest = SPELL_AV_QUEST_REWARD;
+            break;
+        case BATTLEGROUND_WS:
+            quest = SPELL_WS_QUEST_REWARD;
+            break;
+        case BATTLEGROUND_AB:
+            quest = SPELL_AB_QUEST_REWARD;
+            break;
+        case BATTLEGROUND_EY:
+            quest = SPELL_EY_QUEST_REWARD;
+            break;
+        case BATTLEGROUND_SA:
+            quest = SPELL_SA_QUEST_REWARD;
+            break;
+        default:
+            return;
+    }
+
+    RewardSpellCast(plr, quest);
 }
 
 void Battleground::BlockMovement(Player *plr)
@@ -1078,9 +1323,9 @@ void Battleground::AddPlayer(Player *plr)
 
     // BG Status packet
     WorldPacket status;
-    BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(m_TypeID, GetArenaType());
+    BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr.BGQueueTypeId(m_TypeID, GetArenaType());
     uint32 queueSlot = plr->GetBattlegroundQueueIndex(bgQueueTypeId);
-    sBattlegroundMgr.BuildBattlegroundStatusPacket(&status, this, queueSlot, STATUS_IN_PROGRESS, 0, GetStartTime(), GetArenaType());
+    sBattlegroundMgr.BuildBattlegroundStatusPacket(&status, this, queueSlot, STATUS_IN_PROGRESS, 0, GetStartTime(), GetArenaType(), isArena() ? 0 : 1);
     plr->GetSession()->SendPacket(&status);
 
     plr->RemoveAurasByType(SPELL_AURA_MOUNTED);
@@ -1116,6 +1361,10 @@ void Battleground::AddPlayer(Player *plr)
             plr->SetFullHealth();
             plr->SetPower(POWER_MANA, plr->GetMaxPower(POWER_MANA));
         }
+        WorldPacket teammate;
+        teammate.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8);
+        teammate << uint64(plr->GetGUID());
+        SendPacketToTeam(team, &teammate, plr, false);
     }
     else
     {

@@ -107,8 +107,11 @@ public:
         void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             // Divine Plea
-            if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
-                aura->RefreshDuration();
+            //if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
+            //     aura->RefreshDuration();
+            for (uint8 i = 0; i < 3; ++i)
+                if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA, (i)))
+                    aura->RefreshDuration();
         }
 
         void Register()
