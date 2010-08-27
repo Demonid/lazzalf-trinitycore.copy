@@ -2464,6 +2464,9 @@ void Spell::EffectPowerBurn(uint32 i)
     newDamage = int32(newDamage * dmgMultiplier);
 
     ExecuteLogEffectTakeTargetPower(i,unitTarget, powerType, newDamage, dmgMultiplier);
+    
+    // ManaBurn toglie Fear
+    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
 
     if (m_originalCaster)
         m_originalCaster->DealDamage(unitTarget, newDamage);
