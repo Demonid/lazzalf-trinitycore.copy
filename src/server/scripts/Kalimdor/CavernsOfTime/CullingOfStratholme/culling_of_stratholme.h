@@ -65,7 +65,7 @@ enum GameObjects
     GO_MALGANIS_CHEST_H                                    = 193597
 };
  
-enum WorldStates
+enum Culling_WorldStates
 {
     WORLD_STATE_TIMER              = 3932,
     WORLD_STATE_TIME_COUNTER       = 3931,
