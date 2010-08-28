@@ -1145,7 +1145,7 @@ void GameObject::Use(Unit* user)
                 {
                     sLog.outDebug("Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
                     GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
-                    EventInform(info->goober.eventId);
+                    EventInform(info->goober.eventId, player);
                 }
 
                 // possible quest objective for active quests
@@ -1697,10 +1697,10 @@ void GameObject::Rebuild()
     EventInform(m_goInfo->building.rebuildingEvent);
 }
 
-void GameObject::EventInform(uint32 eventId)
+void GameObject::EventInform(uint32 eventId, Player* player)
 {
     if (eventId && m_zoneScript)
-        m_zoneScript->ProcessEvent(this, eventId);
+        m_zoneScript->ProcessEvent(this, eventId, player);
 }
 
 // overwrite WorldObject function for proper name localization
