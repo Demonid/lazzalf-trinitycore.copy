@@ -127,6 +127,7 @@ class npc_oculus_drake : public CreatureScript
 
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
+        pPlayer->PlayerTalkClass->ClearMenus();
         switch(pCreature->GetEntry())
         {
         case NPC_VERDISA: //Verdisa

@@ -718,6 +718,7 @@ class mob_colossus : public CreatureScript
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
+        pPlayer->PlayerTalkClass->ClearMenus();
     {
         return new mob_colossusAI(pCreature);
     };
