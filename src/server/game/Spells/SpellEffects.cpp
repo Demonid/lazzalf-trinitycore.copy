@@ -450,7 +450,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     // Touch the Nightmare
                     case 50341:
                     {
-                        if (effect_idx == 2)
+                        if (effIndex == 2)
                             damage = unitTarget->GetMaxHealth() * 0.3f;
                         break;
                     }                    
