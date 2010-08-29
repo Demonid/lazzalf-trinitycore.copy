@@ -646,6 +646,8 @@ class npc_keeper_norgannon : public CreatureScript
 
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
+        pPlayer->PlayerTalkClass->ClearMenus();
+
         InstanceScript *data = pPlayer->GetInstanceScript();
         InstanceScript* pInstance = pCreature->GetInstanceScript();
 
@@ -718,7 +720,6 @@ class mob_colossus : public CreatureScript
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
-        pPlayer->PlayerTalkClass->ClearMenus();
     {
         return new mob_colossusAI(pCreature);
     };
@@ -826,6 +827,8 @@ class ulduar_repair_npc : public CreatureScript
 
     bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
     {
+        pPlayer->PlayerTalkClass->ClearMenus();
+
         // Main menu
         if (sender == GOSSIP_SENDER_MAIN)
             SendDefaultMenu_ulduar_repair_npc( player, _Creature, action );
