@@ -2474,8 +2474,7 @@ void Spell::EffectPowerBurn(SpellEffIndex effIndex)
     // ManaBurn toglie Fear
     unitTarget->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
 
-    if (m_originalCaster)
-        m_originalCaster->DealDamage(unitTarget, newDamage);
+    m_damage += newDamage;
 }
 
 void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
@@ -2634,6 +2633,7 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
     float healMultiplier = SpellMgr::CalculateSpellEffectValueMultiplier(m_spellInfo, effIndex, m_originalCaster, this);
 
     int32 newDamage = int32(damage * healMultiplier);
+    newDamage = std::min(int32(unitTarget->GetHealth()), newDamage);
     m_damage += newDamage;
 
     if (m_caster->isAlive())
