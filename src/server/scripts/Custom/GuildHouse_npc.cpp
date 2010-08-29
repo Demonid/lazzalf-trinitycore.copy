@@ -479,7 +479,7 @@ class npc_guild_master : public CreatureScript
 
     bool OnGossipSelect(Player *player, Creature *_creature, uint32 sender, uint32 action )
     {
-        pPlayer->PlayerTalkClass->ClearMenus();
+        player->PlayerTalkClass->ClearMenus();
 
         if (sender != GOSSIP_SENDER_MAIN)
             return false;
@@ -813,7 +813,7 @@ class npc_buffnpc : public CreatureScript
 
     bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
     {
-        pPlayer->PlayerTalkClass->ClearMenus();
+        player->PlayerTalkClass->ClearMenus();
 
         // Main menu
         if (sender == GOSSIP_SENDER_MAIN)
@@ -931,7 +931,7 @@ class npc_portal : public CreatureScript
 
     bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
     {
-        pPlayer->PlayerTalkClass->ClearMenus();
+        player->PlayerTalkClass->ClearMenus();
 
         // Main menu
         if (sender == GOSSIP_SENDER_MAIN)
