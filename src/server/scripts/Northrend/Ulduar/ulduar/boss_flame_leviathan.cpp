@@ -825,13 +825,13 @@ class ulduar_repair_npc : public CreatureScript
         }
     };
 
-    bool OnGossipSelect(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player *pPlayer, Creature *_Creature, uint32 sender, uint32 action)
     {
         pPlayer->PlayerTalkClass->ClearMenus();
 
         // Main menu
         if (sender == GOSSIP_SENDER_MAIN)
-            SendDefaultMenu_ulduar_repair_npc( player, _Creature, action );
+            SendDefaultMenu_ulduar_repair_npc( pPlayer, _Creature, action );
 
         return true;
     };

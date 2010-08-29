@@ -162,7 +162,7 @@ class npc_teleport : public CreatureScript
 
     bool OnGossipSelect(Player *player, Creature *creature, uint32 sender, uint32 param)
     {
-        pPlayer->PlayerTalkClass->ClearMenus();
+        player->PlayerTalkClass->ClearMenus();
         switch(sender) 
         {
           // Display destinations
