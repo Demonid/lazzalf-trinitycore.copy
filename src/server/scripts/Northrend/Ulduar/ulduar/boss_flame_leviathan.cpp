@@ -732,14 +732,14 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
     public:
     at_RX_214_repair_o_matic_station() : AreaTriggerScript("at_RX_214_repair_o_matic_station") { }
 
-    bool AreaTrigger_at_RX_214_repair_o_matic_station(Player* pPlayer, const AreaTriggerEntry* pAt)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
     {
         if (!pPlayer)
             return false;
 
-        if(Creature* vehicle = pPlayer->GetVehicleCreatureBase())
+        if (Creature* vehicle = pPlayer->GetVehicleCreatureBase())
         {
-            if(!vehicle->HasAura(SPELL_AUTO_REPAIR))
+            if (!vehicle->HasAura(SPELL_AUTO_REPAIR))
             {
                 pPlayer->MonsterTextEmote(EMOTE_REPAIR, pPlayer->GetGUID(), true);
                 vehicle->SetHealth(vehicle->GetMaxHealth()); // Correct spell not works
