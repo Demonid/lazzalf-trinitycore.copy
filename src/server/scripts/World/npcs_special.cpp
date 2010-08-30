@@ -47,6 +47,7 @@ EndContentData */
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "World.h"
+#include "Guild.h"
 
 /*########
 # npc_air_force_bots
@@ -1286,7 +1287,7 @@ public:
         if (pCreature->isCanTrainingAndResetTalentsOf(pPlayer))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE1, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
-        if (!(pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < sWorld.getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
+        if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < sWorld.getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL)))
             pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE3, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
 
         if (pPlayer->getClass() == CLASS_ROGUE && pPlayer->getLevel() >= 24 && !pPlayer->HasItemCount(17126,1) && !pPlayer->GetQuestRewardStatus(6681))
@@ -2033,6 +2034,7 @@ public:
             me->SetControlled(true,UNIT_STAT_STUNNED);//disable rotate
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
             ResetTimer = 10000;
             DespawnTimer = 15000;
         }
