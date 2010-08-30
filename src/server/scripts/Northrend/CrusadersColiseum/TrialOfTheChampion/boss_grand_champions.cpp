@@ -242,7 +242,7 @@ class generic_vehicleAI_toc5 : public CreatureScript
             switch(i)
             {
                 case 2:
-                    if (pInstance && uiWaypointPath == 3 || uiWaypointPath == 2)
+                    if ((pInstance && uiWaypointPath == 3) || uiWaypointPath == 2)
                         pInstance->SetData(DATA_MOVEMENT_DONE, pInstance->GetData(DATA_MOVEMENT_DONE)+1);
                     break;
                 case 3:
