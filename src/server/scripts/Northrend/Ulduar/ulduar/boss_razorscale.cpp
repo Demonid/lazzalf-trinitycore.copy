@@ -564,7 +564,7 @@ class npc_expedition_commander_ulduar : public CreatureScript
         }
     };
 
-    bool Expedition_commander_ulduar(Player* pPlayer, Creature* pCreature)
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         InstanceScript *data = pPlayer->GetInstanceScript();
         InstanceScript *pInstance = pCreature->GetInstanceScript();
