@@ -270,8 +270,9 @@ class boss_ignis : public CreatureScript
                     case EVENT_CONSTRUCT:
                         if (!construct_list.empty())
                         {
-                            ConstructVct::iterator itr = (construct_list.begin() + (rand()%construct_list.size()));
-                            Creature* pTarget = *itr;
+                            ConstructVct::const_iterator itr = construct_list.begin();
+                            std::advance(itr, urand(0, construct_list.size()-1));
+                            Creature* pTarget = Unit::GetCreature(*me, *itr);
                             if (pTarget)
                             {
                                 DoScriptText(SAY_SUMMON, me);
