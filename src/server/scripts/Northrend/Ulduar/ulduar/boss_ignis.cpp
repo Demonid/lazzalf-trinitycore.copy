@@ -274,7 +274,7 @@ class boss_ignis : public CreatureScript
                             ConstructVct::iterator itr = construct_list.begin();
                             std::advance(itr, urand(0, construct_list.size()-1));
                             Creature* pTarget = Unit::GetCreature(*me, *itr);
-                            if (pTarget)
+                            if (pTarget && pTarget->isAlive())
                             {
                                 DoScriptText(SAY_SUMMON, me);
                                 DoCast(me, SPELL_STRENGHT, true);
