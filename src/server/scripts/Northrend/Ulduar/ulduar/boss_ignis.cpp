@@ -139,7 +139,7 @@ class boss_ignis : public CreatureScript
 
         Vehicle *vehicle;
         InstanceScript *pInstance;
-        typedef std::vector<Creature*> ConstructVct;
+        typedef std::list<uint64> ConstructVct;
         ConstructVct construct_list;
 
         uint64 SlagPotGUID;
@@ -152,6 +152,7 @@ class boss_ignis : public CreatureScript
         {
             _Reset();
 
+            // i golem vengono despawnati da _Reset()
             construct_list.clear();
 
             if (vehicle)
@@ -305,7 +306,7 @@ class boss_ignis : public CreatureScript
         {
             if (summon->GetEntry() == MOB_IRON_CONSTRUCT)
             {
-                construct_list.push_back(summon);
+                construct_list.push_back(summon->GetGUID());
             }
 
             summons.Summon(summon);
