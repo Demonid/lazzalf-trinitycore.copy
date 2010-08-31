@@ -234,7 +234,7 @@ public:
             {
                 if (uiSplitTimer <= uiDiff)
                 {
-                    uiSplitTimer = uint32(2.5*IN_MILLISECONDS);
+                    uiSplitTimer = 2500;
 
                     // Return sparks to where Ionar splitted
                     if (bIsSplitPhase)
