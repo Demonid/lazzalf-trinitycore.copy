@@ -65,13 +65,8 @@ enum Spells
 
 class boss_koralon : public CreatureScript
 {
-public:
-    boss_koralon() : CreatureScript("boss_koralon") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_koralonAI (pCreature);
-    }
+    public:
+        boss_koralon(): CreatureScript("boss_koralon") {}
 
     struct boss_koralonAI : public ScriptedAI
     {
@@ -82,24 +77,46 @@ public:
 
         InstanceScript *pInstance;
         EventMap events;
+        uint32 checktimer;
 
         void Reset()
         {
             events.Reset();
 
+            CheckForVoA();
+
+            checktimer = 10000;
+
             if (pInstance)
                 pInstance->SetData(DATA_KORALON_EVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*Victim*/) {}
+        void CheckForVoA()
+        {
+            if (!sOutdoorPvPMgr.CanBeAttacked(me))
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+            else
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+        }
+
+        void KilledUnit(Unit* Victim) {}
 
         void JustDied(Unit* /*Killer*/)
         {
             if (pInstance)
+            {
                 pInstance->SetData(DATA_KORALON_EVENT, DONE);
+                pInstance->SaveToDB();
+            }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
 
@@ -117,7 +134,15 @@ public:
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())
+            {
+                if (checktimer <= diff)
+                {
+                    CheckForVoA();
+                    checktimer = 10000;
+                } else checktimer -= diff;
+
                 return;
+            }
 
             events.Update(diff);
 
@@ -154,20 +179,20 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_koralonAI (pCreature);
+    };
 };
 
 /*######
 ##  Mob Flame Warder
 ######*/
+
 class mob_flame_warder : public CreatureScript
 {
-public:
-    mob_flame_warder() : CreatureScript("mob_flame_warder") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new mob_flame_warderAI (pCreature);
-    }
+    public:
+        mob_flame_warder(): CreatureScript("mob_flame_warder") {}
 
     struct mob_flame_warderAI : public ScriptedAI
     {
@@ -180,7 +205,7 @@ public:
             events.Reset();
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
 
@@ -217,9 +242,11 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_flame_warderAI (pCreature);
+    };
 };
-
-
 
 void AddSC_boss_koralon()
 {

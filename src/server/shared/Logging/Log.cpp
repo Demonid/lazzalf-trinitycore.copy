@@ -28,7 +28,7 @@
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), chatLogfile(NULL), arenaLogFile(NULL), sqlLogFile(NULL),
+    dberLogfile(NULL), chatLogfile(NULL), arenaLogFile(NULL), cheatLogFile(NULL), sqlLogFile(NULL),
     m_gmlog_per_account(false), m_enableLogDBLater(false), 
     m_enableLogDB(false), m_colored(false)
 {
@@ -65,6 +65,10 @@ Log::~Log()
         fclose(arenaLogFile);
     arenaLogFile = NULL;
 
+    if (cheatLogFile != NULL)
+        fclose(cheatLogFile);
+    cheatLogFile = NULL;
+    
     if (sqlLogFile != NULL)
         fclose(sqlLogFile);
     sqlLogFile = NULL;
@@ -159,6 +163,7 @@ void Log::Initialize()
     raLogfile = openLogFile("RaLogFile", NULL, "a");
     chatLogfile = openLogFile("ChatLogFile", "ChatLogTimestamp", "a");
     arenaLogFile = openLogFile("ArenaLogFile", NULL,"a");
+    cheatLogFile = openLogFile("CheatLogFile",NULL,"a");
     sqlLogFile = openLogFile("SQLDriverLogFile", NULL, "a");
 
     // Main log file settings
@@ -530,6 +535,24 @@ void Log::outArena(const char * str, ...)
         fprintf(arenaLogFile, "\n");
         va_end(ap);
         fflush(arenaLogFile);
+    }
+    fflush(stdout);
+}
+
+void Log::outCheat(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if (cheatLogFile)
+    {
+        va_list ap;
+        outTimestamp(cheatLogFile);
+        va_start(ap, str);
+        vfprintf(cheatLogFile, str, ap);
+        fprintf(cheatLogFile, "\n");
+        va_end(ap);
+        fflush(cheatLogFile);
     }
 }
 
