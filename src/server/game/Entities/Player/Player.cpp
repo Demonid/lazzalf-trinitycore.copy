@@ -11263,7 +11263,9 @@ uint8 Player::CanUnequipItem(uint16 pos, bool swap) const
                 return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
     }
 
-    if (!swap && pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
+    //WPE TempFix
+    //if (!swap && pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
+    if (pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
         return EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS;
 
     return EQUIP_ERR_OK;
@@ -12534,6 +12536,13 @@ void Player::SwapItem(uint16 src, uint16 dst)
             SendEquipError(msg, pSrcItem, pDstItem);
             return;
         }
+    }
+
+    // WPE TempFix
+    if (pSrcItem && pSrcItem->IsBag() && !((Bag*)pSrcItem)->IsEmpty())
+    {
+        SendEquipError(EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS, pSrcItem, NULL);
+        return;
     }
 
     // prevent put equipped/bank bag in self
