@@ -86,9 +86,8 @@ public:
                     {
                         int32 TickCount = aurEff->GetTotalTicks();
                         spellId = HUNTER_SPELL_CHIMERA_SHOT_SERPENT;
-                        //basePoint = aurEff->GetAmount() * TickCount * 40 / 100;
-                        basePoint = caster->SpellDamageBonus(unitTarget, aurEff->GetSpellProto(), basePoint, DOT);
-                        basePoint *= TickCount * 40 / 100;
+                        basePoint = caster->SpellDamageBonus(unitTarget, aura->GetSpellProto(), aurEff->GetAmount(), DOT, aura->GetStackAmount());
+                        basePoint = basePoint * TickCount * 40 / 100;
                     }
                     // Viper Sting - Instantly restores mana to you equal to 60% of the total amount drained by your Viper Sting.
                     else if (familyFlag[1] & 0x00000080)
@@ -119,12 +118,9 @@ public:
                 break;
             }
             if (spellId)
-            {
                 caster->CastCustomSpell(unitTarget, spellId, &basePoint, 0, 0, true);
-
-                if (spellId == 53359  && caster->ToPlayer() && !caster->ToPlayer()->HasSpellCooldown(spellId)) // Scorpid Sting - This effect cannot occur more than once per 1 minute.
-                    caster->ToPlayer()->AddSpellCooldown(spellId, 0, uint32(time(NULL) + 60));
-            }
+            if (spellId == HUNTER_SPELL_CHIMERA_SHOT_SCORPID && caster->ToPlayer()) // Scorpid Sting - Add 1 minute cooldown
+                caster->ToPlayer()->AddSpellCooldown(spellId,0,uint32(time(NULL) + 60));
         }
 
         void Register()
