@@ -246,6 +246,13 @@ class boss_freya : public CreatureScript
         {
             DoScriptText(SAY_DEATH, me);
             _JustDied();
+
+            if (Creature* pTarget = me->FindNearestCreature(32915, 80.0f, true))
+                pTarget->RemoveFromWorld();
+            if (Creature* pTarget = me->FindNearestCreature(32913, 80.0f, true))
+                pTarget->RemoveFromWorld();
+            if (Creature* pTarget = me->FindNearestCreature(32914, 80.0f, true))
+                pTarget->RemoveFromWorld();
             
             me->setFaction(35);
             
