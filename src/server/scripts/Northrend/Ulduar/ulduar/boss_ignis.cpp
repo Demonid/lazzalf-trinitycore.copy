@@ -281,6 +281,11 @@ class boss_ignis : public CreatureScript
                                 DoCast(SPELL_ACTIVATE_CONSTRUCT);
                                 pTarget->setFaction(16);
                                 pTarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                                pTarget->SetReactState(REACT_AGGRESSIVE);
+                                pTarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
+                                pTarget->RemoveAurasDueToSpell(SPELL_FROZEN_POSITION);
+                                pTarget->AI()->AttackStart(me->getVictim());
+                                pTarget->AI()->DoZoneInCombat();
                                 construct_list.erase(itr);
                             }
                         }
@@ -373,11 +378,11 @@ class mob_iron_construct : public CreatureScript
         {
             if (spell->Id == SPELL_ACTIVATE_CONSTRUCT && me->HasReactState(REACT_PASSIVE))
             {
-                me->SetReactState(REACT_AGGRESSIVE);
+                /*me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
                 me->RemoveAurasDueToSpell(SPELL_FROZEN_POSITION);
                 me->AI()->AttackStart(caster->getVictim());
-                me->AI()->DoZoneInCombat();
+                me->AI()->DoZoneInCombat();*/
             }
         }
 
