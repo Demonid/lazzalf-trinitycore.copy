@@ -453,7 +453,7 @@ class boss_gothik : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_gothikAI (pCreature);
     };
@@ -543,7 +543,7 @@ class mob_gothik_minion : public CreatureScript
         }
     };
 
-    CreatureAI* GetAI(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new mob_gothik_minionAI (pCreature);
     };
