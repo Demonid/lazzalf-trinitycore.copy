@@ -424,7 +424,7 @@ class go_call_tram : public GameObjectScript
     public:
     go_call_tram() : GameObjectScript("go_call_tram") {}
     
-    bool GOHello_go_call_tram(Player* pPlayer, GameObject* pGo)
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
     {
         InstanceScript* pInstance = pGo->GetInstanceScript();
 
