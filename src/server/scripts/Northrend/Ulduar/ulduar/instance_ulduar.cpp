@@ -41,9 +41,17 @@ const DoorData doorData[] =
 enum eGameObjects
 {
     GO_Leviathan_DOOR        = 194630,
+    GO_Kologarn_CHEST_HERO   = 195047,
+    GO_Kologarn_CHEST        = 195046,
     GO_Kologarn_BRIDGE       = 194232,
+    GO_Hodir_CHEST_HERO      = 194308,
+    GO_Hodir_CHEST           = 194307,
     GO_Hodir_Rare_CHEST      = 194200,
     GO_Hodir_Rare_CHEST_HERO = 194201,
+    GO_Thorim_CHEST_HERO     = 194314,
+    GO_Thorim_CHEST          = 194312,
+    GO_Thorim_Rare_CHEST     = 194313,
+    GO_Thorim_Rare_CHEST_HERO= 194315,
     GO_Runic_DOOR            = 194557,
     GO_Stone_DOOR            = 194558,
     GO_Thorim_LEVER          = 194265,
@@ -107,7 +115,8 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiMimironYS;
         uint64 uiHodirYS;
             
-        GameObject* pLeviathanDoor, *HodirRareChest, *HodirRareChestHero, *pRunicDoor, *pStoneDoor, *pThorimLever, *MimironTram, *MimironElevator;
+        GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
+            *MimironTram, *MimironElevator;
 
         void OnGameObjectCreate(GameObject* pGo, bool add)
         {
@@ -115,9 +124,17 @@ class instance_ulduar : public InstanceMapScript
             switch(pGo->GetEntry())
             {
                 case GO_Leviathan_DOOR: pLeviathanDoor = add ? pGo : NULL; break;
+                case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
+                case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
                 case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
+                case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
+                case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;                
+                case GO_Hodir_Rare_CHEST_HERO: HodirRareChest = add ? pGo : NULL; break;
                 case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
-                case GO_Hodir_Rare_CHEST_HERO: HodirRareChestHero = add ? pGo : NULL; break;
+                case GO_Thorim_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
+                case GO_Thorim_CHEST: HodirChest = add ? pGo : NULL; break;
+                case GO_Thorim_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
+                case GO_Thorim_Rare_CHEST_HERO: HodirRareChest = add ? pGo : NULL; break;
                 case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
                 case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
                 case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
@@ -347,15 +364,21 @@ class instance_ulduar : public InstanceMapScript
                 case DATA_MIMIRON_ELEVATOR:
                     if (MimironElevator)
                         MimironElevator->SetGoState(GOState(value));
+                    break; 
+                case DATA_HODIR_RARE_CHEST:
+                    if (HodirChest && value == GO_STATE_READY)
+                        HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
                     break;
                 case DATA_HODIR_RARE_CHEST:
                     if (HodirRareChest && value == GO_STATE_READY)
-                        HodirRareChest->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                        HodirRareChest->SetRespawnTime(HodirRareChest->GetRespawnDelay());
                     break;
-                case DATA_HODIR_RARE_CHEST_HERO:
-                    if (HodirRareChestHero && value == GO_STATE_READY)
-                        HodirRareChestHero->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
-                    break;
+                case DATA_THORIM_CHEST:
+                    if (ThorimChest && value == GO_STATE_READY)
+                        ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+                case DATA_THORIM_RARE_CHEST:
+                    if (ThorimRareChest && value == GO_STATE_READY)
+                        ThorimRareChest->SetRespawnTime(ThorimRareChest->GetRespawnDelay());
             }
         }
 
@@ -368,14 +391,17 @@ class instance_ulduar : public InstanceMapScript
             {
                 case BOSS_KOLOGARN:
                     if (state == DONE)
+                    {
                         HandleGameObject(uiKologarnBridge, false);
+                        KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+                    }
                     break;
                 case BOSS_HODIR:
                     CheckKeepersState();
                     break;
                 case BOSS_THORIM:
                     if (state == IN_PROGRESS)
-                        pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                        pThorimLever->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
                     CheckKeepersState();
                     break;
                 case BOSS_MIMIRON:

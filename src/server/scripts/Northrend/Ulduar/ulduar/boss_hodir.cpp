@@ -222,13 +222,11 @@ class boss_hodir : public CreatureScript
                 if (RareCache)
                 {
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_THIS_CACHE_WAS_RARE);
-                    if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
-                        pInstance->SetData(DATA_HODIR_RARE_CHEST_HERO, GO_STATE_READY);
-                    else
-                        pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
+                    pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
                 }
+                 pInstance->SetData(DATA_HODIR_CHEST, GO_STATE_READY);
                 // Chest spawn
-                me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43f, -203.906f, 432.687f, -0.90757f, 0, 0, 0.7f, 0.7f, 604800);
+                //me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43f, -203.906f, 432.687f, -0.90757f, 0, 0, 0.7f, 0.7f, 604800);
             }
         }
 

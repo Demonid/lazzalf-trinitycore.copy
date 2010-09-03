@@ -291,11 +291,13 @@ class boss_thorim : public CreatureScript
                 if (HardMode)
                 {
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_LOSE_ILLUSION);
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_HARDMODE_10, CACHE_OF_STORMS_HARDMODE_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 0); //604800
+                    pInstance->SetData(DATA_THORIM_RARE_CHEST, GO_STATE_READY);
+                    //me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_HARDMODE_10, CACHE_OF_STORMS_HARDMODE_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 0); //604800
                 }
                 else
                 {
-                    me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 0); //604800
+                    pInstance->SetData(DATA_THORIM_CHEST, GO_STATE_READY);
+                    //me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 0); //604800
                 }
             }
         }
