@@ -353,7 +353,7 @@ class boss_hodir : public CreatureScript
     {
         return new boss_hodir_AI (pCreature);
     };
-}
+};
 
 class mob_icicle : public CreatureScript
 {
@@ -390,7 +390,7 @@ class mob_icicle : public CreatureScript
     {
         return new mob_icicleAI(pCreature);
     };
-}
+};
 
 class mob_icicle_snowdrift : public CreatureScript
 {
@@ -427,7 +427,7 @@ class mob_icicle_snowdrift : public CreatureScript
     {
         return new mob_icicle_snowdriftAI(pCreature);
     };
-}
+};
 
 class mob_snowpacked_icicle : public CreatureScript
 {
@@ -465,7 +465,7 @@ class mob_snowpacked_icicle : public CreatureScript
     {
         return new mob_snowpacked_icicleAI(pCreature);
     };
-}
+};
 
 class mob_hodir_priest : public CreatureScript
 {
@@ -540,7 +540,7 @@ class mob_hodir_priest : public CreatureScript
     {
         return new mob_hodir_priestAI(pCreature);
     };
-}
+};
 
 class mob_hodir_shaman : public CreatureScript
 {
@@ -596,7 +596,7 @@ class mob_hodir_shaman : public CreatureScript
     {
         return new mob_hodir_shamanAI(pCreature);
     };
-}
+};
 
 class mob_hodir_druid : public CreatureScript
 {
@@ -644,7 +644,7 @@ class mob_hodir_druid : public CreatureScript
     {
         return new mob_hodir_druidAI(pCreature);
     };
-}
+};
 
 class mob_hodir_mage : public CreatureScript
 {
@@ -705,7 +705,7 @@ class mob_hodir_mage : public CreatureScript
     {
         return new mob_hodir_mageAI(pCreature);
     };
-}
+};
 
 class toasty_fire : public CreatureScript
 {
@@ -741,7 +741,7 @@ class toasty_fire : public CreatureScript
     {
         return new toasty_fireAI(pCreature);
     };
-}
+};
 
 
 void AddSC_boss_hodir()
