@@ -2053,6 +2053,22 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                         caster->HealBySpell(caster, GetSpellProto(), bp * 20);
                 }
                 break;
+            case 62038: // Biting Cold
+                if (target->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (GetAmount() < 1 || !target->GetAura(62039))
+                        target->AddAura(62039, target);
+                    else if (target->GetAura(62039)->GetStackAmount() > 1 && target->isMoving())
+                        target->RemoveAuraFromStack(62039);
+                }
+                break;
+            case 62039: // Biting Cold damage
+                {
+                    uint8 stackAmount = target->GetAura(62039)->GetStackAmount();
+                    int32 damage = (int32)(200 * pow(2.0f,stackAmount));
+                    target->CastCustomSpell(target,62188,&damage,0,0,true);                    
+                }
+                break;
             case 63382: // Rapid Burst
                 {
                     if (target->GetMap())
