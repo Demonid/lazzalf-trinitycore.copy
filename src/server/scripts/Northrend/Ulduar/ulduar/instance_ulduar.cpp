@@ -115,7 +115,7 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiMimironYS;
         uint64 uiHodirYS;
             
-        GameObject* pLeviathanDoor, *KologarnChest, *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
+        GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
 
         void OnGameObjectCreate(GameObject* pGo, bool add)
@@ -124,8 +124,8 @@ class instance_ulduar : public InstanceMapScript
             switch(pGo->GetEntry())
             {
                 case GO_Leviathan_DOOR: pLeviathanDoor = add ? pGo : NULL; break;
-                case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
-                case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
+                //case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
+                //case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
                 case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
                 case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
                 case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;                
@@ -393,7 +393,7 @@ class instance_ulduar : public InstanceMapScript
                     if (state == DONE)
                     {
                         HandleGameObject(uiKologarnBridge, false);
-                        KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
+                        //KologarnChest->SetRespawnTime(KologarnChest->GetRespawnDelay());
                     }
                     break;
                 case BOSS_HODIR:
