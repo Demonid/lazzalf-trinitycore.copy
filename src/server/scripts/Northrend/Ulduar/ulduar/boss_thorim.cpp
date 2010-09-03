@@ -944,6 +944,7 @@ class npc_sif : public CreatureScript
         npc_sifAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = pCreature->GetInstanceScript();
+            me->addUnitState(UNIT_STAT_ROOT);
         }
 
         InstanceScript* pInstance;
