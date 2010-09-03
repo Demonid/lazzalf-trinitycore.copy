@@ -554,7 +554,7 @@ class npc_lake_frog : public CreatureScript
                     {
                         if (pPlayer->GetQuestStatus(new_quest[i].quest_id) == QUEST_STATUS_INCOMPLETE && pPlayer->HasAura(LIP_BALM_SPELL) && rand()%10 == 1)
                         {
-                            Unit* summon = me->SummonCreature(MAIDEN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
+                            Unit* summon = me->SummonCreature(MAIDEN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
                             me->ForcedDespawn();
                             if (summon)
                             {
