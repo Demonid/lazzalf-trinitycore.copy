@@ -34,7 +34,7 @@ enum Spells
     SPELL_FLASH_FREEZE                        = 61968,
     SPELL_FLASH_FREEZE_VISUAL                 = 62148,
     SPELL_BITING_COLD                         = 62038,
-    SPELL_BITING_COLD_TRIGGERED               = 48095,
+    SPELL_BITING_COLD_TRIGGERED               = 62039,
     SPELL_FREEZE                              = 62469,
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
@@ -64,35 +64,18 @@ enum Spells
 };
 
 // Achievements
-#define ACHIEVEMENT_CHEESE_THE_FREEZE         RAID_MODE(2961, 2962) // TODO
+#define ACHIEVEMENT_CHEESE_THE_FREEZE         RAID_MODE(2961, 2962)
 #define ACHIEVEMENT_COLD_IN_HERE              RAID_MODE(2967, 2968)
 #define ACHIEVEMENT_THIS_CACHE_WAS_RARE       RAID_MODE(3182, 3184)
-#define ACHIEVEMENT_COOLEST_FRIENDS           RAID_MODE(2963, 2965) // TODO
+#define ACHIEVEMENT_COOLEST_FRIENDS           RAID_MODE(2963, 2965)
+
+#define ACTION_FAILED_COOLEST_FRIENDS           1
 
 enum NPCs
 {
-    NPC_FLASH_FREEZE                          = 32938,
-    NPC_ICICLE_TARGET                         = 33174,
-
-    // Alliance
-    NPC_EIVI_NIGHTFEATHER                     = 33325,
-    NPC_ELLIE_NIGHTFEATHER                    = 32901,
-    NPC_ELEMENTALIST_MAHFUUN                  = 33328,
-    NPC_ELEMENTALIST_AVUUN                    = 32900,
-    NPC_MISSY_FLAMECUFFS                      = 32893,
-    NPC_SISSY_FLAMECUFFS                      = 33327,
-    NPC_FIELD_MEDIC_PENNY                     = 32897,
-    NPC_FIELD_MEDIC_JESSY                     = 33326,
-    
-    // Horde
-    NPC_TOR_GREYCLOUD                         = 32941,
-    NPC_KAR_GREYCLOUD                         = 33333,
-    NPC_SPIRITWALKER_TARA                     = 33332,
-    NPC_SPIRITWALKER_YONA                     = 32950,
-    NPC_AMIRA_BLAZEWEAVER                     = 33331,
-    NPC_VEESHA_BLAZEWEAVER                    = 32946,
-    NPC_BATTLE_PRIEST_ELIZA                   = 32948,
-    NPC_BATTLE_PRIEST_GINA                    = 33330
+    NPC_FLASH_FREEZE                            = 32938,
+    NPC_ICICLE_TARGET                           = 33174,
+    NPC_HODIR                                   = 32845
 };
 
 enum Events
@@ -166,9 +149,10 @@ class boss_hodir : public CreatureScript
         
         InstanceScript* pInstance;
         
-        Creature* Helper[8];
         uint32 uiCheckIntenseColdTimer;
         bool bMoreThanTwoIntenseCold;
+        bool CheeseTheFreeze;
+        bool CoolestFriends;
         bool RareCache;
             
         void Reset()
@@ -201,9 +185,11 @@ class boss_hodir : public CreatureScript
             events.ScheduleEvent(EVENT_FLASH_CAST, 50000);
             events.ScheduleEvent(EVENT_RARE_CACHE, 180000);
             events.ScheduleEvent(EVENT_BERSERK, 480000);
-            RareCache = true;
             uiCheckIntenseColdTimer = 2000;
             bMoreThanTwoIntenseCold = false;
+            CheeseTheFreeze = true;
+            CoolestFriends = true;
+            RareCache = true;
         }
         
         void KilledUnit(Unit* victim)
@@ -219,7 +205,6 @@ class boss_hodir : public CreatureScript
             
             me->setFaction(35);
             
-            // Achievements
             if (pInstance)
             {
                 // Kill credit
@@ -227,11 +212,20 @@ class boss_hodir : public CreatureScript
                 // Getting Cold in Here
                 if (!bMoreThanTwoIntenseCold)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_COLD_IN_HERE);
+                // Cheese the Freeze
+                if (CheeseTheFreeze)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_CHEESE_THE_FREEZE);
+                // I Have the Coolest Friends
+                if (CoolestFriends)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_COOLEST_FRIENDS);
                 // I Could Say That This Cache Was Rare
                 if (RareCache)
                 {
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_THIS_CACHE_WAS_RARE);
-                    pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
+                    if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                        pInstance->SetData(DATA_HODIR_RARE_CHEST_HERO, GO_STATE_READY);
+                    else
+                        pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
                 }
                 // Chest spawn
                 me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43, -203.906, 432.687, -0.90757, 0, 0, 0.7, 0.7, 604800);
@@ -342,11 +336,25 @@ class boss_hodir : public CreatureScript
                             continue;
                             
                         else if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 105000))
-                            pIceBlock->CastSpell(pTarget, SPELL_BLOCK_OF_ICE, true);
+                        { 
+                           pIceBlock->CastSpell(pTarget, SPELL_BLOCK_OF_ICE, true);
+                           if (pTarget->GetTypeId() == TYPEID_PLAYER)
+                               CheeseTheFreeze = false;
+                        }
                     }
                 }
             }
         }
+
+        void DoAction(const int32 action)
+ 	    {
+  	        switch(action)
+ 	        {
+  	            case ACTION_FAILED_COOLEST_FRIENDS:
+  	                CoolestFriends = false;
+  	                break;
+  	        }
+  	    }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -534,6 +542,14 @@ class mob_hodir_priest : public CreatureScript
 
             DoSpellAttackIfReady(SPELL_SMITE);
         }
+
+        void JustDied(Unit *victim)
+ 	    {
+	        // I Have the Coolest Friends
+  	        if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+  	            if (pHodir->AI())
+  	                pHodir->AI()->DoAction(ACTION_FAILED_COOLEST_FRIENDS);
+  	    }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -590,6 +606,14 @@ class mob_hodir_shaman : public CreatureScript
 
             DoSpellAttackIfReady(SPELL_LAVA_BURST);
         }
+
+        void JustDied(Unit *victim)
+ 	    {
+	        // I Have the Coolest Friends
+  	        if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+  	            if (pHodir->AI())
+  	                pHodir->AI()->DoAction(ACTION_FAILED_COOLEST_FRIENDS);
+  	    }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -638,6 +662,14 @@ class mob_hodir_druid : public CreatureScript
 
             DoSpellAttackIfReady(SPELL_WRATH);
         }
+
+        void JustDied(Unit *victim)
+ 	    {
+	        // I Have the Coolest Friends
+  	        if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+  	            if (pHodir->AI())
+  	                pHodir->AI()->DoAction(ACTION_FAILED_COOLEST_FRIENDS);
+  	    }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -699,6 +731,14 @@ class mob_hodir_mage : public CreatureScript
 
             DoSpellAttackIfReady(SPELL_FIREBALL);
         }
+
+        void JustDied(Unit *victim)
+ 	    {
+	        // I Have the Coolest Friends
+  	        if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+  	            if (pHodir->AI())
+  	                pHodir->AI()->DoAction(ACTION_FAILED_COOLEST_FRIENDS);
+  	    }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const

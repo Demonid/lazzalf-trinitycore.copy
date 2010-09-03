@@ -734,7 +734,7 @@ public:
                                 uiStalkerGUID = pStalker->GetGUID();
                                 me->SetUInt64Value(UNIT_FIELD_TARGET, uiStalkerGUID);
                                 if (IsHeroic())
-                                    me->SummonCreature(NPC_INFINITE, 2335.47f, 1262.04f, 132.921f, 1.42079f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 87000);
+                                    me->SummonCreature(NPC_INFINITE, 2335.47f, 1262.04f, 132.921f, 1.42079f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 87000);
                             }
                             JumpToNextStep(1000);
                             break;

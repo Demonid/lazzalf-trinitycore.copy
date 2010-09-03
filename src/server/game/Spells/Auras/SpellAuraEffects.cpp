@@ -1197,12 +1197,12 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                                 for (UnitList::iterator target = targetList.begin(); target != targetList.end(); ++target)
                                 {
                                     if ((*target)->GetTypeId() != TYPEID_PLAYER)
-                                        continue; //break;
+                                        break; //continue;
                                         
                                     if ((*target)->ToPlayer()->isMoving())
-                                        m_amount = 4; // DoT stacks when the target remains stationary for 4 seconds
+                                        m_amount = 0; 
                                     else
-                                        --m_amount;
+                                        ++m_amount;
                                 }
                             }
                             break;
@@ -2058,7 +2058,8 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 62038: // Biting Cold
                 if (target->GetTypeId() == TYPEID_PLAYER)
                 {
-                    if (GetAmount() < 1 || !target->GetAura(62039))
+                    // DoT stacks when the target remains stationary for 4 seconds
+                    if (GetAmount() >= 4 || !target->GetAura(62039))
                         target->AddAura(62039, target);
                     else if (target->GetAura(62039)->GetStackAmount() > 1 && target->isMoving())
                         target->RemoveAuraFromStack(62039);
