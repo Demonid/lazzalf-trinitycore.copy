@@ -120,14 +120,14 @@ struct SummonLocation
 
 SummonLocation addLocations[]=
 {
-    {1983.75, -243.36, 432.767, 1.57, 32897}, // Priest 1
-    {1999.90, -230.49, 432.767, 1.57, 33325}, // Druid 1
-    {2010.06, -243.45, 432.767, 1.57, 33328}, // Shaman 1
-    {2021.12, -236.65, 432.767, 1.57, 32893}, // Mage 1
-    {2028.10, -244.66, 432.767, 1.57, 33326}, // Priest 2
-    {2014.18, -232.80, 432.767, 1.57, 32901}, // Druid 2
-    {1992.90, -237.54, 432.767, 1.57, 32900}, // Shaman 2
-    {1976.60, -233.53, 432.767, 1.57, 33327}  // Mage 2
+    {1983.75f, -243.36f, 432.767f, 1.57f, 32897}, // Priest 1
+    {1999.90f, -230.49f, 432.767f, 1.57f, 33325}, // Druid 1
+    {2010.06f, -243.45f, 432.767f, 1.57f, 33328}, // Shaman 1
+    {2021.12f, -236.65f, 432.767f, 1.57f, 32893}, // Mage 1
+    {2028.10f, -244.66f, 432.767f, 1.57f, 33326}, // Priest 2
+    {2014.18f, -232.80f, 432.767f, 1.57f, 32901}, // Druid 2
+    {1992.90f, -237.54f, 432.767f, 1.57f, 32900}, // Shaman 2
+    {1976.60f, -233.53f, 432.767f, 1.57f, 33327}  // Mage 2
 };
 #define NORMAL_COUNT 4
 #define RAID_COUNT 8
@@ -162,7 +162,7 @@ class boss_hodir : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
-            for (uint32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
+            for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
             {
                 if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
@@ -228,7 +228,7 @@ class boss_hodir : public CreatureScript
                         pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
                 }
                 // Chest spawn
-                me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43, -203.906, 432.687, -0.90757, 0, 0, 0.7, 0.7, 604800);
+                me->SummonGameObject(RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25), 1966.43f, -203.906f, 432.687f, -0.90757f, 0, 0, 0.7f, 0.7f, 604800);
             }
         }
 
