@@ -18,6 +18,8 @@
 #include "ScriptPCH.h"
 #include "obsidian_sanctum.h"
 
+#define DATA_CAN_LOOT   0
+
 enum eEnums
 {
     //Sartharion Yell
@@ -702,6 +704,7 @@ struct dummy_dragonAI : public ScriptedAI
     uint32 m_uiMoveNextTimer;
     int32 m_iPortalRespawnTime;
     bool m_bCanMoveFree;
+    bool m_bCanLoot;
 
     void Reset()
     {
@@ -711,7 +714,14 @@ struct dummy_dragonAI : public ScriptedAI
         m_uiWaypointId = 0;
         m_uiMoveNextTimer = 500;
         m_iPortalRespawnTime = 30000;
-        m_bCanMoveFree = false;        
+        m_bCanMoveFree = false;
+        m_bCanLoot = true;
+    }
+
+    void SetData(uint32 type, uint32 value)
+    {
+        if (type == DATA_CAN_LOOT)
+            m_bCanLoot = value;
     }
 
     void MovementInform(uint32 uiType, uint32 uiPointId)
@@ -829,6 +839,9 @@ struct dummy_dragonAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
+        if (!m_bCanLoot)
+            me->SetLootRecipient(NULL);
+
         int32 iTextId = 0;
         uint32 uiSpellId = 0;
 
