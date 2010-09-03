@@ -592,6 +592,8 @@ INSERT INTO `command` VALUES
 ('reload item_enchantment_template',3,'Syntax: .reload item_enchantment_template\nReload item_enchantment_template table.'),
 ('reload item_loot_template',3,'Syntax: .reload item_loot_template\nReload item_loot_template table.'),
 ('reload item_set_names',3,'Syntax: .reload item_set_names\nReload item_set_names table.'),
+('reload lfg_dungeon_encounters',3,'Syntax: .reload lfg_dungeon_encounters\nReload lfg_dungeon_encounters table.'),
+('reload lfg_dungeon_rewards',3,'Syntax: .reload lfg_dungeon_rewards\nReload lfg_dungeon_rewards table.'),
 ('reload locales_creature',3,'Syntax: .reload locales_creature\nReload locales_creature table.'),
 ('reload locales_gameobject',3,'Syntax: .reload locales_gameobject\nReload locales_gameobject table.'),
 ('reload locales_gossip_menu_option',3, 'Syntax: .reload locales_gossip_menu_option\nReload locales_gossip_menu_option table.'),
@@ -3088,6 +3090,52 @@ CREATE TABLE `item_template` (
 LOCK TABLES `item_template` WRITE;
 /*!40000 ALTER TABLE `item_template` DISABLE KEYS */;
 /*!40000 ALTER TABLE `item_template` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `lfg_dungeon_encounters`
+--
+
+DROP TABLE IF EXISTS `lfg_dungeon_encounters`;
+CREATE TABLE `lfg_dungeon_encounters` (
+  `achievementId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Achievement marking final boss completion',
+  `dungeonId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Dungeon entry from dbc',
+  PRIMARY KEY (`achievementId`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `lfg_dungeon_encounters`
+--
+
+LOCK TABLES `lfg_dungeon_encounters` WRITE;
+/*!40000 ALTER TABLE `lfg_dungeon_encounters` DISABLE KEYS */;
+/*!40000 ALTER TABLE `lfg_dungeon_encounters` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `lfg_dungeon_rewards`
+--
+
+DROP TABLE IF EXISTS `lfg_dungeon_rewards`;
+CREATE TABLE `lfg_dungeon_rewards` (
+  `dungeonId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Dungeon entry from dbc',
+  `maxLevel` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT 'Max level at which this reward is rewarded',
+  `firstQuestId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest id with rewards for first dungeon this day',
+  `firstMoneyVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Money multiplier for completing the dungeon first time in a day with less players than max',
+  `firstXPVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Experience multiplier for completing the dungeon first time in a day with less players than max',
+  `otherQuestId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest id with rewards for Nth dungeon this day',
+  `otherMoneyVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Money multiplier for completing the dungeon Nth time in a day with less players than max',
+  `otherXPVar` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Experience multiplier for completing the dungeon Nth time in a day with less players than max',
+  PRIMARY KEY (`dungeonId`,`maxLevel`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `lfg_dungeon_rewards`
+--
+
+LOCK TABLES `lfg_dungeon_rewards` WRITE;
+/*!40000 ALTER TABLE `lfg_dungeon_rewards` DISABLE KEYS */;
+/*!40000 ALTER TABLE `lfg_dungeon_rewards` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -26595,18 +26643,28 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 73033, 'spell_festergut_blighted_spores'),
 ( 73034, 'spell_festergut_blighted_spores'),
 -- quest
+(  8913, 'spell_q55_sacred_cleansing'),
+( 17271, 'spell_q5206_test_fetid_skull'),
+( 34665, 'spell_q10255_administer_antidote'),
+( 44936, 'spell_q11515_fel_siphon_dummy'),
 ( 45449, 'spell_q11587_arcane_prisoner_rescue'),
 ( 46023, 'spell_q11730_ultrasonic_screwdriver'),
 ( 52308, 'spell_q12683_take_sputum_sample'),
 ( 55804, 'spell_q12937_relief_for_the_fallen'),
 -- item
+( 23074, 'spell_item_arcanite_dragonling'),
 (  8063, 'spell_item_deviate_fish'),
 ( 67019, 'spell_item_flask_of_the_north'),
+( 23133, 'spell_item_gnomish_battle_chicken'),
 ( 13280, 'spell_item_gnomish_death_ray'),
 ( 33060, 'spell_item_make_a_wish'),
+( 23076, 'spell_item_mechanical_dragonling'),
+( 40802, 'spell_item_mingos_fortune_generator'),
+( 23075, 'spell_item_mithril_mechanical_dragonling'),
 ( 13120, 'spell_item_net_o_matic'),
 ( 16589, 'spell_item_noggenfogger_elixir'),
 (  8213, 'spell_item_savory_deviate_delight'),
+( 14537, 'spell_item_six_demon_bag'),
 ( 59640, 'spell_item_underbelly_elixir'),
 -- warrior
 ( 12975, 'spell_warr_last_stand'),
