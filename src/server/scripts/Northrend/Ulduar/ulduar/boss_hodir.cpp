@@ -158,13 +158,13 @@ class boss_hodir : public CreatureScript
     {
         boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
         {
-            pInstance = pCreature->GetInstanceData();
+            pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
             me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
         }
         
-        ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
         
         Creature* Helper[8];
         uint32 uiCheckIntenseColdTimer;
@@ -476,11 +476,11 @@ class mob_hodir_priest : public CreatureScript
     {
         mob_hodir_priestAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceData();
+            pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
         }
 
-        ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
         int32 HealTimer;
         int32 DispelTimer;
 
@@ -551,11 +551,11 @@ class mob_hodir_shaman : public CreatureScript
     {
         mob_hodir_shamanAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceData();
+            pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
         }
 
-        ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
         int32 StormTimer;
 
         void Reset()
@@ -607,11 +607,11 @@ class mob_hodir_druid : public CreatureScript
     {
         mob_hodir_druidAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceData();
+            pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
         }
 
-        ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
         int32 StarlightTimer;
 
         void Reset()
@@ -655,11 +655,11 @@ class mob_hodir_mage : public CreatureScript
     {
         mob_hodir_mageAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceData();
+            pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
         }
 
-        ScriptedInstance* pInstance;
+        InstanceScript* pInstance;
         int32 FireTimer;
         int32 MeltIceTimer;
 
