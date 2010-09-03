@@ -246,7 +246,7 @@ public:
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
-            pCreature->SummonCreature(NPC_ARGENT_CHAMPION,8562.451,1095.72,556.784,1.76);
+            pCreature->SummonCreature(NPC_ARGENT_CHAMPION,8562.451f,1095.72f,556.784f,1.76f);
         }
         //else
             //pPlayer->SEND_GOSSIP_MENU(???, pCreature->GetGUID()); Missing text
@@ -458,7 +458,7 @@ public:
     {
         npc_argent_championAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pCreature->GetMotionMaster()->MovePoint(0,8552.43,1124.95,556.786);
+            pCreature->GetMotionMaster()->MovePoint(0,8552.43f,1124.95f,556.786f);
             pCreature->setFaction(35); //wrong faction in db?
         }
 
@@ -520,6 +520,63 @@ public:
 };
 
 /*######
+## lake_frog
+######*/
+
+#define MAIDEN 33220
+#define WARTS_SPELL 62581
+#define LIP_BALM_SPELL 62574
+#define SUMMON_ASHOOD_BRAND_SPELL 62554
+#define MAIDEN_SAY "thank to you, here is you Ashwood Brand !"
+
+struct A_BLADE_FIT_FOR_A_CHAMPION_QUEST
+{ 
+  uint32 quest_id; 
+};
+
+A_BLADE_FIT_FOR_A_CHAMPION_QUEST new_quest[] = {13603, 13666, 13673, 13741, 13746, 13752, 13757, 13762, 13768, 13773, 13778, 13783};
+
+class npc_lake_frog : public CreatureScript
+{
+    public:
+    npc_lake_frog() : CreatureScript("npc_lake_frog") { }
+
+    struct npc_lake_frogAI : public ScriptedAI
+    {
+        npc_lake_frogAI(Creature *c) : ScriptedAI(c) {}
+
+        void ReceiveEmote(Player* pPlayer, uint32 emote)
+        {
+            switch (emote)
+            {
+                case TEXTEMOTE_KISS:
+                    for (int i = 0; i < 12; i++)
+                    {
+                        if (pPlayer->GetQuestStatus(new_quest[i].quest_id) == QUEST_STATUS_INCOMPLETE && pPlayer->HasAura(LIP_BALM_SPELL) && rand()%10 == 1)
+                        {
+                            Unit* summon = me->SummonCreature(MAIDEN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
+                            me->ForcedDespawn();
+                            if (summon)
+                            {
+                                summon->CastSpell(pPlayer, SUMMON_ASHOOD_BRAND_SPELL, true, 0, 0, 0);
+                                summon->MonsterSay(MAIDEN_SAY, LANG_UNIVERSAL, NULL);
+                            }
+                        }
+                        else if (!pPlayer->HasAura(LIP_BALM_SPELL) && ((rand()%100) > 40)) 
+                            me->CastSpell(pPlayer, WARTS_SPELL, true, 0, 0, 0);
+                    }
+                    break;
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_lake_frogAI (pCreature);
+    };
+};
+
+/*######
 ## npc_guardian_pavilion
 ######*/
 
@@ -568,13 +625,14 @@ public:
 
 void AddSC_icecrown()
 {
-    new npc_arete;
-    new npc_dame_evniki_kapsalis;
-    new npc_squire_david;
+    new npc_arete();
+    new npc_dame_evniki_kapsalis();
+    new npc_squire_david();
     new npc_squire_danny;
-    new npc_argent_valiant;
-    new npc_argent_tournament_post;
-    new npc_alorah_and_grimmin;
-    new npc_argent_champion;
-    new npc_guardian_pavilion;
+    new npc_argent_valiant();
+    new npc_argent_tournament_post();
+    new npc_alorah_and_grimmin();
+    new npc_argent_champion();
+    new npc_lake_frog();
+    new npc_guardian_pavilion();
 }
