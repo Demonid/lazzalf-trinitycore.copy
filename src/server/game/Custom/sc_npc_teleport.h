@@ -146,6 +146,6 @@ namespace nsNpcTel
 // Loading contents of database
 void LoadNpcTele(void);
 
-extern DatabaseType WorldDatabase;
+extern WorldDatabaseWorkerPool WorldDatabase;
 
 #endif
