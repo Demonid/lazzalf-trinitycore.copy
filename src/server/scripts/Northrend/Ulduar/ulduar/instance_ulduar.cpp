@@ -365,7 +365,7 @@ class instance_ulduar : public InstanceMapScript
                     if (MimironElevator)
                         MimironElevator->SetGoState(GOState(value));
                     break; 
-                case DATA_HODIR_RARE_CHEST:
+                case DATA_HODIR_CHEST:
                     if (HodirChest && value == GO_STATE_READY)
                         HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
                     break;
