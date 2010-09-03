@@ -1190,6 +1190,20 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                         case 59911: // Tenacity (vehicle)
                            GetBase()->RefreshDuration();
                            break;
+                        case 62038: // Biting Cold
+                            UnitList targetList;
+                            GetTargetList(targetList);
+                            for (UnitList::iterator target = targetList.begin(); target != targetList.end(); ++target)
+                            {
+                                if ((*target)->GetTypeId() != TYPEID_PLAYER)
+                                    break;
+                                    
+                                if ((*target)->ToPlayer()->isMoving())
+                                    m_amount = 4; // DoT stacks when the target remains stationary for 4 seconds
+                                else
+                                    --m_amount;
+                            }
+                            break;
                         case 66823: case 67618: case 67619: case 67620: // Paralytic Toxin
                             // Get 0 effect aura
                             if (AuraEffect *slow = GetBase()->GetEffect(0))
