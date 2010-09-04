@@ -18214,23 +18214,27 @@ void Player::_SaveInventory(SQLTransaction& trans)
     for (size_t i = 0; i < m_itemUpdateQueue.size(); ++i)
     {
         Item *item = m_itemUpdateQueue[i];
-        if (!item || item->GetState() == ITEM_REMOVED)
+        //if (!item || item->GetState() == ITEM_REMOVED)
+        if (!item)
             continue;
 
         Item *test = GetItemByPos(item->GetBagSlot(), item->GetSlot());
 
         if (test == NULL)
         {
-            sLog.outCrash("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
+            //sLog.outCrash("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
             //error = true;
             //Should the above line really be commented out?
+            sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
+            continue;
         }
         else if (test != item)
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
-            error = true;
+            //error = true;
+            continue;
         }
-    }
+    /*}
 
     if (error)
     {
@@ -18242,7 +18246,7 @@ void Player::_SaveInventory(SQLTransaction& trans)
     for (size_t i = 0; i < m_itemUpdateQueue.size(); i++)
     {
         Item *item = m_itemUpdateQueue[i];
-        if (!item) continue;
+        if (!item) continue;*/
 
         Bag *container = item->GetContainer();
         uint32 bag_guid = container ? container->GetGUIDLow() : 0;
