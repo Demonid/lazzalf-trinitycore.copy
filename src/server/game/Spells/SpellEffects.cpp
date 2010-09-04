@@ -451,7 +451,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     case 50341:
                     {
                         if (effIndex == 2)
-                            damage = unitTarget->GetMaxHealth() * 0.3f;
+                            damage = uint32(unitTarget->GetMaxHealth() * 0.3f);
                         break;
                     }                    
                     // Loken Pulsing Shockwave
