@@ -3151,6 +3151,11 @@ void Spell::cast(bool skipCheck)
         }
     }
 
+    // now that we've done the basic check, now run the scripts
+    // should be done before the spell is actually executed
+    if (Player *playerCaster = m_caster->ToPlayer())
+        sScriptMgr.OnPlayerSpellCast(playerCaster, this, skipCheck);
+
     SetExecutedCurrently(true);
 
     if (m_caster->GetTypeId() != TYPEID_PLAYER && m_targets.getUnitTarget() && m_targets.getUnitTarget() != m_caster)
@@ -3238,6 +3243,7 @@ void Spell::cast(bool skipCheck)
         else if (m_spellInfo->excludeTargetAuraSpell && !IsPositiveSpell(m_spellInfo->excludeTargetAuraSpell))
             m_preCastSpell = m_spellInfo->excludeTargetAuraSpell;
     }
+
     switch (m_spellInfo->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -3250,14 +3256,15 @@ void Spell::cast(bool skipCheck)
                 m_caster->CastSpell(m_caster, 72752, false);           // Will of the Forsaken cooldown
             break;
         }
-    case SPELLFAMILY_MAGE:
-    {
-         // Permafrost
-         if (m_spellInfo->SpellFamilyFlags[1] & 0x00001000 ||  m_spellInfo->SpellFamilyFlags[0] & 0x00100220)
-          m_preCastSpell = 68391;
-         break;
+        case SPELLFAMILY_MAGE:
+        {
+             // Permafrost
+             if (m_spellInfo->SpellFamilyFlags[1] & 0x00001000 ||  m_spellInfo->SpellFamilyFlags[0] & 0x00100220)
+              m_preCastSpell = 68391;
+             break;
+        }
     }
-    }
+
     // traded items have trade slot instead of guid in m_itemTargetGUID
     // set to real guid to be sent later to the client
     m_targets.updateTradeSlotItem();
