@@ -197,7 +197,7 @@ class boss_kologarn : public CreatureScript
             DoScriptText(SAY_AGGRO, me);
             _EnterCombat();
             RubbleCount = 0;
-            for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+            for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
                 GripTargetGUID[n] = NULL;
             Gripped = false;
             
@@ -273,7 +273,7 @@ class boss_kologarn : public CreatureScript
                         me->MonsterTextEmote(EMOTE_STONE, 0, true);
                         DoScriptText(SAY_GRAB_PLAYER, me);
 
-                        for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                        for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
                         {
                             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                                 GripTargetGUID[n] = pTarget->GetGUID();
@@ -453,7 +453,7 @@ class mob_right_arm : public CreatureScript
             {
                 if (SqueezeTimer <= int32(diff))
                 {
-                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                    for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
                     {
                         if (me->GetVehicleKit()->GetPassenger(n) && me->GetVehicleKit()->GetPassenger(n)->isAlive())
                             me->Kill(me->GetVehicleKit()->GetPassenger(n), true);
@@ -498,7 +498,7 @@ class mob_right_arm : public CreatureScript
             switch (action)
             {
                 case ACTION_GRIP:
-                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                    for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
                     {
                         if (Unit* GripTarget = Unit::GetUnit(*me, GripTargetGUID[n]))
                         {
@@ -527,7 +527,7 @@ class mob_right_arm : public CreatureScript
                 
                 if (ArmDamage >= uint32(dmg) || damage >= me->GetHealth())
                 {
-                    for (int32 n = 0; n < RAID_MODE(1, 3); ++n)
+                    for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
                     {
                         Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(n);
                         if (pGripTarget && pGripTarget->isAlive())
