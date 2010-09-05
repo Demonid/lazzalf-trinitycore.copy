@@ -359,7 +359,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT implemented in Unit::DealDamage
     &AuraEffect::HandleNoImmediateEffect,                         //301 SPELL_AURA_SCHOOL_HEAL_ABSORB implemented in Unit::CalcHealAbsorb
     &AuraEffect::HandleNULL,                                      //302 0 spells in 3.3.5
-    &AuraEffect::HandleNULL,                                      //303 SPELL_AURA_MOD_DMG_VERSUS_AURASTATE_PCT? - 22 and 19 look like serverside aurastates (22 - dark, gas cloud, 19 light, ooze)
+    &AuraEffect::HandleNoImmediateEffect,                         //303 SPELL_AURA_MOD_DAMAGE_DONE_VERSUS_AURASTATE implemented in Unit::SpellDamageBonus, Unit::MeleeDamageBonus
     &AuraEffect::HandleUnused,                                    //304 clientside
     &AuraEffect::HandleAuraModIncreaseSpeed,                      //305 SPELL_AURA_MOD_MINIMUM_SPEED
     &AuraEffect::HandleNULL,                                      //306 0 spells in 3.3.5
@@ -4423,19 +4423,18 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const * aurApp, uint
         immunity_list.pop_back(); // delete Disarm
         target->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
         target->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+        // also drop flag
+        if (Player* player = target->ToPlayer())
+            if (Battleground* bg = player->GetBattleground())
+                bg->EventPlayerDroppedFlag(player);
     }
 
     if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
-    {
         for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-        {
             target->RemoveAurasByType(*iter);
-        }
-    }
+
     for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-    {
-        target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
-    }
+        target->ApplySpellImmune(GetId(), IMMUNITY_STATE, *iter, apply);
 }
 
 void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8 mode, bool apply) const
@@ -5909,7 +5908,10 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                         caster->CastCustomSpell(target, 63337, &mana, NULL, NULL, true);
                         caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);
                     } break;
-            }
+                case 71563:
+                    if (Aura* newAura = target->AddAura(71564, target))            
+                        newAura->SetStackAmount(newAura->GetSpellProto()->StackAmount);         
+             }
         }
         // AT REMOVE
         else
