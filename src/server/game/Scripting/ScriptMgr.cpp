@@ -1049,10 +1049,10 @@ void ScriptMgr::OnTransportUpdate(Transport* transport, uint32 diff)
     tmpscript->OnUpdate(transport, diff);
 }
 
-void ScriptMgr::OnRelocate(Transport* transport, uint32 mapId, float x, float y, float z)
+void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z)
 {
     GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
-    tmpscript->OnRelocate(transport, mapId, x, y, z);
+    tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z);
 }
 
 void ScriptMgr::OnStartup()
@@ -1119,9 +1119,29 @@ void ScriptMgr::OnPlayerReputationChange(Player *player, uint32 factionID, int32
     FOREACH_SCRIPT(PlayerScript)->OnReputationChange(player, factionID, standing, incremental);
 }
 
-void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, void* param)
+void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg)
 {
-    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg, param);
+    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg);
+}
+
+void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, Player* receiver)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg, receiver);
+}
+
+void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, Group* group)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg, group);
+}
+
+void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, Guild* guild)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg, guild);
+}
+
+void ScriptMgr::OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string msg, Channel* channel)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnChat(player, type, lang, msg, channel);
 }
 
 void ScriptMgr::OnPlayerEmote(Player* player, uint32 emote)

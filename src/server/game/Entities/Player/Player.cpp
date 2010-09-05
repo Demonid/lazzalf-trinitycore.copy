@@ -15364,11 +15364,11 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
 void Player::KilledMonster(CreatureInfo const* cInfo, uint64 guid)
 {
     if (cInfo->Entry)
-        KilledMonsterCredit(cInfo->Entry,guid);
+        KilledMonsterCredit(cInfo->Entry, guid);
 
     for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
         if (cInfo->KillCredit[i])
-            KilledMonsterCredit(cInfo->KillCredit[i],guid);
+            KilledMonsterCredit(cInfo->KillCredit[i], guid);
 }
 
 void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
@@ -15412,7 +15412,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
 
                     uint32 reqkill = qInfo->ReqCreatureOrGOId[j];
 
-                    if (reqkill == entry)
+                    if (reqkill == real_entry)
                     {
                         uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[j];
                         uint32 curkillcount = q_status.m_creatureOrGOcount[j];
@@ -15428,7 +15428,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
                             CompleteQuest(questid);
 
                         // same objective target can be in many active quests, but not in 2 objectives for single quest (code optimization).
-                        continue;
+                        break;
                     }
                 }
             }
@@ -16258,10 +16258,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // currently we do not support transport in bg
     else if (transGUID)
     {
-        // There are no transports on instances
-        instanceId = 0;
-
-        m_movementInfo.t_guid = MAKE_NEW_GUID(transGUID, 0, HIGHGUID_TRANSPORT);
+        m_movementInfo.t_guid = MAKE_NEW_GUID(transGUID, 0, HIGHGUID_MO_TRANSPORT);
         m_movementInfo.t_pos.Relocate(fields[26].GetFloat(), fields[27].GetFloat(), fields[28].GetFloat(), fields[29].GetFloat());
 
         if (!Trinity::IsValidMapCoord(
@@ -16270,7 +16267,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             // transport size limited
             m_movementInfo.t_pos.m_positionX > 250 || m_movementInfo.t_pos.m_positionY > 250 || m_movementInfo.t_pos.m_positionZ > 250)
         {
-            sLog.outError("Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",
+            sLog.outError("Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to bind location.",
                 guid,GetPositionX()+m_movementInfo.t_pos.m_positionX,GetPositionY()+m_movementInfo.t_pos.m_positionY,
                 GetPositionZ()+m_movementInfo.t_pos.m_positionZ,GetOrientation()+m_movementInfo.t_pos.m_orientation);
 
@@ -16290,7 +16287,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             }
             if (!m_transport)
             {
-                sLog.outError("Player (guidlow %d) have problems with transport guid (%u). Teleport to default race/class locations.",
+                sLog.outError("Player (guidlow %d) have problems with transport guid (%u). Teleport to bind location.",
                     guid,transGUID);
 
                 RelocateToHomebind();
