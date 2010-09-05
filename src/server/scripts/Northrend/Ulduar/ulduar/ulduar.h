@@ -37,7 +37,6 @@ enum Encounter
     BOSS_ALGALON,
     MAX_BOSS_NUMBER
 };
-    DATA_PRELEVIATHAN           = 25,
 
 enum Data64
 {
