@@ -230,6 +230,8 @@ class boss_freya : public CreatureScript
         void Reset()
         {
             _Reset();
+
+            me->UpdateMaxHealth();
             
             spawnedAdds = 0;
             EldersCount = 0;
@@ -342,7 +344,12 @@ class boss_freya : public CreatureScript
             if (EldersCount == 0)
                 DoScriptText(SAY_AGGRO, me);
             else
+            {
                 DoScriptText(SAY_AGGRO_WITH_ELDER, me);
+                // each Elder left up will increase the health of both Freya and her adds. (20% per Elder)
+                me->SetMaxHealth(me->GetMaxHealth() + (uint32)(me->GetMaxHealth() * EldersCount * 20 / 100));
+                me->SetHealth(me->GetMaxHealth());
+            }
         }
 
         void UpdateAI(const uint32 diff)
