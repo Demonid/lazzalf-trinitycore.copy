@@ -455,7 +455,7 @@ class mob_snowpacked_icicle : public CreatureScript
             if (DespawnTimer <= diff)
             {
                 if (GameObject *pSnowdrift = me->FindNearestGameObject(194173,2))
-                    pSnowdrift->RemoveFromWorld()//Delete();
+                    pSnowdrift->RemoveFromWorld();//Delete();
                 me->ForcedDespawn();
             }
             else DespawnTimer -= diff;
