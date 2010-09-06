@@ -220,10 +220,10 @@ public:
            if (tMinutes == 25)
            {
                m_auiEncounter[4] = FAIL;
-               if (Creature *pProva = instance->GetCreature(uiInfinite))
+               if (Creature *pInfinite = instance->GetCreature(uiInfinite))
                {
-                   pProva->DisappearAndDie();
-                   pProva->SetLootRecipient(NULL);
+                   pInfinite->DisappearAndDie();
+                   pInfinite->SetLootRecipient(NULL);
                }
                DoUpdateWorldState(WORLD_STATE_TIMER, 0);             
            }
