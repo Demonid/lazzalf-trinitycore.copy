@@ -454,8 +454,8 @@ class mob_snowpacked_icicle : public CreatureScript
         {
             if (DespawnTimer <= diff)
             {
-                if (GameObject *pSnowdrift = me->FindNearestGameObject(194173,2))
-                    pSnowdrift->RemoveFromWorld();//Delete();
+                if (GameObject *pSnowdrift = me->FindNearestGameObject(194173, 2))
+                    me->RemoveGameObject(pSnowdrift, true);
                 me->ForcedDespawn();
             }
             else DespawnTimer -= diff;
@@ -763,8 +763,8 @@ class toasty_fire : public CreatureScript
             // Toasty fire can be extinguished by falling ice or Flash Freeze
             if(spell->Id == SPELL_BLOCK_OF_ICE || spell->Id == 62457 || spell->Id == 65370)
             {
-                if(GameObject *pFire = me->FindNearestGameObject(194300,2))
-                    pFire->Delete();
+                if (GameObject *pFire = me->FindNearestGameObject(194300, 2))
+                    me->RemoveGameObject(pFire, true);
                 me->ForcedDespawn();
             }
         }
