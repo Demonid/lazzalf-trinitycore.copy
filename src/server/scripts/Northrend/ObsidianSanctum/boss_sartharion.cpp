@@ -242,6 +242,9 @@ class boss_sartharion : public CreatureScript
             if (instance)
                 instance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
             RespawnDrakes();
+            DespawnCreatures(NPC_SHARTHARION_TWILIGHT_WHELP, 100);
+            DespawnCreatures(NPC_TWILIGHT_WHELP, 100);
+            DespawnCreatures(NPC_LAVA_BLAZE, 100);
 
             m_bIsBerserk = false;
             m_bIsSoftEnraged = false;
@@ -302,6 +305,18 @@ class boss_sartharion : public CreatureScript
                     Acolytes--;
                     break;
             }
+        }
+
+        void DespawnCreatures(uint32 entry, float distance, bool discs = false)
+        {
+            std::list<Creature*> m_pCreatures;
+            GetCreatureListWithEntryInGrid(m_pCreatures, me, entry, distance);
+
+            if (m_pCreatures.empty())
+                return;
+
+            for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
+                (*iter)->ForcedDespawn();
         }
 
         void JustDied(Unit* pKiller)
@@ -822,8 +837,7 @@ struct dummy_dragonAI : public ScriptedAI
                 else                
                     me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon2, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20000);  
 
-                iTextId = WHISPER_OPEN_PORTAL;
-                DoCast(SPELL_TWILIGHT_TORMENT_VESP);                
+                iTextId = WHISPER_OPEN_PORTAL;               
                 break;
             }
         }
@@ -1238,6 +1252,7 @@ class mob_vesperon : public CreatureScript
                     return;
                 else
                 {
+                    DoCast(me->getVictim(), SPELL_TWILIGHT_TORMENT_VESP, true);
                     OpenPortal();
                     m_bHasPortalOpen = true;
                     m_uiAcolyteVesperonTimer = urand(60000,70000);
@@ -1379,7 +1394,9 @@ class mob_acolyte_of_vesperon : public CreatureScript
             pInstance = pCreature->GetInstanceScript();        
         }
 
-        InstanceScript* pInstance;    
+        InstanceScript* pInstance; 
+        bool ToInterrupt;
+        uint32 CheckForInterrupt;
 
         void Reset()
         {         
@@ -1387,6 +1404,9 @@ class mob_acolyte_of_vesperon : public CreatureScript
             {
                 me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);            
             }
+
+            ToInterrupt = true;
+            CheckForInterrupt = 2000;
         }
 
         void EnterCombat(Unit* who){}
@@ -1420,7 +1440,21 @@ class mob_acolyte_of_vesperon : public CreatureScript
         }
 
         void UpdateAI(const uint32 uiDiff)
-        {         
+        {  
+            // This is needed for interrupt Vesperon.
+ 	        if (ToInterrupt && CheckForInterrupt <= uiDiff)
+ 	        {
+  	            Creature* pTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_VESPERON));
+  	            if (pTarget)
+ 	            {
+ 	                pTarget->InterruptNonMeleeSpells(true, 0, true);
+ 	                ToInterrupt = false;
+  	                CheckForInterrupt = 5000;
+                }
+  	        }
+  	        else
+  	            CheckForInterrupt -= uiDiff;
+
             if (!UpdateVictim())
                 return;
 
