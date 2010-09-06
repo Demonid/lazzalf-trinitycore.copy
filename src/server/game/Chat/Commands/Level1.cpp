@@ -2040,8 +2040,8 @@ bool ChatHandler::HandleJailCommand(const char *args)
 	    uint32 jail_guid = GUID_LOPART(GUID);
 	    std::string jail_char = cname;
 	    bool jail_isjailed = true;
-	    uint32 jail_release = localtime + (jailtime * 60 * 60);
-	    uint32 jail_amnestietime = localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie);
+	    uint32 jail_release = uint32(localtime + (jailtime * 60 * 60));
+	    uint32 jail_amnestietime = uint32(localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie));
 	    std::string jail_reason = jailreason;
 	    uint32 jail_times = 0;
 
@@ -2142,8 +2142,8 @@ bool ChatHandler::HandleJailCommand(const char *args)
     chr->m_jail_guid = fields[0].GetUInt32();
     chr->m_jail_char = fields[2].GetCppString();
     chr->m_jail_isjailed = true;
-    chr->m_jail_release = localtime + (jailtime * 60 * 60);
-    chr->m_jail_amnestietime = localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie);
+    chr->m_jail_release = uint32(localtime + (jailtime * 60 * 60));
+    chr->m_jail_amnestietime = uint32(localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie));
     chr->m_jail_reason = jailreason;
     chr->m_jail_times = chr->m_jail_times+1;
     chr->m_jail_gmacc = m_session->GetAccountId();
