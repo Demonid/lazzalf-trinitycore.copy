@@ -793,8 +793,6 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                     break;
             }
             break;
-        case SPELLFAMILY_SHAMAN:
-            
         case SPELLFAMILY_HUNTER:
             // Aspect of the Viper
             if (spellId == 34074)
