@@ -38,7 +38,8 @@ enum Spells
     SPELL_FREEZE                              = 62469,
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
-    SPELL_BLOCK_OF_ICE                        = 61990,
+    SPELL_BLOCK_OF_ICE                        = 61969,
+    SPELL_BLOCK_OF_ICE_NPC                    = 61990,
     SPELL_FROZEN_KILL                         = 62226,
     SPELL_ICICLE_FALL                         = 69428,
     SPELL_FALL_DAMAGE                         = 62236,
@@ -73,6 +74,7 @@ enum Spells
 
 enum NPCs
 {
+    NPC_FLASH_FREEZE_PRE                        = 32926,
     NPC_FLASH_FREEZE                            = 32938,
     NPC_ICICLE_TARGET                           = 33174,
     NPC_HODIR                                   = 32845
@@ -162,15 +164,16 @@ class boss_hodir : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
-            /*for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
+            for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
             {
                 if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
-                    if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
+                    if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     {
-                        pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE, true);
-                        pHelper->AddThreat(me, 100);
+                        pIceBlock->AddThreat(pHelper, 5000000.0f);
+                        pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
+                        pHelper->AddThreat(me, 5000000.0f);
                     }
-            }*/
+            }
         }
 
         void EnterCombat(Unit* who)
@@ -503,7 +506,7 @@ class mob_hodir_priest : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->HasAura(SPELL_BLOCK_OF_ICE))
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED))
                 return;
                 
             if (HealthBelowPct(35))
@@ -584,7 +587,7 @@ class mob_hodir_shaman : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->HasAura(SPELL_BLOCK_OF_ICE))
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED))
                 return;
                 
             if (StormTimer <= uiDiff)
@@ -648,7 +651,7 @@ class mob_hodir_druid : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->HasAura(SPELL_BLOCK_OF_ICE))
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED))
                 return;
                 
             if (StarlightTimer <= uiDiff)
@@ -706,7 +709,7 @@ class mob_hodir_mage : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->HasAura(SPELL_BLOCK_OF_ICE))
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED))
                 return;
                 
             if (FireTimer <= uiDiff)
@@ -782,6 +785,56 @@ class toasty_fire : public CreatureScript
 };
 
 
+class npc_flash_freeze_pre : public CreatureScript
+{
+    public:
+        npc_flash_freeze_pre(): CreatureScript("npc_flash_freeze_pre") {}
+
+    struct npc_flash_freeze_preAI : public ScriptedAI
+    {
+        npc_flash_freeze_preAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
+        }
+        
+        int32 IceBlockTimer;
+        
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim() || me->getVictim()->GetTypeId() == TYPEID_PLAYER || me->getVictim()->HasAura(SPELL_BLOCK_OF_ICE_NPC))
+                return;
+
+            if (IceBlockTimer <= diff)
+            {
+                DoCast(me->getVictim(), SPELL_BLOCK_OF_ICE_NPC, true);
+                IceBlockTimer = 30000;
+            } 
+            else IceBlockTimer -= diff;
+        }
+        
+        void DamageTaken(Unit* pKiller, uint32 &damage)
+        {
+            if (pKiller && pKiller->GetTypeId() == TYPEID_PLAYER)
+                if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+                    if (!pHodir->isInCombat())
+                        pHodir->AI()->DoZoneInCombat();
+        }
+        
+        void Reset()
+        {
+            IceBlockTimer = 30000;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_flash_freeze_preAI(pCreature);
+    }
+};
+
+
 void AddSC_boss_hodir()
 {
     new boss_hodir();
@@ -793,4 +846,5 @@ void AddSC_boss_hodir()
     new mob_hodir_druid();
     new mob_hodir_mage();
     new toasty_fire();
+    new npc_flash_freeze_pre();
 }
