@@ -1159,7 +1159,7 @@ class boss_vx_001 : public CreatureScript
                             events.RescheduleEvent(EVENT_HAND_PULSE, urand(10000, 12000));
                             break;
                         case EVENT_FROST_BOMB:
-                            me->SummonCreature(NPC_FROST_BOMB, SummonPos[rand()%9], TEMPSUMMON_MANUAL_DESPAWN);
+                            me->SummonCreature(NPC_FROST_BOMB, SummonPos[rand()%9], TEMPSUMMON_TIMED_DESPAWN, 11000);
                             events.RescheduleEvent(EVENT_FROST_BOMB, 45000);
                             break;
                     }
@@ -1629,7 +1629,7 @@ class mob_mimiron_flame : public CreatureScript
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
             me->SetReactState(REACT_PASSIVE);
             DoCast(me, SPELL_FLAME, true);
-            uiFlameTimer = 9000;
+            uiFlameTimer = 8000;
         }
         
         uint32 uiFlameTimer;
@@ -1639,7 +1639,7 @@ class mob_mimiron_flame : public CreatureScript
             if (uiFlameTimer <= diff)
             {
                 me->SummonCreature(NPC_FLAME_SPREAD, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
-                uiFlameTimer = 9000;
+                uiFlameTimer = 8000;
             }
             else uiFlameTimer -= diff;
         }
