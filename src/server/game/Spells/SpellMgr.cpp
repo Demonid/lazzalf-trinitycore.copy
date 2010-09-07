@@ -3908,6 +3908,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 62713:     // Ironbranch's Essence
         case 62968:     // Brightleaf's Essence
+        case 64320:     // Rune of Power
+            spellInfo->DurationIndex = 39;
+            count++;
+            break;
         case 62775:     // Tympanic Tantrum
             spellInfo->EffectRadiusIndex[0] = 41; // 150 yard
             spellInfo->EffectRadiusIndex[1] = 41;

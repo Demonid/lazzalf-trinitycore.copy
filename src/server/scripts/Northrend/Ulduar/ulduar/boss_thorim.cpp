@@ -163,8 +163,9 @@ enum SifSpells
     SPELL_FROSTBOLT_VOLLEY_25                   = 62604,
     SPELL_FROSTNOVA_10                          = 62597,
     SPELL_FROSTNOVA_25                          = 62605,
-    SPELL_BLIZZARD_10                           = 62577,
-    SPELL_BLIZZARD_25                           = 62603
+    SPELL_BLIZZARD_10                           = 62576,
+    SPELL_BLIZZARD_25                           = 62602,
+    SPELL_FROSTBOLT                             = 69274
 };
 
 enum ThorimChests
@@ -943,17 +944,20 @@ class npc_sif : public CreatureScript
     {
         npc_sifAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             pInstance = pCreature->GetInstanceScript();
-            me->addUnitState(UNIT_STAT_ROOT);
+            //me->addUnitState(UNIT_STAT_ROOT);
         }
 
         InstanceScript* pInstance;
+        int32 FrostTimer;
         int32 VolleyTimer;
         int32 BlizzardTimer;
         int32 NovaTimer;
 
         void Reset()
         {
+            FrostTimer = 2000;
             VolleyTimer = 15000;
             BlizzardTimer = 30000;
             NovaTimer = urand(20000, 25000);
@@ -966,6 +970,14 @@ class npc_sif : public CreatureScript
                 
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
+
+            if (FrostTimer <= uiDiff)
+            {
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
+                    DoCast(pTarget, SPELL_FROSTBOLT);
+                FrostTimer = 4000;
+            }
+            else FrostTimer -= uiDiff;
                 
             if (VolleyTimer <= int32(uiDiff))
             {
@@ -973,7 +985,7 @@ class npc_sif : public CreatureScript
                 {
                     DoResetThreat();
                     me->AddThreat(pTarget, 5000000.0f);
-                    DoCast(pTarget, RAID_MODE(SPELL_FROSTBOLT_VOLLEY_10, SPELL_FROSTBOLT_VOLLEY_25));
+                    DoCast(pTarget, RAID_MODE(SPELL_FROSTBOLT_VOLLEY_10, SPELL_FROSTBOLT_VOLLEY_25), true);
                 }
                 VolleyTimer = urand(15000, 20000);
             }
@@ -981,19 +993,17 @@ class npc_sif : public CreatureScript
             
             if (BlizzardTimer <= int32(uiDiff))
             {
-                DoCast(me, RAID_MODE(SPELL_BLIZZARD_10, SPELL_BLIZZARD_25));
+                DoCast(me, RAID_MODE(SPELL_BLIZZARD_10, SPELL_BLIZZARD_25), true);
                 BlizzardTimer = 45000;
             }
             else BlizzardTimer -= uiDiff;
             
             if (NovaTimer <= int32(uiDiff))
             {
-                DoCastAOE(RAID_MODE(SPELL_FROSTNOVA_10, SPELL_FROSTNOVA_25));
+                DoCastAOE(RAID_MODE(SPELL_FROSTNOVA_10, SPELL_FROSTNOVA_25), true);
                 NovaTimer = urand(20000, 25000);
             }
             else NovaTimer -= uiDiff;
-
-            DoMeleeAttackIfReady();
         }
     };
 

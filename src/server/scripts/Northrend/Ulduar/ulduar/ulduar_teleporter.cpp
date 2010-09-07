@@ -48,7 +48,7 @@ class ulduar_teleporter : public GameObjectScript
 
         pPlayer->ADD_GOSSIP_ITEM(0, "Expedition Base Camp", GOSSIP_SENDER_MAIN, BASE_CAMP);
         pPlayer->ADD_GOSSIP_ITEM(0, "Formation Grounds", GOSSIP_SENDER_MAIN, GROUNDS);
-        if (data->GetBossState(BOSS_LEVIATHAN) == DONE && pPlayer->isGameMaster())
+        if (data->GetBossState(BOSS_LEVIATHAN) == DONE || pPlayer->isGameMaster())
         {
             pPlayer->ADD_GOSSIP_ITEM(0, "Colossal Forge", GOSSIP_SENDER_MAIN, FORGE);
             if (data->GetBossState(BOSS_XT002) == DONE || pPlayer->isGameMaster())
@@ -58,11 +58,11 @@ class ulduar_teleporter : public GameObjectScript
                 if (data->GetBossState(BOSS_KOLOGARN) == DONE || pPlayer->isGameMaster())
                 {
                     pPlayer->ADD_GOSSIP_ITEM(0, "Shattered Walkway", GOSSIP_SENDER_MAIN, WALKWAY);
-                    if (data->GetBossState(BOSS_AURIAYA) == DONE && pPlayer->isGameMaster())
+                    if (data->GetBossState(BOSS_AURIAYA) == DONE || pPlayer->isGameMaster())
                     {
                         pPlayer->ADD_GOSSIP_ITEM(0, "Conservatory of Life", GOSSIP_SENDER_MAIN, CONSERVATORY);
                         pPlayer->ADD_GOSSIP_ITEM(0, "Spark of Imagination", GOSSIP_SENDER_MAIN, SPARK_IMAGINATION);
-                        if (data->GetBossState(BOSS_VEZAX) == DONE && pPlayer->isGameMaster())
+                        if (data->GetBossState(BOSS_VEZAX) == DONE || pPlayer->isGameMaster())
                             pPlayer->ADD_GOSSIP_ITEM(0, "Descent into Madness", GOSSIP_SENDER_MAIN, DESCENT_MADNESS);
                     }
                 }
