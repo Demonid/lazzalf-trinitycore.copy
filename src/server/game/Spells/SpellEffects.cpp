@@ -623,9 +623,6 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                         }
                     }
                 }
-                // Improved Devouring Plague should not get any bonus
-                else if (m_spellInfo->Id == 63675)
-  	                apply_direct_bonus = false;
                 break;
             }
             case SPELLFAMILY_DRUID:
