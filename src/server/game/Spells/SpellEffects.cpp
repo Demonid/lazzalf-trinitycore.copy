@@ -4925,6 +4925,17 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         unitTarget->RemoveAuraFromStack(66482);
                     return;
                 }
+                case 63845: // Create Lance
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (m_caster->ToPlayer()->GetTeam() == ALLIANCE)
+                        m_caster->CastSpell(m_caster, 63914, true);
+                    else
+                        m_caster->CastSpell(m_caster, 63919, true);
+                    return;
+                }
                 case 71342:                                     // Big Love Rocket
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)

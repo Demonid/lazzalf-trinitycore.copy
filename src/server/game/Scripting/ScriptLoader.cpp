@@ -17,7 +17,6 @@
 #include "ScriptPCH.h"
 #include "ScriptLoader.h"
 
-#ifdef SCRIPTS
 
 //examples
 void AddSC_example_creature();
@@ -31,6 +30,23 @@ void AddSC_npc_teleport();
 //Guild House
 void AddSC_guildhouse_npcs();
 
+// spells
+void AddSC_deathknight_spell_scripts();
+void AddSC_druid_spell_scripts();
+void AddSC_generic_spell_scripts();
+void AddSC_hunter_spell_scripts();
+void AddSC_mage_spell_scripts();
+void AddSC_paladin_spell_scripts();
+void AddSC_priest_spell_scripts();
+void AddSC_rogue_spell_scripts();
+void AddSC_shaman_spell_scripts();
+void AddSC_warlock_spell_scripts();
+void AddSC_warrior_spell_scripts();
+void AddSC_quest_spell_scripts();
+void AddSC_item_spell_scripts();
+void AddSC_example_spell_scripts();
+
+#ifdef SCRIPTS
 //world
 void AddSC_areatrigger_scripts();
 void AddSC_boss_emeriss();
@@ -543,22 +559,6 @@ void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
-// spells
-void AddSC_deathknight_spell_scripts();
-void AddSC_druid_spell_scripts();
-void AddSC_generic_spell_scripts();
-void AddSC_hunter_spell_scripts();
-void AddSC_mage_spell_scripts();
-void AddSC_paladin_spell_scripts();
-void AddSC_priest_spell_scripts();
-void AddSC_rogue_spell_scripts();
-void AddSC_shaman_spell_scripts();
-void AddSC_warlock_spell_scripts();
-void AddSC_warrior_spell_scripts();
-void AddSC_quest_spell_scripts();
-void AddSC_item_spell_scripts();
-void AddSC_example_spell_scripts();
-
 // battlegrounds
 
 // outdoor pvp
@@ -577,9 +577,9 @@ void AddSC_chat_log();
 
 void AddScripts()
 {
-#ifdef SCRIPTS
     AddExampleScripts();
     AddSpellScripts();
+#ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();
     AddKalimdorScripts();
@@ -593,18 +593,15 @@ void AddScripts()
 
 void AddExampleScripts()
 {
-#ifdef SCRIPTS
     AddSC_example_creature();
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
-#endif
 }
 	
 
 void AddSpellScripts()
 {
-#ifdef SCRIPTS
     AddSC_deathknight_spell_scripts();
     AddSC_druid_spell_scripts();
     AddSC_generic_spell_scripts();
@@ -619,7 +616,6 @@ void AddSpellScripts()
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_example_spell_scripts();
-#endif
 }
 
 void AddWorldScripts()
