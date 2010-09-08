@@ -256,6 +256,15 @@ EAIErrorLevel = 2
 #    Number of threads to update maps.
 #    Default: 1
 #
+#   CrashRecover.Enable
+#   Default: 0
+#
+#   CrashRecover.MaxCrashCount
+#   Default: 5
+#
+#   CrashRecover.CountResetTime
+#   Default: 300000
+#
 #    CleanCharacterDB
 #        Perform character db clean ups on start up
 #        Default: 0 (Disabled)
@@ -293,6 +302,9 @@ LogDB.Opt.ClearTime = 1209600
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
+CrashRecover.Enable = 0
+CrashRecover.MaxCrashCount = 5
+CrashRecover.CountResetTime = 300000
 CleanCharacterDB = 0
 
 ###############################################################################
@@ -411,6 +423,10 @@ CleanCharacterDB = 0
 #    ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
+#
+#    CheatLogFile
+#        Log file of AntiCheat exception
+#        Default: "" - do not create cheat log file
 #
 #    SQLDriverLogFile
 #        Log file of SQL driver events.
@@ -545,6 +561,7 @@ GmLogTimestamp = 0
 GmLogPerAccount = 0
 RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
+CheatLogFile = ""
 SQLDriverLogFile = ""
 LogColors = ""
 EnableLogDB = 0
@@ -695,7 +712,11 @@ ChatLogTimestamp = 0
 #        Minimal name length (1..12)
 #        Default: 2
 #
-#    CharactersCreatingDisabled
+#    MaxWhoListReturns
+#        Set the max number of players returned in the /who list and interface.
+#        Default: 49 (stable)
+#
+#    CharacterCreating.Disabled
 #        Disable characters creating for specific team or any
 #         (non-player accounts not affected)
 #        Default: 0 - enabled
@@ -703,9 +724,19 @@ ChatLogTimestamp = 0
 #                 2 - disabled only for Horde
 #                 3 - disabled for both teams
 #
-#    MaxWhoListReturns
-#        Set the max number of players returned in the /who list and interface.
-#        Default: 49 (stable)
+#    CharacterCreating.Disabled.RaceMask
+#        Mask of races which cannot be created (ignored for GM accounts).
+#        Default: 0 - all races are enabled
+#                 Check http://www.trinitycore.info/index.php/Characters_tc2#race 
+#                 for race mask values.
+#        Example: 1536 = 1024 + 512 - Blood Elf and Draenei races are disabled.
+#
+#    CharacterCreating.Disabled.ClassMask
+#        Mask of classes which cannot be created (ignored for GM accounts).
+#        Default: 0 - all classes are enabled
+#                 Check http://www.trinitycore.info/index.php/Characters_tc2#class 
+#                 for class mask values.
+#        Example: 288 = 32 + 256 - Death Knight and Warlock classes are disabled.
 #
 #    CharactersPerAccount
 #        Limit numbers of characters per account (at all realms).
@@ -724,13 +755,12 @@ ChatLogTimestamp = 0
 #        Default: 1
 #                The number must be between 0 (not allowed) and 10
 #
-#    MinLevelForHeroicCharacterCreating
+#    CharacterCreating.MinLevelForHeroicCharacter
 #        Limit creating heroic characters only for account with another
 #         character of specific level (ignored for GM accounts)
 #                 0  - not require any existed chaarcter
 #                 1  - require at least any character existed
 #        Default: 55 - default requirement
-#
 #
 #    SkipCinematics
 #        Disable in-game script movie at first character's login
@@ -948,6 +978,10 @@ ChatLogTimestamp = 0
 #        Default: 0 - disable
 #                 1 - enable
 #
+#    Command.LookupMaxResults
+#        The maximum number of results a .lookup command can return
+#        Default: 0 - unlimited
+#
 ###############################################################################
 
 GameType = 0
@@ -962,11 +996,13 @@ MaxWhoListReturns = 49
 MinPlayerName = 2
 MinCharterName = 2
 MinPetName = 2
-CharactersCreatingDisabled = 0
+CharacterCreating.Disabled = 0
+CharacterCreating.Disabled.RaceMask = 0
+CharacterCreating.Disabled.ClassMask = 0
 CharactersPerAccount = 50
 CharactersPerRealm = 10
 HeroicCharactersPerRealm = 1
-MinLevelForHeroicCharacterCreating = 55
+CharacterCreating.MinLevelForHeroicCharacter = 55
 SkipCinematics = 0
 MaxPlayerLevel = 80
 MinDualSpecLevel = 40
@@ -1008,6 +1044,7 @@ Event.Announce = 0
 BeepAtStart = 1
 Motd = "Welcome to a Trinity Core server."
 Server.LoginInfo = 0
+Command.LookupMaxResults = 0
 
 ###############################################################################
 # PLAYER INTERACTION
@@ -1858,6 +1895,98 @@ Network.OutUBuff = 65536
 Network.TcpNodelay = 1
 
 ###############################################################################
+###################################################################################################################
+# ARENA MOD SETTINGS
+# 
+#    ArenaMod.Enable
+#        Enable/Disable Arena Mod
+#    Default: 0 (disabled)
+#
+#    ArenaMod.Mode
+#        Three possible modes are available, they are addable as flags :
+#        - Mode 1 : Player mode
+#          Only activates limitations for each player
+#        - Mode 2 : Team mode
+#          Only activates limitations for the whole arenateam
+#        - Mode 1 + 2 = Mode 3 : Player & Team mode
+#          Activates limitations for each player and whole arenateam
+#    Default: 3
+#
+#    ArenaMod.MaximalTeamWins
+#        Sets the maximal amount of all wins of a team against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalTeamWinsAgainstTeam
+#        Sets the maximal amount of wins of a team against another specific team
+#    Default: 15
+#
+#    ArenaMod.MaximalPlayerWins
+#        Sets the maximal amount of all wins of a single player against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalPlayerWinsAgainstTeam
+#        Sets the maximal amount of wins of a single player against another specific team
+#    Default: 30
+#
+#    ArenaMod.TimeToReset
+#        Sets the time intervall in HOURS for resetting the limitation
+#    Default: 24
+#
+#    ArenaMod.ControllIp
+#        Enable/Disable Controll Ip for Arena Team
+#    Default: 0
+###################################################################################################################
+
+ArenaMod.Enabled = 0
+ArenaMod.Mode = 3
+ArenaMod.MaximalTeamWins = 40
+ArenaMod.MaximalTeamWinsAgainstTeam = 20
+ArenaMod.MaximalPlayerWins = 30
+ArenaMod.MaximalPlayerWinsAgainstTeam = 15
+ArenaMod.TimeToReset = 24
+ArenaMod.ControllIp = 0
+
+###############################################################################
+# MOVEMENT ANTICHEAT
+#
+#    Anticheat.Movement.Enable
+#        Enable Movement Anticheat
+#        Default: 1 - on
+#                 0 - off
+#
+#    Anticheat.Movement.TeleportToPlaneAlarms
+#        maximum alarms before logging mode will be switched from debug to error (default 50, allowed 20 - 100)
+#
+#    Anticheat.Movement.MistimingDelta
+#        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
+#
+#    Anticheat.Movement.MistimingAlarms
+#        mistiming alarms before logging mode will be switched from debug to error (default 200, allowed 100 - 500)
+#
+###################################################################################################################
+
+Anticheat.Movement.Enable = 0
+Anticheat.Movement.Mistiming.Enable             = 1
+Anticheat.Movement.MistimingBlock.Enable        = 1
+Anticheat.Movement.AntiGravity.Enable           = 1
+Anticheat.Movement.AntiGravityBlock.Enable      = 1
+Anticheat.Movement.AntiMultiJump.Enable         = 1
+Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1
+Anticheat.Movement.AntiSpeedTele.Enable         = 1
+Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1
+Anticheat.Movement.AntiMountainHack.Enable      = 1
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+Anticheat.Movement.AntiFlyHack.Enable           = 1
+Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
+Anticheat.Movement.AntiWaterwalk.Enable         = 1
+Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
+Anticheat.Movement.TeleportToPlane.Enable       = 1
+Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
+Anticheat.Movement.TeleportToPlaneAlarms = 50
+Anticheat.Movement.MistimingDelta = 15000
+Anticheat.Movement.MistimingAlarms = 200
+Anticheat.LogCheatDeltaTime = 0
+
 # CONSOLE AND REMOTE ACCESS
 #
 #    Console.Enable
@@ -1993,6 +2122,65 @@ CharDelete.KeepDays = 30
 #       Default: 0 = Only 1 Guild Master per guild
 #                1 = Allow more than one Guild Master
 #
+#   OutdoorPvP.Wintergrasp.Enabled
+#       Determines whether the Wintergrasp battle is enabled or not.
+#        Default: 0 = Disable
+#                 1 = Enable
+#
+#   OutdoorPvP.Wintergrasp.StartTime
+#       The start time of the first battle after server starts (in minutes)
+#       Default: 30
+#
+#   OutdoorPvP.Wintergrasp.BattleTime
+#       Time limit of a battle (in minutes)
+#       Default: 30
+#
+#   OutdoorPvP.Wintergrasp.Interval
+#       Interval between battles (in minutes)
+#       Default: 150
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorRewards
+#       Defines whether custom honor rewards should be given to player
+#        for partaking in the Wintergrasp Battle.
+#        Default: 0 = Disable
+#                 1 = Enable
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorBattleWin
+#       Defines the amount of honor points that should be given to the
+#        team winning the Wintergrasp Battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 3000
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorBattleLose
+#       Defines the amount of honor points that should be given to the
+#        team losing the Wintergrasp Battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 1250
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDamageTower
+#       Defines the amount of honor points that should be given to the
+#        team for damaging a tower.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower
+#       Defines the amount of honor points that should be given to the
+#        team for destroying a tower.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding
+#       Defines the amount of honor points that should be given to the
+#        team for damaged buildings after the battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding
+#       Defines the amount of honor points that should be given to the
+#        team for intact buildings after the battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 1500
+#
 #   ShowKickInWorld
 #        Determines wether a message is broadcasted to the entire server
 #         when a player gets kicked
@@ -2051,6 +2239,17 @@ PvPToken.MapAllowType = 4
 PvPToken.ItemID = 29434
 PvPToken.ItemCount = 1
 Guild.AllowMultipleGuildMaster = 0
+OutdoorPvP.Wintergrasp.Enabled = 0
+OutdoorPvP.Wintergrasp.StartTime = 30
+OutdoorPvP.Wintergrasp.BattleTime = 30
+OutdoorPvP.Wintergrasp.Interval = 150
+OutdoorPvP.Wintergrasp.CustomHonorRewards = 0
+OutdoorPvP.Wintergrasp.CustomHonorBattleWin = 3000
+OutdoorPvP.Wintergrasp.CustomHonorBattleLose = 1250
+OutdoorPvP.Wintergrasp.CustomHonorDamageTower = 750
+OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower = 750
+OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding = 750
+OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
 NoResetTalentsCost = 0
 ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000

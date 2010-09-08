@@ -17,7 +17,6 @@
 #include "ScriptPCH.h"
 #include "ScriptLoader.h"
 
-#ifdef SCRIPTS
 
 //examples
 void AddSC_example_creature();
@@ -25,6 +24,29 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 
+//TeleNPC2
+void AddSC_npc_teleport();
+
+//Guild House
+void AddSC_guildhouse_npcs();
+
+// spells
+void AddSC_deathknight_spell_scripts();
+void AddSC_druid_spell_scripts();
+void AddSC_generic_spell_scripts();
+void AddSC_hunter_spell_scripts();
+void AddSC_mage_spell_scripts();
+void AddSC_paladin_spell_scripts();
+void AddSC_priest_spell_scripts();
+void AddSC_rogue_spell_scripts();
+void AddSC_shaman_spell_scripts();
+void AddSC_warlock_spell_scripts();
+void AddSC_warrior_spell_scripts();
+void AddSC_quest_spell_scripts();
+void AddSC_item_spell_scripts();
+void AddSC_example_spell_scripts();
+
+#ifdef SCRIPTS
 //world
 void AddSC_areatrigger_scripts();
 void AddSC_boss_emeriss();
@@ -359,7 +381,9 @@ void AddSC_boss_ormorok();
 void AddSC_boss_keristrasza();
 void AddSC_instance_nexus();
 void AddSC_boss_drakos();                //The Nexus The Oculus
+void AddSC_boss_eregos();
 void AddSC_boss_urom();
+void AddSC_boss_varos();
 void AddSC_instance_oculus();
 void AddSC_oculus();
 void AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -381,6 +405,12 @@ void AddSC_boss_razorscale();
 void AddSC_boss_xt002();
 void AddSC_boss_kologarn();
 void AddSC_boss_assembly_of_iron();
+void AddSC_boss_hodir();
+void AddSC_boss_freya();
+void AddSC_boss_thorim();
+void AddSC_boss_mimiron();
+void AddSC_boss_general_vezax();
+void AddSC_boss_yogg_saron();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -412,6 +442,8 @@ void AddSC_boss_xevozz();
 void AddSC_boss_zuramat();
 void AddSC_instance_violet_hold();
 void AddSC_violet_hold();
+void AddSC_instance_eye_of_eternity();   // Malygos
+void AddSC_boss_malygos(); 
 void AddSC_instance_forge_of_souls();   //Forge of Souls
 void AddSC_forge_of_souls();
 void AddSC_boss_bronjahm();
@@ -420,7 +452,7 @@ void AddSC_instance_pit_of_saron();     //Pit of Saron
 void AddSC_pit_of_saron();
 void AddSC_boss_garfrost();
 void AddSC_boss_ick();
-void AddSC_boss_tyrannus();
+void AddSC_boss_tyrannus();  
 void AddSC_instance_halls_of_reflection();   // Halls of Reflection
 void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
@@ -441,6 +473,7 @@ void AddSC_howling_fjord();
 void AddSC_icecrown();
 void AddSC_sholazar_basin();
 void AddSC_storm_peaks();
+void AddSC_wintergrasp();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 
@@ -526,22 +559,6 @@ void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
-// spells
-void AddSC_deathknight_spell_scripts();
-void AddSC_druid_spell_scripts();
-void AddSC_generic_spell_scripts();
-void AddSC_hunter_spell_scripts();
-void AddSC_mage_spell_scripts();
-void AddSC_paladin_spell_scripts();
-void AddSC_priest_spell_scripts();
-void AddSC_rogue_spell_scripts();
-void AddSC_shaman_spell_scripts();
-void AddSC_warlock_spell_scripts();
-void AddSC_warrior_spell_scripts();
-void AddSC_quest_spell_scripts();
-void AddSC_item_spell_scripts();
-void AddSC_example_spell_scripts();
-
 // battlegrounds
 
 // outdoor pvp
@@ -551,6 +568,7 @@ void AddSC_outdoorpvp_na();
 void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
 void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_wg();
 
 // player
 void AddSC_chat_log();
@@ -559,9 +577,9 @@ void AddSC_chat_log();
 
 void AddScripts()
 {
-#ifdef SCRIPTS
     AddExampleScripts();
     AddSpellScripts();
+#ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();
     AddKalimdorScripts();
@@ -575,17 +593,15 @@ void AddScripts()
 
 void AddExampleScripts()
 {
-#ifdef SCRIPTS
     AddSC_example_creature();
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
-#endif
 }
+	
 
 void AddSpellScripts()
 {
-#ifdef SCRIPTS
     AddSC_deathknight_spell_scripts();
     AddSC_druid_spell_scripts();
     AddSC_generic_spell_scripts();
@@ -600,7 +616,6 @@ void AddSpellScripts()
     AddSC_quest_spell_scripts();
     AddSC_item_spell_scripts();
     AddSC_example_spell_scripts();
-#endif
 }
 
 void AddWorldScripts()
@@ -620,6 +635,10 @@ void AddWorldScripts()
     AddSC_npc_taxi();
     AddSC_achievement_scripts();
     AddSC_chat_log();
+    //TeleNPC2
+    AddSC_npc_teleport();
+    //Guild House
+    AddSC_guildhouse_npcs(); 
 #endif
 }
 
@@ -1038,7 +1057,9 @@ void AddNorthrendScripts()
     AddSC_boss_keristrasza();
     AddSC_instance_nexus();
     AddSC_boss_drakos();                //The Nexus The Oculus
+    AddSC_boss_eregos();
     AddSC_boss_urom();
+    AddSC_boss_varos();
     AddSC_instance_oculus();
     AddSC_oculus();
     AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -1060,6 +1081,12 @@ void AddNorthrendScripts()
     AddSC_boss_xt002();
     AddSC_boss_assembly_of_iron();
     AddSC_boss_kologarn();
+    AddSC_boss_hodir();
+    AddSC_boss_freya();
+    AddSC_boss_thorim();
+ 	AddSC_boss_mimiron();
+ 	AddSC_boss_general_vezax();
+    AddSC_boss_yogg_saron();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
@@ -1091,6 +1118,8 @@ void AddNorthrendScripts()
     AddSC_boss_zuramat();
     AddSC_instance_violet_hold();
     AddSC_violet_hold();
+    AddSC_instance_eye_of_eternity();   // Malygos
+    AddSC_boss_malygos();
     AddSC_instance_forge_of_souls();   //Forge of Souls
     AddSC_forge_of_souls();
     AddSC_boss_bronjahm();
@@ -1120,6 +1149,7 @@ void AddNorthrendScripts()
     AddSC_icecrown();
     AddSC_sholazar_basin();
     AddSC_storm_peaks();
+    AddSC_wintergrasp();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
 #endif
@@ -1134,6 +1164,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
+    AddSC_outdoorpvp_wg();
 #endif
 }
 
