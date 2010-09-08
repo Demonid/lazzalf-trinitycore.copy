@@ -3250,10 +3250,10 @@ void Spell::cast(bool skipCheck)
         {
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
                 m_preCastSpell = 11196;                                // Recently Bandaged
-            else if (m_spellInfo->Id == 7744)              // Will of the Forsaken
-                m_caster->CastSpell(m_caster, 72757, false);           // PvP Trinket cooldown
-            else if(m_spellInfo->Id == 42292)              // PvP Trinket
-                m_caster->CastSpell(m_caster, 72752, false);           // Will of the Forsaken cooldown
+            //else if (m_spellInfo->Id == 7744)              // Will of the Forsaken
+            //    m_caster->CastSpell(m_caster, 72757, false);           // PvP Trinket cooldown
+            //else if(m_spellInfo->Id == 42292)              // PvP Trinket
+            //    m_caster->CastSpell(m_caster, 72752, false);           // Will of the Forsaken cooldown
             break;
         }
         case SPELLFAMILY_MAGE:
