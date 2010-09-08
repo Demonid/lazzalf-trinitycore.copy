@@ -161,6 +161,7 @@ class boss_hodir : public CreatureScript
         {
             _Reset();
             
+            me->RemoveAllAuras();
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
