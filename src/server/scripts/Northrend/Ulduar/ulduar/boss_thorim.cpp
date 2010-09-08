@@ -946,7 +946,7 @@ class npc_sif : public CreatureScript
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             pInstance = pCreature->GetInstanceScript();
-            //me->addUnitState(UNIT_STAT_ROOT);
+            me->addUnitState(UNIT_STAT_ROOT);
         }
 
         InstanceScript* pInstance;
