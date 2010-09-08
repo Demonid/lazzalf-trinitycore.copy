@@ -170,7 +170,7 @@ class boss_eadric : public CreatureScript
 	    void EnterCombat(Unit* pWho)
 	    {
 		    _EnterCombat();
-		    me->SetHomePosition(746.843, 665.000, 412.339,4.670);
+		    me->SetHomePosition(746.843f, 665.000f, 412.339f, 4.670f);
 		    DoScriptText(SAY_START_9, me);
 		    hasBeenInCombat = true;
 	    }
@@ -179,7 +179,7 @@ class boss_eadric : public CreatureScript
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
-                me->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
+                me->GetMotionMaster()->MovePoint(0,746.843f, 695.68f, 412.339f);
                 bDone = false;
 			    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                         pInstance->HandleGameObject(pGO->GetGUID(),false);
@@ -305,7 +305,7 @@ class boss_paletress : public CreatureScript
 	    void EnterCombat(Unit* pWho)
         {
 		    _EnterCombat();
-		    me->SetHomePosition(746.843, 665.000, 412.339,4.670);
+		    me->SetHomePosition(746.843f, 665.000f, 412.339f, 4.670f);
 		    hasBeenInCombat = true;
 		    DoScriptText(SAY_START_10, me);		
         }
@@ -348,7 +348,7 @@ class boss_paletress : public CreatureScript
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
-                me->GetMotionMaster()->MovePoint(0,746.843, 695.68, 412.339);
+                me->GetMotionMaster()->MovePoint(0, 746.843f, 695.68f, 412.339f);
                 bDone = false;
 			    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                         pInstance->HandleGameObject(pGO->GetGUID(),false);	
@@ -615,7 +615,7 @@ class npc_argent_soldier : public CreatureScript
                 switch(uiWaypoint)
                 {
                     case 1:
-                        me->SetOrientation(4.60);
+                        me->SetOrientation(4.60f);
 			            me->SetReactState(REACT_AGGRESSIVE);					
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         break;
@@ -626,12 +626,12 @@ class npc_argent_soldier : public CreatureScript
                 switch(uiWaypoint)
                 {
                     case 0:
-                        me->SetOrientation(5.81);
+                        me->SetOrientation(5.81f);
 			            me->SetReactState(REACT_AGGRESSIVE);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         break;
                     case 2:
-                        me->SetOrientation(3.39);
+                        me->SetOrientation(3.39f);
 			            me->SetReactState(REACT_AGGRESSIVE);					
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
@@ -652,15 +652,15 @@ class npc_argent_soldier : public CreatureScript
                     switch(uiType)
                     {
                         case 0:
-					        AddWaypoint(0,737.14,655.42,412.88);
-                            AddWaypoint(1,712.14,628.42,411.88);
+					        AddWaypoint(0, 737.14f,655.42f,412.88f);
+                            AddWaypoint(1, 712.14f,628.42f,411.88f);
                             break;
                         case 1:
-                            AddWaypoint(0,742.44,650.29,411.79);
+                            AddWaypoint(0, 742.44f, 650.29f, 411.79f);
                             break;
                         case 2:
-					        AddWaypoint(0,756.14,655.42,411.88);
-                            AddWaypoint(1,775.912, 639.033, 411.907);
+					        AddWaypoint(0, 756.14f, 655.42f, 411.88f);
+                            AddWaypoint(1, 775.912f, 639.033f, 411.907f);
                             break;
                     }
                     break;
@@ -668,15 +668,15 @@ class npc_argent_soldier : public CreatureScript
                     switch(uiType)
                     {
                         case 0:
-					        AddWaypoint(0,737.14,655.42,412.88);
-                            AddWaypoint(1,713.12,632.97,411.90);
+					        AddWaypoint(0, 737.14f, 655.42f, 412.88f);
+                            AddWaypoint(1, 713.12f, 632.97f, 411.90f);
                             break;
                         case 1:
-                            AddWaypoint(0,746.73,650.24,411.56);
+                            AddWaypoint(0, 746.73f, 650.24f, 411.56f);
                             break;
                         case 2:
-					        AddWaypoint(0,756.14,655.42,411.88);
-                            AddWaypoint(1,784.817, 629.883, 411.908);
+					        AddWaypoint(0, 756.14f, 655.42f, 411.88f);
+                            AddWaypoint(1, 784.817f, 629.883f, 411.908f);
                             break;
                     }
                     break;
@@ -684,15 +684,15 @@ class npc_argent_soldier : public CreatureScript
                     switch(uiType)
                     {
                         case 0:
-					        AddWaypoint(0,737.14,655.42,412.88);
-                            AddWaypoint(1,715.06,637.07,411.91);
+					        AddWaypoint(0, 737.14f, 655.42f, 412.88f);
+                            AddWaypoint(1, 715.06f, 637.07f, 411.91f);
                             break;
                         case 1:
-                            AddWaypoint(0,750.72,650.20,411.77);
+                            AddWaypoint(0, 750.72f, 650.20f, 411.77f);
                             break;
                         case 2:
-					        AddWaypoint(0,756.14,655.42,411.88);
-                            AddWaypoint(1,779.942, 634.061, 411.905);
+					        AddWaypoint(0, 756.14f, 655.42f, 411.88f);
+                            AddWaypoint(1, 779.942f, 634.061f, 411.905f);
                             break;
                     }
                     break;
