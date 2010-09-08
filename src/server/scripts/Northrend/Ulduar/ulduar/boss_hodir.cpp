@@ -164,7 +164,7 @@ class boss_hodir : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
-            for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
+            /*for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
             {
                 if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
@@ -173,7 +173,7 @@ class boss_hodir : public CreatureScript
                         pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
                         pHelper->AddThreat(me, 5000000.0f);
                     }
-            }
+            }*/
         }
 
         void EnterCombat(Unit* who)
