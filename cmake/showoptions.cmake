@@ -76,5 +76,13 @@ else()
   message("* Use coreside debug     : No  (default)")
 endif()
 
+if( WIN32 )
+  if( EXTERNAL_MYSQL )
+    message("* Use external MySQL     : Yes")
+  else()
+    message("* Use external MySQL     : No  (default)")
+  endif()
+endif( WIN32 )
+
 message("")
 

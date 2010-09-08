@@ -315,6 +315,29 @@ struct QuestPOI
 typedef std::vector<QuestPOI> QuestPOIVector;
 typedef UNORDERED_MAP<uint32, QuestPOIVector> QuestPOIMap;
 
+// For the daily/weekly quest pool
+struct QuestPool
+{
+    uint32  quest;      // Quest entry
+    bool    daily;      // Whether it is daily (if not it's a weekly)
+    bool    active;     // Is this quest active atm?
+
+    QuestPool() : quest(0), daily(0), active(0) {}
+    QuestPool(uint32 _quest, bool _daily, bool _active) : quest(_quest), daily(_daily), active(_active) {}
+};
+typedef std::vector<QuestPool> QuestPoolVector;
+
+// For the daily/weekly quest pool
+struct QuestPoolEntry
+{
+    uint32          qnum;   // Number of quest in pool for the npc
+    QuestPoolVector pool;   // QuestPool entry
+
+    QuestPoolEntry() : qnum(0), pool(0) {}
+    QuestPoolEntry(uint32 _qnum, QuestPoolVector _pool) : qnum(_qnum), pool(_pool) {}
+};
+typedef std::map<uint32, QuestPoolEntry> QuestPoolMap;
+
 struct GraveYardData
 {
     uint32 safeLocId;
@@ -389,6 +412,8 @@ class ObjectMgr
         typedef UNORDERED_MAP<uint32, PointOfInterest> PointOfInterestMap;
 
         typedef std::vector<std::string> ScriptNameMap;
+
+        typedef std::map<uint32, uint32> CharacterConversionMap;
 
         Player* GetPlayer(const char* name) const { return sObjectAccessor.FindPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
@@ -473,7 +498,7 @@ class ObjectMgr
         uint32 GetPlayerAccountIdByGUID(const uint64 &guid) const;
         uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;
 
-        uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team);
+        uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team, uint32 searched_node);
         void GetTaxiPath(uint32 source, uint32 destination, uint32 &path, uint32 &cost);
         uint32 GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team = false);
 
@@ -483,7 +508,9 @@ class ObjectMgr
             return itr != mQuestTemplates.end() ? itr->second : NULL;
         }
         QuestMap const& GetQuestTemplates() const { return mQuestTemplates; }
-
+        QuestPoolMap const& GetDailyQuestPoolMap() const { return mDailyQuestPoolMap; }
+        QuestPoolMap const& GetWeeklyQuestPoolMap() const { return mWeeklyQuestPoolMap; }
+ 
         uint32 GetQuestForAreaTrigger(uint32 Trigger_ID) const
         {
             QuestAreaTriggerMap::const_iterator itr = mQuestAreaTriggerMap.find(Trigger_ID);
@@ -593,6 +620,10 @@ class ObjectMgr
         void LoadArenaTeams();
         void LoadGroups();
         void LoadQuests();
+
+        void LoadQuestPool(bool reset = false, bool daily = true);
+        void ResetQuestPool(bool daily);
+
         void LoadQuestRelations()
         {
             sLog.outString("Loading GO Start Quest Data...");
@@ -696,6 +727,29 @@ class ObjectMgr
         void LoadTrainerSpell();
         bool AddSpellToTrainer(uint32 entry, uint32 spell, Field *fields, std::set<uint32> *skip_trainers, std::set<uint32> *talentIds);
         int  LoadReferenceTrainer(uint32 trainer, int32 spell, std::set<uint32> *skip_trainers, std::set<uint32> *talentIds);
+
+	    // Loads the jail conf out of the database
+		void LoadJailConf(void);
+
+		// Jail Config...
+		std::string m_jail_obt;
+		uint32 m_jailconf_max_jails;    // Jail times when the char will be deleted
+		uint32 m_jailconf_max_duration; // Max. jail duration in hours
+		uint32 m_jailconf_min_reason;   // Min. char length of the reason
+		uint32 m_jailconf_warn_player;  // Warn player every login if max_jails is nearly reached?
+		uint32 m_jailconf_amnestie;     // player amnestie
+		float m_jailconf_ally_x;        // Coords of the jail for the allies
+		float m_jailconf_ally_y;
+		float m_jailconf_ally_z;
+		float m_jailconf_ally_o;
+		uint32 m_jailconf_ally_m;
+		float m_jailconf_horde_x;       // Coords of the jail for the horde
+		float m_jailconf_horde_y;
+		float m_jailconf_horde_z;
+		float m_jailconf_horde_o;
+		uint32 m_jailconf_horde_m;
+		uint32 m_jailconf_ban;          // Ban acc if max. jailtimes is reached?
+		uint32 m_jailconf_radius;       // Radius in which a jailed char can walk
 
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint8 level);
@@ -961,6 +1015,16 @@ class ObjectMgr
                 value = data[loc_idx];
         }
 
+        CharacterConversionMap factionchange_achievements;
+        CharacterConversionMap factionchange_items;
+        CharacterConversionMap factionchange_spells;
+        CharacterConversionMap factionchange_reputations;
+
+        void LoadFactionChangeAchievements();
+        void LoadFactionChangeItems();
+        void LoadFactionChangeSpells();
+        void LoadFactionChangeReputations();
+
     protected:
 
         // first free id for selected id type
@@ -1012,6 +1076,10 @@ class ObjectMgr
         PointOfInterestMap  mPointsOfInterest;
 
         QuestPOIMap         mQuestPOIMap;
+
+        QuestPoolMap        mDailyQuestPoolMap;
+        QuestPoolMap        mWeeklyQuestPoolMap;
+        QuestPoolMap        mDisabledQuestPoolMap;
 
         //character reserved names
         typedef std::set<std::wstring> ReservedNamesMap;
