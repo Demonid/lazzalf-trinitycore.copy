@@ -231,36 +231,23 @@ class boss_mimiron : public CreatureScript
             me->ExitVehicle();
             me->GetMotionMaster()->MoveTargetedHome();
             if (pInstance)
-                pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE);
-                
-            // Encounter Reset
-            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
             {
-                if (pLeviathan->isAlive())
-                {
-                    pLeviathan->ExitVehicle();
-                    pLeviathan->AI()->EnterEvadeMode();
-                }
-            }
-            
-            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-            {
-                if (pVX_001->isAlive())
-                {
-                    pVX_001->ExitVehicle();
-                    pVX_001->AI()->EnterEvadeMode();
-                }
-            }
-            
-            if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-            {
-                if (pAerialUnit->isAlive())
-                {
-                    pAerialUnit->ExitVehicle();
-                    pAerialUnit->AI()->EnterEvadeMode();
-                }
-            }
+                pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE);                
+                pInstance->SetBossState(BOSS_MIMIRON, FAIL);
 
+ 	            for (uint8 data = DATA_LEVIATHAN_MK_II; data <= DATA_AERIAL_UNIT; ++data)
+  	            {
+  	                if (Creature *pCreature = Creature::GetCreature((*me), pInstance->GetData64(data)))
+ 	                {
+  	                    if (pCreature->isAlive())
+  	                    {
+ 	                        pCreature->ExitVehicle();
+  	                        pCreature->AI()->EnterEvadeMode();
+  	                    }
+  	                }
+  	            }
+  	        }
+            
             phase = PHASE_NULL;
             uiStep = 0;
             uiPhase_timer = -1;
@@ -320,12 +307,11 @@ class boss_mimiron : public CreatureScript
             if (EnrageTimer<= diff && !Enraged)
             {
                 DoScriptText(SAY_BERSERK, me);
-                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                    pLeviathan->AI()->DoAction(DO_ENTER_ENRAGE);
-                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                    pVX_001->AI()->DoAction(DO_ENTER_ENRAGE);
-                if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                    pAerialUnit->AI()->DoAction(DO_ENTER_ENRAGE);
+                for (uint8 data = DATA_LEVIATHAN_MK_II; data <= DATA_AERIAL_UNIT; ++data)
+  	            {
+  	                if (Creature *pCreature = Creature::GetCreature((*me), pInstance->GetData64(data)))
+  	                    pCreature->AI()->DoAction(DO_ENTER_ENRAGE);
+  	            }
 
                 Enraged = true;
             }
@@ -388,53 +374,53 @@ class boss_mimiron : public CreatureScript
                 {
                     switch (uiStep)
                     {
-                    case 1:
-                        if (MimironHardMode)
-                            DoScriptText(SAY_HARDMODE_ON, me);
-                        else
-                            DoScriptText(SAY_AGGRO, me);
-                        JumpToNextStep(10000);
-                        break;
-                    case 2:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                me->EnterVehicle(pLeviathan->GetVehicleKit(), 4);
-                        JumpToNextStep(2000);
-                        break;
-                    case 3:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                me->EnterVehicle(pLeviathan->GetVehicleKit(), 2);
-                        JumpToNextStep(2000);
-                        break;
-                    case 4:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                me->EnterVehicle(pLeviathan->GetVehicleKit(), 5);
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                        JumpToNextStep(2500);
-                        break;
-                    case 5:
-                        DoScriptText(SAY_MKII_ACTIVATE, me);
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
-                        JumpToNextStep(6000);
-                        break;
-                    case 6:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                me->EnterVehicle(pLeviathan->GetVehicleKit(), 6);
-                        JumpToNextStep(2000);
-                        break;
-                    case 7:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                            {
-                                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                                pLeviathan->AI()->DoAction(DO_START_ENCOUNTER);
-                                phase = PHASE_COMBAT;
-                            }
-                    default:
-                        break;
+                        case 1:
+                            if (MimironHardMode)
+                                DoScriptText(SAY_HARDMODE_ON, me);
+                            else
+                                DoScriptText(SAY_AGGRO, me);
+                            JumpToNextStep(10000);
+                            break;
+                        case 2:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 4);
+                            JumpToNextStep(2000);
+                            break;
+                        case 3:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 2);
+                            JumpToNextStep(2000);
+                            break;
+                        case 4:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 5);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                            JumpToNextStep(2500);
+                            break;
+                        case 5:
+                            DoScriptText(SAY_MKII_ACTIVATE, me);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
+                            JumpToNextStep(6000);
+                            break;
+                        case 6:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 6);
+                            JumpToNextStep(2000);
+                            break;
+                        case 7:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                {
+                                    me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                                    pLeviathan->AI()->DoAction(DO_START_ENCOUNTER);
+                                    phase = PHASE_COMBAT;
+                                }
+                        default:
+                            break;
                     }
                 }
                 else
@@ -447,69 +433,69 @@ class boss_mimiron : public CreatureScript
                 {
                     switch (uiStep)
                     {
-                    case 1:
-                        DoScriptText(SAY_MKII_DEATH, me);
-                        JumpToNextStep(10000);
-                        break;
-                    case 2:
-                        if (pInstance)
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                me->EnterVehicle(pLeviathan->GetVehicleKit(), 1);
-                        JumpToNextStep(2000);
-                        break;
-                    case 3:
-                        if (pInstance)
-                            pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_READY);
-                        JumpToNextStep(5000);
-                        break;
-                    case 4:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                            {
-                                pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE_ALTERNATIVE);
-                                pVX_001->SetVisibility(VISIBILITY_ON);
-                                if (Creature* Rocket1 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
-                                    Rocket1->EnterVehicle(pVX_001->GetVehicleKit(), 5);
-                                if (Creature* Rocket2 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
-                                    Rocket2->EnterVehicle(pVX_001->GetVehicleKit(), 6);
-                            }
-                        JumpToNextStep(8000);
-                        break;
-                    case 5:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                                me->EnterVehicle(pVX_001->GetVehicleKit(), 0);
-                        JumpToNextStep(3500);
-                        break;
-                    case 6:
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
-                        DoScriptText(SAY_VX001_ACTIVATE, me);
-                        JumpToNextStep(10000);
-                        break;
-                    case 7:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                                me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_SIT);
-                        JumpToNextStep(2000);
-                        break;
-                    case 8:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                                pVX_001->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
-                        JumpToNextStep(3500);
-                        break;
-                    case 9:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                            {
-                                pVX_001->AddAura(SPELL_HOVER, pVX_001); // Hover
-                                pVX_001->AI()->DoAction(DO_START_VX001);
-                                phase = PHASE_COMBAT;
-                            }
-                        break;
-                    default:
-                        break;
+                        case 1:
+                            DoScriptText(SAY_MKII_DEATH, me);
+                            JumpToNextStep(10000);
+                            break;
+                        case 2:
+                            if (pInstance)
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 1);
+                            JumpToNextStep(2000);
+                            break;
+                        case 3:
+                            if (pInstance)
+                                pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_READY);
+                            JumpToNextStep(5000);
+                            break;
+                        case 4:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                {
+                                    pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE_ALTERNATIVE);
+                                    pVX_001->SetVisibility(VISIBILITY_ON);
+                                    if (Creature* Rocket1 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
+                                        Rocket1->EnterVehicle(pVX_001->GetVehicleKit(), 5);
+                                    if (Creature* Rocket2 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
+                                        Rocket2->EnterVehicle(pVX_001->GetVehicleKit(), 6);
+                                }
+                            JumpToNextStep(8000);
+                            break;
+                        case 5:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 0);
+                            JumpToNextStep(3500);
+                            break;
+                        case 6:
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
+                            DoScriptText(SAY_VX001_ACTIVATE, me);
+                            JumpToNextStep(10000);
+                            break;
+                        case 7:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_SIT);
+                            JumpToNextStep(2000);
+                            break;
+                        case 8:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    pVX_001->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
+                            JumpToNextStep(3500);
+                            break;
+                        case 9:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                {
+                                    pVX_001->AddAura(SPELL_HOVER, pVX_001); // Hover
+                                    pVX_001->AI()->DoAction(DO_START_VX001);
+                                    phase = PHASE_COMBAT;
+                                }
+                            break;
+                        default:
+                            break;
                     }
                 }
                 else
@@ -522,47 +508,47 @@ class boss_mimiron : public CreatureScript
                 {
                     switch (uiStep)
                     {
-                    case 1:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                                me->EnterVehicle(pVX_001->GetVehicleKit(), 4);
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                        JumpToNextStep(2500);
-                        break;
-                    case 2:
-                        DoScriptText(SAY_VX001_DEATH, me);
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
-                        JumpToNextStep(5000);
-                        break;
-                    case 3:
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                        if (pInstance)
-                            if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                                pAerialUnit->SetVisibility(VISIBILITY_ON);
-                        JumpToNextStep(5000);
-                        break;
-                    case 4:
-                        me->ExitVehicle();
-                        me->GetMotionMaster()->MoveJump(2745.06f, 2569.36f, 379.90f, 10, 15);
-                        JumpToNextStep(2000);
-                        break;
-                    case 5:
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
-                        DoScriptText(SAY_AERIAL_ACTIVATE, me);
-                        JumpToNextStep(8000);
-                        break;
-                    case 6:
-                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                        me->SetVisibility(VISIBILITY_OFF);
-                        if (pInstance)
-                            if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                            {
-                                pAerialUnit->AI()->DoAction(DO_START_AERIAL);
-                                phase = PHASE_COMBAT;
-                            }
-                        break;
-                    default:
-                        break;
+                        case 1:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 4);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                            JumpToNextStep(2500);
+                            break;
+                        case 2:
+                            DoScriptText(SAY_VX001_DEATH, me);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
+                            JumpToNextStep(5000);
+                            break;
+                        case 3:
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                            if (pInstance)
+                                if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
+                                    pAerialUnit->SetVisibility(VISIBILITY_ON);
+                            JumpToNextStep(5000);
+                            break;
+                        case 4:
+                            me->ExitVehicle();
+                            me->GetMotionMaster()->MoveJump(2745.06f, 2569.36f, 379.90f, 10, 15);
+                            JumpToNextStep(2000);
+                            break;
+                        case 5:
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
+                            DoScriptText(SAY_AERIAL_ACTIVATE, me);
+                            JumpToNextStep(8000);
+                            break;
+                        case 6:
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                            me->SetVisibility(VISIBILITY_OFF);
+                            if (pInstance)
+                                if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
+                                {
+                                    pAerialUnit->AI()->DoAction(DO_START_AERIAL);
+                                    phase = PHASE_COMBAT;
+                                }
+                            break;
+                        default:
+                            break;
                     }
                 }
                 else
@@ -575,57 +561,57 @@ class boss_mimiron : public CreatureScript
                 {
                     switch (uiStep)
                     {
-                    case 1:
-                        if (pInstance)
-                        {
-                            me->SetVisibility(VISIBILITY_ON);
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                               pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65f, 2569.46f, 364.397f);
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                         case 1:
+                            if (pInstance)
                             {
-                                me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
-                                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                                DoScriptText(SAY_AERIAL_DEATH, me);
-                            }
-                        }
-                        JumpToNextStep(5000);
-                        break;
-                    case 2:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                me->SetVisibility(VISIBILITY_ON);
                                 if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                   pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65, 2569.46, 364.397);
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                                 {
-                                    pVX_001->SetStandState(UNIT_STAND_STATE_STAND);
-                                    pVX_001->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_CUSTOM_SPELL_01);
-                                    pVX_001->EnterVehicle(pLeviathan->GetVehicleKit(), 7);
+                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
+                                    me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                                    DoScriptText(SAY_AERIAL_DEATH, me);
                                 }
-                        JumpToNextStep(2000);
-                        break;
-                    case 3:
-                        if (pInstance)
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                            }
+                            JumpToNextStep(5000);
+                            break;
+                        case 2:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    {
+                                        pVX_001->SetStandState(UNIT_STAND_STATE_STAND);
+                                        pVX_001->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_CUSTOM_SPELL_01);
+                                        pVX_001->EnterVehicle(pLeviathan->GetVehicleKit(), 7);
+                                    }
+                            JumpToNextStep(2000);
+                            break;
+                        case 3:
+                            if (pInstance)
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
+                                    {
+                                        pAerialUnit->SetFlying(false);
+                                        pAerialUnit->EnterVehicle(pVX_001->GetVehicleKit(), 3);
+                                        DoScriptText(SAY_V07TRON_ACTIVATE, me);
+                                    }
+                            JumpToNextStep(10000);
+                            break;
+                        case 4:
+                            if (pInstance)
+                            {
+                                if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
+                                    pLeviathan->AI()->DoAction(DO_LEVIATHAN_ASSEMBLED);
+                                if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
+                                    pVX_001->AI()->DoAction(DO_VX001_ASSEMBLED);
                                 if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                                {
-                                    pAerialUnit->SetFlying(false);
-                                    pAerialUnit->EnterVehicle(pVX_001->GetVehicleKit(), 3);
-                                    DoScriptText(SAY_V07TRON_ACTIVATE, me);
-                                }
-                        JumpToNextStep(10000);
-                        break;
-                    case 4:
-                        if (pInstance)
-                        {
-                            if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                pLeviathan->AI()->DoAction(DO_LEVIATHAN_ASSEMBLED);
-                            if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
-                                pVX_001->AI()->DoAction(DO_VX001_ASSEMBLED);
-                            if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                                pAerialUnit->AI()->DoAction(DO_AERIAL_ASSEMBLED);
-                            phase = PHASE_COMBAT;
-                        }
-                        break;
-                    default:
-                        break;
+                                    pAerialUnit->AI()->DoAction(DO_AERIAL_ASSEMBLED);
+                                phase = PHASE_COMBAT;
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
                 else
@@ -637,31 +623,31 @@ class boss_mimiron : public CreatureScript
         {
             switch(action)
             {
-            case DO_ACTIVATE_VX001:
-                phase = PHASE_VX001_ACTIVATION;
-                uiStep = 0;
-                uiPhase_timer = -1;
-                JumpToNextStep(100);
-                break;
-            case DO_ACTIVATE_AERIAL:
-                phase = PHASE_AERIAL_ACTIVATION;
-                uiStep = 0;
-                uiPhase_timer = -1;
-                JumpToNextStep(5000);
-                break;
-            case DO_ACTIVATE_V0L7R0N:
-                phase = PHASE_V0L7R0N_ACTIVATION;
-                uiStep = 0;
-                uiPhase_timer = -1;
-                JumpToNextStep(1000);
-                break;
-            case DO_ACTIVATE_DEATH_TIMER:
-                checkBotAlive = false;
-                break;
-            case DO_ACTIVATE_HARD_MODE:
-                MimironHardMode = true;
-                DoZoneInCombat();
-                break;
+                case DO_ACTIVATE_VX001:
+                    phase = PHASE_VX001_ACTIVATION;
+                    uiStep = 0;
+                    uiPhase_timer = -1;
+                    JumpToNextStep(100);
+                    break;
+                case DO_ACTIVATE_AERIAL:
+                    phase = PHASE_AERIAL_ACTIVATION;
+                    uiStep = 0;
+                    uiPhase_timer = -1;
+                    JumpToNextStep(5000);
+                    break;
+                case DO_ACTIVATE_V0L7R0N:
+                    phase = PHASE_V0L7R0N_ACTIVATION;
+                    uiStep = 0;
+                    uiPhase_timer = -1;
+                    JumpToNextStep(1000);
+                    break;
+                case DO_ACTIVATE_DEATH_TIMER:
+                    checkBotAlive = false;
+                    break;
+                case DO_ACTIVATE_HARD_MODE:
+                    MimironHardMode = true;
+                    DoZoneInCombat();
+                    break;
             }
         }
         
