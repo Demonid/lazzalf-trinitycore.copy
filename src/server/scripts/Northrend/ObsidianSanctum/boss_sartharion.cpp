@@ -1327,38 +1327,35 @@ class mob_acolyte_of_shadron : public CreatureScript
 
         void JustDied(Unit* killer)
         {
-            if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
+            if (pInstance)
             {
-                if (Creature* pSartharion = me->GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))
-                    pSartharion->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
-            }
-            else
-            {
-                if (pInstance)
-                {
-                    Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
-                    if(Shadron)
-                        (CAST_AI(mob_shadron::mob_shadronAI,Shadron->AI()))->m_bHasPortalOpen = false;                
-                    
-                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT);
-                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT_ENTER);                
-                }
-
-                Creature* pDebuffTarget = NULL;
                 if (pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 {
+                    if (Creature* pSartharion = me->GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))
+                        pSartharion->AI()->DoAction(ACTION_TELEPORT_BACK_SAR);
+
                     //not solo fight, so main boss has deduff
+                    Creature* pDebuffTarget = NULL;
                     pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SARTHARION));
                     if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SAR))
                         pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
                 }
                 else
                 {
+                                
+                    Creature* pDebuffTarget = NULL;
                     //event not in progress, then solo fight and must remove debuff mini-boss
                     pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
                     if (pDebuffTarget && pDebuffTarget->isAlive() && pDebuffTarget->HasAura(SPELL_GIFT_OF_TWILIGTH_SHA))
-                        pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);
+                        pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SHA);                
                 }
+            
+                Creature* Shadron = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
+                if(Shadron)
+                    (CAST_AI(mob_shadron::mob_shadronAI,Shadron->AI()))->m_bHasPortalOpen = false;                
+                
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT);
+                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT_ENTER);                
             }
         }
 
