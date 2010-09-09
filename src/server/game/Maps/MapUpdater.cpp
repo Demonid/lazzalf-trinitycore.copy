@@ -41,7 +41,7 @@ class WDBThreadEndReq1 : public ACE_Method_Request
         }
 };
 
-std::tr1::unordered_map< uint32, std::pair<uint32, uint32> > m_crashcounter;
+UNORDERED_MAP< uint32, std::pair<uint32, uint32> > m_crashcounter;
 
 class MapUpdateRequest : public ACE_Method_Request
 {
