@@ -710,7 +710,7 @@ enum VespText
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
 {
-    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
+    dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature), lSummons(me)
     {       
         pInstance = pCreature->GetInstanceScript();        
     }
@@ -722,8 +722,9 @@ struct dummy_dragonAI : public ScriptedAI
     int32 m_iPortalRespawnTime;
     bool m_bCanMoveFree;
     bool m_bCanLoot;
+    SummonList lSummons;
 
-    void Reset()
+    /*void Reset()
     {
         if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -733,7 +734,8 @@ struct dummy_dragonAI : public ScriptedAI
         m_iPortalRespawnTime = 30000;
         m_bCanMoveFree = false;
         m_bCanLoot = true;
-    }
+        lSummons.DespawnAll();
+    }*/
 
     void SetData(uint32 type, uint32 value)
     {
@@ -847,6 +849,11 @@ struct dummy_dragonAI : public ScriptedAI
         DoRaidWhisper(iTextId);        
     }
 
+    void JustSummoned(Creature *summon)
+    {
+        lSummons.Summon(summon);
+    }
+
     void TeleportBack()
     {
         pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT);
@@ -950,7 +957,17 @@ class mob_tenebron : public CreatureScript
         uint32 Eggs;
 
         void Reset()
-        {         
+        {
+            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        
+            m_uiWaypointId = 0;
+            m_uiMoveNextTimer = 500;
+            m_iPortalRespawnTime = 30000;
+            m_bCanMoveFree = false;
+            m_bCanLoot = true;
+            lSummons.DespawnAll();
+
             m_uiShadowBreathTimer = 20000;
             m_uiShadowFissureTimer = 5000;
             m_uiHatchEggTimer = 30000;
@@ -1057,21 +1074,29 @@ class mob_shadron : public CreatureScript
 
     struct mob_shadronAI : public dummy_dragonAI
     {
-        mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature), lSummons(me) {}
+        mob_shadronAI(Creature* pCreature) : dummy_dragonAI(pCreature) {}
 
         uint32 m_uiShadowBreathTimer;
         uint32 m_uiShadowFissureTimer;
         uint32 m_uiAcolyteShadronTimer;
         bool m_bHasPortalOpen;
-        SummonList lSummons;
 
         void Reset()
         {
+            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        
+            m_uiWaypointId = 0;
+            m_uiMoveNextTimer = 500;
+            m_iPortalRespawnTime = 30000;
+            m_bCanMoveFree = false;
+            m_bCanLoot = true;
+            lSummons.DespawnAll();
+
             m_uiShadowBreathTimer = 20000;
             m_uiShadowFissureTimer = 5000;
             m_uiAcolyteShadronTimer = 60000;
             m_bHasPortalOpen = false;
-            lSummons.DespawnAll();
 
             if (me->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
                 me->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
@@ -1095,11 +1120,6 @@ class mob_shadron : public CreatureScript
                 lSummons.DespawnAll();
             }
         }*/
-
-        void JustSummoned(Creature *summon)
-        {
-            lSummons.Summon(summon);
-        }
 
         void DoAction(const int32 action)
         {
@@ -1192,17 +1212,25 @@ class mob_vesperon : public CreatureScript
 
     struct mob_vesperonAI : public dummy_dragonAI
     {
-        mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature), lSummons(me) {}
+        mob_vesperonAI(Creature* pCreature) : dummy_dragonAI(pCreature) {}
 
         uint32 m_uiShadowBreathTimer;
         uint32 m_uiShadowFissureTimer;
         uint32 m_uiAcolyteVesperonTimer;
         bool m_bHasPortalOpen;
-        SummonList lSummons;
 
         void Reset()
         {
+            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        
+            m_uiWaypointId = 0;
+            m_uiMoveNextTimer = 500;
+            m_iPortalRespawnTime = 30000;
+            m_bCanMoveFree = false;
+            m_bCanLoot = true;
             lSummons.DespawnAll();
+
             m_uiShadowBreathTimer = 20000;
             m_uiShadowFissureTimer = 5000;
             m_uiAcolyteVesperonTimer = 60000;
@@ -1341,8 +1369,7 @@ class mob_acolyte_of_shadron : public CreatureScript
                         pDebuffTarget->RemoveAurasDueToSpell(SPELL_GIFT_OF_TWILIGTH_SAR);
                 }
                 else
-                {
-                                
+                {                                
                     Creature* pDebuffTarget = NULL;
                     //event not in progress, then solo fight and must remove debuff mini-boss
                     pDebuffTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_SHADRON));
