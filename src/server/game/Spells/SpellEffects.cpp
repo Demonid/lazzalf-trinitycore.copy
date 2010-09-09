@@ -560,12 +560,12 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet())
                     {
                         // Get DoTs on target by owner (15% increase by dot)
-                        damage *= 1.0f + 0.15f * unitTarget->GetDoTsByCaster(m_caster->GetOwnerGUID());
+                        damage *= uint32(1.0f + 0.15f * unitTarget->GetDoTsByCaster(m_caster->GetOwnerGUID()));
                         if (Unit *owner = m_caster->GetOwner()) 
                         {
                             // Shadow Mastery
                             if (AuraEffect * aurEff = owner->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_WARLOCK, 22, 0))
-                                damage *= (100.0f + aurEff->GetAmount()) / 100.0f;
+                                damage *= uint32((100.0f + aurEff->GetAmount()) / 100.0f);
                             // Improved Felhunter
                             if (owner->HasAura(54037) || owner->HasAura(54038))
                                 m_caster->CastSpell(m_caster, 54425, true);
@@ -750,7 +750,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     // Glyph of Steady Shot
                     if (AuraEffect const * aurEff = m_caster->GetAuraEffect(56826, 0))
                         if (unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 0x4000, 0, 0))
-                            damage *= (100.0f + aurEff->GetAmount()) / 100.0f;
+                            damage *= uint32((100.0f + aurEff->GetAmount()) / 100.0f);
                 }
                 break;
             }
