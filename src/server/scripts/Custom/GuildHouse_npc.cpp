@@ -918,8 +918,7 @@ class npc_portal : public CreatureScript
                 player->CLOSE_GOSSIP_MENU();
                 if (pvpWG)
                 {
-                    if ((player->GetTeam() == ALLIANCE && pvpWG->getDefenderTeamId() == TEAM_ALLIANCE)
-                        || (player->GetTeam() == TEAM_HORDE && pvpWG->getDefenderTeamId() == TEAM_HORDE))
+                    if (player->GetTeamId() == pvpWG->getDefenderTeamId())
                         player->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress                
                     else
                         player->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress

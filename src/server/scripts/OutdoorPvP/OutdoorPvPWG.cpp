@@ -1373,8 +1373,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
     {
         if (plr->IsFlying() || plr->HasAura(SPELL_AURA_FLY) || plr->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)) //Restricted Flight Area
         {
-            if ((plr->GetTeam() == ALLIANCE && getDefenderTeamId() == TEAM_ALLIANCE)
-                || (plr->GetTeam() == TEAM_HORDE && getDefenderTeamId() == TEAM_HORDE))
+            if (plr->GetTeamId() == getDefenderTeamId())
             {
                 plr->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
                 plr->RemoveAurasByType(SPELL_AURA_FLY);
