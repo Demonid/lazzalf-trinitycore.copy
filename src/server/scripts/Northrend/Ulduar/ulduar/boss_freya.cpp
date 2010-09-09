@@ -231,6 +231,18 @@ class boss_freya : public CreatureScript
         {
             _Reset();
 
+            if (pInstance)
+ 	        {
+  	            for (uint8 data = DATA_BRIGHTLEAF; data <= DATA_STONEBARK; ++data)
+  	            {
+  	                if (Creature *pCreature = Creature::GetCreature((*me), pInstance->GetData64(data)))
+  	                {
+  	                    if (pCreature->isAlive())
+  	                        pCreature->AI()->EnterEvadeMode();
+  	                }
+  	            }
+  	        }
+
             me->UpdateMaxHealth();
             
             spawnedAdds = 0;

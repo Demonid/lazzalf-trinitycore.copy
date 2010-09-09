@@ -61,9 +61,12 @@ class ulduar_teleporter : public GameObjectScript
                     if (data->GetBossState(BOSS_AURIAYA) == DONE || pPlayer->isGameMaster())
                     {
                         pPlayer->ADD_GOSSIP_ITEM(0, "Conservatory of Life", GOSSIP_SENDER_MAIN, CONSERVATORY);
-                        pPlayer->ADD_GOSSIP_ITEM(0, "Spark of Imagination", GOSSIP_SENDER_MAIN, SPARK_IMAGINATION);
-                        if (data->GetBossState(BOSS_VEZAX) == DONE || pPlayer->isGameMaster())
-                            pPlayer->ADD_GOSSIP_ITEM(0, "Descent into Madness", GOSSIP_SENDER_MAIN, DESCENT_MADNESS);
+                        if (data->GetBossState(BOSS_MIMIRON) == FAIL || data->GetBossState(BOSS_MIMIRON) == DONE || pPlayer->isGameMaster())
+                        {
+                            pPlayer->ADD_GOSSIP_ITEM(0, "Spark of Imagination", GOSSIP_SENDER_MAIN, SPARK_IMAGINATION);
+                            if (data->GetBossState(BOSS_VEZAX) == DONE || pPlayer->isGameMaster())
+                                pPlayer->ADD_GOSSIP_ITEM(0, "Descent into Madness", GOSSIP_SENDER_MAIN, DESCENT_MADNESS);
+                        }
                     }
                 }
             }
