@@ -452,13 +452,14 @@ class boss_sartharion : public CreatureScript
             if (pShadron)
             {
                 pShadron->SetHomePosition(3363.06f, 525.28f, 98.362f, 4.76475f);
-                if(pShadron->isAlive())
+                if (pShadron->isAlive())
                 {
                     if (pShadron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         pShadron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     pShadron->RemoveAllAuras();
                     pShadron->GetMotionMaster()->MoveTargetedHome();
-                }else
+                }
+                else
                 {
                     if(instance->GetData(TYPE_SHADRON_PREKILLED) == false)
                     {
@@ -477,7 +478,8 @@ class boss_sartharion : public CreatureScript
                         pVesperon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     pVesperon->RemoveAllAuras();
                     pVesperon->GetMotionMaster()->MoveTargetedHome();
-                }else
+                }
+                else
                 {
                     if(instance->GetData(TYPE_VESPERON_PREKILLED) == false)
                     {
@@ -869,12 +871,25 @@ struct dummy_dragonAI : public ScriptedAI
             case NPC_SHADRON:
                 iTextId = SAY_SHADRON_DEATH;
                 if(pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
+                {
                     pInstance->SetData(TYPE_SHADRON_PREKILLED, 1);
+                    TeleportBack();
+                    lSummons.DespawnAll();
+                }                
                 break;
             case NPC_VESPERON:
                 iTextId = SAY_VESPERON_DEATH;
-                if(pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
+                if (pInstance && pInstance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
+                {
                     pInstance->SetData(TYPE_VESPERON_PREKILLED, 1);
+                    TeleportBack();
+                    lSummons.DespawnAll();
+                }
+                else
+                {
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_TORMENT_STACKS);
+                    pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_TORMENT_VESP);
+                }
                 break;
         }
 
@@ -1072,14 +1087,14 @@ class mob_shadron : public CreatureScript
             DoCast(me, SPELL_POWER_OF_SHADRON);
         }
 
-        void JustDied(Unit* pKiller)
+       /*void JustDied(Unit* pKiller)
         {
             if (pInstance && !pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             {
                 TeleportBack();
                 lSummons.DespawnAll();
             }
-        }
+        }*/
 
         void JustSummoned(Creature *summon)
         {
@@ -1201,7 +1216,7 @@ class mob_vesperon : public CreatureScript
             DoCast(me, SPELL_POWER_OF_VESPERON);
         }
 
-        void JustDied(Unit* pKiller)
+        /*void JustDied(Unit* pKiller)
         {
             if (pInstance && !pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             {
@@ -1213,7 +1228,7 @@ class mob_vesperon : public CreatureScript
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_TORMENT_STACKS);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_TORMENT_VESP);
             }
-        }
+        }*/
 
         void KilledUnit(Unit* pVictim)
         {
