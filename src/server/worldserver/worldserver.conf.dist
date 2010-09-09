@@ -419,14 +419,18 @@ CleanCharacterDB = 0
 #        Log file of RA commands
 #        Default: "Ra.log"
 #                 "" - Empty name for disable
+#    CheatLogFile
+#        Log file of AntiCheat exception
+#        Default: "" - do not create cheat log file
 #
 #    ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
 #
-#    CheatLogFile
-#        Log file of AntiCheat exception
-#        Default: "" - do not create cheat log file
+#    ArenaLog.ExtendedInfo
+#        Include extended info for each player after rated arena (guid, name, team, IP, healing/damage done, killing blows)
+#        Default: 0 - disabled
+#                 1 - enabled
 #
 #    SQLDriverLogFile
 #        Log file of SQL driver events.
@@ -560,8 +564,9 @@ GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
 RaLogFile = "ra_commands.log"
-ArenaLogFile = ""
 CheatLogFile = ""
+ArenaLogFile = ""
+ArenaLog.ExtendedInfo = 0
 SQLDriverLogFile = ""
 LogColors = ""
 EnableLogDB = 0
