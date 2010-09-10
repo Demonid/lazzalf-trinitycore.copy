@@ -566,7 +566,7 @@ class boss_mimiron : public CreatureScript
                             {
                                 me->SetVisibility(VISIBILITY_ON);
                                 if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                   pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65, 2569.46, 364.397);
+                                   pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65f, 2569.46f, 364.397f);
                                 if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                                 {
                                     me->EnterVehicle(pVX_001->GetVehicleKit(), 1);

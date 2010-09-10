@@ -917,7 +917,7 @@ class creature_eonars_gift : public CreatureScript
         {
             m_pInstance = pCreature->GetInstanceScript();
             uiLifebindersGiftTimer = 12000;
-            fScale = 0.2;
+            fScale = 0.2f;
             me->SetFloatValue(OBJECT_FIELD_SCALE_X, fScale);
             uiScaleTimer = 200;
             DoCast(me, SPELL_PHEROMONES, true);
@@ -942,7 +942,7 @@ class creature_eonars_gift : public CreatureScript
 
             if(uiScaleTimer <= 0)
             {
-                fScale += 0.025;
+                fScale += 0.025f;
                 me->SetFloatValue(OBJECT_FIELD_SCALE_X, fScale);
             }
             else uiScaleTimer -= diff;
