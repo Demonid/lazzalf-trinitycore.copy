@@ -1197,7 +1197,7 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                                 for (UnitList::iterator target = targetList.begin(); target != targetList.end(); ++target)
                                 {
                                     if ((*target)->GetTypeId() != TYPEID_PLAYER)
-                                        break; //continue;
+                                        continue; //break;
                                         
                                     if ((*target)->ToPlayer()->isMoving())
                                         m_amount = 0; 
