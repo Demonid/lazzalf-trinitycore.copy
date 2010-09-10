@@ -376,9 +376,11 @@ class instance_ulduar : public InstanceMapScript
                 case DATA_THORIM_CHEST:
                     if (ThorimChest && value == GO_STATE_READY)
                         ThorimChest->SetRespawnTime(ThorimChest->GetRespawnDelay());
+                    break;
                 case DATA_THORIM_RARE_CHEST:
                     if (ThorimRareChest && value == GO_STATE_READY)
                         ThorimRareChest->SetRespawnTime(ThorimRareChest->GetRespawnDelay());
+                    break;
             }
         }
 
