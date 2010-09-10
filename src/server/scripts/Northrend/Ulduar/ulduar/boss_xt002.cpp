@@ -64,7 +64,7 @@ enum Timers
     TIMER_SPAWN_LIFE_SPARK                      = 9000,
     TIMER_GRAVITY_BOMB                          = 20000,
     TIMER_SPAWN_GRAVITY_BOMB                    = 9000,
-    TIMER_HEART_PHASE                           = 35000,
+    TIMER_HEART_PHASE                           = 36000,
     TIMER_ENRAGE                                = 600000,
 
     TIMER_VOID_ZONE                             = 2000,
@@ -453,7 +453,10 @@ class boss_xt002 : public CreatureScript
             //Summon the heart npc
             Creature* Heart = me->SummonCreature(NPC_XT002_HEART, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, TIMER_HEART_PHASE);
             if (Heart)
+            {
                 Heart->EnterVehicle(me, 0);
+                Heart->ChangeSeat(1);
+            }
 
             // Start "end of phase 2 timer"
             uiHeartPhaseTimer = TIMER_HEART_PHASE;
@@ -508,6 +511,7 @@ class mob_xt002_heart : public CreatureScript
         {
             m_pInstance = pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED);
+            me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
         }
 
         InstanceScript* m_pInstance;
@@ -533,7 +537,6 @@ class mob_xt002_heart : public CreatureScript
                 if (uiExposeTimer <= diff)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-  	                me->ChangeSeat(1);
   	                DoCast(me, SPELL_EXPOSED_HEART, true);
                     Exposed = true;
                 }
@@ -555,8 +558,8 @@ class mob_xt002_heart : public CreatureScript
         
         void Reset()
         {
-            uiExposeTimer = 3000;
-            uiEndExposedTimer = 33000;
+            uiExposeTimer = 3500;
+            uiEndExposedTimer = 33500;
             Exposed = false;
             EndExposed = false;
         }
