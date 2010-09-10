@@ -15912,10 +15912,10 @@ void Player::_LoadArenaStatsInfo(QueryResult_AutoPtr result)
     {
         for (; slot <= 2; ++slot)
         {
-            //CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, 0, 1500)", GetGUIDLow(), slot);
-            //SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, 0);
-            CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, 1000, 1500)", GetGUIDLow(), slot);
-            SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, 1000);
+            CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, 0, 1500)", GetGUIDLow(), slot);
+            SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, 0);
+            //CharacterDatabase.PExecute("INSERT INTO character_arena_stats (guid, slot, personal_rating, matchmaker_rating) VALUES (%u, %u, 1000, 1500)", GetGUIDLow(), slot);
+            //SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, 1000);
         }
         return;
     }
