@@ -159,9 +159,9 @@ class boss_hodir : public CreatureScript
             
         void Reset()
         {
-            _Reset();
+            _Reset();            
             
-            me->RemoveAllAuras();
+            me->RemoveAurasDueToSpell(SPELL_BITING_COLD);
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
