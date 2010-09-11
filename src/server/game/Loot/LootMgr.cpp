@@ -1241,6 +1241,9 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, Player* lootOwner
 
 bool LootTemplate::ProcessCurrency(Player* lootOwner, const LootStoreItemList::const_iterator& lootItem, ItemPrototype const* pProto)
 {
+    if (!sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
+        return false;
+    
     uint32 itemId = lootItem->itemid;
 
     OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);    

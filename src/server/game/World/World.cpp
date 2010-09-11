@@ -1329,6 +1329,9 @@ void World::LoadConfigSettings(bool reload)
     // Dungeon finder
     m_bool_configs[CONFIG_DUNGEON_FINDER_ENABLE] = sConfig.GetBoolDefault("DungeonFinder.Enable", false);
 
+    // Loot Autodistribute
+    m_bool_configs[CONFIG_LOOT_AUTO_DISTRIBUTE] = sConfig.GetBoolDefault("LootAutoDistribute.Enable", true);
+
     // AutoBroadcast
     m_bool_configs[CONFIG_AUTOBROADCAST] = sConfig.GetBoolDefault("AutoBroadcast.On", false);
     m_int_configs[CONFIG_AUTOBROADCAST_CENTER] = sConfig.GetIntDefault("AutoBroadcast.Center", 0);
