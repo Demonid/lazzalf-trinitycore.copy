@@ -27,6 +27,9 @@
 #include "SharedDefines.h"
 #include "SpellMgr.h"
 
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
+
 static Rates const qualityToRate[MAX_ITEM_QUALITY] = {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
     RATE_DROP_ITEM_NORMAL,                                  // ITEM_QUALITY_NORMAL
@@ -1238,7 +1241,15 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, Player* lootOwner
 
 bool LootTemplate::ProcessCurrency(Player* lootOwner, const LootStoreItemList::const_iterator& lootItem, ItemPrototype const* pProto)
 {
+    if (!sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
+        return false;
+    
     uint32 itemId = lootItem->itemid;
+
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);    
+    if ((itemId == 43228) && lootOwner && (lootOwner->GetTeamId() != pvpWG->getDefenderTeamId()))
+        return false; //non far droppare le Stone Keeper's Shard quando winter è della fazione opposta
+
     if (pProto->BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS)  // Tokens appear in currency of player and remove from drop
     {
         uint32 count = urand(lootItem->mincountOrRef, lootItem->maxcount);
