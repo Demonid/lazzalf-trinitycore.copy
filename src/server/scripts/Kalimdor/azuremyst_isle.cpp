@@ -623,7 +623,7 @@ public:
         }
     };
 
-    bool EffectDummyCreature(Unit * /*pCaster*/, uint32 spellId, uint32 effIndex, Creature *pCreatureTarget)
+    bool OnDummyEffect(Unit * /*pCaster*/, uint32 spellId, uint32 effIndex, Creature *pCreatureTarget)
     {
         //always check spellid and effectindex
         if (spellId == SPELL_INOCULATE_OWLKIN && effIndex == 0)
