@@ -5694,8 +5694,7 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
 
         if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
             continue;
-        /*if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
-             continue;
+        /*if (!node || node->map_id != mapid) continue;
 
         const float dist2 = pow(node->x - x, 2) + pow(node->y - y, 2) + pow(node->z - z, 2);
 
@@ -5707,7 +5706,7 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
         }
 
         if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981) // dk flight
-            continue;*/
+             continue;*/
 
         uint8  field   = (uint8)((i - 1) / 32);
         uint32 submask = 1<<((i-1)%32);
