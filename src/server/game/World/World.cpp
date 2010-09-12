@@ -794,7 +794,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_CHARACTER_CREATING_DISABLED] = sConfig.GetIntDefault("CharacterCreating.Disabled", 0);
     m_int_configs[CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK] = sConfig.GetIntDefault("CharacterCreating.Disabled.RaceMask", 0);
-    m_int_configs[CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK] = sConfig.GetIntDefault("CharacterCreating.Disabled.ClassMask", 0); 
+    m_int_configs[CONFIG_CHARACTER_CREATING_DISABLED_CLASSMASK] = sConfig.GetIntDefault("CharacterCreating.Disabled.ClassMask", 0);
 
     m_int_configs[CONFIG_CHARACTERS_PER_REALM] = sConfig.GetIntDefault("CharactersPerRealm", 10);
     if (m_int_configs[CONFIG_CHARACTERS_PER_REALM] < 1 || m_int_configs[CONFIG_CHARACTERS_PER_REALM] > 10)
@@ -1348,7 +1348,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize config settings
     LoadConfigSettings();
-    
+
     ///- Initialize Allowed Security Level
     LoadDBAllowedSecurityLevel();
 
@@ -1363,7 +1363,7 @@ void World::SetInitialWorldSettings()
         || !MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
         || !MapManager::ExistMapAndVMap(1,-2917.58f,-257.98f)
         || (m_int_configs[CONFIG_EXPANSION] && (
-            !MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || 
+            !MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) ||
             !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f))))
     {
         sLog.outError("Correct *.map files not found in path '%smaps' or *.vmtree/*.vmtile files in '%svmaps'. Please place *.map/*.vmtree/*.vmtile files in appropriate directories or correct the DataDir value in the worldserver.conf file.",m_dataPath.c_str(),m_dataPath.c_str());
@@ -1948,7 +1948,7 @@ void World::LoadAutobroadcasts()
 {
     m_Autobroadcasts.clear();
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT text FROM autobroadcast");
+    QueryResult result = WorldDatabase.Query("SELECT text FROM autobroadcast");
 
     if (!result)
     {
@@ -2349,7 +2349,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     LoginDatabase.escape_string(safe_author);
 
     uint32 duration_secs = TimeStringToSecs(duration);
-    QueryResult_AutoPtr resultAccounts = QueryResult_AutoPtr(NULL);                     //used for kicking
+    QueryResult resultAccounts = QueryResult(NULL);                     //used for kicking
 
     ///- Update the database with ban information
     switch(mode)
@@ -2635,7 +2635,7 @@ void World::UpdateRealmCharCount(uint32 accountId)
         );
 }
 
-void World::_UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId)
+void World::_UpdateRealmCharCount(QueryResult resultCharCount, uint32 accountId)
 {
     if (resultCharCount)
     {
@@ -2658,7 +2658,7 @@ void World::InitDailyQuestResetTime()
 {
     time_t mostRecentQuestTime;
 
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
+    QueryResult result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
     if (result)
     {
         Field *fields = result->Fetch();
@@ -2732,7 +2732,7 @@ void World::ResetDailyQuests()
 
 void World::LoadDBAllowedSecurityLevel()
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+    QueryResult result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
     if (result)
         SetPlayerSecurityLimit(AccountTypes(result->Fetch()->GetUInt16()));
 }
@@ -2779,7 +2779,7 @@ void World::UpdateMaxSessionCounters()
 
 void World::LoadDBVersion()
 {
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT db_version, script_version, cache_id FROM version LIMIT 1");
+    QueryResult result = WorldDatabase.Query("SELECT db_version, script_version, cache_id FROM version LIMIT 1");
     //QueryResult* result = WorldDatabase.Query("SELECT version, creature_ai_version, cache_id FROM db_version LIMIT 1");
     if (result)
     {
@@ -2822,7 +2822,7 @@ void World::UpdateAreaDependentAuras()
 
 void World::LoadWorldStates()
 {
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT entry, value FROM worldstates");
+    QueryResult result = CharacterDatabase.Query("SELECT entry, value FROM worldstates");
 
     if (!result)
     {
@@ -2868,7 +2868,7 @@ uint64 World::getWorldState(uint32 index) const
 
 void World::ProcessQueryCallbacks()
 {
-    QueryResult_AutoPtr result;
+    QueryResult result;
 
     //-UpdateRealmCharCount
     if (m_realmCharCallback.IsReady())
