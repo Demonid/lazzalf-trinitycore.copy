@@ -1661,7 +1661,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
 
             if(enabled)
             {
-                QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_team_id='%u' AND player_guid = '0'", arenaTeamId);
+                QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_team_id='%u' AND player_guid = '0'", arenaTeamId);
 
                 if(result)
                 {

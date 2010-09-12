@@ -16685,7 +16685,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
 void Player::_LoadJail(void)
 {
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GetGUIDLow());
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GetGUIDLow());
 
     if (!result)
     {
@@ -17873,7 +17873,7 @@ bool Player::_LoadHomeBind(QueryResult result)
 void Player::_SaveJail(void)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT `guid` FROM `jail` WHERE `guid`='%u' LIMIT 1", m_jail_guid);
+    QueryResult result = CharacterDatabase.PQuery("SELECT `guid` FROM `jail` WHERE `guid`='%u' LIMIT 1", m_jail_guid);
     if (!result) 
         trans->PAppend("INSERT INTO `jail` VALUES ('%u','%s','%u', '%u','%s','%u','%u','%s',CURRENT_TIMESTAMP,'%u')", m_jail_guid, m_jail_char.c_str(), m_jail_release, m_jail_amnestietime, m_jail_reason.c_str(), m_jail_times, m_jail_gmacc, m_jail_gmchar.c_str(), m_jail_duration);
     else 

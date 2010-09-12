@@ -166,7 +166,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     std::list<uint32> spiritGuids;
 
     // Store Eng, spirit guide guids and questgiver for later use
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT `guid`,`id` FROM `creature` WHERE `map`=571 AND `id` IN (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u)",
+    QueryResult result = WorldDatabase.PQuery("SELECT `guid`,`id` FROM `creature` WHERE `map`=571 AND `id` IN (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u)",
         WG_CREATURE_ENGINEER_A,         WG_CREATURE_ENGINEER_H,
         WG_CREATURE_SPIRIT_GUIDE_A,     WG_CREATURE_SPIRIT_GUIDE_H,
         WG_CREATURE_ENHANCEMENT_A,      WG_CREATURE_ENHANCEMENT_H,

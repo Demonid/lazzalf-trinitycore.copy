@@ -824,7 +824,7 @@ void ArenaTeam::SaveToDBArenaModTeam(uint32 ArenaTeamId, uint32 EnemyTeamId)
     if(!EnemyTeamId || !ArenaTeamId)
         return;
 
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid ='0' AND player_team_id ='%u' AND enemy_team_id ='%u'", ArenaTeamId, EnemyTeamId);
+    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid ='0' AND player_team_id ='%u' AND enemy_team_id ='%u'", ArenaTeamId, EnemyTeamId);
 
     if(!result)
     {
@@ -842,7 +842,7 @@ void ArenaTeam::SaveToDBArenaModPlayer(uint64 PlayerGuid, uint32 ArenaTeamId, ui
     if(!EnemyTeamId || !PlayerGuid || !ArenaTeamId)
         return;
 
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid ='%u' AND player_team_id ='%u' AND enemy_team_id ='%u'", GUID_LOPART(PlayerGuid), ArenaTeamId, EnemyTeamId);
+    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid ='%u' AND player_team_id ='%u' AND enemy_team_id ='%u'", GUID_LOPART(PlayerGuid), ArenaTeamId, EnemyTeamId);
 
     if(!result)
     {

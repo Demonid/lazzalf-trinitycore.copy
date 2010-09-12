@@ -94,7 +94,7 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                                     //database query : get all wins of player against at2 and add them
                                     // in order to be able to check if that amount is bigger
                                     // than allowed, if so return false
-                                    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId2);
+                                    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId2);
 
                                     if(!result)
                                     {
@@ -137,7 +137,7 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                                     //database query : get all wins of player against at2 and add them
                                     // in order to be able to check if that amount is bigger
                                     // than allowed, if so return false
-                                    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId1);
+                                    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId1);
 
                                     if(!result)
                                     {
@@ -171,7 +171,7 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                 //database query : get all wins of team1 against team2
                 // in order to be able to check if that amount is bigger
                 // than allowed, if so return false
-                QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId1, TeamId2);
+                QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId1, TeamId2);
 
                 if(result)
                 {

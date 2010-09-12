@@ -4404,7 +4404,7 @@ void ObjectMgr::LoadQuestPool(bool reset, bool daily)
 
     mDisabledQuestPoolMap.clear();
 
-    QueryResult_AutoPtr result;
+    QueryResult result;
 
     // Create a list with all disabled entries for the relations load...
     // Must be splitted - else we get a problem to set the new random quests in ResetQuestPool()!
@@ -6877,7 +6877,7 @@ uint32 ObjectMgr::GeneratePetNumber()
 // Loads the jail conf out of the database
 void ObjectMgr::LoadJailConf(void)
 {
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail_conf`");
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `jail_conf`");
 
     if (!result)
     {

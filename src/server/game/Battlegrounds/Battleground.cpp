@@ -762,9 +762,9 @@ void Battleground::EndBattleground(uint32 winner)
         std::string queryt = total.str();
         std::string querya = teamA.str();
         std::string queryb = teamB.str();
-	    QueryResult_AutoPtr resultt = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryt.c_str());
-        QueryResult_AutoPtr resulta = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", querya.c_str());
-        QueryResult_AutoPtr resultb = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryb.c_str());
+	    QueryResult resultt = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryt.c_str());
+        QueryResult resulta = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", querya.c_str());
+        QueryResult resultb = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryb.c_str());
        	if(resultt && resulta && resultb)
         {
             if( resultt->GetRowCount() != (resulta->GetRowCount() + resultb->GetRowCount()) )

@@ -838,7 +838,7 @@ void BattlegroundMgr::InitAutomaticArenaModTimer()
     {
         sLog.outDebug("Initializing Automatic Arena Mod Timer");
         uint64 m_NextArenaModResetTime_temp = sWorld.getWorldState(LAST_TIME_MOD_RESET);
-        //QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
+        //QueryResult result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
         if(!m_NextArenaModResetTime_temp)
         {
             sLog.outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");

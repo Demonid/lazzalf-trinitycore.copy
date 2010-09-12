@@ -120,7 +120,7 @@ class npc_guild_master : public CreatureScript
 
     bool isPlayerHasGuildhouse(Player *player, Creature *_creature, bool whisper = false)
     {
-        QueryResult_AutoPtr result;
+        QueryResult result;
 
         result = WorldDatabase.PQuery("SELECT `comment` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
 
@@ -174,7 +174,7 @@ class npc_guild_master : public CreatureScript
 
         //show not occupied guildhouses
 
-        QueryResult_AutoPtr result;
+        QueryResult result;
 
         uint32 guildsize = 1;
 
@@ -249,7 +249,7 @@ class npc_guild_master : public CreatureScript
         if (!player)
             return false;
 
-        QueryResult_AutoPtr result;
+        QueryResult result;
 
         uint32 guildsize = 1;
         uint32 guild_add = GHobj.GetGuildHouse_Add(player->GetGuildId());
@@ -353,7 +353,7 @@ class npc_guild_master : public CreatureScript
             return;
         }
 
-        QueryResult_AutoPtr result;
+        QueryResult result;
 
         result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `id` = %u AND `guildId` = 0" , guildhouseId);
 
@@ -407,7 +407,7 @@ class npc_guild_master : public CreatureScript
             return;
         }
 
-        QueryResult_AutoPtr result;
+        QueryResult result;
         result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses_addtype` WHERE `add_type` = %u ", gh_Add);
         if (!result)
         {
@@ -435,7 +435,7 @@ class npc_guild_master : public CreatureScript
     {
         if (isPlayerHasGuildhouse(player, _creature))
         {
-            QueryResult_AutoPtr result;
+            QueryResult result;
 
             result = WorldDatabase.PQuery("SELECT `price` FROM `guildhouses` WHERE `guildId` = %u", player->GetGuildId());
 
