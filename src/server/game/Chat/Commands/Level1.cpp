@@ -2065,7 +2065,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 	    std::string jail_reason = jailreason;
 	    uint32 jail_times = 0;
 
-	    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", jail_guid);
+	    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", jail_guid);
 
         if (!result)
         {
@@ -2102,7 +2102,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
         if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 2) )
         {
-            QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
 
             if (!result)
             {
@@ -2116,7 +2116,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
         }
         else if ((sObjectMgr.m_jailconf_max_jails >= jail_times) && (sObjectMgr.m_jailconf_ban == 1) )
         {
-            QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
 
             if (!result)
             {
@@ -2141,7 +2141,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
         return true;
     }
 
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", chr->GetGUIDLow());
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `characters` WHERE `guid`='%u' LIMIT 1", chr->GetGUIDLow());
 
     if (!result)
     {
@@ -2248,7 +2248,7 @@ bool ChatHandler::HandleUnJailCommand(const char *args)
     }
     else
     {
-        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
+        QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `jail` WHERE `guid`='%u' LIMIT 1", GUID_LOPART(GUID));
 
         if (!result)
         {

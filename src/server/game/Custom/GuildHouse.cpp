@@ -74,13 +74,13 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         if (itr == GH_map.end())
             return true;
-        QueryResult_AutoPtr result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
+        QueryResult result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = %u", guild_id);
         RemoveGuildHouseAdd(itr->second.Id);
         GH_map.erase(guild_id);
     }
     else // Compra
     {
-        QueryResult_AutoPtr result;
+        QueryResult result;
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         
         result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
@@ -263,7 +263,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 void GuildHouseObject::LoadGuildHouse()
 {
     GH_map.clear();
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses ORDER BY guildId ASC");
+    QueryResult result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses ORDER BY guildId ASC");
 
     if (!result)
     {
@@ -296,7 +296,7 @@ void GuildHouseObject::LoadGuildHouse()
             if (!CheckGuildID(guildID))
                 continue;
 
-            QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guildID);
+            QueryResult result2 = CharacterDatabase.PQuery("SELECT `GuildHouse_Add` FROM `gh_guildadd` WHERE `guildId` = %u", guildID);
             if (result2)
             {
                 Field *fields2 = result2->Fetch();
@@ -324,7 +324,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
     sLog.outString( "Loading Guild House System");
     sLog.outString("");
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
+    QueryResult result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
 
     if (!result)
     {
@@ -419,7 +419,7 @@ GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float 
 void GuildHouse::AddGuildHouse_Add(uint32 NewAdd)
 {
     GuildHouse_Add |= NewAdd;
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("UPDATE `gh_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
+    QueryResult result = CharacterDatabase.PQuery("UPDATE `gh_guildadd` SET `GuildHouse_Add` = %u WHERE `guildId` = %u", GuildHouse_Add, GuildId);
     GHobj.AddGuildHouseAdd(Id, NewAdd, GuildId);
 }
 
