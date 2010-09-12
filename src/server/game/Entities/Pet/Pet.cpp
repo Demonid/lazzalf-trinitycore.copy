@@ -950,10 +950,15 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     break;
                 }
 				case 89: // Infernal
-                {
+                {                    
+                    if (m_owner && m_owner->GetTypeId() != TYPEID_PLAYER)
+                        break;
+
                     //60% damage bonus of warlock's fire damage
-                    float val = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6 : 0;
-                    SetBonusDamage( int32(val));
+                    float val = m_owner ? m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE) * 0.6f : 0;
+                    if (val < 0)
+                        val = 0;
+                    SetBonusDamage(int32(val));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((val) - petlevel));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((val) + petlevel));
                     break;
