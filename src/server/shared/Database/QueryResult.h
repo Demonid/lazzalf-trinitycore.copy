@@ -101,7 +101,7 @@ class ResultBind
     friend class PreparedResultSet;
     public:
 
-        ResultBind(MYSQL_STMT* stmt) : m_rBind(NULL), m_stmt(stmt), m_isNull(NULL), m_length(NULL), m_res(NULL), m_fieldCount(0) {}
+        ResultBind(MYSQL_STMT* stmt) : m_rBind(NULL), m_stmt(stmt), m_res(NULL), m_isNull(NULL), m_length(NULL), m_fieldCount(0) {}
 
         ~ResultBind()
         {
@@ -114,7 +114,7 @@ class ResultBind
             CleanUp();  // Clean up buffer
         }
 
-        void BindResult(uint32& num_rows);
+        void BindResult(uint64& num_rows);
 
     protected:
         MYSQL_BIND* m_rBind;
@@ -228,8 +228,8 @@ class PreparedResultSet
         }
 
         ResultBind* rbind;
-        uint32 row_position;
-        uint32 num_rows;
+        uint64 row_position;
+        uint64 num_rows;
 };
 
 typedef ACE_Refcounted_Auto_Ptr<PreparedResultSet, ACE_Null_Mutex> PreparedQueryResult;
