@@ -26,6 +26,7 @@
 #define SPELL_SPELL_DISRUPTION  29310
 #define SPELL_DECREPIT_FEVER    RAID_MODE(29998,55011)
 #define SPELL_PLAGUE_CLOUD      29350
+#define ACHIEV_SAFETY_DANCE     RAID_MODE(1996,2139)
 
 enum Events
 {
@@ -58,21 +59,32 @@ public:
 
         uint32 eruptSection;
         bool eruptDirection;
+    bool bIsSomeoneDied;
         Phases phase;
 
-        void KilledUnit(Unit* /*Victim*/)
+    void Reset()
+    {
+        bIsSomeoneDied = false;
+        _Reset();
+    }
+
+    void KilledUnit(Unit* Victim)
         {
+        bIsSomeoneDied = true;
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(Unit* /*Killer*/)
+        void JustDied(Unit* Killer)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
+
+        if (instance && !bIsSomeoneDied)
+            instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -86,6 +98,7 @@ public:
             eruptSection = 3;
             if (phase == PHASE_FIGHT)
             {
+            me->SetReactState(REACT_AGGRESSIVE);
                 events.ScheduleEvent(EVENT_DISRUPT, urand(10000, 25000));
                 events.ScheduleEvent(EVENT_FEVER, urand(15000, 20000));
                 events.ScheduleEvent(EVENT_PHASE, 90000);
@@ -96,6 +109,7 @@ public:
                 float x, y, z, o;
                 me->GetHomePosition(x, y, z, o);
                 me->NearTeleportTo(x, y, z, o);
+            me->SetReactState(REACT_PASSIVE);
                 DoCastAOE(SPELL_PLAGUE_CLOUD);
                 events.ScheduleEvent(EVENT_PHASE, 45000);
                 events.ScheduleEvent(EVENT_ERUPT, 8000);
