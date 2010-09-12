@@ -329,6 +329,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
 
         // if we boarded a transport, add us to it
+        //if (plMover && !plMover->GetTransport())
         if (plMover && !plMover->m_transport && !plMover->m_temp_transport)
         {
             // elevators also cause the client to send MOVEMENTFLAG_ONTRANSPORT - just unmount if the guid can be found in the transport list
