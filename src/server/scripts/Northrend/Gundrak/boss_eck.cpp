@@ -74,6 +74,18 @@ public:
                 pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
         }
 
+    void DeleteFromThreatList(uint64 TargetGUID)
+    {
+        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+        {
+            if ((*itr)->getUnitGuid() == TargetGUID)
+            {
+                (*itr)->removeReference();
+                break;
+            }
+        }
+    }
+
         void UpdateAI(const uint32 diff)
         {
             //Return since we have no target
@@ -98,6 +110,7 @@ public:
                 if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
                 {
                     DoCast(pTarget, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
+                CAST_AI(boss_eckAI, me->AI())->DeleteFromThreatList(me->GetGUID());
                     uiSpringTimer = urand(5*IN_MILLISECONDS,10*IN_MILLISECONDS);
                 }
             } else uiSpringTimer -= diff;

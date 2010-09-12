@@ -59,6 +59,11 @@ int DelayExecutor::svc()
     return 0;
 }
 
+int DelayExecutor::respawn()
+{
+    return ACE_Task_Base::activate (THR_NEW_LWP | THR_JOINABLE | THR_INHERIT_SCHED, 1, 1);
+}
+
 int DelayExecutor::activate(int num_threads, ACE_Method_Request* pre_svc_hook, ACE_Method_Request* post_svc_hook)
 {
     if (activated())
