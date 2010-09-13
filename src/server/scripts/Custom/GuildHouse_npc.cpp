@@ -547,8 +547,8 @@ class npc_guild_master : public CreatureScript
         return true;
     };
 
-    bool GossipSelectWithCode_guildmaster( Player *player, Creature *_creature,
-                                          uint32 sender, uint32 action, const char* sCode )
+    bool OnGossipSelectCode( Player *player, Creature *_creature,
+                             uint32 sender, uint32 action, const char* sCode )
     {
         if(sender == GOSSIP_SENDER_MAIN)
         {
