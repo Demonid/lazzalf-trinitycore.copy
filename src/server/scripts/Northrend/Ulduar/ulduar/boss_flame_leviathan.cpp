@@ -203,7 +203,7 @@ class boss_flame_leviathan : public CreatureScript
         void SpellHit(Unit *caster, const SpellEntry *spell)
         {
             if(spell->Id == 62472)
-                vehicle->InstallAllAccessories();
+                vehicle->InstallAllAccessories(me->GetEntry());
             else if(spell->Id == SPELL_ELECTROSHOCK)
                 me->InterruptSpell(CURRENT_CHANNELED_SPELL);
         }
