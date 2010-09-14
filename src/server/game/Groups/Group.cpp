@@ -257,6 +257,8 @@ bool Group::AddInvite(Player *player)
 
     player->SetGroupInvite(this);
 
+    sScriptMgr.OnGroupInviteMember(this, player->GetGUID());
+
     return true;
 }
 
@@ -315,6 +317,7 @@ bool Group::AddMember(const uint64 &guid, const char* name)
         return false;
 
     SendUpdate();
+    sScriptMgr.OnGroupAddMember(this, guid);
 
     Player *player = sObjectMgr.GetPlayer(guid);
     if (player)
@@ -363,6 +366,8 @@ uint32 Group::RemoveMember(const uint64 &guid, const RemoveMethod &method)
         sLFGMgr.Leave(NULL, this);
     else if (isLFGGroup() && !isLfgDungeonComplete())
         sLFGMgr.OfferContinue(this);
+
+    sScriptMgr.OnGroupRemoveMember(this, guid, method);
 
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove
     if (GetMembersCount() > (isBGGroup() ? 1u : 2u))           // in BG group case allow 1 members group
@@ -427,6 +432,7 @@ void Group::ChangeLeader(const uint64 &guid)
     if (slot == m_memberSlots.end())
         return;
 
+    sScriptMgr.OnGroupChangeLeader(this, m_leaderGuid, guid);
     _setLeader(guid);
 
     WorldPacket data(SMSG_GROUP_SET_LEADER, slot->name.size()+1);
@@ -437,8 +443,9 @@ void Group::ChangeLeader(const uint64 &guid)
 
 void Group::Disband(bool hideDestroy /* = false */)
 {
-    Player *player;
+    sScriptMgr.OnGroupDisband(this);
 
+    Player *player;
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
         player = sObjectMgr.GetPlayer(citr->guid);
