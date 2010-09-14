@@ -1546,10 +1546,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Checking Quest Disables");
     sDisableMgr.CheckQuestDisables();                       // must be after loading quests
     
-    sLog.outString();
-    sLog.outString("Loading Quest Pool...");
-    sObjectMgr.LoadQuestPool();                                 // must be loaded after quests and before relations!
-
     sLog.outString("Loading Quest POI");
     sObjectMgr.LoadQuestPOI();
 
@@ -2726,8 +2722,6 @@ void World::ResetDailyQuests()
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
-
-    sObjectMgr.ResetQuestPool(true);
 }
 
 void World::LoadDBAllowedSecurityLevel()
@@ -2755,8 +2749,6 @@ void World::ResetWeeklyQuests()
 
     m_NextWeeklyQuestReset = time_t(m_NextWeeklyQuestReset + WEEK);
     sWorld.setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
-
-    sObjectMgr.ResetQuestPool(false);
 }
 
 void World::ResetRandomBG()

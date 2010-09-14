@@ -133,8 +133,8 @@ class instance_ulduar : public InstanceMapScript
                 case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
                 case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
                 case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
+                case GO_Thorim_Rare_CHEST_HERO: ThorimRareChest = add ? pGo : NULL; break;                    
                 case GO_Thorim_Rare_CHEST: ThorimRareChest = add ? pGo : NULL; break;
-                case GO_Thorim_Rare_CHEST_HERO: ThorimRareChest = add ? pGo : NULL; break;
                 case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
                 case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
                 case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
