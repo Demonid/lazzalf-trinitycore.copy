@@ -8457,10 +8457,13 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         }
         else
         {
+            // the player whose group may loot the corpse
             Player *recipient = creature->GetLootRecipient();
-
             if (!recipient)
-                return;
+            {
+                creature->SetLootRecipient(this);
+                recipient = this;
+            }
 
             if (!creature->lootForBody)
             {
@@ -16489,7 +16492,8 @@ bool Player::isAllowedToLoot(const Creature* creature)
 
     Player* recipient = creature->GetLootRecipient();
     if (!recipient)
-        return false;
+        // prevent other players from looting if the recipient got disconnected
+        return !creature->hasLootRecipient();
 
     Group* recipientGroup = recipient->GetGroup();
     if (!recipientGroup)
