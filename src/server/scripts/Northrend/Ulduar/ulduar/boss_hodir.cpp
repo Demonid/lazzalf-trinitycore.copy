@@ -207,7 +207,7 @@ class boss_hodir : public CreatureScript
             _JustDied();
             DoScriptText(SAY_DEATH, me);
             
-            me->setFaction(35);
+            //me->setFaction(35);
             
             if (pInstance)
             {

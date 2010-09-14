@@ -281,7 +281,7 @@ class boss_thorim : public CreatureScript
             DoScriptText(SAY_DEATH, me);
             _JustDied();
             
-            me->setFaction(35);
+            //me->setFaction(35);
             
             // Achievements
             if (pInstance)
