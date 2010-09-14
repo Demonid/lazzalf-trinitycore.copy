@@ -207,7 +207,7 @@ class boss_hodir : public CreatureScript
             _JustDied();
             DoScriptText(SAY_DEATH, me);
             
-            //me->setFaction(35);
+            me->setFaction(35);
             
             if (pInstance)
             {
@@ -228,10 +228,10 @@ class boss_hodir : public CreatureScript
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_THIS_CACHE_WAS_RARE);
                     pInstance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
                 }
-                 //pInstance->SetData(DATA_HODIR_CHEST, GO_STATE_READY);
+                pInstance->SetData(DATA_HODIR_CHEST, GO_STATE_READY);
                 // Chest spawn
-                uint32 chest = RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25);
-                me->SummonGameObject(chest, 1966.43f, -203.906f, 432.687f, -0.90757f, 0,0,1,0,0);
+                //uint32 chest = RAID_MODE(CACHE_OF_WINTER_10, CACHE_OF_WINTER_25);
+                //me->SummonGameObject(chest, 1966.43f, -203.906f, 432.687f, -0.90757f, 0,0,1,0,0);
             }
         }
 
