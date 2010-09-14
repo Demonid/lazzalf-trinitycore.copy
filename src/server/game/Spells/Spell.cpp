@@ -2999,6 +2999,10 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
 
+    // Set combo point requirement
+    if (m_IsTriggeredSpell || m_CastItem || !m_caster->m_movedPlayer)
+        m_needComboPoints = false;
+
     SpellCastResult result = CheckCast(true);
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
@@ -3015,10 +3019,6 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
 
     // Prepare data for triggers
     prepareDataForTriggerSystem(triggeredByAura);
-
-    // Set combo point requirement
-    if (m_IsTriggeredSpell || m_CastItem || !m_caster->m_movedPlayer)
-        m_needComboPoints = false;
 
     // calculate cast time (calculated after first CheckCast check to prevent charge counting for first CheckCast fail)
     m_casttime = GetSpellCastTime(m_spellInfo, this);
