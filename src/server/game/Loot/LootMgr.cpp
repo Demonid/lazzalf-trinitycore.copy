@@ -474,24 +474,24 @@ void Loot::FillNotNormalLootFor(Player* pl, bool withCurrency)
         FillNonQuestNonFFAConditionalLoot(pl);
 
     // if not auto-processed player will have to come and pick it up manually
-    if (!withCurrency)
+    if (!withCurrency || !sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
         return;
 
     // Process currency items
     uint32 max_slot = GetMaxSlotInLootFor(pl);
-    uint32 itemId = 0;
+    LootItem const *item = NULL;
     uint32 itemsSize = uint32(items.size());
     for (uint32 i = 0; i < max_slot; ++i)
     {
         if (i < items.size())
-            itemId = items[i].itemid;
+            item = &items[i];
         else
-            itemId = quest_items[i-itemsSize].itemid;
+            item = &quest_items[i-itemsSize];
 
-        if (ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemId))
-            if ((proto->BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS) && 
-                sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
-                pl->StoreLootItem(i, this);
+        if (!item->is_looted && item->freeforall && item->AllowedForPlayer(pl))
+            if (ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item->itemid))
+                if (proto->BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS)
+                    pl->StoreLootItem(i, this);
     }
 }
 
@@ -1234,7 +1234,8 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, bool rate, uint16
             if (!Referenced)
                 continue;                                     // Error message already printed at loading stage
 
-            for (uint32 loop = 0; loop < i->maxcount; ++loop) // Ref multiplicator
+            uint32 maxcount = uint32(float(i->maxcount) * sWorld.getRate(RATE_DROP_ITEM_REFERENCED_AMOUNT));
+            for (uint32 loop = 0; loop < maxcount; ++loop)    // Ref multiplicator
                 Referenced->Process(loot, store, rate, lootMode, i->group);
         }
         else                                                  // Plain entries (not a reference, not grouped)
