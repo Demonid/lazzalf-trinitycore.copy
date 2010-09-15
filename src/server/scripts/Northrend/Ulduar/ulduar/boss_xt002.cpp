@@ -568,6 +568,9 @@ class mob_xt002_heart : public CreatureScript
         {
             if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(DATA_XT002)))
             {
+                if (damage > me->GetHealth())
+                    damage = me->GetHealth();
+
                 if (pDone)
                     pDone->DealDamage(pXT002, damage);
             }

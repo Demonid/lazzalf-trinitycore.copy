@@ -3918,7 +3918,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 62713:     // Ironbranch's Essence
         case 62968:     // Brightleaf's Essence
-        case 64320:     // Rune of Power
+        //case 64320:     // Rune of Power
             spellInfo->DurationIndex = 39;
             count++;
             break;
