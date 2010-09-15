@@ -33,15 +33,15 @@ EndContentData */
 #define GOSSIP_START_EVENT1     "I'm ready to start challenge."
 #define GOSSIP_START_EVENT2     "I'm ready for the next challenge."
 
-#define ORIENTATION             4.714
+#define ORIENTATION             4.714f
 
 /*######
 ## npc_announcer_toc5
 ######*/
 
-const Position SpawnPosition = {746.843, 695.68, 412.339, 4.70776};
+const Position SpawnPosition = {746.843f, 695.68f, 412.339f, 4.70776f};
 
-const Position SpawnPosition1 = {746.71,661.02,411.69, 4.66995};
+const Position SpawnPosition1 = {746.71f, 661.02f, 411.69f, 4.66995f};
 
 	
 enum eEnums
@@ -129,27 +129,27 @@ class npc_anstart : public CreatureScript
                 Phase = INTRO;
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-                if (pTrall = me->SummonCreature(CREATURE_TRALL, 685.569, 615.103, 435.396, 6.23544, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                if (pTrall = me->SummonCreature(CREATURE_TRALL, 685.569f, 615.103f, 435.396f, 6.23544f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                 {
 			        pTrall->SetReactState(REACT_PASSIVE);	
                     pTrall->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                if (pGarrosh = me->SummonCreature(CREATURE_GARROSH, 685.7, 621.134, 435.396, 6.259, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                if (pGarrosh = me->SummonCreature(CREATURE_GARROSH, 685.7f, 621.134f, 435.396f, 6.259f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                 {
 			        pGarrosh->SetReactState(REACT_PASSIVE);	
                     pGarrosh->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                if (pKing = me->SummonCreature(CREATURE_KING, 807.724, 617.9, 435.396, 3.18416, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                if (pKing = me->SummonCreature(CREATURE_KING, 807.724f, 617.9f, 435.396f, 3.18416f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                 {
 			        pKing->SetReactState(REACT_PASSIVE);	
                     pKing->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                if (pLady = me->SummonCreature(CREATURE_LADY, 807.401, 613.667, 435.397, 3.0585, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                if (pLady = me->SummonCreature(CREATURE_LADY, 807.401f, 613.667f, 435.397f, 3.0585f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                 {
 			        pLady->SetReactState(REACT_PASSIVE);	
                     pLady->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                if (pHighlord = me->SummonCreature(CREATURE_HIGHLORD, 746.482, 556.857, 435.396, 1.5898, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                if (pHighlord = me->SummonCreature(CREATURE_HIGHLORD, 746.482f, 556.857f, 435.396f, 1.5898f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                 {
 			        pHighlord->SetReactState(REACT_PASSIVE);	
                     pHighlord->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -225,7 +225,7 @@ class npc_anstart : public CreatureScript
                         uiIntroTimer = 4000;
                         break;							
                     case 9:
-                        if (Creature* pAnnouncertoc5 = me->SummonCreature(CREATURE_ANNOUNCER, 746.626, 618.54, 411.09, 4.63158, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000))
+                        if (Creature* pAnnouncertoc5 = me->SummonCreature(CREATURE_ANNOUNCER, 746.626f, 618.54f, 411.09f, 4.63158f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000))
                         {	
 						    me->DisappearAndDie();             
        					    pAnnouncertoc5->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -336,14 +336,14 @@ class npc_announcer_toc5 : public CreatureScript
                     break;
                 case DATA_IN_POSITION: //movement done.		
 		            me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);			
-                    me->GetMotionMaster()->MovePoint(1,735.898, 651.961, 411.93);
+                    me->GetMotionMaster()->MovePoint(1, 735.898f, 651.961f, 411.93f);
 				    DoScriptText(SAY_START2, me);
                     if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
                         pInstance->HandleGameObject(pGO->GetGUID(),false);
                     NextStep(20000,false,3);
                     break;
 			    case DATA_RESET:
-				    me->GetMotionMaster()->MovePoint(2,746.626, 618.54, 411.09);
+				    me->GetMotionMaster()->MovePoint(2, 746.626f, 618.54f, 411.09f);
     				
 				    uiSummonTimes = 0;
 				    uiPosition = 0;
@@ -554,7 +554,7 @@ class npc_announcer_toc5 : public CreatureScript
 		    DoScriptText(SAY_START3, me);
             if (Creature* pBoss = me->SummonCreature(uiArgentChampion,SpawnPosition))
             {
-		        pBoss->GetMotionMaster()->MovePoint(1,746.71,661.02,411.69);
+		        pBoss->GetMotionMaster()->MovePoint(1,746.71f,661.02f,411.69f);
                 for (uint8 i = 0; i < 3; ++i)
                 {
                     if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
@@ -571,7 +571,7 @@ class npc_announcer_toc5 : public CreatureScript
         {
 		    DoScriptText(SAY_START11, me);
 		    me->SetReactState(REACT_PASSIVE);
-            if (Creature* pGhoul = me->SummonCreature(NPC_RISEN_JAEREN,742.835, 639.134, 411.571, 1.05731))
+            if (Creature* pGhoul = me->SummonCreature(NPC_RISEN_JAEREN,742.835f, 639.134f, 411.571f, 1.05731f))
             {
                 pGhoul->setFaction(14);
             }
@@ -630,7 +630,7 @@ class npc_announcer_toc5 : public CreatureScript
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
                    pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
                 {
-			        me->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507, 640.574280, 469.314362, 3.97124);
+			        me->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507f, 640.574280f, 469.314362f, 3.97124f);
                     DoCast(me, SPELL_SVALA_TRANSFORMING1);
 				    me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
 				    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);

@@ -299,7 +299,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
                             {
                                 DoScriptText(SAY_START, pAnnouncer);
                                 pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                                pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_CHAMPIONS_LOOT_H : GO_CHAMPIONS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+                                pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_CHAMPIONS_LOOT_H : GO_CHAMPIONS_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
                             }
                         }
                     }
@@ -391,8 +391,8 @@ class instance_trial_of_the_champion : public InstanceMapScript
                         {
                             DoScriptText(SAY_START, pAnnouncer);
                             pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                            pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
-                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+                            pAnnouncer->GetMotionMaster()->MovePoint(0,742.835f, 639.134f, 411.571f);
+                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_EADRIC_LOOT_H : GO_EADRIC_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
                         }
                     break;
                 case DATA_AGGRO_DONE:
@@ -422,8 +422,8 @@ class instance_trial_of_the_champion : public InstanceMapScript
                         {
                             DoScriptText(SAY_START, pAnnouncer);
                             pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                            pAnnouncer->GetMotionMaster()->MovePoint(0,742.835, 639.134, 411.571);
-                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59,618.49,411.09,1.42,0, 0, 0, 0,90000000);
+                            pAnnouncer->GetMotionMaster()->MovePoint(0,742.835f, 639.134f, 411.571f);
+                            pAnnouncer->SummonGameObject(instance->IsHeroic()? GO_PALETRESS_LOOT_H : GO_PALETRESS_LOOT,746.59f,618.49f,411.09f,1.42f,0, 0, 0, 0,90000000);
                         }
                     break;
             }

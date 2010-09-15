@@ -192,16 +192,16 @@ struct LocationsXY
 };
 static Locations GOPositions[]=
 {
-    {754.346, 1300.87, 256.249, 3.14159},   // Raid Platform position
-    {754.731, 1300.12, 266.171, 5.01343},   // Focusing iris and Alexstrazas gift
-    {724.684, 1332.92, 267.234, -0.802851}, // Exit Portal
+    {754.346f, 1300.87f, 256.249f, 3.14159f},   // Raid Platform position
+    {754.731f, 1300.12f, 266.171f, 5.01343f},   // Focusing iris and Alexstrazas gift
+    {724.684f, 1332.92f, 267.234f, -0.802851f}, // Exit Portal
 };
 static LocationsXY SparkLoc[]=
 {
-    {681.772, 1232.393},
-    {815.205, 1373.234},
-    {680.982, 1363.125},
-    {827.01, 1232.649},
+    {681.772f, 1232.393f},
+    {815.205f, 1373.234f},
+    {680.982f, 1363.125f},
+    {827.01f, 1232.649f},
 };
  
 //Also spawn locations for scions of eternity
@@ -232,18 +232,18 @@ static LocationsXY VortexLoc[]=
 static Locations OtherLoc[]=
 {
     {808, 1301, 268, 0},          // Phase 3 position
-    {749, 1244, 332, 1.544},      // Vortex FarSight loc
-    {754.29, 1301.18, 266.17, 0}, // Center of the platform, ground.
+    {749, 1244, 332, 1.544f},      // Vortex FarSight loc
+    {754.29f, 1301.18f, 266.17f, 0}, // Center of the platform, ground.
     {823, 1241, 299, 0},          // Alexstrasza's  position
-    {749, 1244, 266.17, 5.33},       // Aggro position after Subphase fly down
+    {749, 1244, 266.17f, 5.33f},       // Aggro position after Subphase fly down
 };
 
 
 #define MAX_VORTEX      21
 #define VORTEX_Z        268
-#define FLOOR_Z         266.18
-#define FALL_FROM_Z     287.20
-#define AIR_Z           297.24
+#define FLOOR_Z         266.18f
+#define FALL_FROM_Z     287.20f
+#define AIR_Z           297.24f
 
 /*######
 ## boss_malygos
@@ -792,7 +792,7 @@ class boss_malygos : public CreatureScript
             SurgeOfPower = GetClosestCreatureWithEntry(me, NPC_SURGE_OF_POWER, 200.0f, true);
             if(!SurgeOfPower)
             {
-                SurgeOfPower = me->SummonCreature(NPC_SURGE_OF_POWER, 754.29, 1301.18, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
+                SurgeOfPower = me->SummonCreature(NPC_SURGE_OF_POWER, 754.29f, 1301.18f, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
                 if(!SurgeOfPower)
                     return;
             }
@@ -1057,7 +1057,7 @@ class boss_malygos : public CreatureScript
                             pSurge->SetSpeed(MOVE_FLIGHT, 10.0f);
                             pSurge->SetSpeed(MOVE_RUN, 10.0f);
                             pSurge->SetSpeed(MOVE_WALK, 10.0f);
-                            pSurge->GetMotionMaster()->MovePoint(1, 754.29, 1301.18, 266.17);
+                            pSurge->GetMotionMaster()->MovePoint(1, 754.29f, 1301.18f, 266.17f);
                         }
                         m_uiSurgeVisual = 0;
                     }else m_uiSurgeVisual -= uiDiff;
@@ -1303,7 +1303,7 @@ class boss_malygos : public CreatureScript
                                 pAlexstrasza->SetFacingToObject(pGift);
 
                             //Summon platform for the looters to stay on...
-                            me->SummonGameObject( 190023 , 757.001, 1297.4, 267.09, 2.26684, 0, 0, 0.905866, 0.423563, 600000);
+                            me->SummonGameObject( 190023 , 757.001f, 1297.4f, 267.09f, 2.26684f, 0, 0, 0.905866f, 0.423563f, 600000);
 
                             Player* pPlayer = GetPlayerAtMinimumRange(1.0f);
                             if(pPlayer)

@@ -133,16 +133,16 @@ enum Keepers_Spells
 
 const Position SanityWellPos[10] =
 {
-{2008.38,35.41,331.251,0},
-{1990.63,50.35,332.041,0},
-{1973.40,41.09,330.989,0},
-{1973.12,-90.27,330.14,0},
-{1994.26,-96.62,330.62,0},
-{2005.41,-82.88,329.50,0},
-{2042.09,-41.70,329.12,0},
-{1918.06,16.50,330.970,0},
-{1899.59,-4.87,332.137,0},
-{1897.75,-48.24,332.35,0}
+{2008.38f,35.41f,331.251f,0},
+{1990.63f,50.35f,332.041f,0},
+{1973.40f,41.09f,330.989f,0},
+{1973.12f,-90.27f,330.14f,0},
+{1994.26f,-96.62f,330.62f,0},
+{2005.41f,-82.88f,329.50f,0},
+{2042.09f,-41.70f,329.12f,0},
+{1918.06f,16.50f,330.970f,0},
+{1899.59f,-4.87f,332.137f,0},
+{1897.75f,-48.24f,332.35f,0}
 };
 
 
@@ -258,7 +258,7 @@ class npc_ys_freya : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (WellTimer <= uiDiff)
+            if (WellTimer <= int32(uiDiff))
             {
                 DoCast(SPELL_SANITY_WELL_SPAWN);
                 me->SummonCreature(NPC_SANITY_WELL, SanityWellPos[rand()%10], TEMPSUMMON_TIMED_DESPAWN, 60000);
@@ -368,7 +368,7 @@ class npc_ys_mimiron : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (DestabilizeTimer <= uiDiff)
+            if (DestabilizeTimer <= int32(uiDiff))
             {
                 if (phase == PHASE_2)
                     DoCast(SPELL_DESTABILIZATION);
