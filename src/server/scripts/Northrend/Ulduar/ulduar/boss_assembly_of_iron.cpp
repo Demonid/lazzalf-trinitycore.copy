@@ -744,8 +744,12 @@ class mob_lightning_elemental : public CreatureScript
     public:
         mob_lightning_elemental(): CreatureScript("mob_lightning_elemental") {}
 
-    struct mob_lightning_elementalAI : public ScriptedAI {
-        mob_lightning_elementalAI(Creature *c) : ScriptedAI(c) {}
+    struct mob_lightning_elementalAI : public ScriptedAI 
+    {
+        mob_lightning_elementalAI(Creature *c) : ScriptedAI(c) 
+        {
+            me->ForcedDespawn(45000);
+        }
         
         Unit* Target;
         bool Casted;

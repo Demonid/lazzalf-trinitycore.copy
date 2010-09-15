@@ -84,7 +84,7 @@ enum ConstructSpells
     SPELL_SHATTER                               = 62383,
     SPELL_GROUND_10                             = 62548,
     SPELL_GROUND_25                             = 63476,
-    SPELL_FROZEN_POSITION                       = 69609
+    SPELL_FREEZE_ANIM                           = 69609
 };
 
 // Achievements
@@ -283,7 +283,7 @@ class boss_ignis : public CreatureScript
                                 pTarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                                 pTarget->SetReactState(REACT_AGGRESSIVE);
                                 pTarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
-                                pTarget->RemoveAurasDueToSpell(SPELL_FROZEN_POSITION);
+                                pTarget->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
                                 pTarget->AI()->AttackStart(me->getVictim());
                                 pTarget->AI()->DoZoneInCombat();
                                 construct_list.erase(itr);
@@ -349,7 +349,7 @@ class mob_iron_construct : public CreatureScript
         {
             pInstance = c->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
-            me->AddAura(SPELL_FROZEN_POSITION, me);
+            me->AddAura(SPELL_FREEZE_ANIM, me);
         }
 
         InstanceScript* pInstance;
@@ -380,7 +380,7 @@ class mob_iron_construct : public CreatureScript
             {
                 /*me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_STUNNED | UNIT_FLAG_DISABLE_MOVE);
-                me->RemoveAurasDueToSpell(SPELL_FROZEN_POSITION);
+                me->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
                 me->AI()->AttackStart(caster->getVictim());
                 me->AI()->DoZoneInCombat();*/
             }
