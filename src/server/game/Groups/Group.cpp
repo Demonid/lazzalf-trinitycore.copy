@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Database/DatabaseEnv.h"
 #include "Common.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -256,6 +257,8 @@ bool Group::AddInvite(Player *player)
 
     player->SetGroupInvite(this);
 
+    sScriptMgr.OnGroupInviteMember(this, player->GetGUID());
+
     return true;
 }
 
@@ -314,6 +317,7 @@ bool Group::AddMember(const uint64 &guid, const char* name)
         return false;
 
     SendUpdate();
+    sScriptMgr.OnGroupAddMember(this, guid);
 
     Player *player = sObjectMgr.GetPlayer(guid);
     if (player)
@@ -362,6 +366,8 @@ uint32 Group::RemoveMember(const uint64 &guid, const RemoveMethod &method)
         sLFGMgr.Leave(NULL, this);
     else if (isLFGGroup() && !isLfgDungeonComplete())
         sLFGMgr.OfferContinue(this);
+
+    sScriptMgr.OnGroupRemoveMember(this, guid, method);
 
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove
     if (GetMembersCount() > (isBGGroup() ? 1u : 2u))           // in BG group case allow 1 members group
@@ -426,6 +432,7 @@ void Group::ChangeLeader(const uint64 &guid)
     if (slot == m_memberSlots.end())
         return;
 
+    sScriptMgr.OnGroupChangeLeader(this, m_leaderGuid, guid);
     _setLeader(guid);
 
     WorldPacket data(SMSG_GROUP_SET_LEADER, slot->name.size()+1);
@@ -436,8 +443,9 @@ void Group::ChangeLeader(const uint64 &guid)
 
 void Group::Disband(bool hideDestroy /* = false */)
 {
-    Player *player;
+    sScriptMgr.OnGroupDisband(this);
 
+    Player *player;
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
         player = sObjectMgr.GetPlayer(citr->guid);
@@ -1641,8 +1649,55 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         if (memberBracketEntry != bracketEntry)
             return ERR_BATTLEGROUND_JOIN_RANGE_INDEX;
         // don't let join rated matches if the arena team id doesn't match
-        if (isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
-            return ERR_BATTLEGROUND_JOIN_FAILED;
+        if (isRated)
+        {
+            if(member->GetArenaTeamId(arenaSlot) != arenaTeamId)
+            {
+                 return ERR_BATTLEGROUND_JOIN_FAILED;
+            }
+
+            uint32 winsAllTeam = 0;
+            uint32 winsAllPlayer = 0;
+
+            uint32 winsAllTeamLimit = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN);
+            uint32 winsAllPlayerLimit = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN);
+            bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+
+            if(enabled)
+            {
+                QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_team_id='%u' AND player_guid = '0'", arenaTeamId);
+
+                if(result)
+                {
+                    do
+                    {
+                        Field *fields = result->Fetch();
+                        uint32 wins = fields[0].GetUInt32();
+
+                        winsAllTeam += wins;
+                    }while(result->NextRow());
+                }
+
+                result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u'", GUID_LOPART(member->GetGUID()));
+
+                if(result)
+                {
+                    do
+                    {
+                        Field *fields = result->Fetch();
+                        uint32 wins = fields[0].GetUInt32();
+
+                        winsAllPlayer += wins;
+                    }while(result->NextRow());
+                }
+
+
+                if(winsAllTeam >= winsAllTeamLimit || winsAllPlayer >= winsAllPlayerLimit)
+                {
+                    return ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS;
+                }
+            }
+        }
         // don't let join if someone from the group is already in that bg queue
         if (member->InBattlegroundQueueForBattlegroundQueueType(bgQueueTypeId))
             return ERR_BATTLEGROUND_JOIN_FAILED;            // not blizz-like
@@ -1691,6 +1746,10 @@ void Group::SetDungeonDifficulty(Difficulty difficulty)
 
         player->SetDungeonDifficulty(difficulty);
         player->SendDungeonDifficulty(true);
+        // Send player to recall position is a dungeon (to avoid an exploit)
+        /*Map *map = MapManager::Instance().FindMap(player->GetMapId(), player->GetInstanceId());
+        if (map && map->IsDungeon() && map->HavePlayers())
+            player->TeleportTo(player->m_recallMap, player->m_recallX, player->m_recallY, player->m_recallZ, player->m_recallO);*/
     }
 }
 

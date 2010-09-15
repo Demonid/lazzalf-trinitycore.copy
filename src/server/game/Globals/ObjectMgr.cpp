@@ -48,6 +48,7 @@
 #include "DisableMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "PoolMgr.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -3806,24 +3807,9 @@ void ObjectMgr::LoadQuests()
 
         if (qinfo->QuestFlags & QUEST_FLAGS_DAILY && qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
         {
-            sLog.outErrorDb("Weekly Quest %u is marked as daily quest in `QuestFlags`, removed daily flag.",qinfo->GetQuestId());
-            qinfo->QuestFlags &= ~QUEST_FLAGS_DAILY;
-        }
-
-        if (qinfo->QuestFlags & QUEST_FLAGS_DAILY)
-        {
             if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
             {
                 sLog.outErrorDb("Daily Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
-                qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
-            }
-        }
-
-        if (qinfo->QuestFlags & QUEST_FLAGS_WEEKLY)
-        {
-            if (!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
-            {
-                sLog.outErrorDb("Weekly Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
                 qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
             }
         }
@@ -5515,7 +5501,8 @@ void ObjectMgr::LoadAreaTriggerScripts()
     sLog.outString(">> Loaded %u areatrigger scripts", count);
 }
 
-uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team)
+// use searched_node for search some known node
+uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team, uint32 searched_node)
 {
     bool found = false;
     float dist = 10000;
@@ -5527,6 +5514,19 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
 
         if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
             continue;
+        /*if (!node || node->map_id != mapid) continue;
+
+        const float dist2 = pow(node->x - x, 2) + pow(node->y - y, 2) + pow(node->z - z, 2);
+
+        if (searched_node != 0 && i == searched_node)
+        {
+            id = i;
+            dist = dist2;
+            break;
+        }
+
+        if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981) // dk flight
+             continue;*/
 
         uint8  field   = (uint8)((i - 1) / 32);
         uint32 submask = 1<<((i-1)%32);
@@ -5551,6 +5551,10 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
             id = i;
         }
     }
+
+    // movement anticheat fix
+    //if (dist > 3600) id = 0;
+    // movement anticheat fix
 
     return id;
 }
@@ -6689,6 +6693,119 @@ uint32 ObjectMgr::GeneratePetNumber()
     return ++m_hiPetNumber;
 }
 
+// Loads the jail conf out of the database
+void ObjectMgr::LoadJailConf(void)
+{
+    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `jail_conf`");
+
+    if (!result)
+    {
+		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR1));
+		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR2));
+
+		m_jailconf_max_jails    = 3;
+		m_jailconf_max_duration = 672;
+		m_jailconf_min_reason   = 25;
+		m_jailconf_warn_player  = 1;
+		m_jailconf_amnestie     = 180;
+
+		m_jailconf_ally_x       = -8673.43f;
+		m_jailconf_ally_y       = 631.795f;
+		m_jailconf_ally_z       = 96.9406f;
+		m_jailconf_ally_o       = 2.1785f;
+		m_jailconf_ally_m       = 0;
+
+		m_jailconf_horde_x      = 2179.85f;
+    	m_jailconf_horde_y      = -4763.96f;
+		m_jailconf_horde_z      = 54.911f;
+		m_jailconf_horde_o      = 4.44216f;
+		m_jailconf_horde_m      = 1;
+
+		m_jailconf_ban          = 0;
+		m_jailconf_radius       = 10;
+
+        return;
+    }
+do
+{
+    Field *fields = result->Fetch();
+    m_jail_obt = fields[1].GetString();
+	if(m_jail_obt == "m_jailconf_max_jails")
+	{
+      m_jailconf_max_jails    = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_max_duration")
+	{
+	  m_jailconf_max_duration = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_min_reason")
+	{
+      m_jailconf_min_reason   = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_warn_player")
+	{
+      m_jailconf_warn_player  = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_amnestie")
+	{
+	  m_jailconf_amnestie     = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_ally_x")
+	{
+      m_jailconf_ally_x       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_y")
+	{
+      m_jailconf_ally_y       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_z")
+	{
+      m_jailconf_ally_z       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_o")
+	{
+      m_jailconf_ally_o       = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_ally_m")
+	{
+      m_jailconf_ally_m       = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_horde_x")
+	{
+      m_jailconf_horde_x      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_y")
+	{
+      m_jailconf_horde_y      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_z")
+	{
+      m_jailconf_horde_z      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_o")
+	{
+      m_jailconf_horde_o      = fields[3].GetFloat();
+	}
+	if(m_jail_obt == "m_jailconf_horde_m")
+	{
+      m_jailconf_horde_m      = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_ban")
+	{
+      m_jailconf_ban = fields[2].GetUInt32();
+	}
+	if(m_jail_obt == "m_jailconf_radius")
+	{
+      m_jailconf_radius = fields[2].GetUInt32();
+	}
+}
+while (result->NextRow());
+
+    sLog.outString("");
+    sLog.outString(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_LOADED));
+    sLog.outString("");
+}
+
 void ObjectMgr::LoadCorpses()
 {
     uint32 count = 0;
@@ -7331,13 +7448,13 @@ void ObjectMgr::DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_
     cell_guids.corpses.erase(player_guid);
 }
 
-void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
+void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, std::string table, bool starter, bool go)
 {
     map.clear();                                            // need for reload case
 
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.PQuery("SELECT id,quest FROM %s",table);
+    QueryResult result = WorldDatabase.PQuery("SELECT id, quest, pool_entry FROM %s qr LEFT JOIN pool_quest pq ON qr.quest = pq.entry", table.c_str());
 
     if (!result)
     {
@@ -7346,38 +7463,45 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
         bar.step();
 
         sLog.outString();
-        sLog.outErrorDb(">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table,table);
+        sLog.outErrorDb(">> Loaded 0 quest relations from %s, table is empty.", table.c_str());
         return;
     }
 
     barGoLink bar(result->GetRowCount());
 
+    PooledQuestRelation* poolRelationMap = go ? &sPoolMgr.mQuestGORelation : &sPoolMgr.mQuestCreatureRelation;
+    if (starter)
+        poolRelationMap->clear();
+
     do
     {
-        Field *fields = result->Fetch();
         bar.step();
 
-        uint32 id    = fields[0].GetUInt32();
-        uint32 quest = fields[1].GetUInt32();
+        uint32 id     = result->Fetch()[0].GetUInt32();
+        uint32 quest  = result->Fetch()[1].GetUInt32();
+        uint32 poolId = result->Fetch()[2].GetUInt32();
 
         if (mQuestTemplates.find(quest) == mQuestTemplates.end())
         {
-            sLog.outErrorDb("Table `%s: Quest %u listed for entry %u does not exist.",table,quest,id);
+            sLog.outErrorDb("Table `%s: Quest %u listed for entry %u does not exist.", table.c_str(), quest, id);
             continue;
         }
 
-        map.insert(QuestRelations::value_type(id,quest));
+        if (!poolId || !starter)
+            map.insert(QuestRelations::value_type(id, quest));
+        else if (starter)
+            poolRelationMap->insert(PooledQuestRelation::value_type(quest, id));
 
         ++count;
     } while (result->NextRow());
 
     sLog.outString();
-    sLog.outString(">> Loaded %u quest relations from %s", count,table);
+    sLog.outString(">> Loaded %u quest relations from %s", count, table.c_str());
 }
 
 void ObjectMgr::LoadGameobjectQuestRelations()
 {
-    LoadQuestRelationsHelper(mGOQuestRelations,"gameobject_questrelation");
+    LoadQuestRelationsHelper(mGOQuestRelations, "gameobject_questrelation", true, true);
 
     for (QuestRelations::iterator itr = mGOQuestRelations.begin(); itr != mGOQuestRelations.end(); ++itr)
     {
@@ -7391,7 +7515,7 @@ void ObjectMgr::LoadGameobjectQuestRelations()
 
 void ObjectMgr::LoadGameobjectInvolvedRelations()
 {
-    LoadQuestRelationsHelper(mGOQuestInvolvedRelations,"gameobject_involvedrelation");
+    LoadQuestRelationsHelper(mGOQuestInvolvedRelations, "gameobject_involvedrelation", false, true);
 
     for (QuestRelations::iterator itr = mGOQuestInvolvedRelations.begin(); itr != mGOQuestInvolvedRelations.end(); ++itr)
     {
@@ -7405,7 +7529,7 @@ void ObjectMgr::LoadGameobjectInvolvedRelations()
 
 void ObjectMgr::LoadCreatureQuestRelations()
 {
-    LoadQuestRelationsHelper(mCreatureQuestRelations,"creature_questrelation");
+    LoadQuestRelationsHelper(mCreatureQuestRelations, "creature_questrelation", true, false);
 
     for (QuestRelations::iterator itr = mCreatureQuestRelations.begin(); itr != mCreatureQuestRelations.end(); ++itr)
     {
@@ -7419,7 +7543,7 @@ void ObjectMgr::LoadCreatureQuestRelations()
 
 void ObjectMgr::LoadCreatureInvolvedRelations()
 {
-    LoadQuestRelationsHelper(mCreatureQuestInvolvedRelations,"creature_involvedrelation");
+    LoadQuestRelationsHelper(mCreatureQuestInvolvedRelations, "creature_involvedrelation", false, false);
 
     for (QuestRelations::iterator itr = mCreatureQuestInvolvedRelations.begin(); itr != mCreatureQuestInvolvedRelations.end(); ++itr)
     {
