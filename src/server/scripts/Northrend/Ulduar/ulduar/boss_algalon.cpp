@@ -47,7 +47,7 @@ enum Creatures
 #define NORDRASSIL_X               1614.288574
 #define NORDRASSIL_Y               -320.713287
 #define NORDRASSIL_Z               417.321167
-#define NORDRASSIL_X               1614.276245
+/*#define NORDRASSIL_X               1614.276245
 #define NORDRASSIL_Y               -287.016632
 #define NORDRASSIL_Z               417.321106
 #define NORDRASSIL_X               1650.428467
@@ -55,7 +55,7 @@ enum Creatures
 #define NORDRASSIL_Z               417.321167
 #define NORDRASSIL_X               1649.501831
 #define NORDRASSIL_Y               -324.609222
-#define NORDRASSIL_Z               417.322174
+#define NORDRASSIL_Z               417.322174*/
 
 enum Texts
 {

@@ -32,9 +32,9 @@ struct Locations {
 
 static Locations BossMoveLoc[]=
 {
-    {951.233337, 1034.698608, 359.967377, 1.119904}, // Verdisa
-	{943.559143, 1045.573730, 359.967377, 0.365921}, // Belgar
-    {944.670776, 1058.858032, 359.967377, 5.639870}  // Eternos
+    {951.233337f, 1034.698608f, 359.967377f, 1.119904f}, // Verdisa
+	{943.559143f, 1045.573730f, 359.967377f, 0.365921f}, // Belgar
+    {944.670776f, 1058.858032f, 359.967377f, 5.639870f}  // Eternos
 };
 
 class instance_oculus : public InstanceMapScript
@@ -173,7 +173,7 @@ public:
 					    Creature* pBera =  instance->GetCreature(uiBera);
 					    if (pBera)
                         {
-                            pBera->SummonGameObject(instance->IsHeroic()? GO_CACHE_OF_ERAGOS_H : GO_CACHE_OF_ERAGOS,1017.197632,1051.705078,605.625916,0.054135,0, 0, 0, 0,90000000);
+                            pBera->SummonGameObject(instance->IsHeroic()? GO_CACHE_OF_ERAGOS_H : GO_CACHE_OF_ERAGOS,1017.197632f,1051.705078f,605.625916f,0.054135f,0, 0, 0, 0,90000000);
                         }
 				    }
                     break;
