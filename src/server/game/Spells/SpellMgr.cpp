@@ -3931,6 +3931,10 @@ void SpellMgr::LoadSpellCustomAttr()
             //spellInfo->EffectRadiusIndex[0] = 82; // 300 yard
             //count++;
             //break;
+        case 61990:
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            count++;
+            break;
         case 25771: // Forbearance - wrong mechanic immunity in DBC since 3.0.x
             spellInfo->EffectMiscValue[0] = MECHANIC_IMMUNE_SHIELD;
             count++;
