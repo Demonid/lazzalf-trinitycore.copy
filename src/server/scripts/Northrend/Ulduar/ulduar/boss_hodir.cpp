@@ -583,7 +583,7 @@ class mob_hodir_priest : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FLAG_STUNNED))
+            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                 return;
                 
             if (HealthBelowPct(35))
