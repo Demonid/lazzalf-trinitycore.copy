@@ -181,7 +181,7 @@ class npc_flash_freeze_pre : public CreatureScript
         {
             if (targetGUID)
                 if (Creature *ptarget = Creature::GetCreature((*me), targetGUID))
-                    ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+                    ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED | UNIT_STAT_ROOT);
         }
         
         void Reset()
@@ -237,7 +237,8 @@ class boss_hodir : public CreatureScript
                         CAST_AI(npc_flash_freeze_pre::npc_flash_freeze_preAI,pIceBlock->AI())->SetTargetGuid(pHelper->GetGUID());
                         pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
                         pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-                        pHelper->AddThreat(me, 5000000.0f);
+                        pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_STAT_ROOT);                        
+                        //pHelper->AddThreat(me, 5000000.0f);
                     }
             }
         }
