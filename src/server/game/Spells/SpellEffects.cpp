@@ -3049,6 +3049,9 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (!summon || !summon->isTotem())
                         return;
 
+                    if (!m_caster->IsWithinLOSInMap(summon) || summon->GetMap()->GetHeight(summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ()))
+                        summon->Relocate(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 1.0f);
+
                     if (damage)                                            // if not spell info, DB values used
                     {
                         summon->SetMaxHealth(damage);
