@@ -83,7 +83,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         QueryResult result;
         GuildHouseMap::iterator itr = GH_map.find(guild_id);
         
-        result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map` FROM `guildhouses` WHERE `id` = %u", newid);
+        result = WorldDatabase.PQuery("SELECT `x`, `y`, `z`, `map`, `minguildsize`, `price` FROM `guildhouses` WHERE `id` = %u", newid);
         if (!result)
             return false; // Id doesn't valid
 
@@ -96,6 +96,8 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
         float y = fields[1].GetFloat();
         float z = fields[2].GetFloat();
         uint32 map = fields[3].GetUInt32();
+        uint32 minguildsize = fields[4].GetUInt32();
+        uint32 price = fields[5].GetUInt32();
 
         uint32 add = 1;
 
@@ -110,7 +112,7 @@ bool GuildHouseObject::ChangeGuildHouse(uint32 guild_id, uint32 newid)
             CharacterDatabase.PQuery("INSERT INTO `gh_guildadd` (`guildId`,`GuildHouse_Add`) VALUES ( %u , 1 )", guild_id);
         }
 
-        GuildHouse NewGH(guild_id, id, x, y, z, map, add);
+        GuildHouse NewGH(guild_id, id, x, y, z, map, minguildsize, price, add);
         GH_map[guild_id] = NewGH;
 
         result = WorldDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = %u WHERE `id` = %u", guild_id, newid);
@@ -263,7 +265,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
 void GuildHouseObject::LoadGuildHouse()
 {
     GH_map.clear();
-    QueryResult result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map` FROM guildhouses ORDER BY guildId ASC");
+    QueryResult result = WorldDatabase.Query("SELECT `id`,`guildId`,`x`,`y`,`z`,`map`,`minguildsize`,`price` FROM guildhouses ORDER BY guildId ASC");
 
     if (!result)
     {
@@ -289,6 +291,8 @@ void GuildHouseObject::LoadGuildHouse()
         float y   = fields[3].GetFloat();
         float z   = fields[4].GetFloat();
         uint32 map = fields[5].GetUInt32();
+        uint32 min_member = fields[6].GetUInt32();
+        uint32 cost = fields[7].GetUInt32();
         uint32 add = 1;
 
         if(guildID)
@@ -303,7 +307,7 @@ void GuildHouseObject::LoadGuildHouse()
                 add = fields2[0].GetUInt32();
             }
 
-            GuildHouse NewGH(guildID, id, x, y, z, map, add);
+            GuildHouse NewGH(guildID, id, x, y, z, map, min_member, cost, add);
             GH_map[guildID] = NewGH;
 
             RemoveGuildHouseAdd(id);
@@ -402,9 +406,11 @@ GuildHouse::GuildHouse(uint32 guild_id, uint32 guild_add)
     m_Z = 0;
     m_orient = 0;
     m_map = 0;
+    min_member = 0;
+    price = 0;
 }
 
-GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float z, uint32 map, uint32 add)
+GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float z, uint32 map, uint32 member, uint32 cost, uint32 add)
 {
     GuildId = newGuildId;
     Id = newId;
@@ -412,6 +418,8 @@ GuildHouse::GuildHouse(uint32 newGuildId, uint32 newId, float x, float y, float 
     m_Y = y;  
     m_Z = z;
     m_map = map;
+    min_member = member;
+    price = cost;
     m_orient = 0;
     GuildHouse_Add = add;
 }
@@ -427,4 +435,18 @@ void LoadGuildHouseSystem()
 {
     GHobj.LoadGuildHouseAdd();
     GHobj.LoadGuildHouse();
+}
+
+void GuildHouseObject::ControlGuildHouse()
+{
+    for (GuildHouseMap::iterator itr = GH_map.begin(); itr != GH_map.end(); itr++)
+    {
+        if (Guild* guild = sObjectMgr.GetGuildById((*itr).first))
+            if (guild->GetMemberSize() < (*itr).second.min_member)
+                if (Player* pPlayer = sObjectMgr.GetPlayer(guild->GetLeader()))
+                {
+                    pPlayer->ModifyMoney((*itr).second.price * 75000);
+                    GHobj.ChangeGuildHouse((*itr).first, 0);
+                }           
+    }
 }

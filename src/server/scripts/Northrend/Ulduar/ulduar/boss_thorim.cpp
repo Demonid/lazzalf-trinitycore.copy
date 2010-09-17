@@ -975,7 +975,7 @@ class npc_sif : public CreatureScript
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
 
-            if (FrostTimer <= uiDiff)
+            if (FrostTimer <= int32(uiDiff))
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                     DoCast(pTarget, SPELL_FROSTBOLT);

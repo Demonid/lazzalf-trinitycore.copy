@@ -447,11 +447,11 @@ class npc_guild_master : public CreatureScript
 
             GHobj.ChangeGuildHouse(player->GetGuildId(),0);
 
-            player->ModifyMoney(price*5000);
+            player->ModifyMoney(price*7500);
 
             //display message e.g. "here your money etc."
             char msg[200];
-            sprintf(msg, MSG_SOLD, price / 2);
+            sprintf(msg, MSG_SOLD, price * 3 / 4);
             _creature->MonsterWhisper(msg, player->GetGUID());
         }
     };
