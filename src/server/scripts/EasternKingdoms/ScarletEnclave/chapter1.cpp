@@ -769,6 +769,7 @@ public:
                         //      stand next to Gothik and be commanded into the pit
                         //      and dig into the ground.
                         CAST_CRE(who)->ForcedDespawn();
+                        CAST_PLR(owner)->CompleteQuest(12698); //tempfix for complete the quest
 
                         if (CAST_PLR(owner)->GetQuestStatus(12698) == QUEST_STATUS_COMPLETE)
                             owner->RemoveAllMinionsByEntry(GHOULS);
