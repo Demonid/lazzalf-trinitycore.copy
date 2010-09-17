@@ -3045,12 +3045,12 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     break;
                 case SUMMON_TYPE_TOTEM:
                 {
+                    if (sWorld.getBoolConfig(CONFIG_DETECT_POS_COLLISION))
+                        m_caster->GetFirstCollisionPosition(pos, m_caster->GetDistance(pos), m_caster->GetAngle(pos.GetPositionX(),pos.GetPositionY()));
+
                     summon = m_caster->GetMap()->SummonCreature(entry, pos, properties, duration, m_originalCaster);
                     if (!summon || !summon->isTotem())
                         return;
-
-                    if (!m_caster->IsWithinLOSInMap(summon) || summon->GetMap()->GetHeight(summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ()))
-                        summon->Relocate(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 1.0f);
 
                     if (damage)                                            // if not spell info, DB values used
                     {
