@@ -54,6 +54,8 @@ EndScriptData */
 #define SPELL_LIGHTNING_TENDRILS_SELF_VISUAL  61883
 #define SPELL_STORMSHIELD                     64187
 
+#define SPELL_IRON_BOOT_FLASK 58501
+
 enum eEnums
 {
     EVENT_ENRAGE,
@@ -261,6 +263,25 @@ class boss_steelbreaker : public CreatureScript
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_STEELBREAKER);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+
+                Map* pMap = me->GetMap()
+                if (pMap && pMap->IsDungeon())
+                {
+                    AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
+                    if (AchievOnYourSide)
+                    {
+	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        {
+		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                                itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
+                                !itr->getSource()->isGameMaster())
+		                    {
+                                    itr->getSource()->CompletedAchievement(AchievOnYourSide);
+		                    }
+                        }
+                    }
+                }
             }
             else me->SetLootRecipient(0);
                 
@@ -408,6 +429,25 @@ class boss_runemaster_molgeim : public CreatureScript
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_MOLGEIM);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+
+                Map* pMap = me->GetMap()
+                if (pMap && pMap->IsDungeon())
+                {
+                    AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
+                    if (AchievOnYourSide)
+                    {
+	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        {
+		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                                itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
+                                !itr->getSource()->isGameMaster())
+		                    {
+                                    itr->getSource()->CompletedAchievement(AchievOnYourSide);
+		                    }
+                        }
+                    }
+                }
             }
             else me->SetLootRecipient(0);
                 
@@ -584,6 +624,25 @@ class boss_stormcaller_brundir : public CreatureScript
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_BRUNDIR);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+
+                Map* pMap = me->GetMap()
+                if (pMap && pMap->IsDungeon())
+                {
+                    AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
+                    if (AchievOnYourSide)
+                    {
+	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        {
+		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                                itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
+                                !itr->getSource()->isGameMaster())
+		                    {
+                                    itr->getSource()->CompletedAchievement(AchievOnYourSide);
+		                    }
+                        }
+                    }
+                }
             }
             else me->SetLootRecipient(0);
                 
