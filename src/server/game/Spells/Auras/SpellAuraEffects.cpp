@@ -2048,8 +2048,11 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
             case 62038: // Biting Cold
                 if (target->GetTypeId() == TYPEID_PLAYER)
                 {
+                    // Toasty Fire
+                    if (target->GetAura(62039) &&  target->GetAura(62821))
+                        target->RemoveAurasDueToSpell(62039);
                     // DoT stacks when the target remains stationary for 4 seconds
-                    if (GetAmount() >= 4 || !target->GetAura(62039))
+                    else if (GetAmount() >= 4 || !target->GetAura(62039))
                         target->AddAura(62039, target);
                     else if (target->GetAura(62039)->GetStackAmount() > 1 && target->isMoving())
                         target->RemoveAuraFromStack(62039);
