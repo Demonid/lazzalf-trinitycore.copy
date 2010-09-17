@@ -7174,7 +7174,7 @@ void ObjectMgr::LoadQuestPOI()
 
     uint32 count = 0;
 
-    // 0 1 2 3
+    //                                               0        1   2         3      4               5        6     7
     QueryResult result = WorldDatabase.Query("SELECT questId, id, objIndex, mapid, WorldMapAreaId, FloorId, unk3, unk4 FROM quest_poi order by questId");
 
     if (!result)
@@ -7186,6 +7186,34 @@ void ObjectMgr::LoadQuestPOI()
         sLog.outString();
         sLog.outErrorDb(">> Loaded 0 quest POI definitions. DB table `quest_poi` is empty.");
         return;
+    }
+
+    std::vector<std::vector<std::vector<QuestPOIPoint> > > POIs;
+
+    //                                                0        1   2  3
+    QueryResult points = WorldDatabase.PQuery("SELECT questId, id, x, y FROM quest_poi_points ORDER BY questId DESC, idx");
+    if (points)
+    {
+        // The first result should have the highest questId
+        Field *fields = points->Fetch();
+        uint32 questId = fields[0].GetUInt32();
+        POIs.resize(questId + 1);
+
+        do
+        {
+            Field *fields = points->Fetch();
+
+            uint32 questId            = fields[0].GetUInt32();
+            uint32 id                 = fields[1].GetUInt32();
+            int32  x                  = fields[2].GetInt32();
+            int32  y                  = fields[3].GetInt32();
+
+            if(POIs[questId].size() <= id + 1)
+                POIs[questId].resize(id + 10);
+
+            QuestPOIPoint point(x, y);
+            POIs[questId][id].push_back(point);
+        } while (points->NextRow());
     }
 
     barGoLink bar(result->GetRowCount());
@@ -7205,20 +7233,7 @@ void ObjectMgr::LoadQuestPOI()
         uint32 unk4               = fields[7].GetUInt32();
 
         QuestPOI POI(id, objIndex, mapId, WorldMapAreaId, FloorId, unk3, unk4);
-
-        QueryResult points = WorldDatabase.PQuery("SELECT x, y FROM quest_poi_points WHERE questId='%u' AND id='%i' ORDER BY idx", questId, id);
-
-        if (points)
-        {
-            do
-            {
-                Field *pointFields = points->Fetch();
-                int32 x = pointFields[0].GetInt32();
-                int32 y = pointFields[1].GetInt32();
-                QuestPOIPoint point(x, y);
-                POI.points.push_back(point);
-            } while (points->NextRow());
-        }
+        POI.points = POIs[questId][id];
 
         mQuestPOIMap[questId].push_back(POI);
 
@@ -7741,31 +7756,25 @@ PetNameInvalidReason ObjectMgr::CheckPetName(const std::string& name)
     return PET_NAME_SUCCESS;
 }
 
-int ObjectMgr::GetIndexForLocale(LocaleConstant loc)
+LocaleConstant ObjectMgr::GetIndexForLocale(LocaleConstant loc)
 {
-    if (loc == LOCALE_enUS)
-        return -1;
-
     for (size_t i=0; i < m_LocalForIndex.size(); ++i)
         if (m_LocalForIndex[i] == loc)
-            return i;
+            return loc;
 
-    return -1;
+    return DEFAULT_LOCALE;
 }
 
 LocaleConstant ObjectMgr::GetLocaleForIndex(int i)
 {
     if (i < 0 || i >= int(m_LocalForIndex.size()))
-        return LOCALE_enUS;
+        return DEFAULT_LOCALE;
 
     return m_LocalForIndex[i];
 }
 
 int ObjectMgr::GetOrNewIndexForLocale(LocaleConstant loc)
 {
-    if (loc == LOCALE_enUS)
-        return -1;
-
     for (size_t i = 0; i < m_LocalForIndex.size(); ++i)
         if (m_LocalForIndex[i] == loc)
             return i;
@@ -7916,8 +7925,7 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
         data.Content.resize(1);
         ++count;
 
-        data.Default = fields[1].GetCppString();
-        for (uint8 i = 1; i < MAX_LOCALE; ++i)
+        for (uint8 i = 0; i < MAX_LOCALE; ++i)
         {
             std::string str = fields[i + 1].GetCppString();
             AddLocaleString(str, LocaleConstant(i), data.Content);
@@ -7933,13 +7941,14 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
     return true;
 }
 
-const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
+const char *ObjectMgr::GetTrinityString(int32 entry, LocaleConstant locale_idx) const
 {
     if (TrinityStringLocale const *msl = GetTrinityStringLocale(entry))
     {
-        std::string s = msl->Default;
-        GetLocaleString(msl->Content, locale_idx, s);
-        return s.c_str();
+        if (msl->Content.size() > size_t(locale_idx) && !msl->Content[locale_idx].empty())
+            return msl->Content[locale_idx].c_str();
+
+        return msl->Content[DEFAULT_LOCALE].c_str();
     }
 
     if (entry > 0)
