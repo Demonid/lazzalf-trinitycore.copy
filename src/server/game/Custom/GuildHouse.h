@@ -52,13 +52,15 @@ class GuildHouse
 {
     public: 
         GuildHouse(uint32 guild_id = 0, uint32 guild_add = 0);
-        GuildHouse(uint32 guildID, uint32 id, float x, float y, float z, uint32 map, uint32 add);
+        GuildHouse(uint32 guildID, uint32 id, float x, float y, float z, uint32 map, uint32 member, uint32 cost, uint32 add);
         
         uint32        GuildId;      
         uint32        Id;    
         uint32        GuildHouse_Add;
         float         m_X, m_Y, m_Z, m_orient;
-        uint32        m_map; 
+        uint32        m_map;
+        uint32        min_member;
+        uint32        price;
 
         void AddGuildHouse_Add(uint32 NewAdd);
 };
@@ -103,7 +105,8 @@ class GuildHouseObject
     bool RemoveGuildHouseAdd(uint32 id);
     bool AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild);
     void UpdateGuardMap(uint64 guid, uint32 guild);
-    uint32 GetGuildByGuardID(uint64 guid);
+    uint32 GetGuildByGuardID(uint64 guid);    
+    void ControlGuildHouse();
 };
 
 void LoadGuildHouseSystem();

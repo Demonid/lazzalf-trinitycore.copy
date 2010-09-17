@@ -72,7 +72,7 @@
 #include "ScriptMgr.h"
 #include "WeatherMgr.h"
 #include "Custom/sc_npc_teleport.h"
-#include "Custom/GuildHouse.h"
+#include "GuildHouse.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -129,6 +129,7 @@ World::World()
     m_MaxPlayerCount = 0;
     m_NextDailyQuestReset = 0;
     m_NextWeeklyQuestReset = 0;
+    m_guildhousetimer = 60000;
     m_scheduledScripts = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
@@ -2023,6 +2024,13 @@ void World::Update(uint32 diff)
 
     if (m_gameTime > m_NextRandomBGReset)
         ResetRandomBG();
+    
+    if (m_guildhousetimer <= m_updateTime)
+    {
+        GHobj.ControlGuildHouse();
+        m_guildhousetimer = 60000;
+    }
+    else m_guildhousetimer-=m_updateTime;
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())

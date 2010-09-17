@@ -202,7 +202,7 @@ class boss_algalon : public CreatureScript
 
             if ((me->GetHealth()*100 / me->GetMaxHealth()) < 2)
             {
-                me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667, -295.101166,417.321381,0,0,0,0,0,0);
+                me->SummonGameObject(GAMEOBJECT_GIVE_OF_THE_OBSERVER, 1634.258667f, -295.101166f, 417.321381f,0,0,0,0,0,0);
 
                 DoScriptText(SAY_DEATH_1, me);
                 DoScriptText(SAY_DEATH_2, me);
