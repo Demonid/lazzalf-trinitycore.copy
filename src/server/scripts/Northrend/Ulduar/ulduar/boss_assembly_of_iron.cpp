@@ -264,7 +264,7 @@ class boss_steelbreaker : public CreatureScript
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_STEELBREAKER);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
 
-                Map* pMap = me->GetMap()
+                Map* pMap = me->GetMap();
                 if (pMap && pMap->IsDungeon())
                 {
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
@@ -430,7 +430,7 @@ class boss_runemaster_molgeim : public CreatureScript
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_MOLGEIM);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
 
-                Map* pMap = me->GetMap()
+                Map* pMap = me->GetMap();
                 if (pMap && pMap->IsDungeon())
                 {
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
@@ -625,7 +625,7 @@ class boss_stormcaller_brundir : public CreatureScript
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_BRUNDIR);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
 
-                Map* pMap = me->GetMap()
+                Map* pMap = me->GetMap();
                 if (pMap && pMap->IsDungeon())
                 {
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
