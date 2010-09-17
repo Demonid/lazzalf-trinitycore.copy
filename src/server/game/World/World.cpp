@@ -2028,7 +2028,7 @@ void World::Update(uint32 diff)
     if (m_guildhousetimer <= m_updateTime)
     {
         GHobj.ControlGuildHouse();
-        m_guildhousetimer = 60000;
+        m_guildhousetimer = 300000;
     }
     else m_guildhousetimer-=m_updateTime;
 

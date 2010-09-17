@@ -441,12 +441,13 @@ void GuildHouseObject::ControlGuildHouse()
 {
     for (GuildHouseMap::iterator itr = GH_map.begin(); itr != GH_map.end(); itr++)
     {
-        if (Guild* guild = sObjectMgr.GetGuildById((*itr).first))
-            if (guild->GetMemberSize() < (*itr).second.min_member)
-                if (Player* pPlayer = sObjectMgr.GetPlayer(guild->GetLeader()))
-                {
-                    pPlayer->ModifyMoney((*itr).second.price * 75000);
-                    GHobj.ChangeGuildHouse((*itr).first, 0);
-                }           
+        if (Guild* pGuild = sObjectMgr.GetGuildById((*itr).first))
+            if (pGuild->GetMemberSize() < (*itr).second.min_member)
+            {                    
+                GHobj.ChangeGuildHouse((*itr).first, 0);
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                pGuild->SetBankMoney(pGuild->GetGuildBankMoney()+((*itr).second.price * 75000), trans);
+                CharacterDatabase.CommitTransaction(trans);
+            }           
     }
 }
