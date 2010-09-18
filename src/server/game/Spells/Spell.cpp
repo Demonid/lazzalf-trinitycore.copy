@@ -4886,11 +4886,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (Creature *targetCreature = target->ToCreature())
                         if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(m_caster->ToPlayer()))
                             return SPELL_FAILED_CANT_CAST_ON_TAPPED;
-                            
-                if (m_spellInfo->Mechanic == MECHANIC_BANISH)
-                    if (target->GetTypeId() == TYPEID_PLAYER &&
-                        (target->HasAura(642) || target->HasAura(45438)))
-                        return SPELL_FAILED_IMMUNE;
 
                 if (m_customAttr & SPELL_ATTR_CU_PICKPOCKET)
                 {
