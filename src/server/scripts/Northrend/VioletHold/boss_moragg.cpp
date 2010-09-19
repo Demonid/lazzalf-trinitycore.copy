@@ -22,7 +22,8 @@
 enum Spells
 {
     SPELL_CORROSIVE_SALIVA                     = 54527,
-    SPELL_OPTIC_LINK                           = 54396
+    SPELL_OPTIC_LINK                           = 54396,
+    SPELL_RAY_OF_PAIN                          = 59525
 };
 
 class boss_moragg : public CreatureScript
@@ -44,6 +45,7 @@ public:
 
         uint32 uiOpticLinkTimer;
         uint32 uiCorrosiveSalivaTimer;
+    uint32 uiRayOfPainTimer;
 
         InstanceScript* pInstance;
 
@@ -51,6 +53,7 @@ public:
         {
             uiOpticLinkTimer = 10000;
             uiCorrosiveSalivaTimer = 5000;
+        uiRayOfPainTimer = 8000; // Not Offy-Like
 
             if (pInstance)
             {
@@ -102,9 +105,30 @@ public:
 
             if (uiOpticLinkTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_OPTIC_LINK);
-                uiOpticLinkTimer = 15000;
+            // Hack per Optical Link (Hack from Loken script)
+            Map* pMap = me->GetMap();
+            if (pMap->IsDungeon())
+            {
+                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+
+                if (PlayerList.isEmpty())
+                    return;
+
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    if (i->getSource() && i->getSource()->isAlive() && i->getSource()->isTargetableForAttack())
+                    {
+                        int32 dmg;
+                        float m_fDist = me->GetExactDist(i->getSource()->GetPositionX(), i->getSource()->GetPositionY(), i->getSource()->GetPositionZ());
+
+                        dmg = 150; // need to correct damage
+                        if (m_fDist > 1.0f) // Further from 1 yard
+                            dmg *= m_fDist;
+                        
+                        Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                        me->CastCustomSpell(pTarget, SPELL_OPTIC_LINK, &dmg, 0, 0, false);
+                    }
+            }
+            uiOpticLinkTimer = 25000;
             } else uiOpticLinkTimer -= diff;
 
             if (uiCorrosiveSalivaTimer <= diff)
@@ -112,6 +136,12 @@ public:
                 DoCast(me->getVictim(), SPELL_CORROSIVE_SALIVA);
                 uiCorrosiveSalivaTimer = 10000;
             } else uiCorrosiveSalivaTimer -= diff;
+
+        if (uiRayOfPainTimer <= diff)
+        { 
+            DoCast(me->getVictim(), SPELL_RAY_OF_PAIN);
+            uiRayOfPainTimer = 12000;
+        } else uiRayOfPainTimer -= diff;
 
             DoMeleeAttackIfReady();
         }
