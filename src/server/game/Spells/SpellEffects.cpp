@@ -2197,9 +2197,6 @@ void Spell::EffectPowerBurn(SpellEffIndex effIndex)
 
     ExecuteLogEffectTakeTargetPower(effIndex, unitTarget, powerType, newDamage, dmgMultiplier);
     
-    // ManaBurn toglie Fear
-    unitTarget->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
-
     m_damage += newDamage;
 }
 
