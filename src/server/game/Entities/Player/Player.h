@@ -789,7 +789,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS     = 26,
     PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 27,
     PLAYER_LOGIN_QUERY_LOADARENASTATS           = 28,
-    MAX_PLAYER_LOGIN_QUERY                      = 29
+    PLAYER_LOGIN_QUERY_LOADBANNED               = 29,
+    MAX_PLAYER_LOGIN_QUERY                      = 30
 };
 
 enum PlayerDelayedOperations
@@ -1321,6 +1322,7 @@ class Player : public Unit, public GridObject<Player>
         bool SatisfyQuestRace(Quest const* qInfo, bool msg);
         bool SatisfyQuestReputation(Quest const* qInfo, bool msg);
         bool SatisfyQuestStatus(Quest const* qInfo, bool msg);
+        bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
         bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
         bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
         bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
