@@ -411,8 +411,7 @@ class boss_hodir : public CreatureScript
                     else
                     {
                         if (GetClosestCreatureWithEntry(pTarget, NPC_ICICLE_TARGET, 5.0f))
-                            continue;
-                            
+                            continue;                            
                         else if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 105000))
                         { 
                            pIceBlock->CastSpell(pTarget, SPELL_BLOCK_OF_ICE, true);
