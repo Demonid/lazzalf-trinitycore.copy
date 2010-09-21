@@ -206,10 +206,10 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     recv_data.readPackGUID(guid);
 
     // movement anticheat code
-    /*const Unit *mover = _player->m_mover;
+    const Unit *mover = _player->m_mover;
     const Player *plMover = mover->GetTypeId() == TYPEID_PLAYER ? (Player*)mover : NULL;
     if (!plMover)
-        return;*/
+        return;
     // end movement anticheat
 
     MovementInfo movementInfo;                              // used only for proper packet read
@@ -226,7 +226,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     if (!curDest)
     {
         // movement anticheat code
-        /*GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetOrientation());
+        GetPlayer()->SetPosition(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetOrientation());
         GetPlayer()->m_movementInfo = movementInfo;
         GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
 
@@ -250,12 +250,12 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
             GetPlayer()->m_anti_LastServerTime = cServerTime;
         }
         else
-            GetPlayer()->m_anti_LastServerTime = cServerTime;*/
+            GetPlayer()->m_anti_LastServerTime = cServerTime;
         // end movement anticheat
         return;
 	}
     // movment anticheat
-    /*const uint32 curloc = 
+    const uint32 curloc = 
     sObjectMgr.GetNearestTaxiNode(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY(),movementInfo.pos.GetPositionZ(),GetPlayer()->GetMapId(),GetPlayer()->GetTeam(), curDest);
     // end movement anticheat
 
@@ -291,7 +291,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
         GetPlayer()->m_anti_LastServerTime = cServerTime;
     }
     else
-        GetPlayer()->m_anti_LastServerTime = cServerTime;*/
+        GetPlayer()->m_anti_LastServerTime = cServerTime;
         // end movement anticheat
 
     TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
@@ -314,7 +314,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     }
 
     // movement anticheat fix - disallow unmount from taxi
-    /*if (curloc != curDest)
+    if (curloc != curDest)
     {
          // current source node for next destination
         uint32 sourcenode = GetPlayer()->m_taxi.GetTaxiSource();
@@ -328,7 +328,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
         else
             GetPlayer()->m_taxi.ClearTaxiDestinations();    // clear problematic path and next
         return;
-    }*/
+    }
     // end movement anticheat
 
     uint32 destinationnode = GetPlayer()->m_taxi.NextTaxiDestination();
