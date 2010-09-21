@@ -294,7 +294,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
         GetPlayer()->m_anti_LastServerTime = cServerTime;
         // end movement anticheat
 
-    TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
+    //TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
  
     // far teleport case
     if (curDestNode && curDestNode->map_id != GetPlayer()->GetMapId())
