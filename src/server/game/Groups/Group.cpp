@@ -666,6 +666,7 @@ void Group::GroupLoot(Loot *loot, WorldObject* pLootedObject)
                 {
                     if (member->IsWithinDistInMap(pLootedObject,sWorld.getFloatConfig(CONFIG_GROUP_XP_DISTANCE),false))
                     {
+
                         r->totalPlayersRolling++;
 
                         if (member->GetPassOnGroupLoot())
@@ -675,9 +676,7 @@ void Group::GroupLoot(Loot *loot, WorldObject* pLootedObject)
                             // can't broadcast the pass now. need to wait until all rolling players are known.
                         }
                         else
-                        {
                             r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
-                        }
                     }
                 }
             }
@@ -724,7 +723,7 @@ void Group::GroupLoot(Loot *loot, WorldObject* pLootedObject)
                 delete r;
         }
         else
-            i->is_underthreshold=1;
+            i->is_underthreshold = true;
     }
 }
 
@@ -751,7 +750,8 @@ void Group::NeedBeforeGreed(Loot *loot, WorldObject* pLootedObject)
                 if (!playerToRoll || !playerToRoll->GetSession())
                     continue;
 
-                if (playerToRoll->CanUseItem(item) == EQUIP_ERR_OK && i->AllowedForPlayer(playerToRoll))
+                bool allowedForPlayer = i->AllowedForPlayer(playerToRoll);
+                if (playerToRoll->CanUseItem(item) == EQUIP_ERR_OK && allowedForPlayer)
                 {
                     if (playerToRoll->IsWithinDistInMap(pLootedObject,sWorld.getFloatConfig(CONFIG_GROUP_XP_DISTANCE),false))
                     {
@@ -809,7 +809,7 @@ void Group::NeedBeforeGreed(Loot *loot, WorldObject* pLootedObject)
                 delete r;
         }
         else
-            i->is_underthreshold=1;
+            i->is_underthreshold = true;
     }
 }
 
@@ -950,7 +950,8 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                     item->is_looted = true;
                     roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
                     roll->getLoot()->unlootedCount--;
-                    player->StoreNewItem(dest, roll->itemid, true, item->randomPropertyId);
+                    AllowedLooterSet* looters = item->GetAllowedLooters();
+                    player->StoreNewItem(dest, roll->itemid, true, item->randomPropertyId, (looters->size() > 1) ? looters : NULL);
                 }
                 else
                 {
@@ -1002,7 +1003,8 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                         item->is_looted = true;
                         roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
                         roll->getLoot()->unlootedCount--;
-                        player->StoreNewItem(dest, roll->itemid, true, item->randomPropertyId);
+                        AllowedLooterSet* looters = item->GetAllowedLooters();
+                        player->StoreNewItem(dest, roll->itemid, true, item->randomPropertyId, (looters->size() > 1) ? looters : NULL);
                     }
                     else
                     {
