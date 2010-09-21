@@ -180,7 +180,7 @@ class npc_flash_freeze_pre : public CreatureScript
                         pHodir->AI()->DoZoneInCombat();
         }
 
-        void JustDied(Unit* /*pKiller*/)
+        /*void JustDied(Unit* pKiller)
         {
             if (targetGUID)
                 if (Creature *ptarget = Creature::GetCreature((*me), targetGUID))
@@ -189,7 +189,7 @@ class npc_flash_freeze_pre : public CreatureScript
                     if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
                     	ptarget->AddThreat(pHodir, 500000.0f);
 		        }
-        }
+        }*/
         
         void Reset()
         {
@@ -222,6 +222,8 @@ class boss_hodir : public CreatureScript
         }
         
         InstanceScript* pInstance;
+
+        uint64 pHelperGUID[RAID_COUNT];
         
         uint32 uiCheckIntenseColdTimer;
         bool bMoreThanTwoIntenseCold;
@@ -238,16 +240,20 @@ class boss_hodir : public CreatureScript
             // Spawn NPC Helpers
             for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
             {
-                if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
+                if (Creature *pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     if (Creature *pIceBlock = pHelper->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     {
+                        pHelperGUID[i] = pHelper->GetGUID();
                         pIceBlock->AddThreat(pHelper, 500000.0f);
                         CAST_AI(npc_flash_freeze_pre::npc_flash_freeze_preAI,pIceBlock->AI())->SetTargetGuid(pHelper->GetGUID());
                         pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
                         //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                         //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_STAT_ROOT);            
                         pHelper->AddThreat(me, 500000.0f);
+                        continue;
                     }
+
+                pHelperGUID[i] = 0;
             }
         }
 
@@ -402,7 +408,7 @@ class boss_hodir : public CreatureScript
             {
                 if (Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
                 {
-                    if (pTarget->HasAura(SPELL_BLOCK_OF_ICE) || pTarget->HasAura(SPELL_BLOCK_OF_ICE_NPC))
+                    if (pTarget->HasAura(SPELL_BLOCK_OF_ICE))
                     {
                         DoCast(pTarget, SPELL_FROZEN_KILL);
                         continue;
@@ -419,6 +425,19 @@ class boss_hodir : public CreatureScript
                         }
                     }
                 }
+            }
+            for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
+            {
+                if (pHelperGUID[i])
+                    if (Unit *pTarget = Unit::GetUnit(*me, pHelperGUID[i]))
+                    {
+                        if (pTarget->HasAura(SPELL_BLOCK_OF_ICE_NPC))
+                        {
+                            DoCast(pTarget, SPELL_FROZEN_KILL);
+                            pHelperGUID[i] = 0;
+                            continue;
+                        }
+                    }
             }
         }
 
