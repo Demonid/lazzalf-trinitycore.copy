@@ -43,7 +43,7 @@ Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
             m_flags |= CHANNEL_FLAG_CITY;
 
         if (ch->flags & CHANNEL_DBC_FLAG_LFG)                // for LFG channel
-            m_flags |= CHANNEL_FLAG_LFG;
+            m_flags |= CHANNEL_FLAG_NOT_LFG; // dovrebbe essere CHANNEL_FLAG_LFG, disattivata perchè causa errore 132
         else                                                // for all other channels
             m_flags |= CHANNEL_FLAG_NOT_LFG;
         m_IsSaved = false;
