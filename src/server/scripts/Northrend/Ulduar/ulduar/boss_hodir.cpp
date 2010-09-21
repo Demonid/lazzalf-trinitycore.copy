@@ -39,7 +39,7 @@ enum Spells
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
     SPELL_BLOCK_OF_ICE                        = 61969,
-    SPELL_BLOCK_OF_ICE_PRE                    = 61990,
+    SPELL_BLOCK_OF_ICE_NPC                    = 61990,
     SPELL_FROZEN_KILL                         = 62226,
     SPELL_ICICLE_FALL                         = 69428,
     SPELL_FALL_DAMAGE                         = 62236,
