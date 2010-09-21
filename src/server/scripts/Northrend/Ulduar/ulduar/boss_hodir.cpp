@@ -38,8 +38,8 @@ enum Spells
     SPELL_FREEZE                              = 62469,
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
-    //SPELL_BLOCK_OF_ICE_PRE                    = 61969,
-    SPELL_BLOCK_OF_ICE                        = 61990,
+    SPELL_BLOCK_OF_ICE                        = 61969,
+    SPELL_BLOCK_OF_ICE_PRE                    = 61990,
     SPELL_FROZEN_KILL                         = 62226,
     SPELL_ICICLE_FALL                         = 69428,
     SPELL_FALL_DAMAGE                         = 62236,
@@ -149,22 +149,22 @@ class npc_flash_freeze_pre : public CreatureScript
         }
         
         uint64 targetGUID;
-        //int32 IceBlockTimer;
+        int32 IceBlockTimer;
         
         void UpdateAI(const uint32 diff)
         {
-            /*if (!UpdateVictim() || me->getVictim()->GetTypeId() == TYPEID_PLAYER || me->getVictim()->HasAura(SPELL_BLOCK_OF_ICE_NPC))
+            if (!UpdateVictim() || me->getVictim()->GetTypeId() == TYPEID_PLAYER || me->getVictim()->HasAura(SPELL_BLOCK_OF_ICE_NPC))
                 return;
 
             if (IceBlockTimer <= int32(diff))
             {
-		if (targetGUID)
+		        if (targetGUID)
                     if (Creature *ptarget = Creature::GetCreature((*me), targetGUID))
                         if (ptarget->isAlive())
 				DoCast(ptarget, SPELL_BLOCK_OF_ICE_NPC, true);
                 IceBlockTimer = 30000;
             } 
-            else IceBlockTimer -= diff;*/
+            else IceBlockTimer -= diff;
         }
 
         void SetTargetGuid(uint64 target)
@@ -184,16 +184,16 @@ class npc_flash_freeze_pre : public CreatureScript
         {
             if (targetGUID)
                 if (Creature *ptarget = Creature::GetCreature((*me), targetGUID))
-		{
-                    ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
+		        {
+                    //ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                     if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
                     	ptarget->AddThreat(pHodir, 500000.0f);
-		}
+		        }
         }
         
         void Reset()
         {
-            //IceBlockTimer = 30000;
+            IceBlockTimer = 30000;
             targetGUID = 0;
         }
     };
@@ -214,9 +214,9 @@ class boss_hodir : public CreatureScript
         boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
         {
             pInstance = pCreature->GetInstanceScript();
-            //me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            //me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
-            //me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
             //me->ApplySpellImmune(0, IMMUNITY_ID, 61990, true);  // Flash Freeze  
             //me->ApplySpellImmune(0, IMMUNITY_ID, 61968, true);  // Flash Freeze
         }
@@ -239,14 +239,14 @@ class boss_hodir : public CreatureScript
             for (int32 i = 0; i < RAID_MODE(NORMAL_COUNT, RAID_COUNT); i++)
             {
                 if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
-                    if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
+                    if (Creature *pIceBlock = pHelper->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     {
-                        //pIceBlock->AddThreat(pHelper, 500000.0f);
+                        pIceBlock->AddThreat(pHelper, 500000.0f);
                         CAST_AI(npc_flash_freeze_pre::npc_flash_freeze_preAI,pIceBlock->AI())->SetTargetGuid(pHelper->GetGUID());
-                        //pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
-                        pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
+                        pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
+                        //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                         //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_STAT_ROOT);            
-                        pHelper->AddThreat(me, 100);
+                        pHelper->AddThreat(me, 500000.0f);
                     }
             }
         }
@@ -562,6 +562,7 @@ class mob_hodir_priest : public CreatureScript
         {
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         InstanceScript* pInstance;
@@ -645,6 +646,7 @@ class mob_hodir_shaman : public CreatureScript
         {
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         InstanceScript* pInstance;
@@ -709,6 +711,7 @@ class mob_hodir_druid : public CreatureScript
         {
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         InstanceScript* pInstance;
@@ -765,6 +768,7 @@ class mob_hodir_mage : public CreatureScript
         {
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, RAID_MODE(64392, 64679), true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
         }
 
         InstanceScript* pInstance;
