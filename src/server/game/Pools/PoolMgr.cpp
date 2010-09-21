@@ -818,8 +818,7 @@ void PoolMgr::LoadFromDB()
 
 void PoolMgr::LoadQuestPools()
 {
-    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_LOAD_QUEST_POOLS);
-    PreparedQueryResult result = WorldDatabase.Query(stmt);
+    QueryResult result = WorldDatabase.Query("SELECT entry, pool_entry FROM pool_quest");
 
     mQuestSearchMap.clear();
     mPoolQuestGroups.resize(max_pool_id + 1);
@@ -850,10 +849,11 @@ void PoolMgr::LoadQuestPools()
 
     do
     {
+        Field* fields = result->Fetch();
         bar.step();
 
-        uint32 entry   = result->GetUInt32(0);
-        uint32 pool_id = result->GetUInt32(1);
+        uint32 entry   = fields[0].GetUInt32();
+        uint32 pool_id = fields[1].GetUInt32();
 
         Quest const* pQuest = sObjectMgr.GetQuestTemplate(entry);
         if (!pQuest)
@@ -914,7 +914,7 @@ void PoolMgr::LoadQuestPools()
 void PoolMgr::Initialize()
 {
     QueryResult result = WorldDatabase.Query("SELECT DISTINCT pool_template.entry, pool_pool.pool_id, pool_pool.mother_pool FROM pool_template LEFT JOIN game_event_pool ON pool_template.entry=game_event_pool.pool_entry LEFT JOIN pool_pool ON pool_template.entry=pool_pool.pool_id WHERE game_event_pool.pool_entry IS NULL");
-    uint32 count = 0;
+    uint32 count=0;
     if (result)
     {
         do
@@ -949,24 +949,38 @@ void PoolMgr::Initialize()
 void PoolMgr::SaveQuestsToDB()
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
+    std::ostringstream query;
+    query << "DELETE FROM pool_quest_save WHERE pool_id IN (";
+    bool first = true;
     for (PoolGroupQuestMap::iterator itr = mPoolQuestGroups.begin(); itr != mPoolQuestGroups.end(); ++itr)
     {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_POOL_SAVE);
-        stmt->setUInt32(0, itr->GetPoolId());
-        trans->Append(stmt);
+        if (!first)
+            query << ",";
+        first = false;
+        query << itr->GetPoolId();
+    }
+    if (!first)
+    {
+        query << ")";
+        trans->Append(query.str().c_str());
     }
 
+    first = true;
+    query.rdbuf()->str("");
+    query << "INSERT INTO pool_quest_save (pool_id, quest_id) VALUES ";
     for (SearchMap::iterator itr = mQuestSearchMap.begin(); itr != mQuestSearchMap.end(); ++itr)
     {
         if (IsSpawnedObject<Quest>(itr->first))
         {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_QUEST_POOL_SAVE);
-            stmt->setUInt32(0, itr->second);
-            stmt->setUInt32(1, itr->first);
-            trans->Append(stmt);
+            if (!first)
+                query << ",";
+            first = false;
+            query << "(" << itr->second << "," << itr->first << ")";
         }
     }
+
+    if (!first)
+        trans->Append(query.str().c_str());
 
     CharacterDatabase.CommitTransaction(trans);
 }
