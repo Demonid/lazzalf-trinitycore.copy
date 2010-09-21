@@ -25,7 +25,7 @@ enum Spells
     SPELL_SEARING_LIGHT_25                      = 65121,
 
     SPELL_GRAVITY_BOMB_10                       = 63024,
-    SPELL_GRAVITY_BOMB_25                       = 63234,
+    SPELL_GRAVITY_BOMB_25                       = 64234,
 
     SPELL_HEARTBREAK_10                         = 65737,
     SPELL_HEARTBREAK_25                         = 64193,
