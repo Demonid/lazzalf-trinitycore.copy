@@ -404,7 +404,7 @@ class boss_black_knight : public CreatureScript
                             pInstance->HandleGameObject(door->GetGUID(),true);
                         if(npc)
                             npc->RemoveFromWorld();       
-                        me->SummonCreature(35004, 742.835, 639.134, 411.571, 0, TEMPSUMMON_CORPSE_DESPAWN);
+                        me->SummonCreature(35004, 742.835f, 639.134f, 411.571f, 0, TEMPSUMMON_CORPSE_DESPAWN);
                         me->RemoveFromWorld();
                     }
                 }
@@ -566,7 +566,7 @@ class npc_black_knight_skeletal_gryphon : public CreatureScript
                                 break;
                 case 13:
                     me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
-                    me->SummonCreature(VEHICLE_GR,744.841,634.505,411.575, 2.79);                              
+                    me->SummonCreature(VEHICLE_GR,744.841f,634.505f,411.575f, 2.79f);                              
                     break;
             }
         }
