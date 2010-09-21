@@ -523,7 +523,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 const bool no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                     || plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
-                    || ( plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER ));
+                    || (plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER));
                 const bool no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0;
 
                 const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
@@ -773,7 +773,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                                 if( difftime_log > World::GetLogCheatDeltaTime() )
                                 {
                                     plMover->m_logcheat_time = cServerTime;
-                                    sLog.outCheat("AC2-%s Map %u, teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), plMover->m_anti_TeleToPlane_Count);
+                                    sLog.outCheat("AC2-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
+                                        plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->m_anti_TeleToPlane_Count);
                                 }
                                 /* Disabled, not passive at all, and apparently causing crashes:
                                 sWorld.SendWorldText(3, strcat("Kicking cheater: ", plMover->GetName()));
