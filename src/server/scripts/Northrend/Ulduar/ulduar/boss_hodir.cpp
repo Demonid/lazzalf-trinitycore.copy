@@ -38,8 +38,8 @@ enum Spells
     SPELL_FREEZE                              = 62469,
     SPELL_ICICLE                              = 62234,
     SPELL_ICICLE_SNOWDRIFT                    = 62462,
-    SPELL_BLOCK_OF_ICE                        = 61969,
-    SPELL_BLOCK_OF_ICE_NPC                    = 61990,
+    //SPELL_BLOCK_OF_ICE_PRE                    = 61969,
+    SPELL_BLOCK_OF_ICE                        = 61990,
     SPELL_FROZEN_KILL                         = 62226,
     SPELL_ICICLE_FALL                         = 69428,
     SPELL_FALL_DAMAGE                         = 62236,
@@ -214,11 +214,11 @@ class boss_hodir : public CreatureScript
         boss_hodir_AI(Creature *pCreature) : BossAI(pCreature, BOSS_HODIR)
         {
             pInstance = pCreature->GetInstanceScript();
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
-            me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
-            me->ApplySpellImmune(0, IMMUNITY_ID, 61990, true);  // Flash Freeze  
-            me->ApplySpellImmune(0, IMMUNITY_ID, 61968, true);  // Flash Freeze
+            //me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            //me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
+            //me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
+            //me->ApplySpellImmune(0, IMMUNITY_ID, 61990, true);  // Flash Freeze  
+            //me->ApplySpellImmune(0, IMMUNITY_ID, 61968, true);  // Flash Freeze
         }
         
         InstanceScript* pInstance;
@@ -233,7 +233,6 @@ class boss_hodir : public CreatureScript
         {
             _Reset();            
             
-            //me->RemoveAurasDueToSpell(SPELL_BITING_COLD);
             me->SetReactState(REACT_PASSIVE);
             
             // Spawn NPC Helpers
@@ -242,12 +241,12 @@ class boss_hodir : public CreatureScript
                 if (Creature* pHelper = me->SummonCreature(addLocations[i].entry,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     if (Creature *pIceBlock = me->SummonCreature(NPC_FLASH_FREEZE_PRE,addLocations[i].x,addLocations[i].y,addLocations[i].z,addLocations[i].o))
                     {
-                        pIceBlock->AddThreat(pHelper, 500000.0f);
+                        //pIceBlock->AddThreat(pHelper, 500000.0f);
                         CAST_AI(npc_flash_freeze_pre::npc_flash_freeze_preAI,pIceBlock->AI())->SetTargetGuid(pHelper->GetGUID());
                         //pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
                         pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                         //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_STAT_ROOT);            
-                        //pHelper->AddThreat(me, 500000.0f);
+                        pHelper->AddThreat(me, 100);
                     }
             }
         }
