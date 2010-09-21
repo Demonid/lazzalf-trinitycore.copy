@@ -1071,46 +1071,12 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
 {
     switch(GetAuraType())
     {
-        case SPELL_AURA_PERIODIC_DAMAGE:
-            switch (GetId())
-            {
-                case 41337: // Aura of Anger
-                    if (AuraEffect * aurEff = GetBase()->GetEffect(1))
-                        aurEff->ChangeAmount(aurEff->GetAmount()+5);
-                    SetAmount(100 * m_tickNumber);
-                    break;
-                case 46394: // Brutallus Burn
-                    if (m_tickNumber % 11 == 0)
-                        SetAmount(GetAmount() * 2);
-                    break;
-                default:
-                    break;
-            }
-            break;
         case SPELL_AURA_DUMMY:
             // Haunting Spirits
             if (GetId() == 7057)
             {
                 m_amplitude = irand (0 , 60) + 30;
                 m_amplitude *= IN_MILLISECONDS;
-            }
-            break;
-        case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-            switch (GetId())
-            {
-                // Sniper training
-                case 53302:
-                case 53303:
-                case 53304:
-                    Unit * target = GetBase()->GetUnitOwner();
-                    if (target->GetTypeId() != TYPEID_PLAYER)
-                        break;
-
-                    if (target->ToPlayer()->isMoving())
-                        m_amount = target->CalculateSpellDamage(target, m_spellProto,m_effIndex, &m_baseAmount);
-                    else
-                        --m_amount;
-                    break;
             }
             break;
         case SPELL_AURA_PERIODIC_DUMMY:
@@ -1949,17 +1915,6 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 // 7053 Forsaken Skill: Shadow
                 return;
             }
-            case 45472: // Parachute
-                if (target->GetTypeId() == TYPEID_PLAYER)
-                {
-                    Player *plr = (Player*)target;
-                    if (plr->IsFalling())
-                    {
-                        plr->RemoveAurasDueToSpell(45472);
-                        plr->CastSpell(plr, 44795, true);
-                    }
-                }
-                break;
             case 58730: // No Fly Zone - Wintergrasp
                 if (pvpWG && (pvpWG->isWarTime() == false))
                     break;
@@ -1978,22 +1933,6 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->RemoveAurasByType(SPELL_AURA_FLY);
                     target->CastSpell(target, 61286, true);
                 }
-                break;
-            case 51685: // Prey on the Weak
-            case 51686:
-            case 51687:
-            case 51688:
-            case 51689:
-                if (target->getVictim() && (target->GetHealthPct() > target->getVictim()->GetHealthPct())) 
-                {
-                    if (!target->HasAura(58670)) 
-                    {
-                        int32 basepoints = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), 0);
-                        target->CastCustomSpell(target, 58670, &basepoints, 0, 0, true);
-                    }
-                }
-                else
-                    target->RemoveAurasDueToSpell(58670);
                 break;
             case 62292: // Blaze (Pool of Tar)
                 // should we use custom damage?
@@ -2014,18 +1953,7 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     target->RemoveAura(64821);
                 }
                 break;
-            case 66118: // Leeching Swarm (Anub'arak)
-                if (caster) 
-                {
-                    int32 lifeLeeched = target->GetHealth() * GetAmount() / 100;
-                    if (lifeLeeched < 250) lifeLeeched = 250;
-                    // Damage
-                    caster->CastCustomSpell(target, 66240, &lifeLeeched, 0, 0, false);
-                    // Heal
-                    caster->CastCustomSpell(caster, 66125, &lifeLeeched, 0, 0, false);
-                }
-                break;
-            case 63276: // Mark of the Faceless
+ 	    case 63276: // Mark of the Faceless
                 if (caster) 
                 {
                     uint32 count = 0;
@@ -2070,7 +1998,6 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     if (target->GetMap())
                         caster->CastSpell(target, (target->GetMap()->IsHeroic() ? RAND(64531, 64532) : RAND(63387, 64019)), true);
                 }
-                break;
         }
         break;
         case SPELLFAMILY_MAGE:
@@ -2431,27 +2358,6 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                     // triggerSpellId not set and unknown effect triggered in this case, ignoring for while
                     case 768:
                         return;
-                }
-                break;
-            }
-            case SPELLFAMILY_HUNTER:
-            {
-                switch (auraId)
-                {
-                    // Sniper training
-                    case 53302:
-                    case 53303:
-                    case 53304:
-                        // We are standing at the moment
-                        if (GetAmount() > 0)
-                            return;
-
-                        triggerSpellId = 64418 + auraId - 53302;
-
-                        // If aura is active - no need to continue
-                        if (target->HasAura(triggerSpellId))
-                            return;
-                       break;
                 }
                 break;
             }
@@ -6306,26 +6212,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
             break;
         }
         case SPELLFAMILY_PALADIN:
-            if (!(mode & AURA_EFFECT_HANDLE_REAL))
-                break;
-            switch (GetSpellProto()->SpellIconID)
-            {
-                // Blessing of Sanctuary
-                // Greater Blessing of Sanctuary
-                case 19:
-                case 1804:
-                {
-                    if (!caster)
-                        break;
-
-                    if (apply)
-                        caster->CastSpell(target, 67480, true);
-                    else
-                        target->RemoveAura(67480, GetCasterGUID());
-
-                    break;
-                }
-            }
+            // if (!(mode & AURA_EFFECT_HANDLE_REAL))
+            //    break;
             break;
     }
 
