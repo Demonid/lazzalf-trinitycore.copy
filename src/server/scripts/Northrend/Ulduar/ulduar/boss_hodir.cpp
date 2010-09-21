@@ -402,7 +402,7 @@ class boss_hodir : public CreatureScript
             {
                 if (Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
                 {
-                    if (pTarget->HasAura(SPELL_BLOCK_OF_ICE))
+                    if (pTarget->HasAura(SPELL_BLOCK_OF_ICE) || pTarget->HasAura(SPELL_BLOCK_OF_ICE_NPC))
                     {
                         DoCast(pTarget, SPELL_FROZEN_KILL);
                         continue;
