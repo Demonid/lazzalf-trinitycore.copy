@@ -30,12 +30,68 @@ enum eRamSpells
     SPELL_RAM_FATIGUE         = 43052,
     SPELL_RAM_TROT            = 42992,
     SPELL_RAM_CANTER          = 42993,
-    SPELL_RAM_GALLOP          = 42994, 
+    SPELL_RAM_GALLOP          = 42994,
+    SPELL_RAM_NEUTRAL         = 43310,
 };
 
 enum eRamGobject
 {
     GO_FIENO         = 143052, // Da aggiustare
+};
+
+// 43310 Ram Neutral
+class spell_ram_neutral : public SpellScriptLoader
+{
+public:
+    spell_ram_neutral() : SpellScriptLoader("spell_ram_neutral") { }
+
+    class spell_ram_neutral_AuraScript : public AuraScript
+    {
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_NEUTRAL))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        {
+            if (Unit* pTarget = aurApp->GetTarget())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                {
+                    std::list<GameObject*> ChestList;
+                    pPlayerTarget->GetGameObjectListWithEntryInGrid(ChestList, GO_FIENO, 4.0f);
+                    if (!ChestList.empty())
+                    {
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                    }
+                    else if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                    {
+                        uint8 stack = aur->GetStackAmount();
+                        if (stack > 4)
+                        {
+                            pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack-4);
+                        }
+                        else
+                        {
+                            pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                        }
+                    }            
+                }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ram_neutral_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_ram_neutral_AuraScript();
+    }
 };
 
 // 42992 Ram Trot
@@ -69,10 +125,13 @@ public:
                     else if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
                     {
                         uint8 stack = aur->GetStackAmount();
-                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
-                        if (stack > 1)
+                        if (stack > 2)
                         {
-                            pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack-1);
+                            pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack-2);
+                        }
+                        else
+                        {                            
+                            pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
                         }
                     }            
                 }
@@ -167,9 +226,16 @@ public:
                     }
                     else
                     {
-                        pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
-                        pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
-                    }
+                        uint8 stack = 0;
+                        if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                            stack = aur->GetStackAmount();
+                        if (stack < 97) 
+                            stack += 5;
+                        else
+                            stack = 101;                        
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                        pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack);
+                     }
                 }
         }
 
@@ -631,6 +697,7 @@ public:
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_ram_neutral();
     new spell_ram_trot();
     new spell_ram_canter();
     new spell_ram_gallop();
