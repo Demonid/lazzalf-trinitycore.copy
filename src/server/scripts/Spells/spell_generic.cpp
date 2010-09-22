@@ -179,6 +179,11 @@ public:
                     }
                     else
                     {
+                        uint8 stack = 0;
+                        if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                            stack = aur->GetStackAmount();
+                        if (stack == 100) 
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
                         pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
                     }
                 }
@@ -232,9 +237,11 @@ public:
                         if (stack < 97) 
                             stack += 5;
                         else
-                            stack = 101;                        
-                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
-                        pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack);
+                        {
+                            stack = 101;
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
+                        }
+                        pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack);                        
                      }
                 }
         }
