@@ -120,8 +120,7 @@ public:
                     }
                     else
                     {
-                        if (Rand()%2)
-                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
+                        pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
                     }
                 }
         }
@@ -168,6 +167,7 @@ public:
                     }
                     else
                     {
+                        pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
                         pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
                     }
                 }
