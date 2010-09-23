@@ -1184,7 +1184,15 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 }
                 case 54171:                                   //Divine Storm
                 {
-                    m_caster->CastCustomSpell(unitTarget, 54172, &damage, 0, 0, true);
+                    if (!damage)
+                        return;
+
+                    if (m_UniqueTargetInfo.size())
+                    {
+                        SpellEntry const * spellInfo = sSpellStore.LookupEntry(53385);
+                        int32 heal = SpellMgr::CalculateSpellEffectAmount(spellInfo, EFFECT_1) * damage / m_UniqueTargetInfo.size() / 100;
+                        m_caster->CastCustomSpell(unitTarget, 54172, &heal, NULL, NULL, true);
+                    }
                     return;
                 }
                 case 58418:                                 // Portal to Orgrimmar
@@ -1367,12 +1375,22 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             break;
         case SPELLFAMILY_PALADIN:
             // Divine Storm
-            if (m_spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_PALADIN_DIVINESTORM && effIndex == 1)
+            if (m_spellInfo->SpellFamilyFlags[EFFECT_1] & SPELLFAMILYFLAG1_PALADIN_DIVINESTORM)
             {
-                int32 dmg = m_damage * damage / 100;
-                if (!unitTarget)
-                    unitTarget = m_caster;
-                m_caster->CastCustomSpell(unitTarget, 54171, &dmg, 0, 0, true);
+                if (effIndex != 0)
+                    return;
+
+                uint32 target_count = 0;
+                for (std::list<TargetInfo>::const_iterator itr = m_UniqueTargetInfo.begin(); itr != m_UniqueTargetInfo.end(); ++itr)
+                    if ((*itr).effectMask & (1 << EFFECT_2))
+                        ++target_count;
+                if (!target_count)
+                    return;
+
+                m_caster->CastSpell(unitTarget, 199997, true);
+                if (AuraEffect const * aurEff = unitTarget->GetAuraEffect(199997, EFFECT_0, m_caster->GetGUID()))
+                    aurEff->GetBase()->SetCharges(target_count);
+
                 return;
             }
 
