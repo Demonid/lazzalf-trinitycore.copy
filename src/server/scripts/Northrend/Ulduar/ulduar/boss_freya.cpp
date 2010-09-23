@@ -261,12 +261,12 @@ class boss_freya : public CreatureScript
             DoScriptText(SAY_DEATH, me);
             _JustDied();
 
-            if (Creature* pTarget = me->FindNearestCreature(32915, 80.0f, true))
-                pTarget->RemoveFromWorld();
-            if (Creature* pTarget = me->FindNearestCreature(32913, 80.0f, true))
-                pTarget->RemoveFromWorld();
-            if (Creature* pTarget = me->FindNearestCreature(32914, 80.0f, true))
-                pTarget->RemoveFromWorld();
+            if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+                Ironbranch->RemoveFromWorld();
+            if (Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
+                Stonebark->RemoveFromWorld();
+            if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+                Ironbranch->RemoveFromWorld();
             
             me->setFaction(35);
             
