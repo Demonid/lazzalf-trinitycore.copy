@@ -3571,7 +3571,7 @@ void ObjectMgr::LoadGuildEvents(std::vector<Guild*>& GuildVector, QueryResult& r
             Field *fields = result->Fetch();
             uint32 guildid = fields[6].GetUInt32();
             if (guildid >= GuildVector.size() || GuildVector[guildid] == NULL)
-                return;
+                continue;
             
             if (!GuildVector[guildid]->m_GuildEventLogNextGuid)
                 GuildVector[guildid]->m_GuildEventLogNextGuid = fields[0].GetUInt32();
@@ -3602,7 +3602,7 @@ void ObjectMgr::LoadGuildBankEvents(std::vector<Guild*>& GuildVector, QueryResul
             uint32 logGuid = fields[0].GetUInt32();
             uint32 guildid = fields[7].GetUInt32();
             if (guildid >= GuildVector.size() || GuildVector[guildid] == NULL)
-                return;
+                continue;
 
             uint8 TabId = fields[8].GetUInt8();
 
@@ -3671,7 +3671,7 @@ void ObjectMgr::LoadGuildBanks(std::vector<Guild*>& GuildVector, QueryResult& re
             uint32 TabId = fields[0].GetUInt32();
             uint32 guildid = fields[4].GetUInt32();
             if (guildid >= GuildVector.size() || GuildVector[guildid] == NULL)
-                return;
+                continue;
 
             if (TabId < GuildVector[guildid]->GetPurchasedTabs())
             {
@@ -3697,7 +3697,7 @@ void ObjectMgr::LoadGuildBanks(std::vector<Guild*>& GuildVector, QueryResult& re
             uint32 ItemId = itemResult->GetUInt32(14);
             uint32 guildid = itemResult->GetUInt32(15);
             if (guildid >= GuildVector.size() || GuildVector[guildid] == NULL)
-                return;
+                continue;
 
             if (TabId >= GuildVector[guildid]->GetPurchasedTabs())
             {
