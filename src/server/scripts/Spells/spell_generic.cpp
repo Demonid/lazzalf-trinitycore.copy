@@ -27,6 +27,7 @@
 
 enum eRamSpells
 {
+    SPELL_EXHAUSTED_RAM       = 43332,
     SPELL_RAM_FATIGUE         = 43052,
     SPELL_RAM_TROT            = 42992,
     SPELL_RAM_CANTER          = 42993,
@@ -182,8 +183,8 @@ public:
                         uint8 stack = 0;
                         if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
                             stack = aur->GetStackAmount();
-                        if (stack == 100) 
-                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
+                        if (stack >= 100) 
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_EXHAUSTED_RAM, true);
                         pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
                     }
                 }
@@ -239,7 +240,7 @@ public:
                         else
                         {
                             stack = 101;
-                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_EXHAUSTED_RAM, true);
                         }
                         pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack);                        
                      }
