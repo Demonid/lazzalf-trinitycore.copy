@@ -1132,8 +1132,8 @@ class mob_shadron : public CreatureScript
                             pShadron->AddAura(SPELL_GIFT_OF_TWILIGTH_SHA, me);                    
                         break;
                     case SHIELD_ON_SARTHARION:
-                        if (Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))                        
-                            pSartharion->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, pSartharion);
+                        /*if (Creature* pSartharion = Unit::GetCreature(*me, pInstance->GetData64(DATA_SARTHARION)))                        
+                            pSartharion->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, pSartharion);*/
                         break;
                 }
             }
