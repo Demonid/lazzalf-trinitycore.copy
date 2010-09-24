@@ -1071,6 +1071,15 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
 {
     switch(GetAuraType())
     {
+        case SPELL_AURA_PERIODIC_DAMAGE:            
+            if (GetId() == 7057)
+            {
+                // Aura of Anger
+                if (AuraEffect * aurEff = GetBase()->GetEffect(1))
+                    aurEff->ChangeAmount(aurEff->GetAmount()+5);
+                SetAmount(100 * m_tickNumber);
+            }
+            break;
         case SPELL_AURA_DUMMY:
             // Haunting Spirits
             if (GetId() == 7057)
