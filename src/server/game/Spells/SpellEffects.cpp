@@ -819,7 +819,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case 12850:                                 // (now good common check for this spells)
                 case 12868:
                 {
-                    if (!unitTarget)
+                    if (!unitTarget || unitTarget == m_caster)
                         return;
 
                     float damage;
