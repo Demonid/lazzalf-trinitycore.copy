@@ -261,7 +261,7 @@ public:
 
 
 // 41337 Aura of Anger
-class spell_gen_aura_of_anger : public SpellScriptLoader
+/*class spell_gen_aura_of_anger : public SpellScriptLoader
 {
 public:
     spell_gen_aura_of_anger() : SpellScriptLoader("spell_gen_aura_of_anger") { }
@@ -285,7 +285,7 @@ public:
     {
         return new spell_gen_aura_of_anger_AuraScript();
     }
-};
+};*/
 
 // 46394 Brutallus Burn
 class spell_gen_burn_brutallus : public SpellScriptLoader
@@ -709,7 +709,7 @@ void AddSC_generic_spell_scripts()
     new spell_ram_trot();
     new spell_ram_canter();
     new spell_ram_gallop();
-    new spell_gen_aura_of_anger();
+    //new spell_gen_aura_of_anger();
     new spell_gen_burn_brutallus();
     new spell_gen_leeching_swarm();
     new spell_gen_parachute();
