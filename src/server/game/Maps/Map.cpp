@@ -79,9 +79,9 @@ bool Map::ExistMap(uint32 mapid,int gx,int gy)
             else
                 ret = true;
         }
+       fclose(pf);
     }
     delete [] tmp;
-    fclose(pf);                                         //close file before return
     return ret;
 }
 
