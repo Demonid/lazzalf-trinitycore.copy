@@ -5925,7 +5925,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char *args)
         std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt64(), true);
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
             fields[0].GetCString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES) : GetTrinityString(LANG_BANINFO_NO), fields[4].GetCString(), fields[5].GetCString());
-    } 
+    }
     while (result->NextRow());
 
     return true;
@@ -6994,8 +6994,9 @@ bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
         do
         {
             Field *fields = result->Fetch();
-            PSendSysMessage("|%15s|%6s|", fields[0].GetString(),fields[1].GetString());
-        }while (result->NextRow());
+            PSendSysMessage("|%15s|%6s|", fields[0].GetCString(),fields[1].GetCString());
+        }
+        while (result->NextRow());
 
         PSendSysMessage(" ======================== ");
     }

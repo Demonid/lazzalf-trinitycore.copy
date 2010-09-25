@@ -71,7 +71,8 @@
 #include "CharacterDatabaseCleaner.h"
 #include "ScriptMgr.h"
 #include "WeatherMgr.h"
-#include "Custom/sc_npc_teleport.h"
+#include "CreatureTextMgr.h"
+#include "sc_npc_teleport.h"
 #include "GuildHouse.h"
 
 volatile bool World::m_stopEvent = false;
@@ -1761,6 +1762,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading spell script names...");
     sObjectMgr.LoadSpellScriptNames();
+
+    sLog.outString("Loading Creature Texts...");
+    sCreatureTextMgr.LoadCreatureTexts();
 
     sLog.outString("Initializing Scripts...");
     sScriptMgr.Initialize();
