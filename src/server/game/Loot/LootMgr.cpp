@@ -27,6 +27,9 @@
 #include "SharedDefines.h"
 #include "SpellMgr.h"
 
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
+#include "OutdoorPvPMgr.h"
+
 static Rates const qualityToRate[MAX_ITEM_QUALITY] = {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
     RATE_DROP_ITEM_NORMAL,                                  // ITEM_QUALITY_NORMAL
@@ -381,6 +384,11 @@ bool LootItem::AllowedForPlayer(Player const * player) const
     return true;
 }
 
+void LootItem::AddAllowedLooter(const Player *player)
+{
+    allowedGUIDs.insert(player->GetGUIDLow());
+}
+
 //
 // --------- Loot ---------
 //
@@ -471,7 +479,7 @@ void Loot::FillNotNormalLootFor(Player* pl, bool withCurrency)
         FillNonQuestNonFFAConditionalLoot(pl);
 
     // if not auto-processed player will have to come and pick it up manually
-    if (!withCurrency)
+    if (!withCurrency || !sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
         return;
 
     // Process currency items
@@ -557,13 +565,17 @@ QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(Player* player)
     for (uint8 i = 0; i < items.size(); ++i)
     {
         LootItem &item = items[i];
-        if (!item.is_looted && !item.freeforall && !item.conditions.empty() && item.AllowedForPlayer(player))
+        if (!item.is_looted && !item.freeforall && item.AllowedForPlayer(player))
         {
-            ql->push_back(QuestItem(i));
-            if (!item.is_counted)
+            item.AddAllowedLooter(player);
+            if (!item.conditions.empty())
             {
-                ++unlootedCount;
-                item.is_counted = true;
+                ql->push_back(QuestItem(i));
+                if (!item.is_counted)
+                {
+                    ++unlootedCount;
+                    item.is_counted = true;
+                }
             }
         }
     }
@@ -1243,7 +1255,7 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, bool rate, uint16
     for (LootGroups::const_iterator i = Groups.begin(); i != Groups.end(); ++i)
         i->Process(loot, lootMode);
 }
-
+  
 // True if template includes at least 1 quest drop entry
 bool LootTemplate::HasQuestDrop(LootTemplateMap const& store, uint8 groupId) const
 {

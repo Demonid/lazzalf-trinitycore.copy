@@ -27,6 +27,7 @@
 enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
+    PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF     = 67480,
 
     PALADIN_SPELL_HOLY_SHOCK_R1                  = 20473,
     PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE           = 25912,
@@ -89,6 +90,49 @@ public:
     }
 };
 
+// 20911 Blessing of Sanctuary
+// 25899 Greater Blessing of Sanctuary
+class spell_pal_blessing_of_sanctuary : public SpellScriptLoader
+{
+public:
+    spell_pal_blessing_of_sanctuary() : SpellScriptLoader("spell_pal_blessing_of_sanctuary") { }
+
+    class spell_pal_blessing_of_sanctuary_AuraScript : public AuraScript
+    {
+        bool Validate(SpellEntry const * entry)
+        {
+            if (!sSpellStore.LookupEntry(PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF))
+                return false;
+            return true;
+        }
+
+        void HandleEffectApply(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* pCaster = GetCaster())
+                if (Unit* pTarget = aurApp->GetTarget())
+                    pCaster->CastSpell(pTarget, PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, true);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster())
+                if (Unit* pTarget = aurApp->GetTarget())
+                    pTarget->RemoveAura(PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, GetCasterGUID());
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_pal_blessing_of_sanctuary_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_pal_blessing_of_sanctuary_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_pal_blessing_of_sanctuary_AuraScript();
+    }
+};
+
 // 63521 Guarded by The Light
 class spell_pal_guarded_by_the_light : public SpellScriptLoader
 {
@@ -107,8 +151,11 @@ public:
         void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             // Divine Plea
-            if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
-                aura->RefreshDuration();
+            //if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
+            //     aura->RefreshDuration();
+            for (uint8 i = 0; i < 3; ++i)
+                if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA, (i)))
+                    aura->RefreshDuration();
         }
 
         void Register()
@@ -206,6 +253,7 @@ public:
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_blessing_of_faith();
+    new spell_pal_blessing_of_sanctuary();
     new spell_pal_guarded_by_the_light();
     new spell_pal_holy_shock();
     new spell_pal_judgement_of_command();

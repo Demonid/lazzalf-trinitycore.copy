@@ -68,7 +68,7 @@ class ReputationMgr
         ~ReputationMgr() {}
 
         void SaveToDB(SQLTransaction& trans);
-        void LoadFromDB(QueryResult result);
+        void LoadFromDB(PreparedQueryResult result);
     public:                                                 // statics
         static const int32 PointsInRank[MAX_REPUTATION_RANK];
         static const int32 Reputation_Cap    =  42999;
@@ -120,7 +120,8 @@ class ReputationMgr
         {
             return SetReputation(factionEntry, standing, true);
         }
-
+        bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
+        bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
         void SetVisible(FactionTemplateEntry const* factionTemplateEntry);
         void SetVisible(FactionEntry const* factionEntry);
         void SetAtWar(RepListID repListID, bool on);
