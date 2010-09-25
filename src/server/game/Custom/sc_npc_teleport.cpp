@@ -344,14 +344,14 @@ void LoadNpcTele(void)
             if (catid != fields[3].GetUInt32())
             {
                 catid = fields[3].GetUInt32();
-                nsNpcTel::CatDest categorie (catid, fields[4].GetCppString(), (nsNpcTel::Flag)fields[0].GetUInt8(),
+                nsNpcTel::CatDest categorie (catid, fields[4].GetString(), (nsNpcTel::Flag)fields[0].GetUInt8(),
                                              fields[1].GetUInt64(), fields[2].GetUInt32());
                 nsNpcTel::TabCatDest.push_back(categorie);
             }
 
             nsNpcTel::Dest item =
             {
-                fields[5].GetCppString(),   // Name
+                fields[5].GetString(),   // Name
                 fields[6].GetFloat(),       // X
                 fields[7].GetFloat(),       // Y
                 fields[8].GetFloat(),       // Z
