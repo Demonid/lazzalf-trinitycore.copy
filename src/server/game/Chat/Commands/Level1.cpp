@@ -2160,7 +2160,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
     chr->SaveToDB();
 
     chr->m_jail_guid = fields[0].GetUInt32();
-    chr->m_jail_char = fields[2].GetCppString();
+    chr->m_jail_char = fields[2].GetString();
     chr->m_jail_isjailed = true;
     chr->m_jail_release = uint32(localtime + (jailtime * 60 * 60));
     chr->m_jail_amnestietime = uint32(localtime +(60* 60 * 24 * sObjectMgr.m_jailconf_amnestie));
@@ -2172,12 +2172,12 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
     chr->_SaveJail();
 
-    PSendSysMessage(LANG_JAIL_WAS_JAILED, fields[3].GetCppString().c_str(), jailtime);
+    PSendSysMessage(LANG_JAIL_WAS_JAILED, fields[3].GetString().c_str(), jailtime);
     ChatHandler(chr).PSendSysMessage(LANG_JAIL_YOURE_JAILED, m_session->GetPlayerName(), jailtime);
     ChatHandler(chr).PSendSysMessage(LANG_JAIL_REASON, m_session->GetPlayerName(), jailreason.c_str());
 
     announce = GetTrinityString(LANG_JAIL_ANNOUNCE1);
-    announce += fields[3].GetCppString();
+    announce += fields[3].GetString();
     announce += GetTrinityString(LANG_JAIL_ANNOUNCE2);
     announce += timetojail;
     announce += GetTrinityString(LANG_JAIL_ANNOUNCE3);
