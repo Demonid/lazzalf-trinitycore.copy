@@ -202,7 +202,7 @@ enum Actions
     ACTION_ELEMENTAL_DEAD                       = 3
 };
 
-Unit* pRootTarget;
+uint64 pRootTargetGUID;
 
 class boss_freya : public CreatureScript
 {
@@ -454,8 +454,11 @@ class boss_freya : public CreatureScript
                         events.ScheduleEvent(EVENT_BRIGHTLEAF, urand(35000, 45000));
                         break;
                     case EVENT_IRONBRANCH:
-                        if (pRootTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* pRootTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        {
+                            pRootTargetGUID = pRootTarget->GetGUID();
                             pRootTarget->CastSpell(pRootTarget,RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS),true);
+                        }
                         events.ScheduleEvent(EVENT_IRONBRANCH, urand(45000, 60000));
                         break;
                     case EVENT_STONEBARK:
@@ -784,9 +787,12 @@ class boss_elder_ironbranch : public CreatureScript
 
             if(uiIronRootTimer <= 0)
             {
-                pRootTarget = SelectTarget(SELECT_TARGET_RANDOM);
+                Unit* pRootTarget = SelectTarget(SELECT_TARGET_RANDOM);
                 if(pRootTarget && !pRootTarget->HasAura(RAID_MODE(RAID_10_SPELL_IMPALE, RAID_25_SPELL_IMPALE)))
+                {
+                    pRootTargetGUID = pRootTarget->GetGUID();
                     pRootTarget->CastSpell(me, RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS), false);
+                }
                 uiIronRootTimer = urand(20000, 25000);
             }
             else uiIronRootTimer -= diff;
@@ -811,16 +817,23 @@ class creature_iron_roots : public CreatureScript
         creature_iron_rootsAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
         {
             m_pInstance = pCreature->GetInstanceScript();
-            pPlayer = pRootTarget;
+            pPlayerGUID = pRootTargetGUID;
         }
 
         InstanceScript* m_pInstance;
-        Unit* pPlayer;
+        uint64 pPlayerGUID;
+
+        void SetTargetGuid(uint64 target)
+        {
+            pPlayerGUID = target;
+        }
 
         void JustDied(Unit* victim)
         {
-            if (pPlayer)
-                pPlayer->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
+            if (pPlayerGUID)
+                if (Creature *pTarget = Creature::GetCreature((*me), pPlayerGUID))
+                        if (pTarget->isAlive())
+                            pTarget->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
         }
     };
 
