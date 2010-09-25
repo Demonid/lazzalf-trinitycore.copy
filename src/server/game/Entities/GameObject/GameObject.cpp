@@ -1151,7 +1151,7 @@ void GameObject::Use(Unit* user)
                 {
                     sLog.outDebug("Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
                     GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
-                    EventInform(info->goober.eventId);
+                    EventInform(info->goober.eventId, player);
                 }
 
                 // possible quest objective for active quests
@@ -1589,11 +1589,13 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
+        trigger->SetLevel(owner->getLevel());
         trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
     }
     else
     {
         trigger->setFaction(14);
+        trigger->SetLevel(target ? target->getLevel() : 255);
         // Set owner guid for target if no owner avalible - needed by trigger auras
         // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
         trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, target ? target->GetGUID() : 0);
@@ -1703,10 +1705,10 @@ void GameObject::Rebuild()
     EventInform(m_goInfo->building.rebuildingEvent);
 }
 
-void GameObject::EventInform(uint32 eventId)
+void GameObject::EventInform(uint32 eventId, Player* player)
 {
     if (eventId && m_zoneScript)
-        m_zoneScript->ProcessEvent(this, eventId);
+        m_zoneScript->ProcessEvent(this, eventId, player);
 }
 
 // overwrite WorldObject function for proper name localization

@@ -53,6 +53,14 @@ class Battleground;
 class MapInstanced;
 class InstanceMap;
 
+struct ScriptAction
+{
+    uint64 sourceGUID;
+    uint64 targetGUID;
+    uint64 ownerGUID;                                       // owner of source if source is item
+    ScriptInfo const* script;                               // pointer to static script data
+};
+
 //******************************************
 // Map file format defines
 //******************************************
@@ -248,6 +256,9 @@ class Map : public GridRefManager<NGridType>
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
+        
+        ACE_thread_t m_updater;
+        void Wipe();
 
         // currently unused for normal maps
         bool CanUnload(uint32 diff)

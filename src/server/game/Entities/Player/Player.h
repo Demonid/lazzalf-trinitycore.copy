@@ -789,7 +789,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADWEKLYQUESTSTATUS     = 26,
     PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 27,
     PLAYER_LOGIN_QUERY_LOADARENASTATS           = 28,
-    MAX_PLAYER_LOGIN_QUERY                      = 29
+    PLAYER_LOGIN_QUERY_LOADBANNED               = 29,
+    MAX_PLAYER_LOGIN_QUERY                      = 30
 };
 
 enum PlayerDelayedOperations
@@ -1186,7 +1187,7 @@ class Player : public Unit, public GridObject<Player>
         bool HasItemTotemCategory(uint32 TotemCategory) const;
         uint8 CanUseItem(ItemPrototype const *pItem) const;
         uint8 CanUseAmmo(uint32 item) const;
-        Item* StoreNewItem(ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0);
+        Item* StoreNewItem(ItemPosCountVec const& pos, uint32 item, bool update, int32 randomPropertyId = 0, AllowedLooterSet* allowedLooters = NULL);
         Item* StoreItem(ItemPosCountVec const& pos, Item *pItem, bool update);
         Item* EquipNewItem(uint16 pos, uint32 item, bool update);
         Item* EquipItem(uint16 pos, Item *pItem, bool update);
@@ -1260,13 +1261,15 @@ class Player : public Unit, public GridObject<Player>
         void TradeCancel(bool sendback);
 
         void UpdateEnchantTime(uint32 time);
-        void UpdateItemDuration(uint32 time, bool realtimeonly=false);
+        void UpdateSoulboundTradeItems();
+        void RemoveTradeableItem(uint32 guid);
+        void UpdateItemDuration(uint32 time, bool realtimeonly = false);
         void AddEnchantmentDurations(Item *item);
         void RemoveEnchantmentDurations(Item *item);
         void RemoveArenaEnchantments(EnchantmentSlot slot);
-        void AddEnchantmentDuration(Item *item,EnchantmentSlot slot,uint32 duration);
-        void ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool apply_dur = true, bool ignore_condition = false);
-        void ApplyEnchantment(Item *item,bool apply);
+        void AddEnchantmentDuration(Item *item, EnchantmentSlot slot, uint32 duration);
+        void ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool apply_dur = true, bool ignore_condition = false);
+        void ApplyEnchantment(Item *item, bool apply);
         void UpdateSkillEnchantments(uint16 skill_id, uint16 curr_value, uint16 new_value);
         void SendEnchantmentDurations();
         void BuildEnchantmentsInfoData(WorldPacket *data);
@@ -1321,6 +1324,7 @@ class Player : public Unit, public GridObject<Player>
         bool SatisfyQuestRace(Quest const* qInfo, bool msg);
         bool SatisfyQuestReputation(Quest const* qInfo, bool msg);
         bool SatisfyQuestStatus(Quest const* qInfo, bool msg);
+        bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
         bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
         bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
         bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
@@ -1471,7 +1475,7 @@ class Player : public Unit, public GridObject<Player>
         }
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
-
+ 
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
@@ -1553,6 +1557,7 @@ class Player : public Unit, public GridObject<Player>
         void AddTemporarySpell(uint32 spellId);
         void RemoveTemporarySpell(uint32 spellId);
         void SetReputation(uint32 factionentry, uint32 value);
+        void SetOneFactionReputation(uint32 factionentry, uint32 value);
         uint32 GetReputation(uint32 factionentry);
         std::string GetGuildName();
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
@@ -1630,7 +1635,7 @@ class Player : public Unit, public GridObject<Player>
         void RemoveCategoryCooldown(uint32 cat);
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
-        void _LoadSpellCooldowns(QueryResult result);
+        void _LoadSpellCooldowns(PreparedQueryResult result);
         void _SaveSpellCooldowns(SQLTransaction& trans);
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
@@ -1655,16 +1660,16 @@ class Player : public Unit, public GridObject<Player>
         bool isRessurectRequested() const { return m_resurrectGUID != 0; }
         void ResurectUsingRequestData();
 
-        int getCinematic()
+        uint8 getCinematic()
         {
             return m_cinematic;
         }
-        void setCinematic(int cine)
+        void setCinematic(uint8 cine)
         {
             m_cinematic = cine;
         }
 
-        ActionButton* addActionButton(uint8 button, uint32 action, uint8 type);
+        ActionButton* addActionButton(uint8 button, uint32 action, uint8 type, uint8 spec = 0);
         void removeActionButton(uint8 button);
         ActionButton const* GetActionButton(uint8 button);
         void SendInitialActionButtons() const { SendActionButtons(1); }
@@ -1764,6 +1769,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
+        void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -1789,7 +1795,8 @@ class Player : public Unit, public GridObject<Player>
         float OCTRegenMPPerSpirit();
         float GetRatingCoefficient(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
-        uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
+        uint32 GetBaseSpellPowerBonus() const { return m_baseSpellPower; }
+        uint32 GetBaseSpellPenetrationBonus() const { return m_baseSpellPenetration; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
@@ -2160,6 +2167,23 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         uint32 EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+	    // Char datas...
+		bool m_jail_warning;
+		bool m_jail_amnestie;
+		bool m_jail_isjailed;           // Is this player jailed?
+		std::string m_jail_char;        // Name of jailed char
+		uint32 m_jail_guid;             // guid of the jailed char
+		uint32 m_jail_release;          // When is the player a free man/woman?
+		std::string m_jail_reason;      // Why was the char jailed?
+		uint32 m_jail_times;			// How often was the player jailed?
+  	    uint32 m_jail_amnestietime;
+		uint32 m_jail_gmacc;            // Used GM acc
+		std::string m_jail_gmchar;      // Used GM char
+		std::string m_jail_lasttime;    // Last jail time
+		uint32 m_jail_duration;         // Duration of the jail
+		// Load / save functions...
+		void _LoadJail(void);           // Loads the jail datas
+		void _SaveJail(void);           // Saves the jail datas
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2360,7 +2384,7 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr& GetAchievementMgr() { return m_achievementMgr; }
         AchievementMgr const& GetAchievementMgr() const { return m_achievementMgr; }
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1 = 0, uint32 miscvalue2 = 0, Unit *unit = NULL, uint32 time = 0);
-        void CompletedAchievement(AchievementEntry const* entry);
+        void CompletedAchievement(AchievementEntry const* entry, bool ignoreGMAllowAchievementConfig = false);
 
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
@@ -2415,30 +2439,30 @@ class Player : public Unit, public GridObject<Player>
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
 
-        void _LoadActions(QueryResult result);
-        void _LoadAuras(QueryResult result, uint32 timediff);
+        void _LoadActions(PreparedQueryResult result);
+        void _LoadAuras(PreparedQueryResult result, uint32 timediff);
         void _LoadGlyphAuras();
-        void _LoadBoundInstances(QueryResult result);
-        void _LoadInventory(QueryResult result, uint32 timediff);
-        void _LoadMailInit(QueryResult resultUnread, QueryResult resultDelivery);
+        void _LoadBoundInstances(PreparedQueryResult result);
+        void _LoadInventory(PreparedQueryResult result, uint32 timediff);
+        void _LoadMailInit(PreparedQueryResult resultUnread, PreparedQueryResult resultDelivery);
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
-        void _LoadQuestStatus(QueryResult result);
-        void _LoadDailyQuestStatus(QueryResult result);
-        void _LoadWeeklyQuestStatus(QueryResult result);
-        void _LoadRandomBGStatus(QueryResult result);
-        void _LoadGroup(QueryResult result);
-        void _LoadSkills(QueryResult result);
-        void _LoadSpells(QueryResult result);
-        void _LoadFriendList(QueryResult result);
-        bool _LoadHomeBind(QueryResult result);
-        void _LoadDeclinedNames(QueryResult result);
-        void _LoadArenaTeamInfo(QueryResult result);
-        void _LoadArenaStatsInfo(QueryResult result);
-        void _LoadEquipmentSets(QueryResult result);
-        void _LoadBGData(QueryResult result);
-        void _LoadGlyphs(QueryResult result);
-        void _LoadTalents(QueryResult result);
+        void _LoadQuestStatus(PreparedQueryResult result);
+        void _LoadDailyQuestStatus(PreparedQueryResult result);
+        void _LoadWeeklyQuestStatus(PreparedQueryResult result);
+        void _LoadRandomBGStatus(PreparedQueryResult result);
+        void _LoadGroup(PreparedQueryResult result);
+        void _LoadSkills(PreparedQueryResult result);
+        void _LoadSpells(PreparedQueryResult result);
+        void _LoadFriendList(PreparedQueryResult result);
+        bool _LoadHomeBind(PreparedQueryResult result);
+        void _LoadDeclinedNames(PreparedQueryResult result);
+        void _LoadArenaTeamInfo(PreparedQueryResult result);
+        void _LoadArenaStatsInfo(PreparedQueryResult result);
+        void _LoadEquipmentSets(PreparedQueryResult result);
+        void _LoadBGData(PreparedQueryResult result);
+        void _LoadGlyphs(PreparedQueryResult result);
+        void _LoadTalents(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2518,7 +2542,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_Glyphs[MAX_TALENT_SPECS][MAX_GLYPH_SLOT_INDEX];
 
-        ActionButtonList m_actionButtons;
+        ActionButtonList m_actionButtons[MAX_TALENT_SPECS];
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
@@ -2526,6 +2550,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_baseFeralAP;
         uint32 m_baseManaRegen;
         uint32 m_baseHealthRegen;
+        uint16 m_baseSpellPenetration;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
         //uint32 m_pad;
@@ -2533,6 +2558,7 @@ class Player : public Unit, public GridObject<Player>
 
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
+        ItemDurationList m_itemSoulboundTradeable;
 
         void ResetTimeSync();
         void SendTimeSync();
@@ -2547,7 +2573,7 @@ class Player : public Unit, public GridObject<Player>
         typedef std::list<Channel*> JoinedChannelsList;
         JoinedChannelsList m_channels;
 
-        int m_cinematic;
+        uint8 m_cinematic;
 
         TradeData* m_trade;
 
@@ -2585,6 +2611,28 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
+
+        // movement anticheat
+        time_t m_anti_LastClientTime;           // last movement client time
+        time_t m_anti_LastServerTime;           // last movement server time
+        time_t m_anti_DeltaClientTime;          // client side session time
+        time_t m_anti_DeltaServerTime;          // server side session time
+        uint32 m_anti_MistimingCount;           // mistiming count
+        time_t m_logcheat_time;
+
+        time_t m_anti_LastSpeedChangeTime;      // last speed change time
+
+        float m_anti_Last_HSpeed;               // horizontal speed, default RUN speed
+        float m_anti_Last_VSpeed;               // vertical speed, default max jump height
+
+        uint32 m_anti_TeleToPlane_Count;        // Teleport To Plane alarm counter
+
+        uint64 m_anti_AlarmCount;               // alarm counter
+
+        uint16 m_anti_JumpCount;                // Jump already began, anti air jump check
+        float m_anti_JumpBaseZ;                 // Z coord before jump
+        // end movement anticheat
+
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;

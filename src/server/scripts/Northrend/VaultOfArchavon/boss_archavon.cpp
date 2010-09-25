@@ -15,11 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*** SQL START ***
-UPDATE `creature_template` SET `ScriptName`='boss_archavon' WHERE `entry`='31125';
-UPDATE `creature_template` SET `ScriptName`='mob_archavon_warder' WHERE `entry`='32353';
-*** SQL END ***/
-
 #include "ScriptPCH.h"
 #include "vault_of_archavon.h"
 
@@ -55,13 +50,8 @@ UPDATE `creature_template` SET `ScriptName`='mob_archavon_warder' WHERE `entry`=
 
 class boss_archavon : public CreatureScript
 {
-public:
-    boss_archavon() : CreatureScript("boss_archavon") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_archavonAI (pCreature);
-    }
+    public:
+        boss_archavon(): CreatureScript("boss_archavon") {}
 
     struct boss_archavonAI : public ScriptedAI
     {
@@ -72,24 +62,46 @@ public:
 
         InstanceScript* pInstance;
         EventMap events;
+        uint32 checktimer;
 
         void Reset()
         {
             events.Reset();
 
+            CheckForVoA();
+
+            checktimer = 10000;
+
             if (pInstance)
                 pInstance->SetData(DATA_ARCHAVON_EVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*Victim*/) {}
-
-        void JustDied(Unit* /*Killer*/)
+        void CheckForVoA()
         {
-            if (pInstance)
-                pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
+            if (!sOutdoorPvPMgr.CanBeAttacked(me))
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+            else
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void KilledUnit(Unit* Victim){}
+
+        void JustDied(Unit* Killer)
+        {
+            if (pInstance)
+            {
+                pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
+                pInstance->SaveToDB();
+            }
+        }
+
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
             events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
@@ -104,9 +116,16 @@ public:
         // Below UpdateAI may need review/debug.
         void UpdateAI(const uint32 diff)
         {
-            //Return since we have no target
             if (!UpdateVictim())
+            {
+                if (checktimer <= diff)
+                {
+                    CheckForVoA();
+                    checktimer = 10000;
+                } else checktimer -= diff;
+
                 return;
+            }
 
             events.Update(diff);
 
@@ -146,20 +165,20 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_archavonAI (pCreature);
+    };
 };
 
 /*######
 ##  Mob Archavon Warder
 ######*/
+
 class mob_archavon_warder : public CreatureScript
 {
-public:
-    mob_archavon_warder() : CreatureScript("mob_archavon_warder") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new mob_archavon_warderAI(pCreature);
-    }
+    public:
+        mob_archavon_warder(): CreatureScript("mob_archavon_warder") {}
 
     struct mob_archavon_warderAI : public ScriptedAI //npc 32353
     {
@@ -172,7 +191,7 @@ public:
             events.Reset();
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
             events.ScheduleEvent(EVENT_ROCK_SHOWER, 2000);
@@ -213,9 +232,11 @@ public:
         }
     };
 
-};
-
-
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_archavon_warderAI(pCreature);
+    };
+};    
 
 void AddSC_boss_archavon()
 {
