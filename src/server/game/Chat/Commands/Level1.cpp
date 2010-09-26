@@ -2172,7 +2172,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
 
     chr->_SaveJail();
 
-    PSendSysMessage(LANG_JAIL_WAS_JAILED, fields[3].GetString().c_str(), jailtime);
+    PSendSysMessage(LANG_JAIL_WAS_JAILED, fields[2].GetString().c_str(), jailtime);
     ChatHandler(chr).PSendSysMessage(LANG_JAIL_YOURE_JAILED, m_session->GetPlayerName(), jailtime);
     ChatHandler(chr).PSendSysMessage(LANG_JAIL_REASON, m_session->GetPlayerName(), jailreason.c_str());
 
