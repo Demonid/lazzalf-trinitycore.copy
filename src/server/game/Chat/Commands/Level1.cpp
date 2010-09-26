@@ -2177,7 +2177,7 @@ bool ChatHandler::HandleJailCommand(const char *args)
     ChatHandler(chr).PSendSysMessage(LANG_JAIL_REASON, m_session->GetPlayerName(), jailreason.c_str());
 
     announce = GetTrinityString(LANG_JAIL_ANNOUNCE1);
-    announce += fields[3].GetString();
+    announce += fields[2].GetString();
     announce += GetTrinityString(LANG_JAIL_ANNOUNCE2);
     announce += timetojail;
     announce += GetTrinityString(LANG_JAIL_ANNOUNCE3);
