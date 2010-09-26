@@ -36,7 +36,7 @@ enum eRamSpells
 
 enum eRamGobject
 {
-    GO_FIENO         = 143052, // Da aggiustare
+    GO_FIENO         = 190559
 };
 
 // 43310 Ram Neutral
