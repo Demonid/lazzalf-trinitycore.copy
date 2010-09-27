@@ -1973,6 +1973,26 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                         caster->HealBySpell(caster, GetSpellProto(), bp * 20);
                 }
                 break;
+            case 63802: // Brain Link
+                if (caster) 
+                {
+                    std::list<Unit*> unitList;
+                    target->GetRaidMember(unitList, 80);
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        Unit* pUnit = *itr;
+                        if (pUnit == target || !pUnit->HasAura(63802))
+                            continue;
+                            
+                        // Afflicted targets suffer Shadow damage whenever they are more than 20 yards apart
+                        if (target->IsWithinDist(pUnit, 20))
+                            target->CastSpell(pUnit, 63804, true, 0, 0);
+                        else 
+                            target->CastSpell(pUnit, 63803, true, 0, 0);
+                        return;
+                    }
+                }
+                break;
             case 62038: // Biting Cold
                 if (target->GetTypeId() == TYPEID_PLAYER)
                 {

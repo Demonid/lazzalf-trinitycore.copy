@@ -3652,6 +3652,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->excludeCasterAuraSpell = 57724; // Sated
             count++;
             break;
+        // Titanic Storm
+        case 64172:
+            spellInfo->excludeTargetAuraSpell = 65294; // Empowered
+            count++;
+            break;
         // Heart of the Crusader
         case 20335:
         case 20336:
@@ -3730,6 +3735,34 @@ void SpellMgr::LoadSpellCustomAttr()
             // a trap always has dst = src?
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
             spellInfo->EffectImplicitTargetA[1] = TARGET_DST_CASTER;
+            count++;
+            break;
+        case 63830: // Malady of the Mind
+        case 63881: // Malady of the Mind proc
+        case 63795: // Psychosis
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[2] = TARGET_UNIT_TARGET_ANY;
+            count++;
+            break;
+        case 63802: // Brain Link
+            spellInfo->MaxAffectedTargets = 2;
+            spellInfo->EffectRadiusIndex[0] = 12; // 100 yard
+            count++;
+            break;
+        case 62714:     // Shadow Nova
+        case 65209:     // Shadow Nova
+             spellInfo->Effect[0] = 0;
+             count++;
+             break;
+        case 64145:     // Diminish Power
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            count++;
+            break;
+        case 63882:     // Death Ray Warning Visual
+        case 63886:     // Death Ray Damage Visual
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             count++;
             break;
         case 41376: // Spite

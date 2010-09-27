@@ -70,6 +70,8 @@ enum Data64
     DATA_YS_THORIM,
     DATA_YS_MIMIRON,
     DATA_YS_HODIR,
+    DATA_YOGGSARON_BRAIN,
+    DATA_YOGGSARON
 };
 
 enum Data

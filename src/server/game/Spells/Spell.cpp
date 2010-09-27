@@ -2861,6 +2861,32 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         finish(false);
                     }
                 }
+                // Lunatic Gaze
+                if (m_spellInfo->Id == 64164 || m_spellInfo->Id == 64168)
+                {
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        // Looking into the maw of madness unhinges your mind
+                        if (!(*itr)->isInFront(m_caster, 100, 2.5f))
+                        {
+                            unitList.erase(itr);
+                            break;
+                        }
+                    }
+                }
+                // Induce Madness
+                if (m_spellInfo->Id == 64059)
+                {
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        // Only on targets with Illusion Room Aura
+                        if (!(*itr)->HasAura(63988))
+                        {
+                            unitList.erase(itr);
+                            break;
+                        }
+                    }
+                }
             }
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
