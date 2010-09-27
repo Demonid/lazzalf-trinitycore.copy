@@ -428,6 +428,7 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                         // only affects players
                         if(unitTarget->GetTypeId() != TYPEID_PLAYER)
                             return;
+                        break;
                     // Cataclysmic Bolt
                     case 38441:
                     {

@@ -35,6 +35,7 @@ const DoorData doorData[] =
     {194775,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
     {194776,    BOSS_MIMIRON,   DOOR_TYPE_ROOM,     0},
     {194750,    BOSS_VEZAX,     DOOR_TYPE_PASSAGE,  0},
+    {194773,    BOSS_YOGGSARON, DOOR_TYPE_ROOM,     0},
     {0,         0,              DOOR_TYPE_ROOM,     0}, // EOF
 };
 
@@ -114,6 +115,8 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiThorimYS;
         uint64 uiMimironYS;
         uint64 uiHodirYS;
+        uint64 uiYoggSaronBrain;
+        uint64 uiYoggSaron;
             
         GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
@@ -194,6 +197,8 @@ class instance_ulduar : public InstanceMapScript
                 case 33413: uiThorimYS = pCreature->GetGUID(); return;
                 case 33412: uiMimironYS = pCreature->GetGUID(); return;
                 case 33411: uiHodirYS = pCreature->GetGUID(); return;
+                case 33890: uiYoggSaronBrain = pCreature->GetGUID(); return;
+                case 33288: uiYoggSaron = pCreature->GetGUID(); return;
                 
                 // Keeper's Images
                 case 33241: uiFreyaImage = pCreature->GetGUID();
@@ -311,6 +316,10 @@ class instance_ulduar : public InstanceMapScript
                     return uiMimironYS;
                 case DATA_YS_HODIR:
                     return uiHodirYS;
+                case DATA_YOGGSARON_BRAIN:
+                    return uiYoggSaronBrain;
+                case DATA_YOGGSARON:
+                    return uiYoggSaron;
             }
             return 0;
         }

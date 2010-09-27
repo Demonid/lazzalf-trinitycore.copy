@@ -1123,8 +1123,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         break;
                     case 61990: // Hodir Flash Freeze immunity remove
                     case 61969:
-               	    if (removeMode == AURA_REMOVE_BY_DEATH)
-                        target->RemoveAura(7940);
+               	        if (removeMode == AURA_REMOVE_BY_DEATH)
+                            target->RemoveAura(7940);
                         break;
                     case 72368: // Shared Suffering
                     case 72369:
@@ -1137,6 +1137,29 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                                     caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
                             }
                         }
+                        break;
+                    // Malady of the Mind will attempt to jump to a nearby friend when removed
+                    case 63830:
+                    case 63881:                
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        {
+                            std::list<Unit*> unitList;
+                            target->GetRaidMember(unitList, 10);
+                            for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                            {
+                                Unit* pUnit = *itr;
+                                if (pUnit == target)
+                                    continue;
+                                    
+                                pUnit->CastSpell(pUnit, 63881, true, 0, 0);
+                                return;
+                            }
+                        }
+                        break;
+                    // Shadow Beacon
+                    case 64465:
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                            target->CastSpell(target, 64468, true, 0, 0, GetCasterGUID());
                         break;
                 }
                 break;
