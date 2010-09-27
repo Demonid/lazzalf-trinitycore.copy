@@ -2002,7 +2002,8 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     // DoT stacks when the target remains stationary for 4 seconds
                     else if (GetAmount() >= 4 || !target->GetAura(62039))
                         target->AddAura(62039, target);
-                    else if (target->GetAura(62039)->GetStackAmount() > 1 && target->isMoving())
+                    else if (target->GetAura(62039)->GetStackAmount() > 1 && 
+                        (target->isMoving() || target->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING)))
                         target->RemoveAuraFromStack(62039);
                 }
                 break;
