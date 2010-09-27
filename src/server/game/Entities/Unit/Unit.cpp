@@ -2189,7 +2189,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     if (!pVictim->isAlive())
         return;
 
-    if (!pVictim->isPet() && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !this->IsWithinLOSInMap(pVictim))
+    if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !this->IsWithinLOSInMap(pVictim))
         return;
 
     CombatStart(pVictim);
