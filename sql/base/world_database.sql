@@ -18815,6 +18815,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 44472, 0x00,   3, 0x20E21277, 0x00019048, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Burnout (Rank 5)
 ( 44543, 0x00,   3, 0x00100220, 0x00001000, 0x00000000, 0x00010000, 0x00000000,   0,   7,   0), -- Fingers of Frost (Rank 1)
 ( 44545, 0x00,   3, 0x00100220, 0x00001000, 0x00000000, 0x00010000, 0x00000000,   0,  15,   0), -- Fingers of Frost (Rank 2)
+( 74396, 0x10,   3, 0x00000000, 0x00000000, 0x00000000, 0x00010000, 0x00000003,   0,   0,   0), -- Fingers of Frost (buff)
 ( 44546, 0x00,   3, 0x00100220, 0x00001000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Brain Freeze (Rank 1)
 ( 44548, 0x00,   3, 0x00100220, 0x00001000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Brain Freeze (Rank 2)
 ( 44549, 0x00,   3, 0x00100220, 0x00001000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Brain Freeze (Rank 3)
@@ -19269,6 +19270,9 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 56636, 0x00,   4, 0x00000020, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   6), -- Taste for Blood (Rank 1)
 ( 56637, 0x00,   4, 0x00000020, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   6), -- Taste for Blood (Rank 2)
 ( 56638, 0x00,   4, 0x00000020, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   6), -- Taste for Blood (Rank 3)
+( 60503, 0x01,   4, 0x00000004, 0x00000000, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Taste for Blood (proc)
+( 68051, 0x01,   4, 0x00000004, 0x00000000, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Overpower Ready! (proc)
+( 52437, 0x01,   4, 0x20000000, 0x00000000, 0x00000000, 0x00000010, 0x00000000,   0,   0,   0), -- Sudden Death (proc)
 ( 50421, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Scent of Blood
 ( 53386, 0x30,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Rune of Cinderglacier
 ( 56375, 0x00,   3, 0x01000000, 0x00000000, 0x00000000, 0x00010000, 0x00000000,   0,   0,   0), -- Glyphs of Polymorph
@@ -26894,6 +26898,7 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 39610, 'spell_sha_mana_tide_totem'),
 ( -1535, 'spell_sha_fire_nova'),
 -- mage
+(-11113, 'spell_mage_blast_wave'),
 ( 11958, 'spell_mage_cold_snap'),
 ( 31687, 'spell_mage_summon_water_elemental'),
 ( 32826, 'spell_mage_polymorph_visual'),

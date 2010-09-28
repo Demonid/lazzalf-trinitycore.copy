@@ -7958,7 +7958,7 @@ void Player::UpdateEquipSpellsAtFormChange()
         if (!eff)
             continue;
 
-        for (uint32 y=0; y<8; ++y)
+        for (uint32 y = 0; y < MAX_ITEM_SET_SPELLS; ++y)
         {
             SpellEntry const* spellInfo = eff->spells[y];
             if (!spellInfo)
@@ -8011,7 +8011,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
     //if (damageInfo->procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
     {
-        for (uint8 i = 0; i < 5; ++i)
+        for (uint8 i = 0; i < MAX_ITEM_SPELLS; ++i)
         {
             _Spell const& spellData = proto->Spells[i];
 
@@ -8069,7 +8069,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
         uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(e_slot));
         SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
         if (!pEnchant) continue;
-        for (uint8 s = 0; s < 3; ++s)
+        for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
         {
             if (pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                 continue;
@@ -8204,7 +8204,7 @@ void Player::CastItemUseSpell(Item *item,SpellCastTargets const& targets,uint8 c
         SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
         if (!pEnchant)
             continue;
-        for (uint8 s = 0; s < 3; ++s)
+        for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
         {
             if (pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_USE_SPELL)
                 continue;
@@ -13276,7 +13276,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
 
     if (!item->IsBroken())
     {
-        for (int s = 0; s < 3; ++s)
+        for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
         {
             uint32 enchant_display_type = pEnchant->type[s];
             uint32 enchant_amount = pEnchant->amount[s];
@@ -13310,7 +13310,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                                 if (item_rand)
                                 {
                                     // Search enchant_amount
-                                    for (int k = 0; k < 3; ++k)
+                                    for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
                                     {
                                         if (item_rand->enchant_id[k] == enchant_id)
                                         {
@@ -13336,7 +13336,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         ItemRandomSuffixEntry const *item_rand = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
                         if (item_rand)
                         {
-                            for (int k = 0; k < 3; ++k)
+                            for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
                             {
                                 if (item_rand->enchant_id[k] == enchant_id)
                                 {
@@ -13356,7 +13356,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         ItemRandomSuffixEntry const *item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
                         if (item_rand_suffix)
                         {
-                            for (int k = 0; k < 3; ++k)
+                            for (int k = 0; k < MAX_ITEM_ENCHANTMENT_EFFECTS; ++k)
                             {
                                 if (item_rand_suffix->enchant_id[k] == enchant_id)
                                 {
@@ -18910,7 +18910,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
         if (spellInfo)
         {
-            for (uint32 i = 0; i < 7; ++i)
+            for (uint32 i = 0; i < MAX_SPELL_REAGENTS; ++i)
             {
                 if (spellInfo->Reagent[i] > 0)
                 {
@@ -19385,34 +19385,7 @@ void Player::RemoveSpellMods(Spell * spell)
 {
     if (!spell)
         return;
-    std::set <Aura *> checkedSpells;
-
-    AuraEffectList const & auraList = GetAuraEffectsByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
-    for (AuraEffectList::const_iterator itr = auraList.begin(); itr != auraList.end();)
-    {
-        AuraEffect * aurEff = *itr;
-        Aura * aura = aurEff->GetBase();
-        ++itr;
-        if (!aura->GetCharges())
-            continue;
-
-        SpellEntry const * spellInfo = aura->GetSpellProto();
-
-        if (spellInfo->SpellFamilyName != spell->m_spellInfo->SpellFamilyName ||
-            checkedSpells.find(aura) != checkedSpells.end())
-            continue;
-
-        if (spell->m_spellInfo->SpellFamilyFlags & spellInfo->EffectSpellClassMask[aurEff->GetEffIndex()]
-        // this is for fingers of frost, look at spell::finish part, a charge will be taken by the triggering spell
-            && aura->GetDuration() != aura->GetMaxDuration())
-        {
-            checkedSpells.insert(aura);
-            spell->m_appliedMods.erase(aura);
-            if (aura->DropCharge())
-                itr = auraList.begin();
-        }
-    }
-
+    
     if (spell->m_appliedMods.empty())
         return;
 
@@ -20017,7 +19990,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         if (iece->reqarenapoints)
             ModifyArenaPoints(- int32(iece->reqarenapoints * count));
 
-        for (uint8 i = 0; i < 5; ++i)
+        for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
         {
             if (iece->reqitem[i])
                 DestroyItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count), true);
@@ -20144,7 +20117,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
 
         // item base price
-        for (uint8 i = 0; i < 5; ++i)
+        for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
         {
             if (iece->reqitem[i] && !HasItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count)))
             {
@@ -20321,7 +20294,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
     {
         if (ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemId))
         {
-            for (uint8 idx = 0; idx < 5; ++idx)
+            for (uint8 idx = 0; idx < MAX_ITEM_SPELLS; ++idx)
             {
                 if (uint32(proto->Spells[idx].SpellId) == spellInfo->Id)
                 {
@@ -20433,7 +20406,7 @@ void Player::UpdatePotionCooldown(Spell* spell)
     {
         // spell/item pair let set proper cooldown (except not existed charged spell cooldown spellmods for potions)
         if (ItemPrototype const* proto = ObjectMgr::GetItemPrototype(m_lastPotionId))
-            for (uint8 idx = 0; idx < 5; ++idx)
+            for (uint8 idx = 0; idx < MAX_ITEM_SPELLS; ++idx)
                 if (proto->Spells[idx].SpellId && proto->Spells[idx].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
                     if (SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[idx].SpellId))
                         SendCooldownEvent(spellInfo,m_lastPotionId);
@@ -21528,7 +21501,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
 
     // check learned spells state
     bool found = false;
-    for (uint8 i = 0; i < 3; ++i)
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->EffectTriggerSpell[i]))
         {
@@ -23789,7 +23762,7 @@ void Player::BuildPlayerTalentsInfoData(WorldPacket *data)
             // find class talent tabs (all players have 3 talent tabs)
             uint32 const* talentTabIds = GetTalentTabPages(getClass());
 
-            for (uint8 i = 0; i < 3; ++i)
+            for (uint8 i = 0; i < MAX_TALENT_TABS; ++i)
             {
                 uint32 talentTabId = talentTabIds[i];
 
@@ -24467,7 +24440,7 @@ void Player::SendRefundInfo(Item *item)
     data << uint32(item->GetPaidMoney());               // money cost
     data << uint32(iece->reqhonorpoints);               // honor point cost
     data << uint32(iece->reqarenapoints);               // arena point cost
-    for (uint8 i = 0; i < 5; ++i)                       // item cost data
+    for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)                       // item cost data
     {
         data << uint32(iece->reqitem[i]);
         data << uint32(iece->reqitemcount[i]);
@@ -24533,7 +24506,7 @@ void Player::RefundItem(Item *item)
     }
 
     bool store_error = false;
-    for (uint8 i = 0; i < 5; ++i)
+    for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
     {
         uint32 count = iece->reqitemcount[i];
         uint32 itemid = iece->reqitem[i];
@@ -24565,7 +24538,7 @@ void Player::RefundItem(Item *item)
     data << uint32(item->GetPaidMoney());               // money cost
     data << uint32(iece->reqhonorpoints);               // honor point cost
     data << uint32(iece->reqarenapoints);               // arena point cost
-    for (uint8 i = 0; i < 5; ++i)                       // item cost data
+    for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i) // item cost data
     {
         data << iece->reqitem[i];
         data << (iece->reqitemcount[i]);
@@ -24579,7 +24552,7 @@ void Player::RefundItem(Item *item)
     DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 
     // Grant back extendedcost items
-    for (uint8 i = 0; i < 5; ++i)
+    for (uint8 i = 0; i < MAX_ITEM_EXTENDED_COST_REQUIREMENTS; ++i)
     {
         uint32 count = iece->reqitemcount[i];
         uint32 itemid = iece->reqitem[i];
