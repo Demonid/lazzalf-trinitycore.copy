@@ -76,7 +76,7 @@ enum WG_STRING_LOCALE_INDEX
     MAX_WG_STRINGS
 };
 
-const std::string WG_STRING_LOCALE[MAX_WG_STRINGS][MAX_LOCALE] =
+const std::string WG_STRING_LOCALE[MAX_WG_STRINGS][TOTAL_LOCALES] =
 {
     {"Flamewatch", "", "", "Flammenaugenturm", "", "", "", "", ""},
     {"Shadowsight", "", "", "Schattenblickturm", "", "", "", "", ""},

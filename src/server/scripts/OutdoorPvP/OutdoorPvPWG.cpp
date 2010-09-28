@@ -36,7 +36,7 @@ void OutdoorPvPWG::ResetCreatureEntry(Creature *cr, uint32 entry)
 
 std::string OutdoorPvPWG::GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleConstant loc)
 {
-    if (idx >= MAX_WG_STRINGS || loc >= MAX_LOCALE)
+    if (idx >= MAX_WG_STRINGS || loc >= TOTAL_LOCALES)
     {
         sLog.outError("WINTERGRASP: Bad call of OutdoorPvPWG::GetLocaleString()!");
         return "[STRING NOT FOUND]";
