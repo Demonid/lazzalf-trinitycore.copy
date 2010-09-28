@@ -3970,6 +3970,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 62661:     // Searing Flames
         case 61915:     // Lightning Whirl 10
         case 63483:     // Lightning Whirl 25
+        case 55098:     // Transformation
             spellInfo->InterruptFlags = 47;
             count++;
             break;
