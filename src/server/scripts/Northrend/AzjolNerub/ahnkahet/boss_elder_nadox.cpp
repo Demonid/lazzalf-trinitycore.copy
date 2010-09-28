@@ -54,6 +54,7 @@ enum Creatures
 };
 
 #define EMOTE_HATCHES                       "An Ahn'kahar Guardian hatches!"
+#define ELDER_NADOX 29309
 
 class boss_elder_nadox : public CreatureScript
 {
@@ -214,8 +215,14 @@ public:
 
         void JustDied(Unit * /*killer*/)
         {
-            if (me->GetEntry() == MOB_AHNKAHAR_GUARDIAN_ENTRY)
-                DeadAhnkaharGuardian = true;
+            if (pInstance)
+			{
+				if(IsHeroic())
+				{
+					if (Creature* pNadox = me->FindNearestCreature(ELDER_NADOX,60,true))
+					CAST_AI(boss_elder_nadox::boss_elder_nadoxAI,pNadox->AI())->DeadAhnkaharGuardian = true;
+				}
+			}                
         }
 
         void EnterCombat(Unit * /*who*/){}
