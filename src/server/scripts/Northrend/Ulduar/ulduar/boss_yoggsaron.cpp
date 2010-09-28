@@ -657,7 +657,7 @@ class boss_sara : public CreatureScript
                             events.SetPhase(PHASE_2);
                             DoZoneInCombat();
                             me->GetMotionMaster()->MoveJump(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()+20, 10, 15);
-                            me->SummonCreature(NPC_YOGG_SARON,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),3.14,TEMPSUMMON_CORPSE_TIMED_DESPAWN,600000);
+                            me->SummonCreature(NPC_YOGG_SARON,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),3.14f,TEMPSUMMON_CORPSE_TIMED_DESPAWN,600000);
                             JumpToNextStep(5000);
                             break;
                         case 6:
