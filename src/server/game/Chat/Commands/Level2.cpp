@@ -4101,7 +4101,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
         if (!Utf8FitTo(name, wnamepart))
         {
             loc = 0;
-            for (; loc < MAX_LOCALE; ++loc)
+            for (; loc < TOTAL_LOCALES; ++loc)
             {
                 if (loc == GetSessionDbcLocale())
                     continue;
@@ -4115,7 +4115,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
             }
         }
 
-        if (loc < MAX_LOCALE)
+        if (loc < TOTAL_LOCALES)
         {
             targetSkillInfo = skillInfo;
             break;
@@ -4671,7 +4671,7 @@ bool ChatHandler::HandleLookupTitleCommand(const char* args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -4685,7 +4685,7 @@ bool ChatHandler::HandleLookupTitleCommand(const char* args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && counter == maxResults)
                 {

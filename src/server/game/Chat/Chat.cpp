@@ -1636,7 +1636,7 @@ valid examples:
                                 return false;
                             }
 
-                            for (uint8 i=0; i<MAX_LOCALE; ++i)
+                            for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
                             {
                                 uint32 skillLineNameLength = strlen(skillLine->name[i]);
                                 if (skillLineNameLength > 0 && strncmp(skillLine->name[i], buffer, skillLineNameLength) == 0)
@@ -1649,7 +1649,7 @@ valid examples:
                             }
                         }
                         bool foundName = false;
-                        for (uint8 i=0; i<MAX_LOCALE; ++i)
+                        for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
                         {
                             if (*linkedSpell->SpellName[i] && strcmp(linkedSpell->SpellName[i], buffer) == 0)
                             {
@@ -1708,7 +1708,7 @@ valid examples:
                             ItemLocale const *il = sObjectMgr.GetItemLocale(linkedItem->ItemId);
 
                             bool foundName = false;
-                            for (uint8 dbIndex = LOCALE_koKR; dbIndex < MAX_LOCALE; ++dbIndex)
+                            for (uint8 dbIndex = LOCALE_koKR; dbIndex < TOTAL_LOCALES; ++dbIndex)
                             {
                                 if (il == NULL || dbIndex >= il->Name.size())
                                     // using strange database/client combinations can lead to this case
@@ -1738,7 +1738,7 @@ valid examples:
                     else if (linkedAchievement)
                     {
                         bool foundName = false;
-                        for (uint8 i=0; i<MAX_LOCALE; ++i)
+                        for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
                         {
                             if (*linkedAchievement->name[i] && strcmp(linkedAchievement->name[i], buffer) == 0)
                             {

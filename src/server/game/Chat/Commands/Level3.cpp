@@ -3131,7 +3131,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char *args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -3145,7 +3145,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char *args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && count++ == maxResults)
                 {
@@ -3204,7 +3204,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char *args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -3218,7 +3218,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char *args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && count++ == maxResults)
                 {
@@ -3291,7 +3291,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char *args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -3305,7 +3305,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char *args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && count++ == maxResults)
                 {
@@ -3689,7 +3689,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char *args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -3703,7 +3703,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char *args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && count++ == maxResults)
                 {
@@ -3787,7 +3787,7 @@ bool ChatHandler::HandleLookupTaxiNodeCommand(const char * args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for (; loc < MAX_LOCALE; ++loc)
+                for (; loc < TOTAL_LOCALES; ++loc)
                 {
                     if (loc == GetSessionDbcLocale())
                         continue;
@@ -3801,7 +3801,7 @@ bool ChatHandler::HandleLookupTaxiNodeCommand(const char * args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 if (maxResults && count++ == maxResults)
                 {
@@ -3858,7 +3858,7 @@ bool ChatHandler::HandleLookupMapCommand(const char *args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = LOCALE_enUS;
-                for (; loc < MAX_LOCALE; loc++)
+                for (; loc < TOTAL_LOCALES; loc++)
                 {
                     if (m_session && loc == m_session->GetSessionDbcLocale())
                         continue;
@@ -3872,7 +3872,7 @@ bool ChatHandler::HandleLookupMapCommand(const char *args)
                 }
             }
 
-            if (loc < MAX_LOCALE)
+            if (loc < TOTAL_LOCALES)
             {
                 // send map in "id - [name][Continent][Instance/Battleground/Arena][Raid reset time:][Heroic reset time:][Mountable]" format
                 std::ostringstream ss;
