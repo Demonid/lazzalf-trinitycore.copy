@@ -18,8 +18,6 @@
 #include "ScriptPCH.h"
 #include "ahnkahet.h"
 
-bool DeadAhnkaharGuardian; // needed for achievement: Respect Your Elders(2038)
-
 enum Achievements
 {
     ACHIEV_RESPECT_YOUR_ELDERS                    = 2038
@@ -76,6 +74,8 @@ public:
         uint32 uiEnragueTimer;
 
         bool bGuardSpawned;
+
+        bool DeadAhnkaharGuardian; // needed for achievement: Respect Your Elders(2038)
 
         InstanceScript *pInstance;
 
@@ -220,7 +220,7 @@ public:
 				if(IsHeroic())
 				{
 					if (Creature* pNadox = me->FindNearestCreature(ELDER_NADOX,60,true))
-					CAST_AI(boss_elder_nadox::boss_elder_nadoxAI,pNadox->AI())->DeadAhnkaharGuardian = true;
+					    CAST_AI(boss_elder_nadox::boss_elder_nadoxAI,pNadox->AI())->DeadAhnkaharGuardian = true;
 				}
 			}                
         }
