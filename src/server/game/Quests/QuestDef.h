@@ -376,4 +376,5 @@ struct QuestStatusData
     uint16 m_itemcount[ QUEST_ITEM_OBJECTIVES_COUNT ];
     uint16 m_creatureOrGOcount[ QUEST_OBJECTIVES_COUNT ];
 };
+
 #endif
