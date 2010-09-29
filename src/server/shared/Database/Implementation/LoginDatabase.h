@@ -30,7 +30,7 @@ class LoginDatabaseConnection : public MySQLConnection
         LoginDatabaseConnection(ACE_Activation_Queue* q) : MySQLConnection(q) {}
 
         //- Loads databasetype specific prepared statements
-        bool Open(const std::string& infoString);
+        bool Open(const MySQLConnectionInfo& connInfo);
 };
 
 typedef DatabaseWorkerPool<LoginDatabaseConnection> LoginDatabaseWorkerPool;
@@ -56,9 +56,13 @@ enum LoginDatabaseStatements
     LOGIN_GET_LOGONCHALLENGE,
     LOGIN_SET_FAILEDLOGINS,
     LOGIN_GET_FAILEDLOGINS,
-
     LOGIN_GET_ACCIDBYNAME,
     LOGIN_GET_NUMCHARSONREALM,
+    LOGIN_GET_ACCOUNT_BY_IP,
+    LOGIN_SET_IP_BANNED,
+    LOGIN_SET_IP_NOT_BANNED,
+    LOGIN_SET_ACCOUNT_BANNED,
+    LOGIN_SET_ACCOUNT_NOT_BANNED,
 
     MAX_LOGINDATABASE_STATEMENTS,
 };

@@ -30,7 +30,7 @@ class CharacterDatabaseConnection : public MySQLConnection
         CharacterDatabaseConnection(ACE_Activation_Queue* q) : MySQLConnection(q) {}
 
         //- Loads databasetype specific prepared statements
-        bool Open(const std::string& infoString);
+        bool Open(const MySQLConnectionInfo& connInfo);
 };
 
 typedef DatabaseWorkerPool<CharacterDatabaseConnection> CharacterDatabaseWorkerPool;
@@ -102,6 +102,7 @@ enum CharacterDatabaseStatements
     CHAR_ADD_ITEM_BOP_TRADE,
     CHAR_DEL_INVENTORY_ITEM,
     CHAR_DEL_ITEM_INSTANCE,
+    CHAR_GET_ACCOUNT_BY_NAME,
     MAX_CHARACTERDATABASE_STATEMENTS,
 };
 
