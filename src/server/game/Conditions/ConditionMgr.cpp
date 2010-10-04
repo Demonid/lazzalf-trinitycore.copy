@@ -98,18 +98,6 @@ bool Condition::Meets(Player * player, Unit* invoker)
             condMeets = (status == QUEST_STATUS_NONE);
             break;
         }
-        case CONDITION_AD_COMMISSION_AURA:
-        {
-            Unit::AuraApplicationMap const& auras = player->GetAppliedAuras();
-            for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
-                if ((itr->second->GetBase()->GetSpellProto()->Attributes & (SPELL_ATTR_UNK4 | SPELL_ATTR_CASTABLE_WHILE_MOUNTED)) && itr->second->GetBase()->GetSpellProto()->SpellVisual[0] == 3580)
-                {
-                    condMeets = true;
-                    break;
-                }
-            condMeets = false;
-            break;
-        }
         case CONDITION_NO_AURA:
             condMeets = !player->HasAuraEffect(mConditionValue1, mConditionValue2);
             break;
@@ -164,6 +152,9 @@ bool Condition::Meets(Player * player, Unit* invoker)
         }
         case CONDITION_SPELL:
             condMeets = player->HasSpell(mConditionValue1);
+            break;
+        case CONDITION_NOITEM:
+            condMeets = !player->HasItemCount(mConditionValue1, 1, mConditionValue2 ? true : false);
             break;
         default:
             condMeets = false;
@@ -1056,15 +1047,6 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 sLog.outErrorDb("Quest condition has useless data in value2 (%u)!", cond->mConditionValue2);
             break;
         }
-        case CONDITION_AD_COMMISSION_AURA:
-        {
-            if (cond->mConditionValue1)
-                sLog.outErrorDb("Quest condition has useless data in value1 (%u)!", cond->mConditionValue1);
-
-            if (cond->mConditionValue2)
-                sLog.outErrorDb("Quest condition has useless data in value2 (%u)!", cond->mConditionValue2);
-            break;
-        }
         case CONDITION_NO_AURA:
         {
             if (!sSpellStore.LookupEntry(cond->mConditionValue1))
@@ -1247,6 +1229,16 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
 
             if (cond->mConditionValue2)
                 sLog.outErrorDb("Spell condition has useless data in value2 (%u)!", cond->mConditionValue2);
+            break;
+        }
+        case CONDITION_NOITEM:
+        {
+            ItemPrototype const *proto = sObjectMgr.GetItemPrototype(cond->mConditionValue1);
+            if (!proto)
+            {
+                sLog.outErrorDb("NoItem condition has non existing item (%u), skipped", cond->mConditionValue1);
+                return false;
+            }
             break;
         }
         case CONDITION_AREAID:
