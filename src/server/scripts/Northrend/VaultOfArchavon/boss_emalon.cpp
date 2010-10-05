@@ -20,7 +20,7 @@
 
 //Emalon spells
 #define SPELL_CHAIN_LIGHTNING           RAID_MODE(64213, 64215)
-#define SPELL_LIGHTNING_NOVA            64216//RAID_MODE(64216, 65279)
+#define SPELL_LIGHTNING_NOVA            RAID_MODE(64216, 65279) //64216
 #define SPELL_OVERCHARGE                64218                   //Casted every 45 sec on a random Tempest Minion
 #define SPELL_BERSERK                   26662
 
