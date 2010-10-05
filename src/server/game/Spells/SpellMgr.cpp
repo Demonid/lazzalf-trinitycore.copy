@@ -3200,6 +3200,10 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
         if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 57669)
             return false;
 
+        // Yogg-Saron's Sanity should not stack
+        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 63050)
+            return false;
+
         // check same periodic auras
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
