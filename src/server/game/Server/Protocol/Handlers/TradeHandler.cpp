@@ -162,9 +162,9 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 }
 
                 // store
-                trader->MoveItemToInventory(traderDst, myItems[i], true, true);
                 if (myItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
                     myItems[i]->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, trader->GetTotalPlayedTime()-(_player->GetTotalPlayedTime()-myItems[i]->GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME)));
+                trader->MoveItemToInventory(traderDst, myItems[i], true, true);
             }
             if (hisItems[i])
             {
@@ -179,9 +179,9 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 }
 
                 // store
-                _player->MoveItemToInventory(playerDst, hisItems[i], true, true);
                 if (hisItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
                     hisItems[i]->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, _player->GetTotalPlayedTime()-(trader->GetTotalPlayedTime()-hisItems[i]->GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME)));
+                _player->MoveItemToInventory(playerDst, hisItems[i], true, true);
             }
         }
         else
