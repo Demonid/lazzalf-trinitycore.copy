@@ -1998,11 +1998,10 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                     if (target->GetAura(62039) &&  target->GetAura(62821))
                         target->RemoveAurasDueToSpell(62039);
                     // DoT stacks when the target remains stationary for 4 seconds
-                    else if (GetAmount() >= 4 || !target->GetAura(62039))
+                    else if (target->HasAura(62039) && (target->isMoving() || target->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING)))
+                        target->RemoveAuraFromStack(62039);                    
+                    else if (GetAmount() && GetAmount() % 4 == 0)
                         target->AddAura(62039, target);
-                    else if (target->GetAura(62039)->GetStackAmount() > 1 && 
-                        (target->isMoving() || target->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING)))
-                        target->RemoveAuraFromStack(62039);
                 }
                 break;
             case 62039: // Biting Cold damage
