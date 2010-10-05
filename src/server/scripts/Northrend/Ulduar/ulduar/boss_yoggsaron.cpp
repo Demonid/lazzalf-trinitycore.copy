@@ -54,6 +54,9 @@ enum YoggSaron_Yells
     WHISP_INSANITY_1                            = -1603339,
     WHISP_INSANITY_2                            = -1603340,
     SAY_DEATH                                   = -1603341,
+    EMOTE_PORTALS                               = -1603342,
+    EMOTE_OPEN_CHAMBER                          = -1603343,
+    EMOTE_EMPOWERING                            = -1603344
 };
 
 #define GOSSIP_KEEPER_HELP                      "I need your help."
@@ -233,7 +236,6 @@ enum Events
     EVENT_TENTACLES,
     EVENT_LUNATIC_GAZE,
     EVENT_SHADOW_BEACON,
-    EVENT_EMPOWERING_SHADOWS,
     EVENT_IMMORTAL_GUARDIAN,
     EVENT_DEAFENING_ROAR
 };
@@ -597,12 +599,12 @@ class boss_sara : public CreatureScript
                     switch(eventId)
                     {
                         case EVENT_PSYCHOSIS:
-                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                                 DoCast(pTarget, SPELL_PSYCHOSIS);
                             events.ScheduleEvent(EVENT_PSYCHOSIS, urand(4000, 6000), 0, PHASE_2);
                             break;
                         case EVENT_MALADY_OF_THE_MIND:
-                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                                 DoCast(pTarget, SPELL_MALADY_OF_THE_MIND);
                             events.ScheduleEvent(EVENT_MALADY_OF_THE_MIND, urand(15000, 20000), 0, PHASE_2);
                             break;
@@ -781,6 +783,9 @@ class boss_yoggsaron : public CreatureScript
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
                         Player* pPlayer = itr->getSource();
+
+                        if (!pPlayer)
+                            continue;
                         
                         if (pPlayer->isDead() || pPlayer->HasAura(SPELL_SANITY) || pPlayer->HasAura(SPELL_INSANE))
                             continue;
@@ -810,6 +815,9 @@ class boss_yoggsaron : public CreatureScript
                             break;
                         case EVENT_ILLUSION:
                             DoScriptText(SAY_VISION, me);
+                            Map::PlayerList const &players = pInstance->instance->GetPlayers();
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                DoScriptText(EMOTE_PORTALS, me, itr->getSource());
                             OpenIllusion();
                             events.ScheduleEvent(EVENT_ILLUSION, urand(80000, 85000), 0, PHASE_2);
                             break;
@@ -836,7 +844,12 @@ class boss_yoggsaron : public CreatureScript
                             break;
                         case EVENT_SHADOW_BEACON:
                             if (Creature *pImmortal = me->FindNearestCreature(NPC_IMMORTAL_GUARDIAN,80,true))
+                            {
+  	                            Map::PlayerList const &players = pInstance->instance->GetPlayers();
+  	                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+  	                                DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
                                 me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
+                            }
                             events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
                             break;
                         case EVENT_DEAFENING_ROAR:
@@ -953,7 +966,7 @@ class boss_yoggsaron : public CreatureScript
                 case 0:
                     me->SummonCreature(NPC_CRUSHER_TENTACLE, TentaclesPos[rand()%22]);
                     me->SummonCreature(NPC_CORRUPTOR_TENTACLE, TentaclesPos[rand()%22]);
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                     {
                         Position pos;
                         pTarget->GetRandomNearPosition(pos, 5);
@@ -963,7 +976,7 @@ class boss_yoggsaron : public CreatureScript
                     break;
                 case 1:
                     me->SummonCreature(NPC_CORRUPTOR_TENTACLE, TentaclesPos[rand()%22]);
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                     {
                         Position pos;
                         pTarget->GetRandomNearPosition(pos, 5);
@@ -973,7 +986,7 @@ class boss_yoggsaron : public CreatureScript
                     break;
                 case 2:
                     me->SummonCreature(NPC_CORRUPTOR_TENTACLE, TentaclesPos[rand()%22]);
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 80, true))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                     {
                         Position pos;
                         pTarget->GetRandomNearPosition(pos, 5);
@@ -1092,6 +1105,11 @@ class boss_brain_yoggsaron : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         if (GameObject* pDoor = me->FindNearestGameObject(GOB_CHAMBER_DOOR + illusion, 60))
                             pDoor->SetGoState(GO_STATE_ACTIVE);
+                        // The Illusion shatters and a path to the central chamber opens!
+                        std::list<Unit*> unitList;
+                        me->GetRaidMember(unitList, 80);
+                        for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                            DoScriptText(EMOTE_OPEN_CHAMBER, me, *itr);
                     }
                     break;
                 case ACTION_CHAMBER_ILLUSION:
@@ -1358,6 +1376,25 @@ class npc_descend_into_madness : public CreatureScript
             }
         }
     };
+};
+
+class npc_passive_illusions : public CreatureScript
+{
+    public:
+        npc_passive_illusions(): CreatureScript("npc_passive_illusions") {}    
+
+ 	CreatureAI* GetAI(Creature* pCreature) const
+  	{
+  	    return new npc_passive_illusionsAI (pCreature);
+  	};
+
+    struct npc_passive_illusionsAI : public PassiveAI
+ 	{
+ 	    npc_passive_illusionsAI(Creature *c) : PassiveAI(c)
+  	    {
+ 	        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
+  	    }
+  	};
 };
 
 /*------------------------------------------------------*
@@ -1924,6 +1961,7 @@ void AddSC_boss_yogg_saron()
     new npc_death_orb();
     new npc_laughing_skull();
     new npc_illusion();
+    new npc_passive_illusions();
     new npc_descend_into_madness();
     new npc_constrictor_tentacle();
     new npc_crusher_tentacle();

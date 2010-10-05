@@ -151,14 +151,20 @@ class boss_general_vezax : public CreatureScript
             events.ScheduleEvent(EVENT_DARKNESS, 60000);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
             
-            // This ability affects Shaman with the Shamanistic Rage talent
-            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
-            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            if (pInstance)
             {
-                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                
-                if (pTarget->HasSpell(SPELL_SHAMANTIC_RAGE))
-                    DoCast(pTarget, SPELL_CORRUPTED_RAGE);
+                // This ability affects Shaman with the Shamanistic Rage talent
+                Map::PlayerList const &players = pInstance->instance->GetPlayers();
+                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                {
+                    Player* pPlayer = itr->getSource();
+                            
+                    if (!pPlayer)
+                        continue;
+
+                    if (pPlayer->HasSpell(SPELL_SHAMANTIC_RAGE))
+                        DoCast(pPlayer, SPELL_CORRUPTED_RAGE, true);
+                }
             }
         }
         
