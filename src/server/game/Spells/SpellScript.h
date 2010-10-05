@@ -152,6 +152,8 @@ class SpellScript : public _SpellScript
         void _InitHit();
         bool _IsEffectPrevented(SpellEffIndex effIndex) {return m_hitPreventEffectMask & (1<<effIndex);};
         bool _IsDefaultEffectPrevented(SpellEffIndex effIndex) {return m_hitPreventDefaultEffectMask & (1<<effIndex);};
+        void _PrepareScriptCall(SpellScriptHookType hookType);
+        void _FinishScriptCall();
         bool IsInHitPhase() { return (m_currentScriptState >= HOOK_SPELL_HIT_START && m_currentScriptState < HOOK_SPELL_HIT_END); };
         bool IsInEffectHook() { return (m_currentScriptState == SPELL_SCRIPT_HOOK_EFFECT); };
     private:
@@ -192,8 +194,19 @@ class SpellScript : public _SpellScript
         SpellEntry const * GetSpellInfo();
 
         // methods useable after spell targets are set
-        // returns: destination of the spell if exists, otherwise NULL
-        WorldLocation * GetDest();
+        // accessors to the "focus" targets of the spell
+        // note: do not confuse these with spell hit targets
+        // returns: WorldLocation which was selected as a spell destination or NULL
+        WorldLocation * GetTargetDest();
+
+        // returns: Unit which was selected as a spell target or NULL
+        Unit * GetTargetUnit();
+
+        // returns: GameObject which was selected as a spell target or NULL
+        GameObject * GetTargetGObj();
+
+        // returns: Item which was selected as a spell target or NULL
+        Item * GetTargetItem();
 
         // methods useable only during spell hit on target phase:
 
