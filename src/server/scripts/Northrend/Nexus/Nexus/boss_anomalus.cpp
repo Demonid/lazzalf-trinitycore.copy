@@ -216,7 +216,7 @@ public:
 
         void JustDied(Unit * /*killer*/)
         {
-            if (IsHeroic() && pInstance && (pInstance->GetData(DATA_ANOMALUS_EVENT) == IN_PROGRESS)) //fix'd
+            if (Creature* pAnomalus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ANOMALUS) : 0))
                 CAST_AI(boss_anomalus::boss_anomalusAI,pAnomalus->AI())->bDeadChaoticRift = true;
         }
 
