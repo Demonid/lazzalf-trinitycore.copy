@@ -1,21 +1,19 @@
 /*
+ * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "Common.h"
@@ -121,6 +119,8 @@ m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE), m_HostileRefManager(this)
 
     m_extraAttacks = 0;
     m_canDualWield = false;
+
+    m_rootTimes = 0;
 
     m_state = 0;
     m_form = FORM_NONE;
@@ -15465,11 +15465,14 @@ void Unit::SetRooted(bool apply)
 {
     if (apply)
     {
+        if (m_rootTimes > 0) //blizzard internal check?
+            m_rootTimes++;
+
 //        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
         data.append(GetPackGUID());
-        data << (uint32)2;
+        data << m_rootTimes;
         SendMessageToSet(&data,true);
 
         if (GetTypeId() != TYPEID_PLAYER)
@@ -15479,9 +15482,11 @@ void Unit::SetRooted(bool apply)
     {
         if (!hasUnitState(UNIT_STAT_STUNNED))      // prevent allow move if have also stun effect
         {
+            m_rootTimes++; //blizzard internal check?
+
             WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
             data.append(GetPackGUID());
-            data << (uint32)2;
+            data << m_rootTimes;
             SendMessageToSet(&data,true);
 
 //            RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
