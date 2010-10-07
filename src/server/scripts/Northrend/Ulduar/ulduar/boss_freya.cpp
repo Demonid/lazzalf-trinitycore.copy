@@ -830,10 +830,9 @@ class creature_iron_roots : public CreatureScript
 
         void JustDied(Unit* victim)
         {
-            if (pPlayerGUID)
-                if (Creature *pTarget = Creature::GetCreature((*me), pPlayerGUID))
-                        if (pTarget->isAlive())
-                            pTarget->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
+            if (Player *pTarget = Unit::GetPlayer((*me), pPlayerGUID))
+                if (pTarget->isAlive())
+                    pTarget->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
         }
     };
 
