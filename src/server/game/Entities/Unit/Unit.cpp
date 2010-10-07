@@ -12971,7 +12971,7 @@ void Unit::IncrDiminishing(DiminishingGroup group)
 
 float Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, int32 limitduration)
 {
-    if (duration == -1 || group == DIMINISHING_NONE || caster->IsFriendlyTo(this))
+    if (duration == -1 || group == DIMINISHING_NONE /* || caster->IsFriendlyTo(this)*/ )
         return 1.0f;
 
     // test pet/charm masters instead pets/charmeds
