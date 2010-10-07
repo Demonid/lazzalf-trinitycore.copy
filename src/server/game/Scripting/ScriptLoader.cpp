@@ -25,6 +25,12 @@ void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
 
+//TeleNPC2
+void AddSC_npc_teleport();
+
+//Guild House
+void AddSC_guildhouse_npcs();
+
 // spells
 void AddSC_deathknight_spell_scripts();
 void AddSC_druid_spell_scripts();
@@ -376,7 +382,9 @@ void AddSC_boss_ormorok();
 void AddSC_boss_keristrasza();
 void AddSC_instance_nexus();
 void AddSC_boss_drakos();                //The Nexus The Oculus
+void AddSC_boss_eregos();
 void AddSC_boss_urom();
+void AddSC_boss_varos();
 void AddSC_instance_oculus();
 void AddSC_oculus();
 void AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -398,6 +406,12 @@ void AddSC_boss_razorscale();
 void AddSC_boss_xt002();
 void AddSC_boss_kologarn();
 void AddSC_boss_assembly_of_iron();
+void AddSC_boss_hodir();
+void AddSC_boss_freya();
+void AddSC_boss_thorim();
+void AddSC_boss_mimiron();
+void AddSC_boss_general_vezax();
+void AddSC_boss_yogg_saron();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -429,6 +443,8 @@ void AddSC_boss_xevozz();
 void AddSC_boss_zuramat();
 void AddSC_instance_violet_hold();
 void AddSC_violet_hold();
+void AddSC_instance_eye_of_eternity();   // Malygos
+void AddSC_boss_malygos(); 
 void AddSC_instance_forge_of_souls();   //Forge of Souls
 void AddSC_forge_of_souls();
 void AddSC_boss_bronjahm();
@@ -437,7 +453,7 @@ void AddSC_instance_pit_of_saron();     //Pit of Saron
 void AddSC_pit_of_saron();
 void AddSC_boss_garfrost();
 void AddSC_boss_ick();
-void AddSC_boss_tyrannus();
+void AddSC_boss_tyrannus();  
 void AddSC_instance_halls_of_reflection();   // Halls of Reflection
 void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
@@ -458,6 +474,7 @@ void AddSC_howling_fjord();
 void AddSC_icecrown();
 void AddSC_sholazar_basin();
 void AddSC_storm_peaks();
+void AddSC_wintergrasp();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
 
@@ -552,6 +569,7 @@ void AddSC_outdoorpvp_na();
 void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
 void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_wg();
 
 // player
 void AddSC_chat_log();
@@ -581,6 +599,7 @@ void AddExampleScripts()
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
 }
+	
 
 void AddSpellScripts()
 {
@@ -617,6 +636,10 @@ void AddWorldScripts()
     AddSC_npc_taxi();
     AddSC_achievement_scripts();
     AddSC_chat_log();
+    //TeleNPC2
+    AddSC_npc_teleport();
+    //Guild House
+    AddSC_guildhouse_npcs(); 
 #endif
 }
 
@@ -1035,7 +1058,9 @@ void AddNorthrendScripts()
     AddSC_boss_keristrasza();
     AddSC_instance_nexus();
     AddSC_boss_drakos();                //The Nexus The Oculus
+    AddSC_boss_eregos();
     AddSC_boss_urom();
+    AddSC_boss_varos();
     AddSC_instance_oculus();
     AddSC_oculus();
     AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -1057,6 +1082,12 @@ void AddNorthrendScripts()
     AddSC_boss_xt002();
     AddSC_boss_assembly_of_iron();
     AddSC_boss_kologarn();
+    AddSC_boss_hodir();
+    AddSC_boss_freya();
+    AddSC_boss_thorim();
+ 	AddSC_boss_mimiron();
+ 	AddSC_boss_general_vezax();
+    AddSC_boss_yogg_saron();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
@@ -1088,6 +1119,8 @@ void AddNorthrendScripts()
     AddSC_boss_zuramat();
     AddSC_instance_violet_hold();
     AddSC_violet_hold();
+    AddSC_instance_eye_of_eternity();   // Malygos
+    AddSC_boss_malygos();
     AddSC_instance_forge_of_souls();   //Forge of Souls
     AddSC_forge_of_souls();
     AddSC_boss_bronjahm();
@@ -1117,6 +1150,7 @@ void AddNorthrendScripts()
     AddSC_icecrown();
     AddSC_sholazar_basin();
     AddSC_storm_peaks();
+    AddSC_wintergrasp();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
 #endif
@@ -1131,6 +1165,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
+    AddSC_outdoorpvp_wg();
 #endif
 }
 

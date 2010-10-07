@@ -1473,7 +1473,7 @@ class Player : public Unit, public GridObject<Player>
         }
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
-
+ 
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
@@ -1555,6 +1555,7 @@ class Player : public Unit, public GridObject<Player>
         void AddTemporarySpell(uint32 spellId);
         void RemoveTemporarySpell(uint32 spellId);
         void SetReputation(uint32 factionentry, uint32 value);
+        void SetOneFactionReputation(uint32 factionentry, uint32 value);
         uint32 GetReputation(uint32 factionentry);
         std::string GetGuildName();
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
@@ -1766,6 +1767,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
+        void ApplySpellPenetrationBonus(int32 amount, bool apply);
         void UpdateResistances(uint32 school);
         void UpdateArmor();
         void UpdateMaxHealth();
@@ -1792,6 +1794,7 @@ class Player : public Unit, public GridObject<Player>
         float GetRatingCoefficient(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
+        uint32 GetBaseSpellPenetrationBonus() { return m_baseSpellPenetration; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
@@ -2162,6 +2165,23 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         uint32 EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+	    // Char datas...
+		bool m_jail_warning;
+		bool m_jail_amnestie;
+		bool m_jail_isjailed;           // Is this player jailed?
+		std::string m_jail_char;        // Name of jailed char
+		uint32 m_jail_guid;             // guid of the jailed char
+		uint32 m_jail_release;          // When is the player a free man/woman?
+		std::string m_jail_reason;      // Why was the char jailed?
+		uint32 m_jail_times;			// How often was the player jailed?
+  	    uint32 m_jail_amnestietime;
+		uint32 m_jail_gmacc;            // Used GM acc
+		std::string m_jail_gmchar;      // Used GM char
+		std::string m_jail_lasttime;    // Last jail time
+		uint32 m_jail_duration;         // Duration of the jail
+		// Load / save functions...
+		void _LoadJail(void);           // Loads the jail datas
+		void _SaveJail(void);           // Saves the jail datas
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2532,6 +2552,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_baseFeralAP;
         uint32 m_baseManaRegen;
         uint32 m_baseHealthRegen;
+        uint16 m_baseSpellPenetration;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
         //uint32 m_pad;
@@ -2592,6 +2613,28 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
+
+        // movement anticheat
+        time_t m_anti_LastClientTime;           // last movement client time
+        time_t m_anti_LastServerTime;           // last movement server time
+        time_t m_anti_DeltaClientTime;          // client side session time
+        time_t m_anti_DeltaServerTime;          // server side session time
+        uint32 m_anti_MistimingCount;           // mistiming count
+        time_t m_logcheat_time;
+
+        time_t m_anti_LastSpeedChangeTime;      // last speed change time
+
+        float m_anti_Last_HSpeed;               // horizontal speed, default RUN speed
+        float m_anti_Last_VSpeed;               // vertical speed, default max jump height
+
+        uint32 m_anti_TeleToPlane_Count;        // Teleport To Plane alarm counter
+
+        uint64 m_anti_AlarmCount;               // alarm counter
+
+        uint16 m_anti_JumpCount;                // Jump already began, anti air jump check
+        float m_anti_JumpBaseZ;                 // Z coord before jump
+        // end movement anticheat
+
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;
