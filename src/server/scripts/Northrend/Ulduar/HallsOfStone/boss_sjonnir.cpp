@@ -208,10 +208,11 @@ public:
         }
 
         void JustSummoned(Creature* summon)
-        {
+        {        
+        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+            summon->AI()->AttackStart(pTarget);
+        else
             summon->GetMotionMaster()->MovePoint(0, CenterPoint.x, CenterPoint.y, CenterPoint.z);
-            /*if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                summon->AI()->AttackStart(pTarget);*/
             lSummons.Summon(summon);
         }
 
