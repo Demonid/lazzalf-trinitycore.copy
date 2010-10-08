@@ -429,6 +429,8 @@ class mob_right_arm : public CreatureScript
         {
             m_pInstance = me->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, 64708, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
         }
 
         InstanceScript* m_pInstance;
@@ -561,6 +563,8 @@ class mob_left_arm : public CreatureScript
         mob_left_armAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = me->GetInstanceScript();
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+ 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
         }
 
         InstanceScript* m_pInstance;
