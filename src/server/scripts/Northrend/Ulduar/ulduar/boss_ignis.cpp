@@ -90,6 +90,7 @@ enum ConstructSpells
 // Achievements
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
 #define ACHIEVEMENT_SHATTERED                 RAID_MODE(2925, 2926)
+#define ACHIEVEMENT_HOT_POCKET                RAID_MODE(2927, 2928)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
 // Water coords
@@ -258,6 +259,15 @@ class boss_ignis : public CreatureScript
                         {
                             SlagPotTarget->ExitVehicle();
                             SlagPotTarget->CastSpell(SlagPotTarget, RAID_MODE(SPELL_SLAG_IMBUED_10, SPELL_SLAG_IMBUED_25), true);
+
+							//database handling of this achievement doesn't seem to work :|
+							if (Player* pSlagPotPlayer = SlagPotTarget->ToPlayer())
+							{
+								AchievementEntry const *AchievHotPocket = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HOT_POCKET);
+								if (AchievHotPocket)
+									pSlagPotPlayer->getSource()->CompletedAchievement(AchievHotPocket);
+							}
+
                             events.CancelEvent(EVENT_END_POT);
                         }
                         break;
