@@ -852,6 +852,9 @@ void GameObject::Respawn()
 
 bool GameObject::ActivateToQuest(Player *pTarget) const
 {
+    if (pTarget->HasQuestForGO(GetEntry()))
+        return true;
+
     if (!sObjectMgr.IsGameObjectForQuests(GetEntry()))
         return false;
 
@@ -870,6 +873,12 @@ bool GameObject::ActivateToQuest(Player *pTarget) const
                             return false;
                 return true;
             }
+            break;
+        }
+        case GAMEOBJECT_TYPE_GENERIC:
+        {
+            if (pTarget->GetQuestStatus(GetGOInfo()->_generic.questID) == QUEST_STATUS_INCOMPLETE || GetGOInfo()->_generic.questID == -1)
+                return true;
             break;
         }
         case GAMEOBJECT_TYPE_GOOBER:
