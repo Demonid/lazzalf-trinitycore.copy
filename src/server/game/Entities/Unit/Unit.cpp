@@ -1103,13 +1103,13 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     switch (attackType)
     {
         case BASE_ATTACK:
-            damageInfo->procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
-            damageInfo->procVictim   = PROC_FLAG_TAKEN_MELEE_HIT;
+            damageInfo->procAttacker = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_DONE_MAINHAND_ATTACK;
+            damageInfo->procVictim   = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK;
             damageInfo->HitInfo      = HITINFO_NORMALSWING2;
             break;
         case OFF_ATTACK:
-            damageInfo->procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_HIT | PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
-            damageInfo->procVictim   = PROC_FLAG_TAKEN_MELEE_HIT;//|PROC_FLAG_TAKEN_OFFHAND_HIT // not used
+            damageInfo->procAttacker = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_DONE_OFFHAND_ATTACK;
+            damageInfo->procVictim   = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK;
             damageInfo->HitInfo = HITINFO_LEFTSWING;
             break;
         default:
@@ -1266,7 +1266,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     // Calculate absorb resist
     if (int32(damageInfo->damage) > 0)
     {
-        damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
+        damageInfo->procVictim |= PROC_FLAG_TAKEN_DAMAGE;
         // Calculate absorb & resists
         CalcAbsorbResist(damageInfo->target, SpellSchoolMask(damageInfo->damageSchoolMask), DIRECT_DAMAGE, damageInfo->damage, &damageInfo->absorb, &damageInfo->resist);
         damageInfo->damage -= damageInfo->absorb + damageInfo->resist;
@@ -2837,7 +2837,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         if (reflectchance > 0 && roll_chance_i(reflectchance))
         {
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-            ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_MAGIC_SPELL, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
+            ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
             return SPELL_MISS_REFLECT;
         }
     }
@@ -6626,7 +6626,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             if (dummySpell->SpellIconID == 3579)
             {
                 // Proc only from periodic (from trap activation proc another aura of this spell)
-                if (!(procFlag & PROC_FLAG_ON_DO_PERIODIC) || !roll_chance_i(triggerAmount))
+                if (!(procFlag & PROC_FLAG_DONE_PERIODIC) || !roll_chance_i(triggerAmount))
                     return false;
                 triggered_spell_id = 56453;
                 target = this;
@@ -6719,7 +6719,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
             // Sacred Shield
             if (dummySpell->SpellFamilyFlags[1]&0x00080000)
             {
-                if (procFlag & PROC_FLAG_TAKEN_POSITIVE_MAGIC_SPELL)
+                if (procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS)
                 {
                     if (procSpell->SpellFamilyName == SPELLFAMILY_PALADIN
                         && (procSpell->SpellFamilyFlags[0] & 0x40000000))
@@ -6840,7 +6840,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         return false;
 
                     // At melee attack or Hammer of the Righteous spell damage considered as melee attack
-                    if ((procFlag & PROC_FLAG_SUCCESSFUL_MELEE_HIT) || (procSpell && procSpell->Id == 53595))
+                    if ((procFlag & PROC_FLAG_DONE_MELEE_AUTO_ATTACK) || (procSpell && procSpell->Id == 53595))
                         triggered_spell_id = 31803;
                     // On target with 5 stacks of Holy Vengeance direct damage is done
                     if (Aura * aur = pVictim->GetAura(triggered_spell_id, GetGUID()))
@@ -6854,7 +6854,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     }
 
                     // Only Autoattack can stack debuff
-                    if (procFlag & PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT)
+                    if (procFlag & PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS)
                         return false;
                     break;
                 }
@@ -6865,7 +6865,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         return false;
 
                     // At melee attack or Hammer of the Righteous spell damage considered as melee attack
-                    if ((procFlag & PROC_FLAG_SUCCESSFUL_MELEE_HIT) || (procSpell && procSpell->Id == 53595))
+                    if ((procFlag & PROC_FLAG_DONE_MELEE_AUTO_ATTACK) || (procSpell && procSpell->Id == 53595))
                         triggered_spell_id = 53742;
                     // On target with 5 stacks of Blood Corruption direct damage is done
                     if (Aura * aur = pVictim->GetAura(triggered_spell_id, GetGUID()))
@@ -6879,7 +6879,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     }
 
                     // Only Autoattack can stack debuff
-                    if (procFlag & PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT)
+                    if (procFlag & PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS)
                         return false;
                     break;
                 }
@@ -8811,7 +8811,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         case 56453:
         {
             // Proc only from Frost/Freezing trap activation or from Freezing Arrow (the periodic dmg proc handled elsewhere)
-            if (!(procFlags & PROC_FLAG_ON_TRAP_ACTIVATION) || !procSpell || !(procSpell->SchoolMask & SPELL_SCHOOL_MASK_FROST) || !roll_chance_i(triggerAmount))
+            if (!(procFlags & PROC_FLAG_DONE_TRAP_ACTIVATION) || !procSpell || !(procSpell->SchoolMask & SPELL_SCHOOL_MASK_FROST) || !roll_chance_i(triggerAmount))
                 return false;
             break;
         }
@@ -8869,7 +8869,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
 
     // try detect target manually if not set
     if (target == NULL)
-       target = !(procFlags & (PROC_FLAG_SUCCESSFUL_POSITIVE_MAGIC_SPELL | PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL_HIT)) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
+       target = !(procFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS)) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
 
     // default case
     if ((!target && !sSpellMgr.IsSrcTargetSpell(triggerEntry)) || (target && target != this && !target->isAlive()))
@@ -14086,7 +14086,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit * pTarget, uint32 procFlag,
 
         // Triggered spells not triggering additional spells
         bool triggered= !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CAN_PROC_TRIGGERED) ?
-            (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_ON_TRAP_ACTIVATION)) : false;
+            (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_DONE_TRAP_ACTIVATION)) : false;
 
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -14890,7 +14890,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
         return false;
 
     // Additional checks for triggered spells (ignore trap casts)
-    if (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_ON_TRAP_ACTIVATION))
+    if (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_DONE_TRAP_ACTIVATION))
     {
         if (!(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CAN_PROC_TRIGGERED))
             return false;
@@ -14916,7 +14916,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura * aura, SpellEntry co
     // Aura added by spell can`t trigger from self (prevent drop charges/do triggers)
     // But except periodic and kill triggers (can triggered from self)
     if (procSpell && procSpell->Id == spellProto->Id
-        && !(spellProto->procFlags&(PROC_FLAG_ON_TAKE_PERIODIC | PROC_FLAG_KILL)))
+        && !(spellProto->procFlags&(PROC_FLAG_TAKEN_PERIODIC | PROC_FLAG_KILL)))
         return false;
 
     // Check if current equipment allows aura to proc
