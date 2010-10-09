@@ -267,6 +267,7 @@ public:
 
     class spell_gen_aura_of_anger_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_gen_aura_of_anger_AuraScript)
         void HandleEffectPeriodicUpdate(AuraEffect * aurEff)
         {
             if (AuraEffect * aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
@@ -294,6 +295,7 @@ public:
 
     class spell_gen_burn_brutallus_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_gen_burn_brutallus_AuraScript)
         void HandleEffectPeriodicUpdate(AuraEffect * aurEff)
         {
             if (aurEff->GetTickNumber() % 11 == 0)
@@ -326,6 +328,7 @@ public:
 
     class spell_gen_parachute_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_gen_parachute_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_PARACHUTE))
@@ -372,6 +375,7 @@ public:
 
     class spell_gen_pet_summonedSpellScript : public SpellScript
     {
+        PrepareSpellScript(spell_gen_pet_summonedSpellScript)
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
             Unit *caster = GetCaster();
@@ -428,6 +432,7 @@ public:
 
     class spell_gen_remove_flight_auras_SpellScript : public SpellScript
     {
+        PrepareSpellScript(spell_gen_remove_flight_auras_SpellScript)
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
             Unit *target = GetHitUnit();
@@ -463,6 +468,7 @@ public:
 
     class spell_gen_leeching_swarm_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_gen_leeching_swarm_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_LEECHING_SWARM_DMG))
@@ -521,6 +527,7 @@ public:
 
     class spell_gen_trick_SpellScript : public SpellScript
     {
+        PrepareSpellScript(spell_gen_trick_SpellScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_PIRATE_COSTUME_MALE))
@@ -591,6 +598,7 @@ public:
 
     class spell_gen_trick_or_treat_SpellScript : public SpellScript
     {
+        PrepareSpellScript(spell_gen_trick_or_treat_SpellScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_TRICK))
@@ -630,6 +638,7 @@ class spell_creature_permanent_feign_death : public SpellScriptLoader
 
         class spell_creature_permanent_feign_deathAuraScript : public AuraScript
         {
+            PrepareAuraScript(spell_creature_permanent_feign_deathAuraScript)
             void HandleEffectApply(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp, AuraEffectHandleModes /*mode*/)
             {
                 Unit* pTarget = aurApp->GetTarget();
@@ -665,6 +674,7 @@ public:
 
     class spell_pvp_trinket_wotf_shared_cd_SpellScript : public SpellScript
     {
+        PrepareSpellScript(spell_pvp_trinket_wotf_shared_cd_SpellScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_WILL_OF_THE_FORSAKEN_COOLDOWN_TRIGGER))
