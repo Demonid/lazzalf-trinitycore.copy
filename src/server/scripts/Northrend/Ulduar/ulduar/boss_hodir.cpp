@@ -146,6 +146,7 @@ class npc_flash_freeze_pre : public CreatureScript
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
+            targetGUID = 0;
         }
         
         uint64 targetGUID;
@@ -180,16 +181,16 @@ class npc_flash_freeze_pre : public CreatureScript
                         pHodir->AI()->DoZoneInCombat();
         }
 
-        /*void JustDied(Unit* pKiller)
+        void JustDied(Unit* pKiller)
         {
             if (targetGUID)
                 if (Creature *ptarget = Creature::GetCreature((*me), targetGUID))
 		        {
-                    //ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
-                    if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
-                    	ptarget->AddThreat(pHodir, 500000.0f);
+                    ptarget->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
+                    /*if (Creature* pHodir = me->FindNearestCreature(NPC_HODIR,60,true))
+                    	ptarget->AddThreat(pHodir, 500000.0f);*/
 		        }
-        }*/
+        }
         
         void Reset()
         {
@@ -247,7 +248,7 @@ class boss_hodir : public CreatureScript
                         pIceBlock->AddThreat(pHelper, 500000.0f);
                         CAST_AI(npc_flash_freeze_pre::npc_flash_freeze_preAI,pIceBlock->AI())->SetTargetGuid(pHelper->GetGUID());
                         pIceBlock->CastSpell(pHelper, SPELL_BLOCK_OF_ICE_NPC, true);
-                        //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
+                        pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_STUNNED | UNIT_FLAG_PACIFIED);
                         //pHelper->SetFlag(UNIT_FIELD_FLAGS, UNIT_STAT_ROOT);            
                         pHelper->AddThreat(me, 500000.0f);
                         continue;
