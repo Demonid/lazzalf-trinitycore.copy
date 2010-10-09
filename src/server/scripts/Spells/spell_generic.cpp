@@ -47,6 +47,7 @@ public:
 
     class spell_ram_neutral_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_ram_neutral_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
@@ -102,6 +103,7 @@ public:
 
     class spell_ram_trot_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_ram_trot_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
@@ -157,6 +159,7 @@ public:
 
     class spell_ram_canter_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_ram_canter_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
@@ -209,6 +212,7 @@ public:
 
     class spell_ram_gallop_AuraScript : public AuraScript
     {
+        PrepareAuraScript(spell_ram_gallop_AuraScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
             if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
