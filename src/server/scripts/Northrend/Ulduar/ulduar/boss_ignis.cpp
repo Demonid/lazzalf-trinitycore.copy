@@ -265,7 +265,7 @@ class boss_ignis : public CreatureScript
 							{
 								AchievementEntry const *AchievHotPocket = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HOT_POCKET);
 								if (AchievHotPocket)
-									pSlagPotPlayer->getSource()->CompletedAchievement(AchievHotPocket);
+									pSlagPotPlayer->CompletedAchievement(AchievHotPocket);
 							}
 
                             events.CancelEvent(EVENT_END_POT);
