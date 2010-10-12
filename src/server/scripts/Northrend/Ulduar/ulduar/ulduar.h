@@ -37,6 +37,9 @@ enum Encounter
     BOSS_ALGALON,
     MAX_BOSS_NUMBER
 };
+    DATA_EXP_COMMANDER          = 25,
+
+    NPC_EXPEDITION_COMMANDER    = 33210,
 
 enum Data64
 {
