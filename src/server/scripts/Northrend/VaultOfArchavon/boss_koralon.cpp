@@ -117,10 +117,10 @@ class boss_koralon : public CreatureScript
 
             DoCast(me, SPELL_BURNING_FURY);
 
-            events.ScheduleEvent(EVENT_BURNING_FURY, 20000);    // TODO check timer
+            events.ScheduleEvent(EVENT_BURNING_FURY, 20000);    // timer ok
             events.ScheduleEvent(EVENT_BURNING_BREATH, 15000);  // 1st after 15sec, then every 45sec
-            events.ScheduleEvent(EVENT_METEOR_FISTS_A, 75000);  // 1st after 75sec, then every 45sec
-            events.ScheduleEvent(EVENT_FLAME_CINDER_A, 30000);  // TODO check timer
+            events.ScheduleEvent(EVENT_METEOR_FISTS_A, 30000);  // 1st after 30sec, then every 45sec
+            events.ScheduleEvent(EVENT_FLAME_CINDER_A, 5000);  // timer ok - TODO: check for RANDOM target
 
             if (pInstance)
                 pInstance->SetData(DATA_KORALON_EVENT, IN_PROGRESS);
