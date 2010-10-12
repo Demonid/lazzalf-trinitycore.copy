@@ -620,27 +620,17 @@ class npc_keeper_norgannon : public CreatureScript
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        if (!pPlayer)
-            return false;
-
-        InstanceScript *data = pPlayer->GetInstanceScript();
-        InstanceScript *pInstance = pCreature->GetInstanceScript();
-        
-        if (!data || !pInstance)
-            return false;
-
         if (pPlayer)
         {
- 	        if (data->GetBossState(BOSS_LEVIATHAN) != DONE)
-                if (data->GetBossState(BOSS_LEVIATHAN) != SPECIAL)
-                {
-                    pPlayer->PrepareQuestMenu(pCreature->GetGUID());
-                    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
-                    pPlayer->SEND_GOSSIP_MENU(13910, pCreature->GetGUID());
-                }
+            InstanceScript *instance = pCreature->GetInstanceScript();
+ 	        if (instance && (instance->GetBossState(BOSS_LEVIATHAN) != DONE))
+            {
+                pPlayer->PrepareGossipMenu(pCreature);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
+                pPlayer->SEND_GOSSIP_MENU(13910, pCreature->GetGUID());
+            }            
+            else pPlayer->SEND_GOSSIP_MENU(1, pCreature->GetGUID());
         }
-        else pPlayer->SEND_GOSSIP_MENU(1, pCreature->GetGUID());
-
         return true;
     };
 
@@ -648,23 +638,20 @@ class npc_keeper_norgannon : public CreatureScript
     {
         pPlayer->PlayerTalkClass->ClearMenus();
 
-        InstanceScript *data = pPlayer->GetInstanceScript();
         InstanceScript* pInstance = pCreature->GetInstanceScript();
 
-        if (!data || !pInstance)
-            return false;
+        if (!pInstance)
+            return true;
 
-        switch(uiAction)
+        switch (uiAction)
         {
             case GOSSIP_ACTION_INFO_DEF:
-                if (pPlayer)
-                    pPlayer->CLOSE_GOSSIP_MENU();
+                pPlayer->CLOSE_GOSSIP_MENU();
                 if (Creature* Norgannon = Unit::GetCreature(*pCreature, pInstance ? pInstance->GetData64(DATA_NORGANNON) : 0))
                     if (Norgannon->isAlive())
                     {
                         Norgannon->AI()->DoAction(ACTION_VEHICLE_RESPAWN);
-                        if (data)
-                            data->SetBossState(BOSS_LEVIATHAN, SPECIAL);
+                        //pInstance->SetBossState(BOSS_LEVIATHAN, SPECIAL);
                     }
                 break;
         }
