@@ -34,6 +34,8 @@ DELETE FROM `script_texts` WHERE entry BETWEEN -1999925 AND -1000000;
 INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`) VALUES
    (0,-1000000,'<TrinityScript Text Entry Missing!>',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'DEFAULT_TEXT'),
    (0,-1000001,'%s goes into a killing frenzy!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0,'EMOTE_GENERIC_FRENZY_KILL'),
+   (0,-1000002,'%s goes into a frenzy!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0,'EMOTE_GENERIC_FRENZY'),
+   (0,-1000003,'%s becomes enraged!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0,'EMOTE_GENERIC_ENRAGED'),
    (0,-1000004,'goes into a berserker rage!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0,'EMOTE_GENERIC_BERSERK'),
    (0,-1000005,'UNUSED',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'REUSE ME'),
 
@@ -1888,6 +1890,11 @@ INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`
    (26668,-1575019,'You were a fool to challenge the power of the Lich King!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Svala Sorrowgrave SAY_SLAY_1'),
    (26668,-1575020,'Your will is done, my king.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Svala Sorrowgrave SAY_SLAY_2'),
    (26668,-1575022,'Nooo! I did not come this far... to...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Svala Sorrowgrave SAY_DEATH'),
+   (26668,-1575023,'Your death approaches.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13850,1,0,0,'svala SAY_SACRIFICE_1'),
+   (26668,-1575024,'Go now to my master.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13851,1,0,0,'svala SAY_SACRIFICE_2'),
+   (26668,-1575025,'Your end is inevitable.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13852,1,0,0,'svala SAY_SACRIFICE_3'),
+   (26668,-1575026,'Yor-guul mak!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13853,1,0,0,'svala SAY_SACRIFICE_4'),
+   (26668,-1575027,'Any last words?',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13854,1,0,0,'svala SAY_SACRIFICE_5'),
    (26861,-1575028,'You invade my home and then dare to challenge me? I will tear the hearts from your chests and offer them as gifts to the death god! Rualg nja gaborr!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13609,1,0,0,'King Ymirom - SAY_AGGRO'),
    (26861,-1575029,'Your death is only the beginning!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13614,1,0,0,'King Ymirom - SAY_SLAY_1'),
    (26861,-1575030,'You have failed your people!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,13615,1,0,0,'King Ymirom - SAY_SLAY_2'),
@@ -2523,8 +2530,16 @@ INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`
    (33350,-1603259,'Combat matrix enhanced. Behold wonderous rapidity!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15630,1,0,0,'Mimiron SAY_YS_HELP'),
 
 -- Razorscale encounter
-   (33210,-1603260,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15647,1,0,0,'Exp. Commander SAY_INTRO'),
-   (33210,-1603261,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15648,1,0,0,'Exp. Commander SAY_GROUND'),
+
+   (33186,-1603268, 'Razorscale grounded permanently!', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0, 'EMOTE_PERMA'),
+   (33186,-1603267, 'Razorscale takes a deep breath...', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0, 'EMOTE_BREATH'),
+   (33287,-1603266, 'Harpoon Turret is ready for use!', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,2,0,0, 'EMOTE_HARPOON'),
+   (33287,-1603265, 'Fires out! Let''s rebuild those turrets!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,1,0,0, 'SAY_TURRETS'),
+   (33287,-1603264, 'Ready to move out, keep those dwarves off of our backs!', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,1,0,0, 'SAY_AGGRO_3'),
+   (33287,-1603263, 'Be on the lookout! Mole machines will be surfacing soon with those nasty Iron dwarves aboard!', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,1,0,0, 'SAY_AGGRO_2'),
+   (33287,-1603262, 'Give us a moment to prepare to build the turrets.', NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,1,0,0, 'SAY_AGGRO_1'),
+   (33210,-1603260, 'Welcome, champions! All of our attempts at grounding her have failed. We could use a hand in bring her down with these harpoon guns.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15647,0,0,0,'Exp. Commander SAY_INTRO'),
+   (33210,-1603261, 'Move! Quickly! She won''t remain grounded for long.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15648,1,0,0,'Exp. Commander SAY_GROUND'),
 
 -- Thorim
    (33413,-1603270,'Interlopers! You mortals who dare to interfere with my sport will pay... Wait--you...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15733,1,0,0,'Thorim SAY_AGGRO_1'),
