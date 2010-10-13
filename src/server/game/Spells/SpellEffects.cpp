@@ -345,6 +345,26 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
 
                 switch(m_spellInfo->Id)                     // better way to check unknown
                 {
+                    //Ulduar Vehicle Spell Immunes
+                    case 65045: //Flames on Oil
+                    case 65044: //Flames on Oil
+                    case 62357: //Fire Cannon
+                    case 62363: //Anti-Air Racket
+                    case 62635: //Mortar
+                    case 62307: //Hurl Boulder
+                    {
+                        if (m_caster->GetMapId() == 603)
+                        {
+                            if (unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                damage = 0;
+                                break;
+                            }
+                            if (unitTarget->GetEntry() == 33109 || unitTarget->GetEntry() == 33060 || unitTarget->GetEntry() == 33062)
+                                damage = 0;
+                        }
+                        break;
+                   }  
                     // Positive/Negative Charge
                     case 28062:
                     case 28085:
