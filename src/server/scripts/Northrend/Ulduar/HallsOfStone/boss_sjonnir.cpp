@@ -62,7 +62,6 @@ enum SjonnirCreatures
 
 enum Misc
 {
-    DATA_TIME_BEFORE_OOZE                                  = 150000, //2min 30 secs
     ACHIEV_ABUSE_THE_OOZE                                  = 2155
 };
 
@@ -185,7 +184,7 @@ public:
             if (uiSummonTimer <= diff)
             {
                 uint32 uiSummonPipe = rand()%2;
-                me->SummonCreature(uiEncounterTimer > DATA_TIME_BEFORE_OOZE ? CREATURE_MALFORMED_OOZE :
+                me->SummonCreature(HealthBelowPct(50) ? CREATURE_MALFORMED_OOZE :
                                            RAND(CREATURE_FORGED_IRON_DWARF,CREATURE_FORGED_IRON_TROGG),
                                            PipeLocations[uiSummonPipe].x, PipeLocations[uiSummonPipe].y, PipeLocations[uiSummonPipe].z, 0.0f,
                                            TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
