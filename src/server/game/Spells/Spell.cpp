@@ -1887,7 +1887,7 @@ void Spell::SearchGOAreaTarget(std::list<GameObject*> &TagGOMap, float radius, S
     m_caster->GetMap()->VisitGrid(pos->m_positionX, pos->m_positionY, radius, searcher);
 }
 
-WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
+WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType, SpellEffIndex effIndex)
 {
     switch(TargetType)
     {
@@ -1898,9 +1898,9 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             {
                 sLog.outDebug("Spell (ID: %u) (caster Entry: %u) does not have record in `conditions` for spell script target (ConditionSourceType 14)", m_spellInfo->Id, m_caster->GetEntry());
                 if (IsPositiveSpell(m_spellInfo->Id))
-                    return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
+                    return SearchNearbyTarget(range, SPELL_TARGETS_ALLY, effIndex);
                 else
-                    return SearchNearbyTarget(range, SPELL_TARGETS_ENEMY);
+                    return SearchNearbyTarget(range, SPELL_TARGETS_ENEMY, effIndex);
             }
 
             Creature* creatureScriptTarget = NULL;
@@ -1909,6 +1909,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             for (ConditionList::const_iterator i_spellST = conditions.begin(); i_spellST != conditions.end(); ++i_spellST)
             {
                 if ((*i_spellST)->mConditionType != CONDITION_SPELL_SCRIPT_TARGET)
+                    continue;
+                if ((*i_spellST)->mConditionValue3 && !((*i_spellST)->mConditionValue3 & (1 << uint32(effIndex))))
                     continue;
                 switch((*i_spellST)->mConditionValue1)
                 {
@@ -2097,20 +2099,20 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 case TARGET_UNIT_NEARBY_ENEMY:
                     range = GetSpellMaxRange(m_spellInfo, false);
                     if (modOwner) modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
-                    target = SearchNearbyTarget(range, SPELL_TARGETS_ENEMY);
+                    target = SearchNearbyTarget(range, SPELL_TARGETS_ENEMY, SpellEffIndex(i));
                     break;
                 case TARGET_UNIT_NEARBY_ALLY:
                 case TARGET_UNIT_NEARBY_ALLY_UNK:
                 case TARGET_UNIT_NEARBY_RAID:
                     range = GetSpellMaxRange(m_spellInfo, true);
                     if (modOwner) modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
-                    target = SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
+                    target = SearchNearbyTarget(range, SPELL_TARGETS_ALLY, SpellEffIndex(i));
                     break;
                 case TARGET_UNIT_NEARBY_ENTRY:
                 case TARGET_GAMEOBJECT_NEARBY_ENTRY:
                     range = GetSpellMaxRange(m_spellInfo, IsPositiveSpell(m_spellInfo->Id));
                     if (modOwner) modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
-                    target = SearchNearbyTarget(range, SPELL_TARGETS_ENTRY);
+                    target = SearchNearbyTarget(range, SPELL_TARGETS_ENTRY, SpellEffIndex(i));
                     break;
             }
 
@@ -2313,7 +2315,7 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     float range = GetSpellMaxRange(m_spellInfo, IsPositiveSpell(m_spellInfo->Id));
                     if (modOwner) modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
 
-                    if (WorldObject *target = SearchNearbyTarget(range, SPELL_TARGETS_ENTRY))
+                    if (WorldObject *target = SearchNearbyTarget(range, SPELL_TARGETS_ENTRY, SpellEffIndex(i)))
                         m_targets.setDst(*target);
                     break;
                 }
@@ -2483,6 +2485,8 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     {
                         if ((*i_spellST)->mConditionType != CONDITION_SPELL_SCRIPT_TARGET)
                             continue;
+                        if ((*i_spellST)->mConditionValue3 && !((*i_spellST)->mConditionValue3 & (1<<i)))
+                            continue;
                         if ((*i_spellST)->mConditionValue1 == SPELL_TARGET_TYPE_CREATURE)
                             SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, (*i_spellST)->mConditionValue2);
                         else if ((*i_spellST)->mConditionValue1 == SPELL_TARGET_TYPE_CONTROLLED)
@@ -2581,6 +2585,8 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                     for (ConditionList::const_iterator i_spellST = conditions.begin(); i_spellST != conditions.end(); ++i_spellST)
                     {
                         if ((*i_spellST)->mConditionType != CONDITION_SPELL_SCRIPT_TARGET)
+                            continue;
+                        if ((*i_spellST)->mConditionValue3 && !((*i_spellST)->mConditionValue3 & (1<<i)))
                             continue;
                         if ((*i_spellST)->mConditionValue1 == SPELL_TARGET_TYPE_GAMEOBJECT)
                             SearchGOAreaTarget(gobjectList, radius, pushType, SPELL_TARGETS_GO, (*i_spellST)->mConditionValue2);
@@ -5444,6 +5450,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
+            case SPELL_EFFECT_TALENT_SPEC_SELECT:
+                // can't change during already started arena/battleground
+                if (Battleground const* bg = m_caster->ToPlayer()->GetBattleground())
+                    if (bg->GetStatus() == STATUS_IN_PROGRESS)
+                        return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+                break;
             default:
                 break;
         }

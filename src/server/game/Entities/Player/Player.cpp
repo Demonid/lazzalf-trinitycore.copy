@@ -2117,6 +2117,15 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     LeaveBattleground(false);                   // don't teleport to entry point
             }
 
+            // remove arena spell coldowns/buffs now to also remove pet's cooldowns before it's temporarily unsummoned
+            if (mEntry->IsBattleArena())
+            {
+                RemoveArenaSpellCooldowns(true);
+                RemoveArenaAuras();
+                if (pet)
+                    pet->RemoveArenaAuras();
+            }
+
             // remove pet on map change
             if (pet)
                 UnsummonPetTemporaryIfAny();
@@ -4033,17 +4042,17 @@ void Player::RemoveSpellCategoryCooldown(uint32 cat, bool update /* = false */)
     }
 }
 
-void Player::RemoveArenaSpellCooldowns()
+void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
 {
-    // remove cooldowns on spells that has < 15 min CD
+    // remove cooldowns on spells that have <= 10 min CD
+
     SpellCooldowns::iterator itr, next;
-    // iterate spell cooldowns
     for (itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); itr = next)
     {
         next = itr;
         ++next;
         SpellEntry const * entry = sSpellStore.LookupEntry(itr->first);
-        // check if spellentry is present and if the cooldown is less than 10 mins
+        // check if spellentry is present and if the cooldown is less or equal to 10 min
         if (entry &&
             entry->RecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
             entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS)
@@ -4052,6 +4061,18 @@ void Player::RemoveArenaSpellCooldowns()
             RemoveSpellCooldown(itr->first, true);
         }
     }
+
+    // pet cooldowns
+    if (removeActivePetCooldowns)
+        if (Pet *pet = GetPet())
+        {
+            // notify player
+            for (CreatureSpellCooldowns::const_iterator itr = pet->m_CreatureSpellCooldowns.begin(); itr != pet->m_CreatureSpellCooldowns.end(); ++itr)
+                SendClearCooldown(itr->first, pet);
+
+            // actually clear cooldowns
+            pet->m_CreatureSpellCooldowns.clear();
+        }
 }
 
 void Player::RemoveAllSpellCooldown()
@@ -5334,6 +5355,20 @@ void Player::RepopAtGraveyard()
         ResurrectPlayer(0.5f);
 }
 
+bool Player::CanJoinConstantChannelInZone(ChatChannelsEntry const* channel, AreaTableEntry const* zone)
+{
+    if (channel->flags & CHANNEL_DBC_FLAG_ZONE_DEP)
+    {
+        if (zone->flags & AREA_FLAG_ARENA_INSTANCE)
+            return false;
+
+        if ((channel->flags & CHANNEL_DBC_FLAG_CITY_ONLY) && !(zone->flags & AREA_FLAG_CAPITAL))
+            return false;
+    }
+
+    return true;
+}
+
 void Player::JoinedChannel(Channel *c)
 {
     m_channels.push_back(c);
@@ -5360,8 +5395,8 @@ void Player::CleanupChannels()
 
 void Player::UpdateLocalChannels(uint32 newZone)
 {
-    if (m_channels.empty())
-        return;
+    if (GetSession()->PlayerLoading() && !IsBeingTeleportedFar())
+        return;                                              // The client handles it automatically after loading, but not after teleporting
 
     AreaTableEntry const* current_zone = GetAreaEntryByAreaID(newZone);
     if (!current_zone)
@@ -5373,38 +5408,78 @@ void Player::UpdateLocalChannels(uint32 newZone)
 
     std::string current_zone_name = current_zone->area_name[GetSession()->GetSessionDbcLocale()];
 
-    for (JoinedChannelsList::iterator i = m_channels.begin(), next; i != m_channels.end(); i = next)
+    for (uint32 i = 0; i < sChatChannelsStore.GetNumRows(); ++i)
     {
-        next = i; ++next;
-
-        // skip non built-in channels
-        if (!(*i)->IsConstant())
-            continue;
-
-        ChatChannelsEntry const* ch = GetChannelEntryFor((*i)->GetChannelId());
-        if (!ch)
-            continue;
-
-        if ((ch->flags & 4) == 4)                            // global channel without zone name in pattern
-            continue;
-
-        //  new channel
-        char new_channel_name_buf[100];
-        snprintf(new_channel_name_buf,100,ch->pattern[m_session->GetSessionDbcLocale()],current_zone_name.c_str());
-        Channel* new_channel = cMgr->GetJoinChannel(new_channel_name_buf,ch->ChannelID);
-
-        if ((*i) != new_channel)
+        if (ChatChannelsEntry const* channel = sChatChannelsStore.LookupEntry(i))
         {
-            new_channel->Join(GetGUID(),"");                // will output Changed Channel: N. Name
+            if (!(channel->flags & CHANNEL_DBC_FLAG_ZONE_DEP))
+                continue;                                    // Not zone dependent, don't handle it here
 
-            // leave old channel
-            (*i)->Leave(GetGUID(),false);                   // not send leave channel, it already replaced at client
-            std::string name = (*i)->GetName();             // store name, (*i)erase in LeftChannel
-            LeftChannel(*i);                                // remove from player's channel list
-            cMgr->LeftChannel(name);                        // delete if empty
+            if ((channel->flags & CHANNEL_DBC_FLAG_GUILD_REQ) && GetGuildId())
+                continue;                                    // Should not join to these channels automatically
+
+            Channel* usedChannel = NULL;
+
+            for (JoinedChannelsList::iterator itr = m_channels.begin(); itr != m_channels.end(); ++itr)
+            {
+                if ((*itr)->GetChannelId() == i)
+                {
+                    usedChannel = *itr;
+                    break;
+                }
+            }
+
+            Channel* removeChannel = NULL;
+            Channel* joinChannel = NULL;
+            bool sendRemove = true;
+
+            if (CanJoinConstantChannelInZone(channel, current_zone))
+            {
+                if (!(channel->flags & CHANNEL_DBC_FLAG_GLOBAL))
+                {
+                    if (channel->flags & CHANNEL_DBC_FLAG_CITY_ONLY && usedChannel)
+                        continue;                            // Already on the channel, as city channel names are not changing
+
+                    char new_channel_name_buf[100];
+                    char const* currentNameExt;
+
+                    if (channel->flags & CHANNEL_DBC_FLAG_CITY_ONLY)
+                        currentNameExt = sObjectMgr.GetTrinityStringForDBCLocale(LANG_CHANNEL_CITY);
+                    else
+                        currentNameExt = current_zone_name.c_str();
+
+                    snprintf(new_channel_name_buf, 100, channel->pattern[m_session->GetSessionDbcLocale()], currentNameExt);
+
+                    joinChannel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
+                    if (usedChannel)
+                    {
+                        if (joinChannel != usedChannel)
+                        {
+                            removeChannel = usedChannel;
+                            sendRemove = false;              // Do not send leave channel, it already replaced at client
+                        }
+                        else
+                            joinChannel = NULL;
+                    }
+                }
+                else
+                    joinChannel = cMgr->GetJoinChannel(channel->pattern[m_session->GetSessionDbcLocale()], channel->ChannelID);
+            }
+            else
+                removeChannel = usedChannel;
+
+            if (joinChannel)
+                joinChannel->Join(GetGUID(), "");            // Changed Channel: ... or Joined Channel: ...
+
+            if (removeChannel)
+            {
+                removeChannel->Leave(GetGUID(), sendRemove); // Leave old channel
+                std::string name = removeChannel->GetName(); // Store name, (*i)erase in LeftChannel
+                LeftChannel(removeChannel);                  // Remove from player's channel list
+                cMgr->LeftChannel(name);                     // Delete if empty
+            }
         }
     }
-    sLog.outDebug("Player: channels cleaned up!");
 }
 
 void Player::LeaveLFGChannel()
@@ -24266,10 +24341,6 @@ void Player::ActivateSpec(uint8 spec)
     if (spec > GetSpecsCount())
         return;
 
-    // TODO:
-    // HACK: this shouldn't be checked at such a low level function but rather at the moment the spell is casted
-    if (GetMap()->IsBattleground() && !HasAura(44521) && (GetMap()->GetId() != 30)) // In Battleground with no Preparation buff (You can change spec in Alterac)
-        return;
 
     if (HasAura(28682)) // HackFix for remove Combustion
         RemoveAurasDueToSpell(28682);
