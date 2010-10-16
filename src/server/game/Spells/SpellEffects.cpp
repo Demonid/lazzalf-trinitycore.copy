@@ -3538,8 +3538,8 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
         if (!pEnchant)
             return;
 
-                        sLog.outCheat("Exploiting attempt: Player %s(GUID: %u) tried to apply an enchanement with Use: spell on an item that already has a Use: effect,"
-                                      " this should be blocked from client side.", p_caster->GetName(), p_caster->GetGUIDLow());                        
+        sLog.outCheat("Exploiting attempt: Player %s(GUID: %u) tried to apply an enchanement with Use: spell on an item that already has a Use: effect,"
+                      " this should be blocked from client side.", p_caster->GetName(), p_caster->GetGUIDLow());                        
         // item can be in trade slot and have owner diff. from caster
         Player* item_owner = itemTarget->GetOwner();
         if (!item_owner)
