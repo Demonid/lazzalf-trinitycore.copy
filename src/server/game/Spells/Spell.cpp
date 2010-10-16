@@ -5453,7 +5453,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
                 // can't change during already started arena/battleground
                 if (Battleground const* bg = m_caster->ToPlayer()->GetBattleground())
-                    if (bg->GetStatus() == STATUS_IN_PROGRESS)
+                    if (bg->GetStatus() == STATUS_IN_PROGRESS && (m_caster->GetMap() && (m_caster->GetMap()->GetId() != 30)))
                         return SPELL_FAILED_NOT_IN_BATTLEGROUND;
                 break;
             default:
