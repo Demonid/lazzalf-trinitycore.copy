@@ -1997,7 +1997,7 @@ void OutdoorPvPWG::EndBattle()
                 {
                     if ((*itr)->HasAura(SPELL_LIEUTENANT))
                     {
-                        marks = 3;
+                        marks = 4;
                         honor = baseHonor;
                     }
                     else if ((*itr)->HasAura(SPELL_CORPORAL))
@@ -2015,7 +2015,7 @@ void OutdoorPvPWG::EndBattle()
                 {
                     if ((*itr)->HasAura(SPELL_LIEUTENANT))
                     {
-                        marks = 1;
+                        marks = 2;
                         honor = baseHonor;
                     }
                     else if ((*itr)->HasAura(SPELL_CORPORAL))
