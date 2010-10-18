@@ -14496,6 +14496,11 @@ void Unit::StopMoving()
     //Relocate(GetPositionX(), GetPositionY(),GetPositionZ());
 
     SendMonsterStop();
+
+    // update position and orientation;
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data,false);
 }
 
 void Unit::SendMovementFlagUpdate()
