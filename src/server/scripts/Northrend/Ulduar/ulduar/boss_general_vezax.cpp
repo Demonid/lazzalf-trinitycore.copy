@@ -284,7 +284,7 @@ class boss_general_vezax : public CreatureScript
                 if (range_min < m_dist || m_dist > range_max)
                     continue;
 
-                PlList.insert(pPlayer->GetGUID());
+                PlList.push_back(pPlayer->GetGUID());
             }
             if (PlList.empty())
                 return NULL;            
