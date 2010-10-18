@@ -53,7 +53,7 @@ public:
 
         void HandleScript(SpellEffIndex /*effIndex*/)
         {           
-            if (Unit* pTarget = GetCaster())
+            if (Unit* pTarget = GetTargetUnit())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
                     if (Aura* aur = pPlayerTarget->GetAura(SPELL_TRICKY_TREAT))
                     {
