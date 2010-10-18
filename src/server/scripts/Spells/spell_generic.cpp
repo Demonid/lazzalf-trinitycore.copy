@@ -42,11 +42,11 @@ public:
         PrepareSpellScript(spell_gen_trick_treat_SpellScript)
         bool Validate(SpellEntry const * /*spellEntry*/)
         {
-            if (!sSpellStore.LookupEntry(SPELL_RAM_TRICK_TREAT))
+            if (!sSpellStore.LookupEntry(SPELL_TRICK_TREAT))
                 return false;
-            if (!sSpellStore.LookupEntry(SPELL_RAM_UPSET_TUMMY))
+            if (!sSpellStore.LookupEntry(SPELL_UPSET_TUMMY))
                 return false;
-            if (!sSpellStore.LookupEntry(SPELL_RAM_TRICKY_TREAT))
+            if (!sSpellStore.LookupEntry(SPELL_TRICKY_TREAT))
                 return false;
             return true;
         }
@@ -55,28 +55,28 @@ public:
         {           
             if (Unit* pTarget = GetCaster())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
-                    if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_TRICKY_TREAT))
+                    if (Aura* aur = pPlayerTarget->GetAura(SPELL_TRICKY_TREAT))
                     {
                         uint8 stack = aur->GetStackAmount();
                         if (stack == 2)
                         {
                             if (rand()%10 == 0)
-                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack == 3)
                         {
                             if (rand()%5 == 0)
-                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack == 4)
                         {
                             if (rand()%3 == 0)
-                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack >= 5)
                         {
                             if (rand()%2 == 0)
-                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                     } 
         }
