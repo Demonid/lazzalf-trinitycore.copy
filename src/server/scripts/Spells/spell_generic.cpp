@@ -60,23 +60,22 @@ public:
                         uint8 stack = aur->GetStackAmount();
                         if (stack == 2)
                         {
-                            if (rand()%10 == 0)
+                            if (rand()%5 == 0)
                                 pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack == 3)
                         {
-                            if (rand()%5 == 0)
+                            if (rand()%3 == 0)
                                 pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack == 4)
                         {
-                            if (rand()%3 == 0)
+                            if (rand()%2 == 0)
                                 pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                         else if (stack >= 5)
                         {
-                            if (rand()%2 == 0)
-                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
                         }
                     } 
         }
