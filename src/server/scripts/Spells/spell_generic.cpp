@@ -25,6 +25,74 @@
 #include "ScriptPCH.h"
 #include "SpellAuraEffects.h"
 
+enum eTrickTreatSpells
+{
+    SPELL_TRICK_TREAT     = 44436,
+    SPELL_UPSET_TUMMY     = 42966,
+    SPELL_TRICKY_TREAT    = 42919,
+};
+
+class spell_gen_trick_treat : public SpellScriptLoader
+{
+public:
+    spell_gen_trick_treat() : SpellScriptLoader("spell_gen_trick_treat") {}
+
+    class spell_gen_trick_treat_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_trick_treat_SpellScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_TRICK_TREAT))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_UPSET_TUMMY))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_TRICKY_TREAT))
+                return false;
+            return true;
+        }
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {           
+            if (Unit* pTarget = GetCaster())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                    if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_TRICKY_TREAT))
+                    {
+                        uint8 stack = aur->GetStackAmount();
+                        if (stack == 2)
+                        {
+                            if (rand()%10 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                        }
+                        else if (stack == 3)
+                        {
+                            if (rand()%5 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                        }
+                        else if (stack == 4)
+                        {
+                            if (rand()%3 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                        }
+                        else if (stack >= 5)
+                        {
+                            if (rand()%2 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_UPSET_TUMMY, true);
+                        }
+                    } 
+        }
+
+        void Register()
+        {
+            OnEffect += SpellEffectFn(spell_gen_trick_treat_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_trick_treat_SpellScript();
+    }
+};
+
 enum eRamSpells
 {
     SPELL_RAM_FATIGUE         = 43052,
