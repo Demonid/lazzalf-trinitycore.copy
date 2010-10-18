@@ -1208,7 +1208,7 @@ void Guild::Disband()
 
     CharacterDatabase.CommitTransaction(trans);
 
-    GHobj.ChangeGuildHouse(m_Id, 0); //Sell GuildHouse
+    GHobj.ChangeGuildHouse(m_id, 0); //Sell GuildHouse
     sObjectMgr.RemoveGuild(m_id);
 }
 
