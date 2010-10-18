@@ -269,6 +269,20 @@ class boss_general_vezax : public CreatureScript
             for(std::list<Creature*>::iterator iter = m_pCreatures.begin(); iter != m_pCreatures.end(); ++iter)
                 (*iter)->ForcedDespawn();
         }
+
+        /*Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min)
+        {
+            Map::PlayerList const &players = pInstance->instance->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                Player* pPlayer = itr->getSource();                        
+                if (!pPlayer)
+                    continue;
+
+                uint32 m_dist = pPlayer->GetDistance(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()
+                if (range_min <= m_dist && m_dist <= range_max)
+            }
+        }*/
     };
      
     CreatureAI* GetAI(Creature *pCreature) const
