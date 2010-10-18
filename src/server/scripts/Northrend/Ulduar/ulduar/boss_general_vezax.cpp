@@ -270,8 +270,9 @@ class boss_general_vezax : public CreatureScript
                 (*iter)->ForcedDespawn();
         }
 
-        /*Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min)
+        Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min)
         {
+            std::list<uint64> PlList;
             Map::PlayerList const &players = pInstance->instance->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
@@ -279,10 +280,26 @@ class boss_general_vezax : public CreatureScript
                 if (!pPlayer)
                     continue;
 
-                uint32 m_dist = pPlayer->GetDistance(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()
-                if (range_min <= m_dist && m_dist <= range_max)
+                uint32 m_dist = pPlayer->GetDistance(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ());
+                if (range_min < m_dist || m_dist > range_max)
+                    continue;
+
+                PlList.insert(pPlayer->GetGUID());
             }
-        }*/
+            if (PlList.empty())
+                return NULL;            
+            if (PlList.size() < player_min)
+                return NULL;
+
+            std::list<uint64>::const_iterator itr = PlList.begin();
+            std::advance(itr, urand(0, PlList.size()-1));
+            if (Player *pPlayer = Unit::GetPlayer(*me, *itr))
+            {
+                return pPlayer->ToUnit();
+            }
+            else
+                return NULL;
+        }
     };
      
     CreatureAI* GetAI(Creature *pCreature) const
