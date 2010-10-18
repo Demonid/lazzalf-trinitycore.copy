@@ -4003,10 +4003,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     // player's guild membership checked in AddMember before add
-    if (!targetGuild->AddMember (target_guid,targetGuild->GetLowestRank ()))
-        return false;
-
-    return true;
+    return targetGuild->AddMember(target_guid);
 }
 
 bool ChatHandler::HandleGuildUninviteCommand(const char *args)
@@ -4025,7 +4022,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (!targetGuild)
         return false;
 
-    targetGuild->DelMember (target_guid, false, true);
+    targetGuild->DeleteMember(target_guid, false, true);
     return true;
 }
 
@@ -4052,11 +4049,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
         return false;
 
     uint32 newrank = uint32 (atoi (rankStr));
-    if (newrank > targetGuild->GetLowestRank ())
-        return false;
-
-    targetGuild->ChangeRank (target_guid,newrank);
-    return true;
+    return targetGuild->ChangeMemberRank(target_guid, newrank);
 }
 
 bool ChatHandler::HandleGuildDeleteCommand(const char *args)
