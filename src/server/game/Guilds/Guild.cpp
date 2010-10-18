@@ -1202,7 +1202,13 @@ void Guild::Disband()
     stmt->setUInt32(0, m_id);
     trans->Append(stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_GUILDHOUSE);
+    stmt->setUInt32(0, m_id);
+    trans->Append(stmt);
+
     CharacterDatabase.CommitTransaction(trans);
+
+    GHobj.ChangeGuildHouse(m_Id, 0); //Sell GuildHouse
     sObjectMgr.RemoveGuild(m_id);
 }
 
