@@ -446,7 +446,7 @@ void GuildHouseObject::ControlGuildHouse()
             {                    
                 GHobj.ChangeGuildHouse((*itr).first, 0);
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->SetBankMoney(pGuild->GetGuildBankMoney()+((*itr).second.price * 75000), trans);
+                pGuild->ModifyBankMoney(trans, (*itr).second.price * 75000, true);
                 CharacterDatabase.CommitTransaction(trans);
             }           
     }
