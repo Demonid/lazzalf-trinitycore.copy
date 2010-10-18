@@ -786,6 +786,7 @@ public:
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_gen_trick_treat();
     new spell_ram_neutral();
     new spell_ram_trot();
     new spell_ram_canter();
