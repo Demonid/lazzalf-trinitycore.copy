@@ -21,6 +21,7 @@
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "Config.h"
+#include "GuildHouse.h"
 #include "SocialMgr.h"
 #include "Log.h"
 

@@ -79,7 +79,7 @@ class boss_volkhan : public CreatureScript
 public:
     boss_volkhan() : CreatureScript("boss_volkhan") { }
 
-    bool EffectDummyCreature(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+    bool OnDummyEffect(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
     {
         //always check spellid and effectindex
         if (uiSpellId == SPELL_TEMPER_DUMMY && uiEffIndex == 0)
@@ -343,7 +343,7 @@ class npc_volkhan_anvil : public CreatureScript
 public:
     npc_volkhan_anvil() : CreatureScript("npc_volkhan_anvil") { }
 
-    bool EffectDummyCreature(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+    bool OnDummyEffect(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
     {
         //always check spellid and effectindex
         if (uiSpellId == SPELL_TEMPER && uiEffIndex == 0)

@@ -870,6 +870,7 @@ public:
 
         void JustDied(Unit* pKiller)
         {
+        if (me->ToTempSummon())
             if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
             {
                 std::string sText = (std::string(pKiller->GetName()) + " has defeated Yg.. Yggg-really big worm!");
@@ -1163,6 +1164,7 @@ public:
 
             std::string sText = (std::string(pKiller->GetName()) + " is victorious once more!");
 
+        if (me->ToTempSummon())
             if (Unit* pSummoner = me->ToTempSummon()->GetSummoner())
                 pSummoner->MonsterYell(sText.c_str(),LANG_UNIVERSAL,0);
         }
