@@ -1794,7 +1794,7 @@ void LFGMgr::UpdateBoot(Player* plr, bool accept)
         {
             Player::RemoveFromGroup(grp, MAKE_NEW_GUID(pBoot->victimLowGuid, 0, HIGHGUID_PLAYER));
             if (Player* victim = sObjectMgr.GetPlayerByLowGUID(pBoot->victimLowGuid))
-                victim->TeleportToBGEntryPoint();
+                TeleportPlayer(victim, true, false);
             OfferContinue(grp);
             grp->SetLfgKicks(grp->GetLfgKicks() + 1);
         }
@@ -1884,6 +1884,12 @@ void LFGMgr::TeleportPlayer(Player* plr, bool out, bool fromOpcode /*= false*/)
             {
                 if (!plr->GetMap()->IsDungeon() && !plr->GetMap()->IsRaid())
                     plr->SetBattlegroundEntryPoint();
+
+                if (plr->isInFlight())
+                {
+                    plr->GetMotionMaster()->MovementExpired();
+                    plr->CleanupAfterTaxiFlight();
+                }
 
                 if (plr->TeleportTo(mapid, x, y, z, orientation))
                     plr->RemoveAurasByType(SPELL_AURA_MOUNTED);
