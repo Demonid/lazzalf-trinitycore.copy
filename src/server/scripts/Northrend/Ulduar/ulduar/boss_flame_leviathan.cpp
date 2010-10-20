@@ -824,6 +824,68 @@ class ulduar_repair_npc : public CreatureScript
     };
 };
 
+class mob_flameleviathan_loot : public CreatureScript
+{
+    public:
+        mob_flameleviathan_loot(): CreatureScript("mob_flameleviathan_loot") {}
+
+    struct mob_flameleviathan_lootAI : public ScriptedAI
+    {
+        mob_flameleviathan_lootAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = me->GetInstanceScript();
+            bLeviathan = true;
+        }
+
+        InstanceScript* pInstance;
+        bool bLeviathan;
+
+        void EnterCombat(Unit *who)
+        {
+            if (!pInstance)
+            {
+                bLeviathan = true;
+                return;
+            }
+
+            if (Unit *pLeviathan = Unit::GetUnit(*me, pInstance->GetData64(DATA_LEVIATHAN)))
+            {
+                if (pLeviathan->isAlive())
+                {
+                    bLeviathan = true;   
+                    me->MonsterYell("Rilevato tentativo di Kill Illegale, attivazione sistema di distruzione personaggi", LANG_UNIVERSAL,0);
+                    if (who)
+                        sLog.outCheat("Boss-%s, Tentativo di kill del loot del Flame Leviathan senza aver fatto il boss", who->GetName());
+                    return;
+                }
+            }
+            bLeviathan = false;
+        }
+
+        void DamageTaken(Unit* pKiller, uint32 &damage)
+        {
+            if (bLeviathan)
+                damage = 0;            
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;           
+
+            if (bLeviathan)
+                me->Kill(me->getVictim());
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_flameleviathan_lootAI(pCreature);
+    };
+};
+
 void AddSC_boss_flame_leviathan()
 {
     new boss_flame_leviathan();
@@ -836,4 +898,5 @@ void AddSC_boss_flame_leviathan()
     new mob_colossus();
     new ulduar_repair_npc();
     new at_RX_214_repair_o_matic_station();
+    new mob_flameleviathan_loot();
 }
