@@ -280,7 +280,10 @@ public:
                         die = true;
                         withbody = true;
                         wait = 300;
-                        damage = me->GetHealth() - me->CountPctFromMaxHealth(1);
+			            if (me->GetHealth() > me->CountPctFromMaxHealth(1))
+                            damage = me->GetHealth() - me->CountPctFromMaxHealth(1);
+                        else
+                            damage = 0;
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         me->StopMoving();
                         //me->GetMotionMaster()->MoveIdle();
@@ -470,8 +473,8 @@ public:
                     wp_reached = false;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     SaySound(SAY_ENTRANCE);
-                    if (Player* plr = Unit::GetPlayer((*me),PlayerGUID))
-                        DoStartMovement(plr);
+                    //if (Player* plr = Unit::GetPlayer((*me),PlayerGUID))
+                    //    DoStartMovement(plr);
                     break;
                 }
             }
@@ -589,7 +592,10 @@ public:
             {
                 withhead = false;
                 returned = false;
-                damage = me->GetHealth() - me->CountPctFromMaxHealth(1);
+                if (me->GetHealth() > me->CountPctFromMaxHealth(1))
+                    damage = me->GetHealth() - me->CountPctFromMaxHealth(1);
+                else
+                    damage = 0;
                 me->RemoveAllAuras();
                 me->SetName("Headless Horseman, Unhorsed");
 
