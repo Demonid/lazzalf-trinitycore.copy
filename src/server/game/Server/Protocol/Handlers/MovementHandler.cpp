@@ -646,9 +646,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                         {
                             plMover->m_logcheat_time = cServerTime;
                             if (real_delta < 4900.0f)
-                                sLog.outCheat("AC2-%s Map %u Area %u, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                                sLog.outCheat("AC2-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+                                plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
                             else
-                                sLog.outCheat("AC2-%s Map %u Area %u, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
+                                sLog.outCheat("AC2-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+                                plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->m_anti_Last_HSpeed, time_delta);
                         }
                         #endif
                         if (World::GetEnableAntiSpeedTeleBlock())
@@ -688,8 +690,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                         if (difftime_log > World::GetLogCheatDeltaTime())
                         {
                             plMover->m_logcheat_time = cServerTime;
-                            sLog.outCheat("AC2-%s Map %u Area %u flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
-                                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(),
+                            sLog.outCheat("AC2-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
+                                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
                                 plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
                                 plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
                                 plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());
