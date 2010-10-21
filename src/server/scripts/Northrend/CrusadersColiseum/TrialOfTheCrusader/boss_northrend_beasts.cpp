@@ -170,16 +170,18 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
-            switch(pSummoned->GetEntry())
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
-                case NPC_SNOBOLD_VASSAL:
-                    pSummoned->GetMotionMaster()->MoveJump(pTarget->GetPositionX(),pTarget->GetPositionY(),pTarget->GetPositionZ(),10.0f,20.0f);
-                    DoCast(me, SPELL_RISING_ANGER);
-                    --m_uiSummonCount;
-                    break;
+                switch(pSummoned->GetEntry())
+                {
+                    case NPC_SNOBOLD_VASSAL:
+                        pSummoned->GetMotionMaster()->MoveJump(pTarget->GetPositionX(),pTarget->GetPositionY(),pTarget->GetPositionZ(),10.0f,20.0f);
+                        DoCast(me, SPELL_RISING_ANGER);
+                        --m_uiSummonCount;
+                        break;
+                }
+                pSummoned->AI()->AttackStart(pTarget);
             }
-            pSummoned->AI()->AttackStart(pTarget);
             Summons.Summon(pSummoned);
         }
 
