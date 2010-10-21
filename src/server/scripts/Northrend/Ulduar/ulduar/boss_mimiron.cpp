@@ -1590,14 +1590,16 @@ class not_push_button : public GameObjectScript
 
     bool OnGossipHello(Player* pPlayer, GameObject* pGo)
     {
-        InstanceScript* pInstance = pGo->GetInstanceScript();
-
+        InstanceScript* pInstance = pPlayer->GetInstanceScript();
         if (!pInstance)
             return false;
 
         if (pInstance->GetBossState(BOSS_MIMIRON) == NOT_STARTED)
             if (Creature *pMimiron = Creature::GetCreature((*pGo), pInstance->GetData64(DATA_MIMIRON)))
+            {
                 pMimiron->AI()->DoAction(DO_ACTIVATE_HARD_MODE);
+                pMimiron->MonsterYell("Hard Mode Activate!", LANG_UNIVERSAL, 0);
+            }
         
         return true;
     };
