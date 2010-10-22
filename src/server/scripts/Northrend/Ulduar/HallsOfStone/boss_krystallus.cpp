@@ -127,8 +127,8 @@ public:
             {
                 DoCast(me, SPELL_GROUND_SLAM);
                 bIsSlam = true;
-                uiShatterTimer = 10000;
-                uiGroundSlamTimer = 15000 + rand()%3000;
+                uiShatterTimer = 8000;
+                uiGroundSlamTimer = 20000 + rand()%3000;
             } else uiGroundSlamTimer -= diff;
 
             if (bIsSlam)
@@ -136,6 +136,7 @@ public:
                 if (uiShatterTimer <= diff)
                 {
                     DoCast(me, DUNGEON_MODE(SPELL_SHATTER, H_SPELL_SHATTER));
+                bIsSlam = false;
                 } else uiShatterTimer -= diff;
             }
 

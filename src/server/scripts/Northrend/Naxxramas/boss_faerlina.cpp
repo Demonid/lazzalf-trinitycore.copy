@@ -196,11 +196,9 @@ public:
         InstanceScript *pInstance;
 
         void Reset()
-        {
-            if (getDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL) {
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, SPELL_EFFECT_BIND, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            }
+        {        
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, SPELL_EFFECT_BIND, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
         }
 
         void JustDied(Unit * /*killer*/)
