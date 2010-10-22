@@ -4066,6 +4066,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->targetAuraSpell = 0;
             count++;
             break;
+        case 70728: // Exploit Weakness
+        case 70840: // Devious Minds
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_PET;
+            count++;
+            break;
         case 71413: // Green Ooze Summon
         case 71414: // Orange Ooze Summon
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
