@@ -1415,6 +1415,10 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
                 continue;
             }
 
+            if (ToPlayer() && pVictim->ToPlayer())
+                if (!isVisibleForOrDetect(pVictim,false))
+                    continue;
+
             uint32 damage = (*dmgShieldItr)->GetAmount();
 
             // No Unit::CalcAbsorbResist here - opcode doesn't send that data - this damage is probably not affected by that
