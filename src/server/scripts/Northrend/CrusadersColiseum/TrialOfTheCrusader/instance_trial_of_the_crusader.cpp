@@ -103,6 +103,8 @@ public:
 
             m_uiEventTimer = 1000;
 
+            m_uiAcidmawGUID = 0;
+
             m_uiNotOneButTwoJormungarsTimer = 0;
             m_uiResilienceWillFixItTimer = 0;
             m_uiSnoboldCount = 0;
