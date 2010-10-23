@@ -19303,6 +19303,12 @@ void Player::VehicleSpellInitialize()
         if (!spellInfo)
             continue;
 
+        ConditionList conditions = sConditionMgr.GetConditionsForVehicleSpell(veh->ToCreature()->GetEntry(), spellId);
+        if (!sConditionMgr.IsPlayerMeetToConditions(this, conditions))
+        {
+            sLog.outDebug("VehicleSpellInitialize: conditions not met for Vehicle entry %u spell %u", veh->ToCreature()->GetEntry(), spellId);
+            continue;
+        }
         if (IsPassiveSpell(spellId))
         {
             veh->CastSpell(veh, spellId, true);
