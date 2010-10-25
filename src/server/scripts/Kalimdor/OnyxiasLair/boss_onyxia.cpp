@@ -344,7 +344,7 @@ public:
                 //Specific to PHASE_START || PHASE_END
                 if (m_uiPhase == PHASE_START)
                 {
-                    if (HealthBelowPct(60))
+                    if (HealthBelowPct(65))
                     {
                         SetCombatMovement(false);
                         m_uiPhase = PHASE_BREATH;
