@@ -592,8 +592,7 @@ class npc_tirion_toc : public CreatureScript
                             if (m_pInstance->GetData(TYPE_BEASTS) != DONE)
                             {
                                 me->SummonCreature(NPC_DREADSCALE, ToCCommonLoc[3].GetPositionX(), ToCCommonLoc[3].GetPositionY(), ToCCommonLoc[3].GetPositionZ(), 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS);
-                                if (m_pInstance->GetData64(NPC_ACIDMAW))
-                                    if (!Unit::GetCreature((*me),m_pInstance->GetData64(NPC_ACIDMAW)))
+                                if (!Unit::GetCreature((*me),m_pInstance->GetData64(NPC_ACIDMAW)))
                                         me->SummonCreature(NPC_ACIDMAW, ToCCommonLoc[4].GetPositionX(), ToCCommonLoc[4].GetPositionY(), ToCCommonLoc[4].GetPositionZ(), 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30*IN_MILLISECONDS);
                                 if (Creature* pTemp = Unit::GetCreature((*me),m_pInstance->GetData64(NPC_DREADSCALE)))
                                 {
