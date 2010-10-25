@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
 /* ScriptData
 SDName: instance_trial_of_the_crusader
@@ -25,7 +23,8 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "trial_of_the_crusader.h"
-class instance_trial_of_the_crusader : public InstanceMapScript
+
+class instance_trial_of_the_crusader : public InstanceMapScript
 {
 public:
     instance_trial_of_the_crusader() : InstanceMapScript("instance_trial_of_the_crusader", 649) { }
@@ -103,6 +102,8 @@ public:
             m_uiNorthrendBeasts = NOT_STARTED;
 
             m_uiEventTimer = 1000;
+
+            m_uiAcidmawGUID = 0;
 
             m_uiNotOneButTwoJormungarsTimer = 0;
             m_uiResilienceWillFixItTimer = 0;
@@ -366,7 +367,10 @@ public:
                 sLog.outBasic("[ToCr] m_auiEncounter[uiType %u] %u = uiData %u;",uiType,m_auiEncounter[uiType],uiData);
                 if (uiData == FAIL)
                 {
-                    if (IsRaidWiped())
+                    if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
+							pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
+					if (IsRaidWiped())
                     {
                         --m_uiTrialCounter;
                         m_bNeedSave = true;
@@ -584,40 +588,40 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-        {
-            switch (criteria_id)
-            {
-                case UPPER_BACK_PAIN_10_PLAYER:
-                case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 2;
-                case UPPER_BACK_PAIN_25_PLAYER:
-                case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 4;
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
-                    return m_uiMistressOfPainCount >= 2;
-                case A_TRIBUTE_TO_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 25;
-                case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 45;
-                case A_TRIBUTE_TO_INSANITY_10_PLAYER:
-                case A_TRIBUTE_TO_INSANITY_25_PLAYER:
-                case REALM_FIRST_GRAND_CRUSADER:
-                    return m_uiTrialCounter == 50;
-                case A_TRIBUTE_TO_IMMORTALITY_HORDE:
-                case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
-                    return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
-                case A_TRIBUTE_TO_DEDICATED_INSANITY:
-                    return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
-            }
+        //bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+        //{
+        //    switch (criteria_id)
+        //    {
+        //        case UPPER_BACK_PAIN_10_PLAYER:
+        //        case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 2;
+        //        case UPPER_BACK_PAIN_25_PLAYER:
+        //        case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 4;
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
+        //            return m_uiMistressOfPainCount >= 2;
+        //        case A_TRIBUTE_TO_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 25;
+        //        case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 45;
+        //        case A_TRIBUTE_TO_INSANITY_10_PLAYER:
+        //        case A_TRIBUTE_TO_INSANITY_25_PLAYER:
+        //        case REALM_FIRST_GRAND_CRUSADER:
+        //            return m_uiTrialCounter == 50;
+        //        case A_TRIBUTE_TO_IMMORTALITY_HORDE:
+        //        case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
+        //            return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
+        //        case A_TRIBUTE_TO_DEDICATED_INSANITY:
+        //            return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
     };
 
 };
