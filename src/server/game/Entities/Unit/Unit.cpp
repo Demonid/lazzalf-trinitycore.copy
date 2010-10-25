@@ -545,18 +545,11 @@ void Unit::DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellEntry const *spellProto, bool durabilityLoss)
 {
-        // Scourge Strike
-        /*if(spellProto->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && spellProto->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_DK_SCOURGE_STRIKE)
-        {
-              int32 shadowdmg = damage * (float(12 * pVictim->GetDiseasesByCaster(GetGUID())) / 100.0f);
-              if (shadowdmg > 0)
-                  CastCustomSpell(pVictim, 70890, &shadowdmg, NULL, NULL, true);
-        }*/
-    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
-        pVictim->ToCreature()->AI()->DamageTaken(this, damage);
+    if (pVictim->IsAIEnabled)
+        pVictim->GetAI()->DamageTaken(this, damage);
 
-    if (GetTypeId() == TYPEID_UNIT && this->ToCreature()->IsAIEnabled)
-        this->ToCreature()->AI()->DamageDealt(pVictim, damage, damagetype);
+    if (IsAIEnabled)
+        GetAI()->DamageDealt(pVictim, damage, damagetype);
 
     if (damagetype != NODAMAGE)
     {
@@ -9967,8 +9960,11 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth)
 {
     int32 gain = 0;
 
-    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsAIEnabled)
-        pVictim->ToCreature()->AI()->HealReceived(this, addhealth);
+    if (pVictim->IsAIEnabled)
+        pVictim->GetAI()->HealReceived(this, addhealth);
+
+    if (IsAIEnabled)
+        GetAI()->HealDone(pVictim, addhealth);
 
     if (addhealth)
         gain = pVictim->ModifyHealth(int32(addhealth));

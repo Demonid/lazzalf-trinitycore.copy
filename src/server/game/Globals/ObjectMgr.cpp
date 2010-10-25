@@ -5964,6 +5964,10 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
     // search for zone associated closest graveyard
     uint32 zoneId = sMapMgr.GetZoneId(MapId,x,y,z);
 
+    if (!zoneId && z > -500)
+        sLog.outError("Bad zoneId: Map = %u  (%f, %f, %f)", MapId, x, y, z);
+
+
     // Simulate std. algorithm:
     //   found some graveyard associated to (ghost_zone,ghost_map)
     //
@@ -8051,7 +8055,7 @@ void ObjectMgr::LoadGameObjectForQuests()
             }
             case GAMEOBJECT_TYPE_GENERIC:
             {
-                if (goInfo->_generic.questID)               //quests objects
+                if (goInfo->_generic.questID > 0)            //quests objects
                 {
                     mGameObjectForQuestSet.insert(go_entry);
                     count++;
@@ -8060,7 +8064,7 @@ void ObjectMgr::LoadGameObjectForQuests()
             }
             case GAMEOBJECT_TYPE_GOOBER:
             {
-                if (goInfo->goober.questId)                  //quests objects
+                if (goInfo->goober.questId > 0)              //quests objects
                 {
                     mGameObjectForQuestSet.insert(go_entry);
                     count++;
