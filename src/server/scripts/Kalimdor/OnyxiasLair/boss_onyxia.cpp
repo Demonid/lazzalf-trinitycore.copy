@@ -197,6 +197,8 @@ public:
                 m_pInstance->SetData(DATA_ONYXIA, DONE);
 
             Summons.DespawnAll();
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void JustSummoned(Creature *pSummoned)
