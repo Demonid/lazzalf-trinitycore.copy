@@ -165,8 +165,10 @@ public:
 
             m_uiBellowingRoarTimer = 30000;
 
-            Summons.DespawnAll();
+            Summons.DespawnAll();            
             m_uiSummonWhelpCount = 0;
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
             m_bIsMoving = false;
 
             if (m_pInstance)

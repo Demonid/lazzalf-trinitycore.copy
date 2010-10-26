@@ -195,26 +195,25 @@ class boss_general_vezax : public CreatureScript
                 switch(eventId)
                 {
                     case EVENT_SHADOW_CRASH:
-						Unit* pTarget;
                         /*if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
                             if (!pTarget->IsWithinDist(me, 15))
                                 DoCast(pTarget, SPELL_SHADOW_CRASH);
                         events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));*/
 
 						//i break interni sono necessari perchè le condizioni non sono necessariamente disgiunte
-						if (pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20)))
+						if (Unit* pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20)))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
 							break;
 						}
-						else if (pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15)))
+						else if (Unit* pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15)))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
 							break;
 						}
-						else if (pTarget = CheckPlayersinRange(100, 15, 1))
+						else if (Unit* pTarget = CheckPlayersinRange(100, 15, 1))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
@@ -222,7 +221,7 @@ class boss_general_vezax : public CreatureScript
 						}
 						else
 						{
-							if (pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
+							if (Unit* pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 						}
 
