@@ -842,6 +842,8 @@ class mob_flameleviathan_loot : public CreatureScript
 
         void EnterCombat(Unit *who)
         {
+            uiExplosion = 5000;
+
             if (!pInstance)
             {
                 bLeviathan = true;
@@ -874,7 +876,11 @@ class mob_flameleviathan_loot : public CreatureScript
                 return;           
 
             if (bLeviathan)
-                me->Kill(me->getVictim());
+                if (uiExplosion < diff)
+                {
+                    DoCast(me, 64487, true); //Ascend to the Heavens
+                    uiExplosion = 5000;
+                } else uiExplosion -= diff;                    
 
             DoMeleeAttackIfReady();
         }
