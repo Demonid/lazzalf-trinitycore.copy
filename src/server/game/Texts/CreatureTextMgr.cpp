@@ -357,7 +357,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket *data, WorldObject* source, Cha
                 uint32 areaId = source->GetAreaId();
                 Map::PlayerList const& pList = source->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                    if (itr->getSource()->GetAreaId() == areaId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->isGameMaster()))
+                    if (itr->getSource()->GetAreaId() == areaId && (!team || Team(itr->getSource()->GetTeam()) == team) && (!gmOnly || itr->getSource()->isGameMaster()))
                     {
                         if (data->GetOpcode() == SMSG_MESSAGECHAT)//override whisperguid with actual player's guid
                             data->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
@@ -370,7 +370,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket *data, WorldObject* source, Cha
                 uint32 zoneId = source->GetZoneId();
                 Map::PlayerList const& pList = source->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                    if (itr->getSource()->GetZoneId() == zoneId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->isGameMaster()))
+                    if (itr->getSource()->GetZoneId() == zoneId && (!team || Team(itr->getSource()->GetTeam()) == team) && (!gmOnly || itr->getSource()->isGameMaster()))
                     {
                         if (data->GetOpcode() == SMSG_MESSAGECHAT)//override whisperguid with actual player's guid
                             data->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
@@ -385,7 +385,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket *data, WorldObject* source, Cha
                 {
                     if (data->GetOpcode() == SMSG_MESSAGECHAT)//override whisperguid with actual player's guid
                         data->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
-                    if (!team || (team && itr->getSource()->GetTeam() == team) && (!gmOnly || itr->getSource()->isGameMaster()))
+                    if ((!team || Team(itr->getSource()->GetTeam()) == team) && (!gmOnly || itr->getSource()->isGameMaster()))
                         (itr->getSource())->GetSession()->SendPacket(data);
                 }
             }
@@ -399,7 +399,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket *data, WorldObject* source, Cha
                     {
                         if (data->GetOpcode() == SMSG_MESSAGECHAT)//override whisperguid with actual player's guid
                             data->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(plr->GetGUID()));
-                        if (plr->GetSession()  && (!team || (team && plr->GetTeam() == team)) && (!gmOnly || plr->isGameMaster()))
+                        if (plr->GetSession()  && (!team || Team(plr->GetTeam()) == team) && (!gmOnly || plr->isGameMaster()))
                             plr->GetSession()->SendPacket(data);
                     }
                 }
@@ -419,14 +419,14 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
     CreatureTextMap::const_iterator sList = mTextMap.find(sourceEntry);
     if (sList == mTextMap.end())
     {
-        sLog.outErrorDb("CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
+        sLog.outDebug("CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
         return false;
     }
     CreatureTextHolder TextHolder = (*sList).second;
     CreatureTextHolder::const_iterator itr = TextHolder.find(textGroup);
     if (itr == TextHolder.end())
     {
-        sLog.outErrorDb("CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
+        sLog.outDebug("CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
         return false;
     }
     return true;
