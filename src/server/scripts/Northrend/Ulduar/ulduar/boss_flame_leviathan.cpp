@@ -839,6 +839,7 @@ class mob_flameleviathan_loot : public CreatureScript
 
         InstanceScript* pInstance;
         bool bLeviathan;
+        uint32 uiExplosion;
 
         void EnterCombat(Unit *who)
         {
