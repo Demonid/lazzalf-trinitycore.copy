@@ -413,7 +413,7 @@ class boss_sara : public CreatureScript
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
             me->SetFlying(true);
             wipe = false;
-            keepersactive = 0;
+            keepersactive = 4;
         }
 
         InstanceScript *pInstance;
@@ -439,7 +439,7 @@ class boss_sara : public CreatureScript
                         }
                     }
                 }
-                keepersactive = 0;
+                keepersactive = 4;
                 // Reset Yogg-Saron
                 for (uint8 data = DATA_YOGGSARON_BRAIN; data <= DATA_YOGGSARON; ++data)
                 {
@@ -509,7 +509,7 @@ class boss_sara : public CreatureScript
                         {
                             pCreature->SetInCombatWith(me);
                             pCreature->AddThreat(me, 150.0f);
-                            keepersactive++;
+                            keepersactive--;
                         }
                     }
                 }
