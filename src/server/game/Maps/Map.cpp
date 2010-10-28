@@ -1726,16 +1726,6 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
             areaflag = GetAreaFlagByMapId(i_mapEntry->MapID);
     }
 
-    switch(areaflag)
-    {
-        case 2401: // The Forbidding Sea
-            if (x > -2052.62f && x < -1472.65f && y > -4270.73f && y < -4123.53f && 0.0f < z && z < 218.37f)                
-                areaflag = 2153; // Dalaran (for sanctuary :D)
-            break;
-        default:
-            break;
-    }
-
     if (isOutdoors)
     {
         if (haveAreaInfo)
