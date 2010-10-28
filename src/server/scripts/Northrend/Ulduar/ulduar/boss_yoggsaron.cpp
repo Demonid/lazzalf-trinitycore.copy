@@ -384,6 +384,8 @@ const Position SanityWellPos[10] =
 {1897.75f,-48.24f,332.35f,0}
 };
 
+uint32 keepersactive;
+
 
 /*------------------------------------------------------*
  *                        Sara                          *
@@ -411,6 +413,7 @@ class boss_sara : public CreatureScript
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
             me->SetFlying(true);
             wipe = false;
+            keepersactive = 0;
         }
 
         InstanceScript *pInstance;
@@ -436,6 +439,7 @@ class boss_sara : public CreatureScript
                         }
                     }
                 }
+                keepersactive = 0;
                 // Reset Yogg-Saron
                 for (uint8 data = DATA_YOGGSARON_BRAIN; data <= DATA_YOGGSARON; ++data)
                 {
@@ -505,6 +509,7 @@ class boss_sara : public CreatureScript
                         {
                             pCreature->SetInCombatWith(me);
                             pCreature->AddThreat(me, 150.0f);
+                            keepersactive++;
                         }
                     }
                 }
@@ -739,11 +744,28 @@ class boss_yoggsaron : public CreatureScript
         {
             events.Reset();
             summons.DespawnAll();
+            me->ResetLootMode();
         }
         
         void EnterCombat(Unit *who)
         {
             _EnterCombat();
+
+            me->ResetLootMode();
+            switch (keepersactive)
+            {                
+                case 4:
+                    me->AddLootMode(LOOT_MODE_HARD_MODE_4);      // Add 4 Keepers loot
+                case 3:
+                    me->AddLootMode(LOOT_MODE_HARD_MODE_3);      // Add 3 Keepers loot
+                case 2:
+                    me->AddLootMode(LOOT_MODE_HARD_MODE_2);      // Add 2 Keepers loot
+                case 1:
+                    me->AddLootMode(LOOT_MODE_HARD_MODE_1);      // Add 1 Keepers loot
+                    break;                
+                default:
+                    break;
+            }
             
             // 100% Sanity
             if (pInstance)
