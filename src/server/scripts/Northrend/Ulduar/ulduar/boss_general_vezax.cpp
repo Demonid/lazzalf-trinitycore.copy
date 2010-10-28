@@ -201,19 +201,19 @@ class boss_general_vezax : public CreatureScript
                         events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));*/
 
 						//i break interni sono necessari perchè le condizioni non sono necessariamente disgiunte
-						if (Unit* pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20)))
+						if (Unit* pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20), true))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
 							break;
 						}
-						else if (Unit* pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15)))
+						else if (Unit* pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15), true))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
 							break;
 						}
-						else if (Unit* pTarget = CheckPlayersinRange(100, 15, 1))
+						else if (Unit* pTarget = CheckPlayersinRange(100, 15, 1, true))
 						{
 							DoCast(pTarget, SPELL_SHADOW_CRASH);
 							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
@@ -325,7 +325,7 @@ class boss_general_vezax : public CreatureScript
                 (*iter)->ForcedDespawn();
         }
 
-        Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min)
+        Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min, bool no_tank = false)
         {
             std::list<uint64> PlList;
             Map::PlayerList const &players = pInstance->instance->GetPlayers();
@@ -339,6 +339,9 @@ class boss_general_vezax : public CreatureScript
                 if (range_min < m_dist || m_dist > range_max)
                     continue;
 
+                if (no_tank && me->getVictim() && me->getVictim()->GetGUID() == pPlayer->GetGUID())
+                    continue;
+                
                 PlList.push_back(pPlayer->GetGUID());
             }
             if (PlList.empty())
