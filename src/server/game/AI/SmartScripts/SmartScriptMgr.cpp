@@ -275,6 +275,7 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder e)
         case SMART_TARGET_CLOSEST_CREATURE:
         case SMART_TARGET_CLOSEST_GAMEOBJECT:
         case SMART_TARGET_CLOSEST_PLAYER:
+        case SMART_TARGET_ACTION_INVOKER_VEHICLE:
             break;
         default:
             sLog.outErrorDb("SmartAIMgr: Not handled target_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetTargetType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
@@ -425,7 +426,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder e)
                 break;
             }
         case SMART_EVENT_TEXT_OVER:
-            if (e.event.textOver.textGroupID && !IsTextValid(e, e.event.textOver.textGroupID)) return false;
+            //if (e.event.textOver.textGroupID && !IsTextValid(e, e.event.textOver.textGroupID)) return false;// 0 is a valid text group!
             break;
         case SMART_EVENT_LINK:
             {
@@ -475,13 +476,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder e)
     switch (e.GetActionType())
     {
         case SMART_ACTION_TALK:
-            if (!IsTextValid(e, e.action.talk.textGroupID1)) return false;
-            if (e.action.talk.textGroupID2 && !IsTextValid(e, e.action.talk.textGroupID2)) return false;
-            if (e.action.talk.textGroupID3 && !IsTextValid(e, e.action.talk.textGroupID3)) return false;
-            if (e.action.talk.textGroupID4 && !IsTextValid(e, e.action.talk.textGroupID4)) return false;
-            if (e.action.talk.textGroupID5 && !IsTextValid(e, e.action.talk.textGroupID5)) return false;
-            if (e.action.talk.textGroupID6 && !IsTextValid(e, e.action.talk.textGroupID6)) return false;
-
+            //if (!IsTextValid(e, e.action.talk.textGroupID)) return false;//can use other creatures texts too!
             break;
         case SMART_ACTION_SET_FACTION:
             if (e.action.faction.factionID && !sFactionStore.LookupEntry(e.action.faction.factionID))
@@ -738,6 +733,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder e)
         case SMART_ACTION_RESET_SCRIPT_BASE_OBJECT:
         case SMART_ACTION_ACTIVATE_GOBJECT:
         case SMART_ACTION_CALL_SCRIPT_RESET:
+        case SMART_ACTION_ENTER_VEHICLE:
         case SMART_ACTION_NONE:
             break;
         default:
