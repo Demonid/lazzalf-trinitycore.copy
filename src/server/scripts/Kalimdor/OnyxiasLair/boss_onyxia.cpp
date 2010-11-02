@@ -114,7 +114,9 @@ public:
     {
         boss_onyxiaAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();            
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
             Reset();
         }
 
@@ -165,8 +167,10 @@ public:
 
             m_uiBellowingRoarTimer = 30000;
 
-            Summons.DespawnAll();
+            Summons.DespawnAll();            
             m_uiSummonWhelpCount = 0;
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
             m_bIsMoving = false;
 
             if (m_pInstance)
@@ -195,6 +199,8 @@ public:
                 m_pInstance->SetData(DATA_ONYXIA, DONE);
 
             Summons.DespawnAll();
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void JustSummoned(Creature *pSummoned)
