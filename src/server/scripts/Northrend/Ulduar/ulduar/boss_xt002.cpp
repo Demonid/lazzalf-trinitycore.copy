@@ -190,6 +190,9 @@ class boss_xt002 : public CreatureScript
             me->SetReactState(REACT_AGGRESSIVE);
             me->ResetLootMode();
 
+            while (Unit* pTarget = me->FindNearestCreature(NPC_LIFE_SPARK,100.0f))
+                pTarget->RemoveFromWorld();
+
             //Makes XT-002 to cast a light bomb 10 seconds after aggro.
             uiSearingLightTimer = TIMER_SEARING_LIGHT / 2;
             uiSpawnLifeSparkTimer = TIMER_SPAWN_LIFE_SPARK;
