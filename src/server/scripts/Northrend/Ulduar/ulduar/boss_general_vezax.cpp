@@ -112,7 +112,7 @@ class boss_general_vezax : public CreatureScript
         }
      
         InstanceScript *pInstance;
-       
+        
         int32 VaporsCount;
         bool HardMode, Dodged;
 
@@ -126,13 +126,13 @@ class boss_general_vezax : public CreatureScript
             HardMode = true;
             Dodged = true;
         }
-       
+        
         void KilledUnit(Unit* Victim)
         {
             if (!(rand()%5))
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
-       
+        
         void SpellHitTarget(Unit * pTarget, const SpellEntry * pSpell)
         {
             if (pSpell->Id == SPELL_SHADOW_CRASH && pTarget->GetTypeId() == TYPEID_PLAYER)
@@ -150,7 +150,7 @@ class boss_general_vezax : public CreatureScript
             events.ScheduleEvent(EVENT_SARONITE_VAPORS, 30000);
             events.ScheduleEvent(EVENT_DARKNESS, 60000);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
-           
+            
             if (pInstance)
             {
                 // This ability affects Shaman with the Shamanistic Rage talent
@@ -158,7 +158,7 @@ class boss_general_vezax : public CreatureScript
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
                     Player* pPlayer = itr->getSource();
-                           
+                            
                     if (!pPlayer)
                         continue;
 
@@ -167,19 +167,19 @@ class boss_general_vezax : public CreatureScript
                 }
             }
         }
-       
+        
         void JustDied(Unit *victim)
         {
             DoScriptText(SAY_DEATH, me);
             _JustDied();
-           
+            
             // Achievements
             if (HardMode)
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_SMELL_SARONITE);
             if (Dodged)
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_SHADOWDODGER);
         }
-       
+        
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())
@@ -195,38 +195,10 @@ class boss_general_vezax : public CreatureScript
                 switch(eventId)
                 {
                     case EVENT_SHADOW_CRASH:
-						Unit* pTarget;
-                        /*if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
                             if (!pTarget->IsWithinDist(me, 15))
                                 DoCast(pTarget, SPELL_SHADOW_CRASH);
-                        events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));*/
-
-						//i break interni sono necessari perchè le condizioni non sono necessariamente disgiunte
-						if (pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20)))
-						{
-							DoCast(pTarget, SPELL_SHADOW_CRASH);
-							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
-							break;
-						}
-						else if (pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15)))
-						{
-							DoCast(pTarget, SPELL_SHADOW_CRASH);
-							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
-							break;
-						}
-						else if (pTarget = CheckPlayersinRange(100, 15, 1))
-						{
-							DoCast(pTarget, SPELL_SHADOW_CRASH);
-							events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
-							break;
-						}
-						else
-						{
-							if (pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
-							DoCast(pTarget, SPELL_SHADOW_CRASH);
-						}
-
-						events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
+                        events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
                         break;
                     case EVENT_SEARING_FLAMES:
                         DoCastAOE(SPELL_SEARING_FLAMES);
@@ -239,37 +211,9 @@ class boss_general_vezax : public CreatureScript
                         events.ScheduleEvent(EVENT_DARKNESS, urand(60000, 70000));
                         break;
                     case EVENT_MARK:
-						Unit* pTarget;
-                       /* if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
                             DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-                        events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));*/
-
-						//i break interni sono necessari perchè le condizioni non sono necessariamente disgiunte
-                        if (pTarget = CheckPlayersinRange(15, 0, RAID_MODE(8,20)))
-						{
-							DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-							events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
-							break;
-						}
-						else if (pTarget = CheckPlayersinRange(100, 10, RAID_MODE(6,15)))
-						{
-							DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-							events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
-							break;
-						}
-						else if (pTarget = CheckPlayersinRange(100, 15, 1))
-						{
-							DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-							events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
-							break;
-						}
-						else
-						{
-							if (pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
-							DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-						}
-
-						events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
+                        events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
                         break;
                     case EVENT_SARONITE_VAPORS:
                         me->MonsterTextEmote(EMOTE_VAPORS, 0, true);
@@ -301,7 +245,7 @@ class boss_general_vezax : public CreatureScript
 
             DoMeleeAttackIfReady();
         }
-       
+        
         void DoAction(const int32 action)
         {
             switch (action)
@@ -313,7 +257,7 @@ class boss_general_vezax : public CreatureScript
                     events.ScheduleEvent(EVENT_SEARING_FLAMES, 10000);
             }
         }
-       
+        
         void DespawnCreatures(uint32 entry, float distance, bool discs = false)
         {
             std::list<Creature*> m_pCreatures;
@@ -378,7 +322,7 @@ class mob_saronite_vapors : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             me->GetMotionMaster()->MoveRandom(30.0f);
         }
-       
+        
         InstanceScript *pInstance;
      
         void DamageTaken(Unit *who, uint32 &damage)
@@ -418,11 +362,11 @@ class mob_saronite_animus : public CreatureScript
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
         }
-       
+        
         InstanceScript* pInstance;
 
         uint32 ProfoundDarknessTimer;
-       
+        
         void JustDied(Unit * killer)
         {
             if (Creature* Vezax = me->GetCreature(*me, pInstance->GetData64(DATA_VEZAX)))
@@ -435,7 +379,7 @@ class mob_saronite_animus : public CreatureScript
         void EnterCombat(Unit* pWho){}
 
         void Reset()
-        {  
+        {   
             DoCast(SPELL_VISUAL_SARONITE_ANIMUS);
             ProfoundDarknessTimer = 5000;
         }
@@ -444,14 +388,14 @@ class mob_saronite_animus : public CreatureScript
         {
             if(!UpdateVictim())
                 return;
-           
+            
             if (ProfoundDarknessTimer <= diff)
             {
                 DoCastAOE(SPELL_PROFOUND_DARKNESS);
                 ProfoundDarknessTimer=5000;
             }
             else ProfoundDarknessTimer -= diff;
-           
+            
             DoMeleeAttackIfReady();
         }
     };
@@ -461,7 +405,7 @@ class mob_saronite_animus : public CreatureScript
         return new mob_saronite_animusAI(pCreature);
     };
 };
-   
+    
 void AddSC_boss_general_vezax()
 {
     new boss_general_vezax();
