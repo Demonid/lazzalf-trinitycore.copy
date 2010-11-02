@@ -141,6 +141,8 @@ public:
 
         uint32 m_uiBellowingRoarTimer;
 
+        uint32 m_uiStopTime;
+
         uint8 m_uiSummonWhelpCount;
         bool m_bIsMoving;
 
@@ -166,6 +168,8 @@ public:
             m_uiDeepBreathTimer = 85000;
 
             m_uiBellowingRoarTimer = 30000;
+
+            m_uiStopTime = 0;
 
             Summons.DespawnAll();            
             m_uiSummonWhelpCount = 0;
@@ -376,37 +380,42 @@ public:
                         m_uiBellowingRoarTimer -= uiDiff;
                 }
 
-                if (m_uiFlameBreathTimer <= uiDiff)
+                if (m_uiStopTime <= uiDiff)
                 {
-                    DoCastVictim(SPELL_FLAME_BREATH);
-                    m_uiFlameBreathTimer = urand(10000, 20000);
-                }
-                else
-                    m_uiFlameBreathTimer -= uiDiff;
+                    if (m_uiFlameBreathTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_FLAME_BREATH);
+                        m_uiFlameBreathTimer = urand(10000, 20000);
+                    }
+                    else
+                        m_uiFlameBreathTimer -= uiDiff;
 
-                if (m_uiTailSweepTimer <= uiDiff)
-                {
-                    DoCastAOE(SPELL_TAIL_SWEEP);
-                    m_uiTailSweepTimer = urand(15000, 20000);
-                }
-                else
-                    m_uiTailSweepTimer -= uiDiff;
+                    if (m_uiTailSweepTimer <= uiDiff)
+                    {
+                        DoCastAOE(SPELL_TAIL_SWEEP);
+                        m_uiTailSweepTimer = urand(15000, 20000);
+                    }
+                    else
+                        m_uiTailSweepTimer -= uiDiff;
 
-                if (m_uiCleaveTimer <= uiDiff)
-                {
-                    DoCastVictim(SPELL_CLEAVE);
-                    m_uiCleaveTimer = urand(2000, 5000);
-                }
-                else
-                    m_uiCleaveTimer -= uiDiff;
+                    if (m_uiCleaveTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_CLEAVE);
+                        m_uiCleaveTimer = urand(2000, 5000);
+                    }
+                    else
+                        m_uiCleaveTimer -= uiDiff;
 
-                if (m_uiWingBuffetTimer <= uiDiff)
-                {
-                    DoCastVictim(SPELL_WING_BUFFET);
-                    m_uiWingBuffetTimer = urand(15000, 30000);
+                    if (m_uiWingBuffetTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_WING_BUFFET);
+                        m_uiWingBuffetTimer = urand(15000, 30000);
+                    }
+                    else
+                        m_uiWingBuffetTimer -= uiDiff;
                 }
-                else
-                    m_uiWingBuffetTimer -= uiDiff;
+                else 
+                    m_uiStopTime -= uiDiff;
 
                 DoMeleeAttackIfReady();
             }
@@ -415,6 +424,7 @@ public:
                 if (HealthBelowPct(40))
                 {
                     m_uiPhase = PHASE_END;
+                    m_uiStopTime = 15000;
                     if (m_pInstance)
                         m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
                     DoScriptText(SAY_PHASE_3_TRANS, me);
