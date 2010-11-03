@@ -506,7 +506,7 @@ class npc_guild_master : public CreatureScript
             case ACTION_MARRIED:
                 //teleport player to GH
                 player->CLOSE_GOSSIP_MENU();
-                pPlayer->TeleportTo(0, -8323.68f, -349.26f, 145.8f,  0.57f);
+                player->TeleportTo(0, -8323.68f, -349.26f, 145.8f,  0.57f);
                 break;
             case ACTION_TELE:
                 //teleport player to GH
