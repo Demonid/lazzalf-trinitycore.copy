@@ -24,6 +24,7 @@ void AddSC_example_creature();
 void AddSC_example_escort();
 void AddSC_example_gossip_codebox();
 void AddSC_example_misc();
+void AddSC_example_commandscript();
 
 //TeleNPC2
 void AddSC_npc_teleport();
@@ -604,6 +605,7 @@ void AddExampleScripts()
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+    AddSC_example_commandscript();
 }
 	
 
