@@ -40,6 +40,7 @@
 
 #define SPELL_ID_PASSIVE_RESURRECTION_SICKNESS 15007
 
+#define MSG_GOSSIP_MARRIED       "Vai in viaggio di nozze"
 #define MSG_GOSSIP_TELE          "Teletrasportami Alla sede di gilda"
 #define MSG_GOSSIP_BUY           "Crea Sede di gilda"
 #define MSG_GOSSIP_SELL          "Vendi sede di gilda"
@@ -71,6 +72,7 @@
 #define OFFSET_GH_ADD_ID_TO_ACTION            17000
 #define OFFSET_SHOWBUY_FROM_ADD               20000
 
+#define ACTION_MARRIED            1000
 #define ACTION_TELE               1001
 #define ACTION_SHOW_BUYLIST       1002
 #define ACTION_SELL_GUILDHOUSE    1003
@@ -113,6 +115,17 @@ class npc_guild_master : public CreatureScript
                 sprintf(msg, MSG_ALREADYHAVEGHADD);
                 _creature->MonsterWhisper(msg, player->GetGUID());
             }        
+            return true;
+        }
+        return false;
+    };
+
+    bool isPlayerMarried(Player *player)
+    {        
+        QueryResult result = WorldDatabase.PQuery("SELECT `guid` FROM `married` WHERE `guid` = %u", player->GetGuildId());
+
+        if (result)
+        {      
             return true;
         }
         return false;
@@ -458,8 +471,12 @@ class npc_guild_master : public CreatureScript
 
     bool OnGossipHello(Player *player, Creature *_creature)
     {
+        if (isPlayerMarried(player))
+            player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOON, MSG_GOSSIP_MARRIED, 
+                GOSSIP_SENDER_MAIN, ACTION_MARRIED);
+
         player->ADD_GOSSIP_ITEM(ICON_GOSSIP_BALOON, MSG_GOSSIP_TELE, 
-            GOSSIP_SENDER_MAIN, ACTION_TELE);
+            GOSSIP_SENDER_MAIN, ACTION_TELE);        
 
         if (isPlayerGuildLeader(player))
         {
@@ -486,6 +503,11 @@ class npc_guild_master : public CreatureScript
 
         switch (action)
         {
+            case ACTION_MARRIED:
+                //teleport player to GH
+                player->CLOSE_GOSSIP_MENU();
+                pPlayer->TeleportTo(0, -8323.68f, -349.26f, 145.8f,  0.57f);
+                break;
             case ACTION_TELE:
                 //teleport player to GH
                 player->CLOSE_GOSSIP_MENU();
