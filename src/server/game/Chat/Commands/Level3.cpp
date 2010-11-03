@@ -62,6 +62,13 @@
 #include "SmartAI.h"
 
 //reload commands
+bool ChatHandler::HandleJailReloadCommand(const char* arg)
+{
+    sObjectMgr.LoadJailConf();
+    SendSysMessage(LANG_JAIL_RELOAD);
+    return true;
+}
+
 bool ChatHandler::HandleReloadAllCommand(const char*)
 {
     HandleReloadSkillFishingBaseLevelCommand("");
