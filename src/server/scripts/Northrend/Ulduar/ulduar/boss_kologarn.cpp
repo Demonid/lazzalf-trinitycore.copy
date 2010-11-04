@@ -471,7 +471,8 @@ class mob_right_arm : public CreatureScript
             if (Victim)
             {
                 Victim->ExitVehicle();
-                Victim->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 448.808f, 10, 10);
+                Victim->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 450.808f, 10, 10);
+                //Victim->TeleportTo(pGripTarget->GetMapId(), 1767.80f, -18.38f, 450.808f, 6.27f);
             }
         }
         
@@ -484,6 +485,26 @@ class mob_right_arm : public CreatureScript
                 if (Creature* pKologarn = me->GetCreature(*me, m_pInstance->GetData64(DATA_KOLOGARN)))
                     if (pKologarn->AI())
                         pKologarn->AI()->DoAction(ACTION_RESPAWN_RIGHT);
+
+            if (Gripped)
+            {
+                for (int32 n = 0; n < RAID_MODE(1, 2); ++n)
+                {
+                    Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(n);
+                    if (pGripTarget && pGripTarget->isAlive())
+                    {
+                        if (Player* playerGripTarget = pGripTarget->ToPlayer())
+                        {
+                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
+                            pGripTarget->ExitVehicle();
+                            //pGripTarget->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 450.808f, 10, 10);
+                            playerGripTarget->TeleportTo(pGripTarget->GetMapId(), 1767.80f, -18.38f, 450.808f, 6.27f); 
+                        }
+                    }
+                }
+                Gripped = false;
+            }
                         
             // Hack to disable corpse fall
             me->GetMotionMaster()->MoveTargetedHome();
@@ -534,10 +555,14 @@ class mob_right_arm : public CreatureScript
                         Unit* pGripTarget = me->GetVehicleKit()->GetPassenger(n);
                         if (pGripTarget && pGripTarget->isAlive())
                         {
-                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
-                            pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
-                            pGripTarget->ExitVehicle();
-                            pGripTarget->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 448.808f, 10, 10);
+                            if (Player* playerGripTarget = pGripTarget->ToPlayer())
+                            {
+                                pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP);
+                                pGripTarget->RemoveAurasDueToSpell(SPELL_STONE_GRIP_STUN);
+                                pGripTarget->ExitVehicle();
+                                //pGripTarget->GetMotionMaster()->MoveJump(1767.80f, -18.38f, 450.808f, 10, 10);
+                                playerGripTarget->TeleportTo(pGripTarget->GetMapId(), 1767.80f, -18.38f, 450.808f, 6.27f); 
+                            }
                         }
                     }
                     Gripped = false;
