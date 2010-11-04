@@ -52,6 +52,7 @@ SmartScript::SmartScript()
     meOrigGUID = 0;
     goOrigGUID = 0;
     mResumeActionList = true;
+    mLastInvoker = NULL;
 }
 
 void SmartScript::OnReset()
@@ -64,6 +65,7 @@ void SmartScript::OnReset()
         (*i).runOnce = false;
     }
     ProcessEventsFor(SMART_EVENT_RESET);
+    mLastInvoker = NULL;
 }
 
 void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellEntry* spell, GameObject* gob)
@@ -104,6 +106,9 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
             return;
     }
     e.runOnce = true;//used for repeat check
+
+    if (unit)
+        mLastInvoker = unit;
 
     if (e.link && e.link != e.event_id)
     {
@@ -1171,6 +1176,11 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
 
 ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
 {
+    Unit* trigger = NULL;
+    if (invoker)
+        trigger = invoker;
+    else if (mLastInvoker)
+        trigger = mLastInvoker;
     ObjectList* l = new ObjectList();
     switch (e.GetTargetType())
     {
@@ -1204,22 +1214,20 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
             break;
         case SMART_TARGET_NONE:
         case SMART_TARGET_ACTION_INVOKER:
-            if (invoker)
-            {
-                l->push_back(invoker);
-            }
+            if (trigger)
+                l->push_back(trigger);
             break;
         case SMART_TARGET_ACTION_INVOKER_VEHICLE:
-            if (invoker && invoker->GetVehicle() && invoker->GetVehicle()->GetBase())
+            if (trigger && trigger->GetVehicle() && trigger->GetVehicle()->GetBase())
             {
-                l->push_back(invoker->GetVehicle()->GetBase());
+                l->push_back(trigger->GetVehicle()->GetBase());
             }
             break;
         case SMART_TARGET_INVOKER_PARTY:
-            if (invoker)
+            if (trigger)
             {
-                l->push_back(invoker);
-                if (Player* plr = invoker->ToPlayer())
+                l->push_back(trigger);
+                if (Player* plr = trigger->ToPlayer())
                 {
                     if (Group *pGroup = plr->GetGroup())
                     {
@@ -1303,12 +1311,12 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                     target = HashMapHolder<Creature>::Find(guid);
                 } else 
                 {
-                    if (!invoker && !GetBaseObject())
+                    if (!trigger && !GetBaseObject())
                     {
                         sLog.outErrorDb("SMART_TARGET_CREATURE_GUID can not be used without invoker and without entry");
                         return NULL;
                     }
-                    target = FindCreatureNear(invoker?invoker:GetBaseObject(), e.target.unitGUID.guid);
+                    target = FindCreatureNear(trigger?trigger:GetBaseObject(), e.target.unitGUID.guid);
                 }
                 if (target)
                 {
@@ -1325,12 +1333,12 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                     target = HashMapHolder<GameObject>::Find(guid);
                 } else 
                 {
-                    if (!invoker && !GetBaseObject())
+                    if (!trigger && !GetBaseObject())
                     {
                         sLog.outErrorDb("SMART_TARGET_GAMEOBJECT_GUID can not be used without invoker and without entry");
                         return NULL;
                     }
-                    target = FindGameObjectNear(invoker?invoker:GetBaseObject(), e.target.goGUID.guid);
+                    target = FindGameObjectNear(trigger?trigger:GetBaseObject(), e.target.goGUID.guid);
                 }
                 if (target)
                 {
@@ -1760,7 +1768,8 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
             }
         case SMART_EVENT_GOSSIP_SELECT:
             {
-                if ((e.event.gossip.sender != var0 || e.event.gossip.action != var1))
+                sLog.outString("SmartScript: Gossip Select:  menu %u action %u", var0, var1);//little help for scripters
+                if (e.event.gossip.sender != var0 || e.event.gossip.action != var1)
                     return;
                 ProcessAction(e, unit, var0, var1);
                 break;
@@ -1920,9 +1929,9 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
     if (e.empty())
     {
         if (obj)
-            sLog.outErrorDb("SmartScript: EventMap for Entry %u is empty but is using SmartScript.", obj->GetEntry());
+            sLog.outDebug("SmartScript: EventMap for Entry %u is empty but is using SmartScript.", obj->GetEntry());
         if (at)
-            sLog.outErrorDb("SmartScript: EventMap for AreaTrigger %u is empty but is using SmartScript.", at->id);
+            sLog.outDebug("SmartScript: EventMap for AreaTrigger %u is empty but is using SmartScript.", at->id);
         return;
     }
     for (SmartAIEventList::iterator i = e.begin(); i != e.end(); ++i)
