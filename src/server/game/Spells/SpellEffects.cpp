@@ -1773,7 +1773,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
                 unitTarget->ToPlayer()->RemoveSpellCooldown(spellId);
 
             triggered_spell_id =  spellId;
-            return;
+            break;
         }
         // Demonic Empowerment -- succubus
         case 54437:
@@ -5532,7 +5532,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
         m_caster->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
 
         // Stealth spell
-        uint32 spellId = 1784;
+        /*uint32 spellId = 1784;
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
         if (!spellInfo)
@@ -5542,7 +5542,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
         if (m_caster->ToPlayer()->HasSpellCooldown(spellId))
             m_caster->ToPlayer()->RemoveSpellCooldown(spellId);
 
-        m_caster->CastSpell(m_caster, spellId, true);
+        m_caster->CastSpell(m_caster, spellId, true);*/
 
         // Overkill
         if (m_caster->ToPlayer()->HasSpell(58426))
