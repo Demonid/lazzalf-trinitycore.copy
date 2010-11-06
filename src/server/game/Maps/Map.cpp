@@ -935,6 +935,9 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     c->CombatStop();
     c->GetMotionMaster()->Clear();
 
+    uint32 guid = c->GetGUIDLow();
+    uint32 entry = c->GetEntry();
+
     #ifdef TRINITY_DEBUG
     if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES) == 0)
         sLog.outDebug("Creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), c->GetCurrentCell().GridX(), c->GetCurrentCell().GridY(), c->GetCurrentCell().CellX(), c->GetCurrentCell().CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
