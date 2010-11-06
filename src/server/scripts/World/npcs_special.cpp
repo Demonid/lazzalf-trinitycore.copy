@@ -2058,6 +2058,7 @@ public:
         void DamageTaken(Unit * /*done_by*/, uint32 &damage)
         {
             uiResetTimer = 5000;
+            //me->SetHealth(me->GetMaxHealth());
             damage = 0;
         }
 
