@@ -1401,8 +1401,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     return;
 
                 if (unitTarget)
+                {
                     if ((unitTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || unitTarget->m_invisibilityMask) && !m_caster->canSeeOrDetect(unitTarget, true))
                         return;
+                    if(!m_caster->IsWithinLOSInMap(unitTarget))
+                        return;
+                }
 
                 m_caster->CastSpell(unitTarget, damage, true);
                 return;
