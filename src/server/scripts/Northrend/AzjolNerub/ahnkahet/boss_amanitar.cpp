@@ -191,8 +191,12 @@ public:
             if (me->GetEntry() == NPC_HEALTHY_MUSHROOM && killer->GetTypeId() == TYPEID_PLAYER)
             {
                 me->InterruptNonMeleeSpells(false);
+                if (killer->HasAura(SPELL_MINI))
+                    killer->RemoveAurasDueToSpell(SPELL_MINI);
                 DoCast(killer, SPELL_HEALTHY_MUSHROOM_POTENT_FUNGUS, false);
             }
+            else if (me->GetEntry() == NPC_POISONOUS_MUSHROOM)                  
+                DoCast(me, SPELL_POISONOUS_MUSHROOM_POISON_CLOUD, false);
         }
 
         void EnterCombat(Unit * /*who*/) {}
@@ -205,7 +209,6 @@ public:
                 if (uiAuraTimer <= diff)
                 {
                     DoCast(me, SPELL_POISONOUS_MUSHROOM_VISUAL_AREA, true);
-                    DoCast(me, SPELL_POISONOUS_MUSHROOM_POISON_CLOUD, false);
                     uiAuraTimer = 7*IN_MILLISECONDS;
                 } else uiAuraTimer -= diff;
             }
