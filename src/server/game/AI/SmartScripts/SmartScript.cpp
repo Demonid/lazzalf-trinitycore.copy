@@ -143,7 +143,24 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 mTextGUID = IsPlayer(unit)? unit->GetGUID() : NULL;//invoker, used for $vars in texts
                 mUseTextTimer = true;
                 sCreatureTextMgr.SendChat(talker, uint8(e.action.talk.textGroupID), mTextGUID);
-                return;
+                break;
+            }
+        case SMART_ACTION_SIMPLE_TALK:
+            {
+                ObjectList* targets = GetTargets(e, unit);
+                if (targets)
+                {
+                    for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                    {
+                        if (IsCreature((*itr)))
+                        {
+                            sCreatureTextMgr.SendChat((*itr)->ToCreature(), uint8(e.action.talk.textGroupID));
+                        } else if (IsPlayer((*itr)))
+                        {
+                            sCreatureTextMgr.SendChat(me, uint8(e.action.talk.textGroupID),NULL,CHAT_TYPE_END,LANG_ADDON,TEXT_RANGE_NORMAL,NULL,TEAM_OTHER,false, (*itr)->ToPlayer());
+                        }
+                    }
+                }
                 break;
             }
         case SMART_ACTION_PLAY_EMOTE:
@@ -853,7 +870,9 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
             {
                 if (!me) return;
                 ObjectList* targets = GetTargets(e, unit);
-                if (e.GetTargetType() == SMART_TARGET_POSITION)
+                if (e.GetTargetType() == SMART_TARGET_SELF)
+                    me->SetFacing(me->GetCreatureData()->orientation, NULL);
+                else if (e.GetTargetType() == SMART_TARGET_POSITION)
                     me->SetFacing(e.target.o, NULL);
                 else if (targets && !targets->empty())
                     me->SetFacing(0, (*targets->begin()));
