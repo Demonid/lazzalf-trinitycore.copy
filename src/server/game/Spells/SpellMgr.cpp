@@ -3196,8 +3196,8 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
             return true;
 
         // Replenishment should not stack, Hackfix
-        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 57669)
-            return false;
+        //if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 57669)
+        //    return false;
 
         // Yogg-Saron's Sanity should not stack
         if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 63050)
