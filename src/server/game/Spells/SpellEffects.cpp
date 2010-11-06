@@ -1400,6 +1400,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if (m_caster->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_ROOT | UNIT_STAT_CONFUSED))
                     return;
 
+                if (unitTarget)
+                    if ((unitTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || unitTarget->m_invisibilityMask) && !m_caster->canSeeOrDetect(unitTarget, true))
+                        return;
+
                 m_caster->CastSpell(unitTarget, damage, true);
                 return;
             }
