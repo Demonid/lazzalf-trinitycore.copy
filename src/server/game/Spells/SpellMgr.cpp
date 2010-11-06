@@ -4061,6 +4061,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectSpellClassMask[0] = flag96(423937, 276955137, 2049);
             count++;
             break;
+        case 49224: // Magic Suppression
+        case 49611:
+            spellInfo->procCharges = 0;
+            count++;
+            break;
         // this is here until targetAuraSpell and alike support SpellDifficulty.dbc
         case 70459: // Ooze Eruption Search Effect
             spellInfo->targetAuraSpell = 0;
