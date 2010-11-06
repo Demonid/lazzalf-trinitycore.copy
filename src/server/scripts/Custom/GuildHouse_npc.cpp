@@ -122,7 +122,7 @@ class npc_guild_master : public CreatureScript
 
     bool isPlayerMarried(Player *player)
     {        
-        QueryResult result = WorldDatabase.PQuery("SELECT `guid` FROM `married` WHERE `guid` = %u", player->GetGuildId());
+        QueryResult result = WorldDatabase.PExecute("SELECT `guid` FROM `married` WHERE `guid` = %u", player->GetGuildId());
 
         if (result)
         {      
