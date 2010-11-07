@@ -858,7 +858,7 @@ void Map::MoveAllCreaturesInMoveList()
     }
 }
 
-bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
+bool Map::CreatureCellRelocation(Creature *c, Cell new_cell, uint32 entry, uint32 guid)
 {
     Cell const& old_cell = c->GetCurrentCell();
     if (!old_cell.DiffGrid(new_cell))                       // in same grid
@@ -935,16 +935,13 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     c->CombatStop();
     c->GetMotionMaster()->Clear();
 
-    uint32 guid = c->GetGUIDLow();
-    uint32 entry = c->GetEntry();
-
     #ifdef TRINITY_DEBUG
     if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES) == 0)
         sLog.outDebug("Creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), c->GetCurrentCell().GridX(), c->GetCurrentCell().GridY(), c->GetCurrentCell().CellX(), c->GetCurrentCell().CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
     #endif
 
     // teleport it to respawn point (like normal respawn if player see)
-    if (CreatureCellRelocation(c,resp_cell))
+    if (CreatureCellRelocation(c,resp_cell,c->GetEntry(),c->GetGUIDLow()))
     {
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetMotionMaster()->Initialize();                 // prevent possible problems with default move generators
