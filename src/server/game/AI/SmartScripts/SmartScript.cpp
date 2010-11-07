@@ -342,6 +342,20 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     }
                 break;
             }
+        case SMART_ACTION_INVOKER_CAST:
+            {
+                if (!mLastInvoker) return;
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                    if (IsUnit((*itr)))
+                    {
+                        if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
+                            mLastInvoker->InterruptNonMeleeSpells(false);
+                        mLastInvoker->CastSpell((*itr)->ToUnit(), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
+                    }
+                break;
+            }
         case SMART_ACTION_ADD_AURA:
             {
                 ObjectList* targets = GetTargets(e, unit);
@@ -930,14 +944,32 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 {
                     if(Creature* npc = (*itr)->ToCreature())
                     {
-                        if (e.action.equip.entry && !e.action.equip.slot1 && !e.action.equip.slot2 && !e.action.equip.slot3)
-                            npc->LoadEquipment(e.action.equip.entry, true);
+                        uint32 slot[3];
+                        if (e.action.equip.entry)
+                        {
+                            EquipmentInfo const *einfo = sObjectMgr.GetEquipmentInfo(e.action.equip.entry);
+                            if (!einfo)
+                            {
+                                sLog.outErrorDb("SmartScript: SMART_ACTION_EQUIP uses non-existent equipment info entry %u", e.action.equip.entry);
+                                return;
+                            }
+                            npc->SetCurrentEquipmentId(e.action.equip.entry);
+                            slot[0] = einfo->equipentry[0];
+                            slot[1] = einfo->equipentry[1];
+                            slot[2] = einfo->equipentry[2];
+                        }
                         else
                         {
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, e.action.equip.slot1);
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, e.action.equip.slot2);
-                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, e.action.equip.slot3);
+                            slot[0] = e.action.equip.slot1;
+                            slot[1] = e.action.equip.slot2;
+                            slot[2] = e.action.equip.slot3;
                         }
+                        if (!e.action.equip.mask || e.action.equip.mask & 1)
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, e.action.equip.slot1);
+                        if (!e.action.equip.mask || e.action.equip.mask & 2)
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, e.action.equip.slot2);
+                        if (!e.action.equip.mask || e.action.equip.mask & 4)
+                            npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, e.action.equip.slot3);
                     }
                 }
                 break;
@@ -1079,6 +1111,29 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
                         (*itr)->ToUnit()->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
+                break;
+            }
+        case SMART_ACTION_CROSS_CAST:
+            {
+                ObjectList* casters = GetTargets(CreateEvent(SMART_EVENT_UPDATE_IC,0,0,0,0,0,SMART_ACTION_NONE,0,0,0,0,0,0,(SMARTAI_TARGETS)e.action.cast.targetType,e.action.cast.targetParam1,e.action.cast.targetParam2,e.action.cast.targetParam3,0), unit);
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets || !casters) return;
+                for (ObjectList::const_iterator itr = casters->begin(); itr != casters->end(); itr++)
+                {
+                    if (IsUnit((*itr)))
+                    {
+                        if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
+                            (*itr)->ToUnit()->InterruptNonMeleeSpells(false);
+
+                        for (ObjectList::const_iterator it = targets->begin(); it != targets->end(); it++)
+                        {
+                            if (IsUnit((*it)))
+                            {
+                                (*itr)->ToUnit()->CastSpell((*it)->ToUnit(), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
+                            }
+                        }
+                    }
+                }
                 break;
             }
         default:
@@ -1406,6 +1461,14 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                 GameObject* target = GetClosestGameObjectWithEntry(GetBaseObject(),e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
                 if (target)
                     l->push_back(target);
+                break;
+            }
+        case SMART_TARGET_OWNER_OR_SUMMONER:
+            {
+                if (!me) return NULL;
+                uint64 guid = me->GetCharmerOrOwnerGUID();
+                if (Unit* owner = ObjectAccessor::GetUnit(*me, guid))
+                    l->push_back(owner);
                 break;
             }
         case SMART_TARGET_POSITION:

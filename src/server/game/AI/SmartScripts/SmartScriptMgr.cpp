@@ -278,6 +278,7 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder e)
         case SMART_TARGET_CLOSEST_GAMEOBJECT:
         case SMART_TARGET_CLOSEST_PLAYER:
         case SMART_TARGET_ACTION_INVOKER_VEHICLE:
+        case SMART_TARGET_OWNER_OR_SUMMONER:
             break;
         default:
             sLog.outErrorDb("SmartAIMgr: Not handled target_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetTargetType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
@@ -546,6 +547,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
             break;
         case SMART_ACTION_ADD_AURA:
         case SMART_ACTION_CAST:
+        case SMART_ACTION_INVOKER_CAST:
             if (!IsSpellValid(e, e.action.cast.spell)) return false;
             break;
         case SMART_ACTION_CALL_AREAEXPLOREDOREVENTHAPPENS:
@@ -751,6 +753,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
         case SMART_ACTION_REMOVE_NPC_FLAG:
         case SMART_ACTION_TALK:
         case SMART_ACTION_SIMPLE_TALK:
+        case SMART_ACTION_CROSS_CAST:
             break;
         default:
             sLog.outErrorDb("SmartAIMgr: Not handled action_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);

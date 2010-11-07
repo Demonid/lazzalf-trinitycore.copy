@@ -384,7 +384,7 @@ enum SMART_ACTION
     SMART_ACTION_DIE                                = 37,     // No Params
     SMART_ACTION_SET_IN_COMBAT_WITH_ZONE            = 38,     // No Params
     SMART_ACTION_CALL_FOR_HELP                      = 39,     // Radius
-    SMART_ACTION_SET_SHEATH                         = 40,     // Sheath (0-passive,1-melee,2-ranged)
+    SMART_ACTION_SET_SHEATH                         = 40,     // Sheath (0-unarmed,1-melee,2-ranged)
     SMART_ACTION_FORCE_DESPAWN                      = 41,     // timer
     SMART_ACTION_SET_INVINCIBILITY_HP_LEVEL         = 42,     // MinHpValue(+pct, -flat)
     SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL            = 43,     // Creature_template entry(param1) OR ModelId (param2) (or 0 for both to unmount)
@@ -417,7 +417,7 @@ enum SMART_ACTION
     SMART_ACTION_PLAYMOVIE                          = 68,     // entry
     SMART_ACTION_MOVE_TO_POS                        = 69,     // xyz
     SMART_ACTION_RESPAWN_TARGET                     = 70,     // 
-    SMART_ACTION_EQUIP                              = 71,     // entry slot1,slot2,slot3
+    SMART_ACTION_EQUIP                              = 71,     // entry, slotmask slot1,slot2,slot3   ,only slots with mask set will be sent to client, bits are 1,2,4, leaving mask 0 is defaulted to mask 7 (send all), slots1-3 are only used if no entry is set
     SMART_ACTION_CLOSE_GOSSIP                       = 72,     // none
     SMART_ACTION_TRIGGER_TIMED_EVENT                = 73,     // id(>1)
     SMART_ACTION_REMOVE_TIMED_EVENT                 = 74,     // id(>1)
@@ -431,8 +431,10 @@ enum SMART_ACTION
     SMART_ACTION_ADD_NPC_FLAG                       = 82,     // Flags
     SMART_ACTION_REMOVE_NPC_FLAG                    = 83,     // Flags
     SMART_ACTION_SIMPLE_TALK                        = 84,     // groupID, can be used to make players say groupID, Text_over event is not triggered, whisper can not be used (Target units will say the text)
-    
-    SMART_ACTION_END                                = 85,
+    SMART_ACTION_INVOKER_CAST                       = 85,     // spellID, castFlags,   if avaliable, last used invoker will cast spellId with castFlags on targets
+    SMART_ACTION_CROSS_CAST                         = 86,     // spellID, castFlags, CasterTargetType, CasterTarget param1, CasterTarget param2, CasterTarget param3, ( + the origonal target fields as Destination target),   CasterTargets will cast spellID on all Targets (use with caution if targeting multiple * multiple units)
+ 
+    SMART_ACTION_END                                = 87,
 };
 
 struct SmartAction
@@ -494,6 +496,10 @@ struct SmartAction
         {
             uint32 spell;
             uint32 flags;
+            uint32 targetType;
+            uint32 targetParam1;
+            uint32 targetParam2;
+            uint32 targetParam3;
         } cast;
 
         struct
@@ -758,6 +764,7 @@ struct SmartAction
         struct
         {
             uint32 entry;
+            uint32 mask;
             uint32 slot1;
             uint32 slot2;
             uint32 slot3;
@@ -828,7 +835,8 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_GAMEOBJECT             = 20,   // entry(0any)
     SMART_TARGET_CLOSEST_PLAYER                 = 21,   // none
     SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
-    SMART_TARGET_END                            = 23,
+    SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner
+    SMART_TARGET_END                            = 24,
 };
 
 struct SmartTarget
