@@ -39,6 +39,7 @@ enum eStillbladeData
     QUEST_REDEEMING_THE_DEAD    = 9685,
     SPELL_SHIMMERING_VESSEL     = 31225,
     SPELL_REVIVE_SELF           = 32343,
+    NPC_BLOOD_KNIGHT_STILLBLADE = 17768,
 };
 
 class npc_blood_knight_stillblade : public CreatureScript
@@ -90,7 +91,8 @@ public:
             if ((Spellkind->Id == SPELL_SHIMMERING_VESSEL) && !spellHit &&
                 (Hitter->GetTypeId() == TYPEID_PLAYER) && (CAST_PLR(Hitter)->IsActiveQuest(QUEST_REDEEMING_THE_DEAD)))
             {
-                CAST_PLR(Hitter)->AreaExploredOrEventHappens(QUEST_REDEEMING_THE_DEAD);
+                //CAST_PLR(Hitter)->AreaExploredOrEventHappens(QUEST_REDEEMING_THE_DEAD);
+                CAST_PLR(Hitter)->KilledMonsterCredit(NPC_BLOOD_KNIGHT_STILLBLADE, 0);
                 DoCast(me, SPELL_REVIVE_SELF);
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
