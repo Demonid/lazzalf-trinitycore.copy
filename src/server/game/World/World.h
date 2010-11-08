@@ -767,17 +767,20 @@ class World
         static uint32 GetLogCheatDeltaTime()         { return m_LogCheatDeltaTime;         }
         // end movement anticheat
 
-     void SetWintergrapsTimer(uint32 timer, uint32 state)
-     {
-         m_WintergrapsTimer = timer;
-         m_WintergrapsState = state;
-     }
+        static bool GetBGTimerAnnounce()             { return m_BGTimerAnnounce;         }
+        void SetBGTimerAnnounceFalse()               { m_BGTimerAnnounce = false;        }
 
-     uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }
-     uint32 GetWintergrapsState() { return m_WintergrapsState; }
+        void SetWintergrapsTimer(uint32 timer, uint32 state)
+        {
+            m_WintergrapsTimer = timer;
+            m_WintergrapsState = state;
+        }
 
-     uint32 m_WintergrapsTimer;
-     uint32 m_WintergrapsState;
+        uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }
+        uint32 GetWintergrapsState() { return m_WintergrapsState; }
+
+        uint32 m_WintergrapsTimer;
+        uint32 m_WintergrapsState;
 
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
@@ -897,6 +900,8 @@ class World
         static uint32 m_MistimingDelta;
         static uint32 m_MistimingAlarms;
         static uint32 m_LogCheatDeltaTime;
+
+        bool m_BGTimerAnnounce;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
