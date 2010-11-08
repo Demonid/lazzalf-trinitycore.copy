@@ -1614,9 +1614,11 @@ class mob_mimiron_flame : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             DoCast(me, SPELL_FLAME, true);
             uiFlameTimer = 8000;
+            uiDespawnTimer = 60000;
         }
         
         uint32 uiFlameTimer;
+        uint32 uiDespawnTimer;
         
         void UpdateAI(const uint32 diff)
         {
@@ -1626,6 +1628,13 @@ class mob_mimiron_flame : public CreatureScript
                 uiFlameTimer = 8000;
             }
             else uiFlameTimer -= diff;
+
+            /*if (uiDespawnTimer <= diff)
+            {
+                me->ForcedDespawn();
+                return;
+            }
+            else uiDespawnTimer -= diff;*/
         }
     };
 
@@ -1648,12 +1657,21 @@ class mob_mimiron_flame_spread : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
             DoCast(me, SPELL_FLAME, true);
             pInstance = pCreature->GetInstanceScript();
+            uiDespawnTimer = 60000;
         }
         
         InstanceScript* pInstance;
+        uint32 uiDespawnTimer;
         
         void UpdateAI(const uint32 uiDiff)
         {
+            /*if (uiDespawnTimer <= diff)
+            {
+                me->ForcedDespawn();
+                return;
+            }
+            else uiDespawnTimer -= diff;*/          
+
             if (pInstance && pInstance->GetBossState(BOSS_MIMIRON) != IN_PROGRESS)
                 me->ForcedDespawn();
         }
