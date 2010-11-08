@@ -210,6 +210,7 @@ class mob_tempest_minion : public CreatureScript
         mob_tempest_minionAI(Creature *c) : ScriptedAI(c)
         {
             pInstance = c->GetInstanceScript();
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
         }
 
         InstanceScript* pInstance;
