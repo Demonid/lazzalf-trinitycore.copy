@@ -113,6 +113,7 @@ uint32 World::m_TeleportToPlaneAlarms = 50;
 uint32 World::m_MistimingAlarms = 200;
 uint32 World::m_MistimingDelta = 15000;
 uint32 World::m_LogCheatDeltaTime = 0;
+bool m_BGTimerAnnounce = true;
 /// World constructor
 World::World()
 {
@@ -130,6 +131,7 @@ World::World()
     m_NextDailyQuestReset = 0;
     m_NextWeeklyQuestReset = 0;
     m_guildhousetimer = 60000;
+    m_BGannouncetimer = 30000;
     m_scheduledScripts = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
@@ -2032,9 +2034,16 @@ void World::Update(uint32 diff)
     if (m_guildhousetimer <= m_updateTime)
     {
         GHobj.ControlGuildHouse();
-        m_guildhousetimer = 300000;
+        m_guildhousetimer = 600000;
     }
     else m_guildhousetimer-=m_updateTime;
+
+    if (m_BGannouncetimer <= m_updateTime)
+    {
+        m_BGTimerAnnounce = true;
+        m_BGannouncetimer = 30000;
+    }
+    else m_BGannouncetimer-=m_updateTime;
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
