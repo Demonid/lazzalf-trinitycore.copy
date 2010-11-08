@@ -38,7 +38,8 @@ enum Events
 enum Spells
 {
     // Spells Koralon
-    SPELL_BURNING_BREATH                        = 66665,
+    //SPELL_BURNING_BREATH                        = 66665,
+    SPELL_BURNING_BREATH                        = 63677, //Hack    
     SPELL_BURNING_BREATH_H                      = 67328,
     SPELL_BURNING_FURY                          = 66721,
     SPELL_FLAME_CINDER_A                        = 66684,
