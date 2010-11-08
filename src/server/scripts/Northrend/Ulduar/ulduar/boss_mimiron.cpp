@@ -357,7 +357,10 @@ class boss_mimiron : public CreatureScript
                                         if (pAerialUnit->getStandState() == UNIT_STAND_STATE_DEAD)
                                         {
                                             if (Unit* pTarget = me->SelectNearestTarget())
+                                            {
                                                 pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(pLeviathan);
+                                                pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(me);
+                                            }
                                             pLeviathan->DisappearAndDie();
                                             pVX_001->DisappearAndDie();
                                             pAerialUnit->DisappearAndDie();
