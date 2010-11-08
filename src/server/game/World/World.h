@@ -767,7 +767,7 @@ class World
         static uint32 GetLogCheatDeltaTime()         { return m_LogCheatDeltaTime;         }
         // end movement anticheat
 
-        static bool GetBGTimerAnnounce()             { return m_BGTimerAnnounce;         }
+        bool GetBGTimerAnnounce()                    { return m_BGTimerAnnounce;         }
         void SetBGTimerAnnounceFalse()               { m_BGTimerAnnounce = false;        }
 
         void SetWintergrapsTimer(uint32 timer, uint32 state)
