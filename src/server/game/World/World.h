@@ -914,6 +914,8 @@ class World
         // GuildHouse controll 
         uint32 m_guildhousetimer;
 
+        uint32 m_BGannouncetimer;
+
         //Player Queue
         Queue m_QueuedPlayer;
 
