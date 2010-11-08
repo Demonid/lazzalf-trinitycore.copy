@@ -243,6 +243,9 @@ const Position PosWeavers[MAX_WEAVERS] =
     {3704.71f, -5175.96f, 143.597f, 3.36549f},
 };
 
+#define ACHIEVEMENT_GET_ENOUGH RAID_MODE(2184,2185) //new
+#define MIN_ABOMIN_COUNT 18 //min number of abominations to kill to get the achievement
+
 // predicate function to select not charmed target
 struct NotCharmedTargetSelector : public std::unary_function<Unit *, bool> {
     NotCharmedTargetSelector() {}
@@ -262,7 +265,10 @@ public:
         boss_kelthuzadAI(Creature* c) : BossAI(c, BOSS_KELTHUZAD), spawns(c)
         {
             uiFaction = me->getFaction();
+			pInstance = c->GetInstanceScript();
         }
+
+		InstanceScript* pInstance;
 
         uint32 Phase;
         uint32 uiGuardiansOfIcecrownTimer;
@@ -278,6 +284,8 @@ public:
         uint64 KTTriggerGUID;
 
         SummonList spawns; // adds spawn by the trigger. kept in separated list (i.e. not in summons)
+
+		uint32 AbominationsCount;
 
         void Reset()
         {
@@ -321,6 +329,8 @@ public:
             Phase = 0;
             nAbomination = 0;
             nWeaver = 0;
+			
+			AbominationsCount = 0;
         }
 
         void KilledUnit()
@@ -340,6 +350,12 @@ public:
                     pPlayer->SetFloatValue(OBJECT_FIELD_SCALE_X, (*itr).second);
             }
             chained.clear();
+
+			if (pInstance) //new
+			{
+				if (AbominationsCount >= MIN_ABOMIN_COUNT)
+					pInstance->DoCompleteAchievement(ACHIEVEMENT_GET_ENOUGH);
+            }
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -634,12 +650,46 @@ public:
                 DoMeleeAttackIfReady();
             }
         }
-    };
+
+        void UpdateAbominationCounter()
+	    {
+		    AbominationsCount++;
+	    }
+    };	
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new boss_kelthuzadAI (pCreature);
     }
+
+};
+
+/* new
+ricordare di legare l'npc allo script nel db!!!
+UPDATE creature_template SET ScriptName='mob_unstoppable_abomination' WHERE entry=16428
+*/
+#define KEL_THUZAD 15990
+
+class mob_unstoppable_abomination : public CreatureScript
+{
+public:
+    mob_unstoppable_abomination() : CreatureScript("mob_unstoppable_abomination") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_unstoppable_abominationAI (pCreature);
+    }
+
+    struct mob_unstoppable_abominationAI : public ScriptedAI
+    {
+        mob_unstoppable_abominationAI(Creature *c) : ScriptedAI(c) {}
+
+        void JustDied(Unit* killer)
+        {
+            if (Creature* pKel = me->FindNearestCreature(KEL_THUZAD,100,true)) //metto 100 per essere più sicuri
+				CAST_AI(boss_kelthuzad::boss_kelthuzadAI,pKel->AI())->UpdateAbominationCounter();
+        }
+    };
 
 };
 
@@ -710,5 +760,6 @@ public:
 void AddSC_boss_kelthuzad()
 {
     new boss_kelthuzad();
+	new mob_unstoppable_abomination(); //new
     new at_kelthuzad_center();
 }
