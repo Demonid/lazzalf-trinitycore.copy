@@ -1268,7 +1268,7 @@ class modify_commandscript : public CommandScript
                 return false;
             }
 
-            target->GetReputationMgr().SetReputation(factionEntry,amount);
+            target->GetReputationMgr().SetOneFactionReputation(factionEntry,amount);
             handler->PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[handler->GetSessionDbcLocale()], factionId,
                 handler->GetNameLink(target).c_str(), target->GetReputationMgr().GetReputation(factionEntry));
             return true;
