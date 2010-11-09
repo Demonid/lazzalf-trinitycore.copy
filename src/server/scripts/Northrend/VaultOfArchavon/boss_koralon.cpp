@@ -167,7 +167,7 @@ class boss_koralon : public CreatureScript
                         return;
                     case EVENT_FLAME_CINDER_A:
                         DoCast(me, RAID_MODE(SPELL_FLAME_CINDER_A,SPELL_FLAME_CINDER_A_H));
-                        events.ScheduleEvent(EVENT_FLAME_CINDER_A, 30000);
+                        events.ScheduleEvent(EVENT_FLAME_CINDER_A, 5000);
                         return;
                 }
             }
