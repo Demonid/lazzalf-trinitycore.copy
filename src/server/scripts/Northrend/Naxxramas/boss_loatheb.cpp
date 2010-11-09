@@ -36,6 +36,9 @@ enum Events
     EVENT_DOOM,
 };
 
+#define ACHIEVEMENT_SPORE_LOSER RAID_MODE(2182,2183) //new
+#define NPC_LOATHEB 16011
+
 class boss_loatheb : public CreatureScript
 {
 public:
@@ -48,7 +51,31 @@ public:
 
     struct boss_loathebAI : public BossAI
     {
-        boss_loathebAI(Creature *c) : BossAI(c, BOSS_LOATHEB) {}
+        boss_loathebAI(Creature *c) : BossAI(c, BOSS_LOATHEB)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+		bool KilledSpore;
+
+		void Reset() //new
+		{
+			_Reset();
+			
+			KilledSpore = false;
+		}
+
+		void JustDied(Unit* /*Killer*/)
+		{
+			_JustDied();
+
+			if (pInstance)
+			{
+				if(!KilledSpore)     
+					pInstance->DoCompleteAchievement(ACHIEVEMENT_SPORE_LOSER);
+			}
+		}
 
         void EnterCombat(Unit * /*who*/)
         {
@@ -115,6 +142,9 @@ public:
         void JustDied(Unit* killer)
         {
             DoCast(killer, SPELL_FUNGAL_CREEP);
+
+			if (Creature* pLoatheb = me->FindNearestCreature(NPC_LOATHEB, 60, true))
+				CAST_AI(boss_loatheb::boss_loathebAI,pLoatheb->AI())->KilledSpore = true;
         }
     };
 
