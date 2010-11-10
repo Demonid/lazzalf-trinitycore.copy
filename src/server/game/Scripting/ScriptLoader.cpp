@@ -50,6 +50,7 @@ void AddSC_example_spell_scripts();
 
 void AddSC_SmartSCripts();
 
+/*
 //Commands
 void AddSC_account_commandscript();
 void AddSC_achievement_commandscript();
@@ -59,6 +60,7 @@ void AddSC_go_commandscript();
 void AddSC_learn_commandscript();
 void AddSC_modify_commandscript();
 void AddSC_debug_commandscript();
+*/
 
 #ifdef SCRIPTS
 //world
@@ -597,7 +599,9 @@ void AddScripts()
     AddExampleScripts();
     AddSpellScripts();
     AddSC_SmartSCripts();
+/*
     AddCommandScripts();
+*/
 #ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();
@@ -638,6 +642,7 @@ void AddSpellScripts()
     AddSC_example_spell_scripts();
 }
 
+/*
 void AddCommandScripts()
 {
     AddSC_account_commandscript();
@@ -649,6 +654,7 @@ void AddCommandScripts()
     AddSC_modify_commandscript();
     AddSC_debug_commandscript();
 }
+*/
 
 void AddWorldScripts()
 {
