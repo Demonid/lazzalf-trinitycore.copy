@@ -236,8 +236,6 @@ bool ChatHandler::HandleCharacterJailpinfoCommand(const char* args)
 	return true;
 }
 
-
-
 //add spawn of creature for a GuildHouse
 bool ChatHandler::HandleNpcAddGuildCommand(const char* args)
 {

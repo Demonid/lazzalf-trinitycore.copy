@@ -419,6 +419,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "factionid",      SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcFactionIdCommand>,        "", NULL },
         { "flag",           SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcFlagCommand>,             "", NULL },
         { "follow",         SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcFollowCommand>,           "", NULL },
+        { "guildadd",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcAddGuildCommand>,         "", NULL },
         { "info",           SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleNpcInfoCommand>,             "", NULL },
         { "move",           SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcMoveCommand>,             "", NULL },
         { "playemote",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleNpcPlayEmoteCommand>,        "", NULL },
