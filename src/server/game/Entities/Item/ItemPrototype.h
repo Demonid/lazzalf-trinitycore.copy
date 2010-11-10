@@ -658,7 +658,7 @@ struct ItemPrototype
     {
         switch(InventoryType)
         {
-            //case INVTYPE_RELIC: remove in patch 3.2
+            case INVTYPE_RELIC:
             case INVTYPE_SHIELD:
             case INVTYPE_HOLDABLE:
                 return true;
