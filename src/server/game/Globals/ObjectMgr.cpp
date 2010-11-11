@@ -7630,8 +7630,9 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
 {
     // This function can be Called from various map threads concurrently
     {
-        ACE_GUARD(ACE_Thread_Mutex, guard, m_CreatureRespawnTimesMtx);
+        m_CreatureRespawnTimesMtx.acquire();
         mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
+        m_CreatureRespawnTimesMtx.release();
     }
 
     PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CRESPAWNTIME);
@@ -7663,8 +7664,9 @@ void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     // This function can be called from different map threads concurrently
     {
-        ACE_GUARD(ACE_Thread_Mutex, guard, m_GORespawnTimesMtx);
+        m_GORespawnTimesMtx.acquire();
         mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
+        m_GORespawnTimesMtx.release();
     }
 
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
@@ -7678,7 +7680,7 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
     RespawnTimes::iterator next;
 
     {
-        ACE_GUARD(ACE_Thread_Mutex, guard, m_GORespawnTimesMtx);
+        m_GORespawnTimesMtx.acquire();
         for (RespawnTimes::iterator itr = mGORespawnTimes.begin(); itr != mGORespawnTimes.end(); itr = next)
         {
             next = itr;
@@ -7687,9 +7689,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
             if (GUID_HIPART(itr->first) == instance)
                 mGORespawnTimes.erase(itr);
         }
+        m_GORespawnTimesMtx.release();
     }
     {
-        ACE_GUARD(ACE_Thread_Mutex, guard, m_CreatureRespawnTimesMtx);
+        m_CreatureRespawnTimesMtx.acquire();
         for (RespawnTimes::iterator itr = mCreatureRespawnTimes.begin(); itr != mCreatureRespawnTimes.end(); itr = next)
         {
             next = itr;
@@ -7698,6 +7701,7 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
             if (GUID_HIPART(itr->first) == instance)
                 mCreatureRespawnTimes.erase(itr);
         }
+        m_CreatureRespawnTimesMtx.release();
     }
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
