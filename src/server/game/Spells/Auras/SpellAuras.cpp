@@ -360,6 +360,23 @@ m_isRemoved(false), m_isSingleTarget(false)
         else
             m_effects[i] = NULL;
     }
+    
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER && m_spellProto->SpellFamilyName == SPELLFAMILY_POTION && caster->HasAura(53042))
+    {
+        if (sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_BATTLE) ||
+           sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_GUARDIAN))
+        {
+            if (caster->HasSpell(m_spellProto->EffectTriggerSpell[0]))
+            {
+                for (uint8 i=0 ; i<MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (effMask & (uint8(1) << i))
+                        m_effects[i]->SetAmount((int32)(m_effects[i]->GetAmount() * 1.3f));
+                }
+            }
+        }
+    }
+
 }
 
 Aura::~Aura()
@@ -689,7 +706,7 @@ void Aura::RefreshDuration()
 {
     SetDuration(GetMaxDuration());
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_effects[i])
+        if(m_effects[i])
             m_effects[i]->ResetPeriodic();
 
     if (m_spellProto->manaPerSecond || m_spellProto->manaPerSecondPerLevel)
@@ -1124,6 +1141,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (target->HasAura(61988) && !target->HasAura(25771))
                             target->RemoveAura(61988);
                         break;
+                    case 61990: // Hodir Flash Freeze immunity remove
+                    case 61969:
+               	        if (removeMode == AURA_REMOVE_BY_DEATH)
+                            target->RemoveAura(7940);
+                        break;
                     case 72368: // Shared Suffering
                     case 72369:
                         if (caster)
@@ -1135,6 +1157,29 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                                     caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
                             }
                         }
+                        break;
+                    // Malady of the Mind will attempt to jump to a nearby friend when removed
+                    case 63830:
+                    case 63881:                
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        {
+                            std::list<Unit*> unitList;
+                            target->GetRaidMember(unitList, 10);
+                            for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                            {
+                                Unit* pUnit = *itr;
+                                if (pUnit == target)
+                                    continue;
+                                    
+                                pUnit->CastSpell(pUnit, 63881, true, 0, 0);
+                                return;
+                            }
+                        }
+                        break;
+                    // Shadow Beacon
+                    case 64465:
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                            target->CastSpell(target, 64468, true, 0, 0, GetCasterGUID());
                         break;
                 }
                 break;
@@ -1232,7 +1277,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (removeMode != AURA_REMOVE_BY_STACK)
                             target->RemoveGameObject(GetId(), true);
                         target->RemoveAura(62388);
-                    break;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -1334,9 +1381,24 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     target->RemoveAurasWithFamily(SPELLFAMILY_ROGUE, 0x0000800, 0, 0, target->GetGUID());
                 break;
             case SPELLFAMILY_PALADIN:
-                // Remove the immunity shield marker on Forbearance removal if AW marker is not present
-                if (GetId() == 25771 && target->HasAura(61988) && !target->HasAura(61987))
-                    target->RemoveAura(61988);
+                switch (GetId())
+                {                   
+                    case 25771: // Remove the immunity shield marker on Forbearance removal if AW marker is not present
+                        if (target->HasAura(61988) && !target->HasAura(61987))
+                            target->RemoveAura(61988);
+                        break;
+                    case 199997: // Divine Storm Helper (SERVERSIDE)
+                    {
+                        int32 damage = aurApp->GetBase()->GetEffect(EFFECT_0)->GetAmount();
+                        if (!damage)
+                            break;
+
+                        caster->CastCustomSpell(target, 54171, &damage, NULL, NULL, true);
+                        break;
+                    }
+                    default:
+                        break;
+                }
                 break;
             case SPELLFAMILY_DEATHKNIGHT:
                 // Blood of the North
@@ -1428,7 +1490,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
         case SPELLFAMILY_PALADIN:
             switch(GetId())
             {
-                case 19746:
+                case 19746:                    
+                    // Improved concentration aura - linked aura
+                    if (caster->HasAura(20254) || caster->HasAura(20255) || caster->HasAura(20256))
+                        if (apply)
+                            target->CastSpell(target, 63510, true);
+                        else target->RemoveAura(63510);
                 case 31821:
                     // Aura Mastery Triggered Spell Handler
                     // If apply Concentration Aura -> trigger -> apply Aura Mastery Immunity
@@ -1445,6 +1512,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     else
                         target->RemoveAurasDueToSpell(64364, GetCasterGUID());
                     break;
+            }
+            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
+	        {
+                // Improved devotion aura
+                if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
+                    if (apply)
+                        caster->CastSpell(target, 63514, true);
+                    else target->RemoveAura(63514);
+                // 63531 - linked aura for both Sanctified Retribution and Swift Retribution talents
+                // Not allow for Retribution Aura (prevent stacking)
+                if ((GetSpellProto()->SpellIconID != 555) && (caster->HasAura(53648) || caster->HasAura(53484) || caster->HasAura(53379) || caster->HasAura(31869)))
+                    if (apply)
+                        caster->CastSpell(target, 63531, true);
+                    else target->RemoveAura(63531);
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:

@@ -48,6 +48,8 @@
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
 #include "ScriptMgr.h"
+#include "OutdoorPvPMgr.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "ConditionMgr.h"
 #include "DisableMgr.h"
 #include "SpellScript.h"
@@ -433,6 +435,7 @@ m_caster(Caster), m_spellValue(new SpellValue(m_spellInfo))
     m_delayStart = 0;
     m_delayAtDamageCount = 0;
 
+    m_applyMultiplierMask = 0;
     m_effectMask = 0;
     m_auraScaleMask = 0;
 
@@ -936,6 +939,10 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     // Check for effect immune skip if immuned
     bool immuned = pVictim->IsImmunedToSpellEffect(m_spellInfo, effIndex);
 
+    // Saronite Vapors Hack
+    if (m_spellInfo->Id == 63337)
+        immuned = false;
+
     uint64 targetGUID = pVictim->GetGUID();
 
     // Lookup target in already in list
@@ -1370,7 +1377,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     // Recheck immune (only for delayed spells)
     if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
-
+    // Deterrence Hack for delayed spells
+    if (m_spellInfo->speed && unit->HasAura(19263))
+        return SPELL_MISS_DEFLECT;
+        
     PrepareScriptHitHandlers();
     CallScriptBeforeHitHandlers();
 
@@ -2379,6 +2389,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
 
         if (maxTargets > 1)
         {
+            //otherwise, this multiplier is used for something else
+            m_damageMultipliers[i] = 1.0f;
+            m_applyMultiplierMask |= 1 << i;
+
             float range;
             std::list<Unit*> unitList;
 
@@ -2540,6 +2554,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                                 }
                             }
                             break;
+ 	                case 62834: // Boom (Boombot)
+                    case 64320: // Rune of Power (Assembly of Iron)
+                        SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ANY);
+                        break;
 
                         default:
                             sLog.outDebug("Spell (ID: %u) (caster Entry: %u) does not have type CONDITION_SOURCE_TYPE_SPELL_SCRIPT_TARGET record in `conditions` table.", m_spellInfo->Id, m_caster->GetEntry());
@@ -2737,6 +2755,18 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                         unitList.sort(Trinity::PowerPctOrderPred((Powers)power));
                         unitList.resize(maxSize);
                     }
+                    // Replenishment: refresh existing auras
+                    if (m_spellInfo->Id == 57669)
+                        for (std::list<Unit *>::iterator itr = unitList.begin(); itr != unitList.end();)
+                            if (AuraEffect * aurEff = (*itr)->GetAuraEffect(SPELL_AURA_PERIODIC_ENERGIZE, SPELLFAMILY_GENERIC, 3184, EFFECT_0))
+                            {
+                                aurEff->SetAmount((*itr)->GetMaxPower(POWER_MANA) * 25 / 10000);
+                                aurEff->GetBase()->RefreshDuration();
+
+                                itr = unitList.erase(itr);
+                            }
+                            else
+                                ++itr;
                 }
             }
 
@@ -2757,6 +2787,10 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                 switch (m_spellInfo->Id)
                 {
                     case 27285: // Seed of Corruption proc spell
+                    case 49821: // Mind Sear proc spell Rank 1
+                    case 53022: // Mind Sear proc spell Rank 2
+                    case 63025: // Gravity Bomb Normal
+ 	                case 64233: // Gravity Bomb Hero
                         unitList.remove(m_targets.getUnitTarget());
                         break;
                     case 55789: // Improved Icy Talons
@@ -2824,6 +2858,32 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                             modOwner->RemoveSpellCooldown(m_spellInfo->Id,true);
                         SendCastResult(SPELL_FAILED_NO_PET);
                         finish(false);
+                    }
+                }
+                // Lunatic Gaze
+                if (m_spellInfo->Id == 64164 || m_spellInfo->Id == 64168)
+                {
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        // Looking into the maw of madness unhinges your mind
+                        if (!(*itr)->isInFront(m_caster, 100, 2.5f))
+                        {
+                            unitList.erase(itr);
+                            break;
+                        }
+                    }
+                }
+                // Induce Madness
+                if (m_spellInfo->Id == 64059)
+                {
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        // Only on targets with Illusion Room Aura
+                        if (!(*itr)->HasAura(63988))
+                        {
+                            unitList.erase(itr);
+                            break;
+                        }
                     }
                 }
             }
@@ -3226,6 +3286,10 @@ void Spell::cast(bool skipCheck)
         {
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
                 m_preCastSpell = 11196;                                // Recently Bandaged
+            //else if (m_spellInfo->Id == 7744)              // Will of the Forsaken
+            //    m_caster->CastSpell(m_caster, 72757, false);           // PvP Trinket cooldown
+            //else if(m_spellInfo->Id == 42292)              // PvP Trinket
+            //    m_caster->CastSpell(m_caster, 72752, false);           // Will of the Forsaken cooldown
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -5032,7 +5096,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (castResult != SPELL_CAST_OK)
         return castResult;
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell /*|| m_spellInfo->Id == 33395*/) // Water Elemental's Freeze should be checked even if it's a triggered spell
     {
         castResult = CheckPower();
         if (castResult != SPELL_CAST_OK)
@@ -5042,6 +5106,56 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (castResult != SPELL_CAST_OK)
             return castResult;
     }
+
+    // Dispel check - only if the first effect is dispel
+    if (!m_IsTriggeredSpell && (m_spellInfo->Effect[EFFECT_0] == SPELL_EFFECT_DISPEL))
+        if (Unit const * target = m_targets.getUnitTarget())
+            if (!GetSpellRadius(m_spellInfo, EFFECT_0, target->IsFriendlyTo(m_caster)))
+            {
+                bool check = true;
+                uint32 dispelMask = GetDispellMask(DispelType(m_spellInfo->EffectMiscValue[EFFECT_0]));
+
+                for (uint8 effIndex = EFFECT_1; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+                {
+                    if (m_spellInfo->Effect[effIndex] == SPELL_EFFECT_DISPEL)
+                        dispelMask |= GetDispellMask(DispelType(m_spellInfo->EffectMiscValue[effIndex]));
+                    // If there is any other effect don't check
+                    else if (m_spellInfo->Effect[effIndex])
+                    {
+                        check = false;
+                        break;
+                    }
+                }
+
+                if (check)
+                {
+                    bool failed = true;
+
+                    Unit::AuraMap const & auras = target->GetOwnedAuras();
+                    for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                    {
+                        Aura * aura = itr->second;
+                        AuraApplication * aurApp = aura->GetApplicationOfTarget(target->GetGUID());
+                        if (!aurApp)
+                            continue;
+
+                        if ((1 << aura->GetSpellProto()->Dispel) & dispelMask)
+                        {
+                            bool positive = aurApp->IsPositive() ? !(aura->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE) : false;
+
+                            // Can only dispel positive auras on enemies and negative on allies
+                            if (positive != target->IsFriendlyTo(m_caster))
+                            {
+                                failed = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (failed)
+                        return SPELL_FAILED_NOTHING_TO_DISPEL;
+                }
+            }
 
     for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
@@ -5399,10 +5513,20 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(m_spellInfo->Id == 698) //ritual of summoning
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleground())
+                            return SPELL_FAILED_NOT_HERE;
+                }
+                break;
+            }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
                 // can't change during already started arena/battleground
                 if (Battleground const* bg = m_caster->ToPlayer()->GetBattleground())
-                    if (bg->GetStatus() == STATUS_IN_PROGRESS)
+                    if (bg->GetStatus() == STATUS_IN_PROGRESS && (m_caster->GetMap() && (m_caster->GetMap()->GetId() != 30)))
                         return SPELL_FAILED_NOT_IN_BATTLEGROUND;
                 break;
             default:
@@ -5511,6 +5635,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (target->GetCharmerGUID())
                         return SPELL_FAILED_CHARMED;
 
+                    if (target->IsMounted())
+                        return SPELL_FAILED_NOT_ON_MOUNTED;
+
                     int32 damage = CalculateDamage(i, target);
                     if (damage && int32(target->getLevel()) > damage)
                         return SPELL_FAILED_HIGHLEVEL;
@@ -5527,7 +5654,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 bool AllowMount = !m_caster->GetMap()->IsDungeon() || m_caster->GetMap()->IsBattlegroundOrArena();
                 InstanceTemplate const *it = sObjectMgr.GetInstanceTemplate(m_caster->GetMapId());
                 if (it)
-                    AllowMount = it->allowMount;
+                    AllowMount |= it->allowMount;
                 if (m_caster->GetTypeId() == TYPEID_PLAYER && !AllowMount && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
@@ -5558,8 +5685,15 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // allow always ghost flight spells
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
+                    
+	                OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP); 
+
+                    // Wintergrasp
+                    if ((m_originalCaster->GetZoneId() == NORTHREND_WINTERGRASP && pvpWG && pvpWG->isWarTime()))
+                            return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
+                            
                     if (AreaTableEntry const* pArea = GetAreaEntryByAreaID(m_originalCaster->GetAreaId()))
-                        if (pArea->flags & AREA_FLAG_NO_FLY_ZONE)
+                    	if (pArea->flags & AREA_FLAG_NO_FLY_ZONE)
                             return m_IsTriggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;
@@ -5689,6 +5823,10 @@ SpellCastResult Spell::CheckCasterAuras() const
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
             mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     }
+
+    // Caster with Cyclone can only use PvP trinket
+    if (m_caster->HasAura(33786) && mechanic_immune != IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK)
+        return SPELL_FAILED_STUNNED;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;
@@ -6908,7 +7046,7 @@ void Spell::CalculateDamageDoneForAllTargets()
     }
 }
 
-int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float * /*multiplier*/)
+int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float * multiplier)
 {
     int32 damageDone = 0;
     unitTarget = unit;
@@ -6950,6 +7088,12 @@ int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float * /*
                             m_damage = m_damage * 10/targetAmount;
                     }
                 }
+            }
+
+            if (m_applyMultiplierMask & (1 << i))
+            {
+                m_damage *= m_damageMultipliers[i];
+                m_damageMultipliers[i] *= multiplier[i];
             }
 
             damageDone += m_damage;
