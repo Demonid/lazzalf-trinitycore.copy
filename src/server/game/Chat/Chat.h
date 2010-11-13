@@ -226,7 +226,6 @@ class ChatHandler
         bool HandleLookupMapCommand(const char* args);
         bool HandleLookupTitleCommand(const char * args);
 
-        bool HandleNpcAddGuildCommand(const char* args);
         bool HandlePDumpLoadCommand(const char *args);
         bool HandlePDumpWriteCommand(const char *args);
 
