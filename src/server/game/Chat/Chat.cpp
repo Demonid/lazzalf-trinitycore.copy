@@ -259,7 +259,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
-        { "guildadd",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleNpcAddGuildCommand>,         "", NULL },
     static ChatCommand petCommandTable[] =
     {
         { "create",         SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleCreatePetCommand>,           "", NULL },
