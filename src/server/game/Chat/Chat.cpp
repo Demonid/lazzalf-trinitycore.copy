@@ -161,15 +161,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,       0,                     false, NULL,  "", NULL                   }
     };
 
-    static ChatCommand eventCommandTable[] =
-    {
-        { "activelist",     SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleEventActiveListCommand>,     "", NULL },
-        { "start",          SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleEventStartCommand>,          "", NULL },
-        { "stop",           SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleEventStopCommand>,           "", NULL },
-        { "",               SEC_GAMEMASTER,     true,  OldHandler<&ChatHandler::HandleEventInfoCommand>,           "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
-    };
-
     static ChatCommand gobjectCommandTable[] =
     {
         { "activate",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleActivateObjectCommand>,      "", NULL },
@@ -467,16 +458,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
-    static ChatCommand teleCommandTable[] =
-    {
-        { "add",            SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleTeleAddCommand>,             "", NULL },
-        { "del",            SEC_ADMINISTRATOR,  true,  OldHandler<&ChatHandler::HandleTeleDelCommand>,             "", NULL },
-        { "name",           SEC_MODERATOR,      true,  OldHandler<&ChatHandler::HandleTeleNameCommand>,            "", NULL },
-        { "group",          SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleTeleGroupCommand>,           "", NULL },
-        { "",               SEC_MODERATOR,      false, OldHandler<&ChatHandler::HandleTeleCommand>,                "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
-    };
-
     static ChatCommand titlesCommandTable[] =
     {
         { "add",            SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleTitlesAddCommand>,           "", NULL },
@@ -546,9 +527,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand commandTable[] =
     {
-        { "tele",           SEC_MODERATOR,      true,  NULL,                                           "", teleCommandTable     },
         { "character",      SEC_GAMEMASTER,     true,  NULL,                                           "", characterCommandTable},
-        { "event",          SEC_GAMEMASTER,     false, NULL,                                           "", eventCommandTable    },
         { "gobject",        SEC_GAMEMASTER,     false, NULL,                                           "", gobjectCommandTable  },
         { "honor",          SEC_GAMEMASTER,     false, NULL,                                           "", honorCommandTable    },
         { "wp",             SEC_GAMEMASTER,     false, NULL,                                           "", wpCommandTable       },
@@ -873,6 +852,26 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         if (!hasStringAbbr(table[i].Name, cmd.c_str()))
             continue;
 
+        bool match = false;
+        if (strlen(table[i].Name) > strlen(cmd.c_str()))
+        {
+            for (uint32 j = 0; table[j].Name != NULL; ++j)
+            {
+                if (!hasStringAbbr(table[j].Name, cmd.c_str()))
+                    continue;
+
+                if (strcmp(table[j].Name,cmd.c_str()) != 0)
+                    continue;
+                else
+                {
+                    match = true;
+                    break;
+                }
+            }
+        }
+        if (match)
+            continue;
+
         // select subcommand from child commands list
         if (table[i].ChildCommands != NULL)
         {
@@ -891,23 +890,6 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
 
         // must be available and have handler
         if (!table[i].Handler || !isAvailable(table[i]))
-            continue;
-
-        bool match = false;
-        if (strlen(table[i].Name) > strlen(cmd.c_str()))
-        {
-            for (uint32 j = 0; table[j].Name != NULL; ++j)
-            {
-                if (strcmp(table[j].Name,cmd.c_str()) != 0)
-                    continue;
-                else
-                {
-                    match = true;
-                    break;
-                }
-            }
-        }
-        if (match)
             continue;
 
         SetSentErrorMessage(false);
