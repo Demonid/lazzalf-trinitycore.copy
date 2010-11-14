@@ -1388,6 +1388,18 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             if (damage)
                 procVictim|=PROC_FLAG_TAKEN_DAMAGE;
 
+            if (damage > 0) //HackFix Avoidance
+            {
+                if (IsAreaEffectTarget[GetSpellProto()->EffectImplicitTargetA[m_effIndex]] || IsAreaEffectTarget[GetSpellProto()->EffectImplicitTargetB[m_effIndex]] || GetSpellProto()->Effect[m_effIndex] == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+                {
+                    resist += damage;
+                    damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, GetSpellProto()->SchoolMask));
+                    if (GetCaster()->GetTypeId() == TYPEID_UNIT)
+                        damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE, GetSpellProto()->SchoolMask));
+                    resist -= damage;
+                }
+            }
+
             int32 overkill = damage - target->GetHealth();
             if (overkill < 0)
               overkill = 0;
