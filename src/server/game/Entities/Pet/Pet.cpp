@@ -569,7 +569,7 @@ void Pet::Update(uint32 diff)
 
             if (m_happinessTimer <= diff)
             {
-                LooseHappiness();
+                LoseHappiness();
                 m_happinessTimer = 7500;
             }
             else
@@ -622,7 +622,7 @@ void Creature::Regenerate(Powers power)
     ModifyPower(power, (int32)addvalue);
 }
 
-void Pet::LooseHappiness()
+void Pet::LoseHappiness()
 {
     uint32 curValue = GetPower(POWER_HAPPINESS);
     if (curValue <= 0)
