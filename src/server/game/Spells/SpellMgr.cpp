@@ -4121,6 +4121,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
+        case 21178: //HackFix per Dudu BearForm
+            spellInfo->EffectBasePoints[0] = 105;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
@@ -4151,7 +4155,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
                 // Roar
                 else if (spellInfo->SpellFamilyFlags[0] & 0x8)
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
+                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;                
                 else
                     break;
                 count++;
