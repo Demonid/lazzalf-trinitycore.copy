@@ -166,7 +166,8 @@ class boss_koralon : public CreatureScript
                         events.ScheduleEvent(EVENT_METEOR_FISTS_A, 45000);
                         return;
                     case EVENT_FLAME_CINDER_A:
-                        DoCast(me, RAID_MODE(SPELL_FLAME_CINDER_A,SPELL_FLAME_CINDER_A_H));
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(pTarget, RAID_MODE(SPELL_FLAME_CINDER_A,SPELL_FLAME_CINDER_A_H));
                         events.ScheduleEvent(EVENT_FLAME_CINDER_A, 5000);
                         return;
                 }
