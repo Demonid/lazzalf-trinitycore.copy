@@ -519,7 +519,7 @@ public:
     }
 };
 
-enum eEnums
+enum eEnums_oracle_frezy
 {
     NPC_ORACLE       = 628668,
     NPC_FREZYNE      = 64561,
