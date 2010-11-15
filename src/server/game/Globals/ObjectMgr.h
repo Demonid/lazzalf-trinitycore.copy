@@ -1105,6 +1105,7 @@ class ObjectMgr
             m_CreatureRespawnTimesMtx.acquire();
             time_t respawn_time = mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)];
             m_CreatureRespawnTimesMtx.release();
+            return respawn_time;
         }
         void SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t);
         time_t GetGORespawnTime(uint32 loguid, uint32 instance)
@@ -1361,6 +1362,7 @@ class ObjectMgr
         ACE_Thread_Mutex m_CreatureRespawnTimesMtx;
         RespawnTimes mGORespawnTimes;
         ACE_Thread_Mutex m_GORespawnTimesMtx;
+        ACE_Thread_Mutex m_MoveAllCreaturesInMoveListMtx;
 
         CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
