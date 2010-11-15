@@ -548,9 +548,7 @@ void Map::Update(const uint32 &t_diff)
         i_scriptLock = false;
     }
 
-    //m_MoveAllCreaturesInMoveListMtx.acquire();
     MoveAllCreaturesInMoveList();
-    //m_MoveAllCreaturesInMoveListMtx.release();
 
     if (!m_mapRefManager.isEmpty() || !m_activeNonPlayers.empty())
         ProcessRelocationNotifies(t_diff);
