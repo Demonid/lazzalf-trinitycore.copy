@@ -454,6 +454,9 @@ enum OutdoorPvPWGSpell
     SPELL_BUILD_SIEGE_ENGINE_A  = 56661,
     SPELL_BUILD_SIEGE_ENGINE_H  = 61408,
 
+    SPELL_TELEPORT_BRIDGE                        = 59096,
+    SPELL_TELEPORT_FORTRESS                      = 60035,
+
     SPELL_TELEPORT_DALARAN      = 53360,
     SPELL_VICTORY_AURA          = 60044,
     SPELL_WINTEGRASP_WATER      = 36444 // For trigger within the waters of wintergrasp (aura)
