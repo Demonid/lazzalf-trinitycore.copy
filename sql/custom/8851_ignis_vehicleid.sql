@@ -1,0 +1,1 @@
+UPDATE `creature_template` SET `vehicleid` = 342 WHERE `entry` = 33118;
