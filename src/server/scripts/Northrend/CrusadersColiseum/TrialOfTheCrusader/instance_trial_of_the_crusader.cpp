@@ -520,10 +520,6 @@ public:
                     };
                     return m_uiEventNPCId;
                 case DATA_HEALTH_TWIN_SHARED: return m_uiDataDamageTwin;
-
-				//achievements
-				case DATA_SNOBOLD_COUNT: return m_uiSnoboldCount;
-				case DATA_MISTRESS_OF_PAIN_COUNT: return m_uiMistressOfPainCount;
             }
             return 0;
         }
@@ -592,40 +588,40 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-    //    bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-    //    {
-    //        switch (criteria_id)
-    //        {
-    //            case UPPER_BACK_PAIN_10_PLAYER:
-    //            case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
-    //                return m_uiSnoboldCount >= 2;
-    //            case UPPER_BACK_PAIN_25_PLAYER:
-    //            case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
-    //                return m_uiSnoboldCount >= 4;
-    //            case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
-    //            case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
-    //            case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
-    //            case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
-    //                return m_uiMistressOfPainCount >= 2;
-    //            case A_TRIBUTE_TO_SKILL_10_PLAYER:
-    //            case A_TRIBUTE_TO_SKILL_25_PLAYER:
-    //                return m_uiTrialCounter >= 25;
-    //            case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
-    //            case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
-    //                return m_uiTrialCounter >= 45;
-    //            case A_TRIBUTE_TO_INSANITY_10_PLAYER:
-    //            case A_TRIBUTE_TO_INSANITY_25_PLAYER:
-    //            case REALM_FIRST_GRAND_CRUSADER:
-    //                return m_uiTrialCounter == 50;
-    //            case A_TRIBUTE_TO_IMMORTALITY_HORDE:
-    //            case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
-    //                return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
-    //            case A_TRIBUTE_TO_DEDICATED_INSANITY:
-    //                return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
-    //        }
+        //bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+        //{
+        //    switch (criteria_id)
+        //    {
+        //        case UPPER_BACK_PAIN_10_PLAYER:
+        //        case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 2;
+        //        case UPPER_BACK_PAIN_25_PLAYER:
+        //        case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 4;
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
+        //            return m_uiMistressOfPainCount >= 2;
+        //        case A_TRIBUTE_TO_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 25;
+        //        case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 45;
+        //        case A_TRIBUTE_TO_INSANITY_10_PLAYER:
+        //        case A_TRIBUTE_TO_INSANITY_25_PLAYER:
+        //        case REALM_FIRST_GRAND_CRUSADER:
+        //            return m_uiTrialCounter == 50;
+        //        case A_TRIBUTE_TO_IMMORTALITY_HORDE:
+        //        case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
+        //            return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
+        //        case A_TRIBUTE_TO_DEDICATED_INSANITY:
+        //            return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+        //    }
 
-    //        return false;
-    //    }
+        //    return false;
+        //}
     };
 
 };
