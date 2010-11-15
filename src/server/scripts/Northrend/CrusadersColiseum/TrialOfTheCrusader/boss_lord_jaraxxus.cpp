@@ -86,7 +86,8 @@ enum BossSpells
 /*######
 ## boss_jaraxxus
 ######*/
-class boss_jaraxxus : public CreatureScript
+
+class boss_jaraxxus : public CreatureScript
 {
 public:
     boss_jaraxxus() : CreatureScript("boss_jaraxxus") { }
@@ -122,12 +123,12 @@ public:
             if (m_pInstance)
                 m_pInstance->SetData(TYPE_JARAXXUS, NOT_STARTED);
             SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
-            m_uiFelFireballTimer = 5*IN_MILLISECONDS;
-            m_uiFelLightningTimer = urand(10*IN_MILLISECONDS,15*IN_MILLISECONDS);
+            m_uiFelFireballTimer = 15*IN_MILLISECONDS;
+            m_uiFelLightningTimer = urand(15*IN_MILLISECONDS,20*IN_MILLISECONDS);
             m_uiIncinerateFleshTimer = urand(20*IN_MILLISECONDS,25*IN_MILLISECONDS);
             m_uiNetherPowerTimer = 40*IN_MILLISECONDS;
             m_uiLegionFlameTimer = 30*IN_MILLISECONDS;
-            m_uiTouchOfJaraxxusTimer = urand(10*IN_MILLISECONDS,15*IN_MILLISECONDS);
+            m_uiTouchOfJaraxxusTimer = urand(15*IN_MILLISECONDS,20*IN_MILLISECONDS);
             m_uiSummonNetherPortalTimer = 1*MINUTE*IN_MILLISECONDS;
             m_uiSummonInfernalEruptionTimer = 2*MINUTE*IN_MILLISECONDS;
             Summons.DespawnAll();
@@ -248,7 +249,8 @@ public:
 
 };
 
-class mob_legion_flame : public CreatureScript
+
+class mob_legion_flame : public CreatureScript
 {
 public:
     mob_legion_flame() : CreatureScript("mob_legion_flame") { }
@@ -281,7 +283,8 @@ public:
 
 };
 
-class mob_infernal_volcano : public CreatureScript
+
+class mob_infernal_volcano : public CreatureScript
 {
 public:
     mob_infernal_volcano() : CreatureScript("mob_infernal_volcano") { }
@@ -358,7 +361,8 @@ public:
 
 };
 
-class mob_fel_infernal : public CreatureScript
+
+class mob_fel_infernal : public CreatureScript
 {
 public:
     mob_fel_infernal() : CreatureScript("mob_fel_infernal") { }
@@ -412,7 +416,8 @@ public:
 
 };
 
-class mob_nether_portal : public CreatureScript
+
+class mob_nether_portal : public CreatureScript
 {
 public:
     mob_nether_portal() : CreatureScript("mob_nether_portal") { }
@@ -483,7 +488,8 @@ public:
 
 };
 
-class mob_mistress_of_pain : public CreatureScript
+
+class mob_mistress_of_pain : public CreatureScript
 {
 public:
     mob_mistress_of_pain() : CreatureScript("mob_mistress_of_pain") { }
