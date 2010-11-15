@@ -54,9 +54,6 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 48562:
                 fThreat *= 1.5f;
                 break;
-             case 33745: //Lacerate ranks
-             case 48567:
-             case 48568:
              case 60141: //Rip
                 fThreat *= 0.5f;
                 break;
