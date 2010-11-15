@@ -115,6 +115,7 @@ const uint32 SPELL_PRE_SECONDARY_H[]  = {62417, 62444, 16496, 62442, 62444, 6231
 // Achievements
 #define ACHIEVEMENT_SIFFED              RAID_MODE(2977, 2978)
 #define ACHIEVEMENT_LOSE_ILLUSION       RAID_MODE(3176, 3183)
+#define ACHIEVEMENT_WHO_NEEDS_BLOODLUST RAID_MODE(2975, 2976)
 
 // Thorim Arena Phase Adds
 enum ArenaAdds
@@ -305,6 +306,23 @@ class boss_thorim : public CreatureScript
                     //me->SummonGameObject(RAID_MODE(CACHE_OF_STORMS_10, CACHE_OF_STORMS_25), 2134.58f, -286.908f, 419.495f, 1.55988f, 0, 0, 0.7f, 0.7f, 0); //604800
                 }
             }
+
+			Map* pMap = me->GetMap();
+			if (pMap && pMap->IsDungeon())
+			{
+				AchievementEntry const *AchievWhoNeedsBlood = GetAchievementStore()->LookupEntry(ACHIEVEMENT_WHO_NEEDS_BLOODLUST);
+				if (AchievWhoNeedsBlood)
+				{
+					Map::PlayerList const &players = pMap->GetPlayers();
+					for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+					{
+						if (itr->getSource() && itr->getSource()->isAlive() && itr->getSource()->HasAura(SPELL_AURA_OF_CELERITY) && !itr->getSource()->isGameMaster())
+                        {
+							itr->getSource()->CompletedAchievement(AchievWhoNeedsBlood);
+                        }
+					}
+				}
+			}
         }
 
         void EnterCombat(Unit* pWho)
