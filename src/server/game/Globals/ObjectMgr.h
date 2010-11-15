@@ -1362,7 +1362,6 @@ class ObjectMgr
         ACE_Thread_Mutex m_CreatureRespawnTimesMtx;
         RespawnTimes mGORespawnTimes;
         ACE_Thread_Mutex m_GORespawnTimesMtx;
-        ACE_Thread_Mutex m_MoveAllCreaturesInMoveListMtx;
 
         CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
