@@ -1848,7 +1848,10 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
         (*itr)->CastSpell((*itr), 61286, true);
-        (*itr)->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress
+        if ((*itr)->getLevel() < 70) 
+            (*itr)->CastSpell((*itr), SPELL_TELEPORT_DALARAN, true);
+        else
+            (*itr)->TeleportTo(571, 4525.60f, 2828.08f, 390, 0.28f); //Out the Fortress
        
         //(*itr)->CastSpell((*itr), 58730, true);        
     }
@@ -1872,7 +1875,10 @@ void OutdoorPvPWG::StartBattle()
         (*itr)->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         (*itr)->RemoveAurasByType(SPELL_AURA_FLY);
         (*itr)->CastSpell((*itr), 61286, true);
-        (*itr)->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress
+        if ((*itr)->getLevel() < 70) 
+            (*itr)->CastSpell((*itr), SPELL_TELEPORT_DALARAN, true);
+        else
+            (*itr)->TeleportTo(571, 5333.40f, 2841.76f, 410, 3.23f); //In the Fortress
         //(*itr)->CastSpell((*itr), 58730, true); 
     }
     UpdateTenacityStack();
