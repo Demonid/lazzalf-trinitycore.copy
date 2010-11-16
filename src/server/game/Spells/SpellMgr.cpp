@@ -4127,7 +4127,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
-        case 21178: //HackFix per Dudu BearForm threat
+        /*case 21178: //HackFix per Dudu BearForm threat
             spellInfo->EffectBasePoints[0] = 105;
             count++;
             break;
@@ -4154,7 +4154,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValueB[3] = 0;
             spellInfo->EffectBasePoints[3] = 43;
             count++;
-            break;
+            break;*/
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
