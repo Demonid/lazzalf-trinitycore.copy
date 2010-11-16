@@ -5794,6 +5794,28 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     triggered_spell_id = 70701;
                     break;
                 }
+                // Purified Shard of the Scale
+                case 69755:
+                {                    
+                    target = getVictim();
+                    if (target)
+                        if (this->IsHostileTo(target))
+                            triggered_spell_id = 69729;
+                        else
+                            triggered_spell_id = 69733;
+                    break;
+                }
+                // Shiny Shard of the Flame
+                case 69739:
+                {                    
+                    target = getVictim();
+                    if (target)
+                        if (this->IsHostileTo(target))
+                            triggered_spell_id = 69730;
+                        else
+                            triggered_spell_id = 69734;
+                    break;
+                }
             }
             break;
         }
