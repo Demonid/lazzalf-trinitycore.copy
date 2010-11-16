@@ -227,7 +227,7 @@ class boss_mimiron : public CreatureScript
             _Reset();
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
-            me->SetVisibility(VISIBILITY_ON);
+            me->SetVisible(true);
             me->ExitVehicle();
             me->GetMotionMaster()->MoveTargetedHome();
             if (pInstance)
@@ -456,7 +456,7 @@ class boss_mimiron : public CreatureScript
                                 if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
                                 {
                                     pInstance->SetData(DATA_MIMIRON_ELEVATOR, GO_STATE_ACTIVE_ALTERNATIVE);
-                                    pVX_001->SetVisibility(VISIBILITY_ON);
+                                    pVX_001->SetVisible(true);
                                     if (Creature* Rocket1 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
                                         Rocket1->EnterVehicle(pVX_001->GetVehicleKit(), 5);
                                     if (Creature* Rocket2 = me->SummonCreature(34050, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
@@ -527,7 +527,7 @@ class boss_mimiron : public CreatureScript
                             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
                             if (pInstance)
                                 if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
-                                    pAerialUnit->SetVisibility(VISIBILITY_ON);
+                                    pAerialUnit->SetVisible(true);
                             JumpToNextStep(5000);
                             break;
                         case 4:
@@ -542,7 +542,7 @@ class boss_mimiron : public CreatureScript
                             break;
                         case 6:
                             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
-                            me->SetVisibility(VISIBILITY_OFF);
+                            me->SetVisible(false);
                             if (pInstance)
                                 if (Creature *pAerialUnit = Creature::GetCreature((*me), pInstance->GetData64(DATA_AERIAL_UNIT)))
                                 {
@@ -567,7 +567,7 @@ class boss_mimiron : public CreatureScript
                          case 1:
                             if (pInstance)
                             {
-                                me->SetVisibility(VISIBILITY_ON);
+                                me->SetVisible(true);
                                 if (Creature *pLeviathan = Creature::GetCreature((*me), pInstance->GetData64(DATA_LEVIATHAN_MK_II)))
                                    pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65f, 2569.46f, 364.397f);
                                 if (Creature *pVX_001 = Creature::GetCreature((*me), pInstance->GetData64(DATA_VX_001)))
@@ -992,7 +992,7 @@ class boss_vx_001 : public CreatureScript
             events.Reset();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
-            me->SetVisibility(VISIBILITY_OFF);
+            me->SetVisible(false);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
             me->RemoveAllAuras();
@@ -1210,7 +1210,7 @@ class boss_aerial_unit : public CreatureScript
             events.Reset();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
-            me->SetVisibility(VISIBILITY_OFF);
+            me->SetVisible(false);
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->RemoveAllAuras();
             me->SetFlying(true);
