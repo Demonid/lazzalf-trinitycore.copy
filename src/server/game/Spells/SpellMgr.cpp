@@ -4128,8 +4128,11 @@ void SpellMgr::LoadSpellCustomAttr()
             count++;
             break;
         case 21178: //HackFix per Dudu BearForm threat
+            spellInfo->EffectBasePoints[0] = 105;
+            count++;
+            break;
         case 7376:  //HackFix per Defensive Stance threat
-            spellInfo->EffectBasePoints[0] = 100;
+            spellInfo->EffectBasePoints[2] = 105;
             count++;
             break;
         case 71708: // Empowered Flare
