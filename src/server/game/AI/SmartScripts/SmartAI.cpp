@@ -79,7 +79,7 @@ void SmartAI::UpdateDespawn(const uint32 diff)
     {
         if (mDespawnState == 2)
         {
-            me->SetVisibility(VISIBILITY_OFF);
+            me->SetVisible(false);
             mDespawnTime = 5000;
             mDespawnState++;
         }
@@ -90,7 +90,8 @@ void SmartAI::UpdateDespawn(const uint32 diff)
 
 void SmartAI::Reset()
 {
-    SetRun(true);
+    if (!HasEscortState(SMART_ESCORT_ESCORTING))//dont mess up escort movement after combat
+        SetRun(true);
     GetScript()->OnReset();
 }
 
@@ -413,7 +414,7 @@ bool SmartAI::IsEscortInvokerInRange()
             }
         }
     }
-    return false;
+    return true;//escort targets were not set, ignore range check
 }
 
 void SmartAI::MovepointReached(uint32 id)
@@ -543,7 +544,7 @@ void SmartAI::JustRespawned()
     mDespawnTime = 0;
     mDespawnState = 0;
     mEscortState = SMART_ESCORT_NONE;
-    me->SetVisibility(VISIBILITY_ON);
+    me->SetVisible(true);
     if (me->getFaction() != me->GetCreatureInfo()->faction_A)
         me->RestoreFaction();
     GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
