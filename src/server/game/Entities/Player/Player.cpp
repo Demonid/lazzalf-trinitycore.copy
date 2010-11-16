@@ -24139,7 +24139,6 @@ void Player::ActivateSpec(uint8 spec)
     if (spec > GetSpecsCount())
         return;
 
-
     if (HasAura(28682)) // HackFix for remove Combustion
         RemoveAurasDueToSpell(28682);
 
