@@ -161,7 +161,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,       0,                     false, NULL,  "", NULL                   }
     };
 
-        { "guildadd",       SEC_GAMEMASTER,     false, OldHandler<&ChatHandler::HandleGameObjectAddGuildCommand>,  "", NULL },
     static ChatCommand groupCommandTable[] =
     {
         { "leader",         SEC_ADMINISTRATOR,     false,  OldHandler<&ChatHandler::HandleGroupLeaderCommand>,         "", NULL },
