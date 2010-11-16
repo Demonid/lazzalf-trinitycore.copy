@@ -5795,27 +5795,23 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     break;
                 }
                 // Purified Shard of the Scale
-                /*case 69755:
-                {                    
-                    target = getVictim();
-                    if (target)
-                        if (this->IsHostileTo(target))
-                            triggered_spell_id = 69729;
-                        else
-                            triggered_spell_id = 69733;
+                case 69755:
+                {
+                    if (this->IsHostileTo(target))
+                        triggered_spell_id = 69729;
+                    else
+                        triggered_spell_id = 69733;
                     break;
                 }
                 // Shiny Shard of the Flame
                 case 69739:
-                {                    
-                    target = getVictim();
-                    if (target)
-                        if (this->IsHostileTo(target))
-                            triggered_spell_id = 69730;
-                        else
-                            triggered_spell_id = 69734;
+                {
+                    if (this->IsHostileTo(target))
+                        triggered_spell_id = 69730;
+                    else
+                        triggered_spell_id = 69734;
                     break;
-                }*/
+                }
             }
             break;
         }
@@ -8027,6 +8023,8 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                     if (pVictim->HasAura(53601))
                     {
                         int32 bp0 = (damage/12) * SpellMgr::CalculateSpellEffectAmount(dummySpell, 2)/100;
+                        if (HasAura(67191)) // Item - Paladin Holy T9 4P
+                            bp0 *= 2;
                         CastCustomSpell(pVictim, 66922, &bp0, NULL, NULL, true);
                         return true;
                     }
