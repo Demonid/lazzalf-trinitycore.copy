@@ -1334,7 +1334,7 @@ class npc_commandscript : public CommandScript
         }
 
         //TODO: NpcCommands that needs to be fixed :
-        static bool HandleNpcAddWeaponCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleNpcAddWeaponCommand(ChatHandler* /*handler*/, const char* /*args*/)
         {
             /*if (!*args)
             return false;
@@ -1402,7 +1402,7 @@ class npc_commandscript : public CommandScript
             return true;
         }
 
-        static bool HandleNpcSetNameCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleNpcSetNameCommand(ChatHandler* /*handler*/, const char* /*args*/)
         {
             /* Temp. disabled
             if (!*args)
@@ -1449,7 +1449,7 @@ class npc_commandscript : public CommandScript
             return true;
         }
 
-        static bool HandleNpcSetSubNameCommand(ChatHandler* handler, const char* /*args*/)
+        static bool HandleNpcSetSubNameCommand(ChatHandler* /*handler*/, const char* /*args*/)
         {
             /* Temp. disabled
 

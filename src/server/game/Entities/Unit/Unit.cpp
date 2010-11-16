@@ -97,10 +97,10 @@ static bool procPrepared = InitTriggerAuraData();
 #pragma warning(disable:4355)
 #endif
 Unit::Unit(): WorldObject(),
-m_movedPlayer(NULL), IsAIEnabled(false), NeedChangeAI(false),
+m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(false),
 m_ControlledByPlayer(false), i_AI(NULL), i_disabledAI(NULL), m_procDeep(0),
 m_removedAurasCount(0), i_motionMaster(this), m_ThreatManager(this), m_vehicle(NULL),
-m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE), m_HostileRefManager(this), m_lastSanctuaryTime(0)
+m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE), m_HostileRefManager(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -16490,17 +16490,24 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 2281;
             else
                 return 2289;
+        case FORM_THARONJA_SKELETON:
+            return 1034;
+        case FORM_STEVES_GHOUL:
+            return 128;
+        case FORM_AMBIENT:
+            return 328;
+        case FORM_ZOMBIE:
+            return 26942;
         case FORM_TRAVEL:
-            return 632;
+            return 918;
         case FORM_AQUA:
-            if (Player::TeamForRace(getRace()) == ALLIANCE)
-                return 2428;
-            else
-                return 2428;
+            return 2428;
         case FORM_GHOUL:
-            return 24994;
+            return 25527;
         case FORM_CREATUREBEAR:
-            return 902;
+            return 2281;
+        case FORM_CREATURECAT:
+            return 892;
         case FORM_GHOSTWOLF:
             return 4613;
         case FORM_FLIGHT:
@@ -16521,7 +16528,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
         case FORM_METAMORPHOSIS:
             return 25277;
         case FORM_MASTER_ANGLER:
-            return 15234;
+            return 17170;
         case FORM_TREE:
             return 864;
         case FORM_SPIRITOFREDEMPTION:

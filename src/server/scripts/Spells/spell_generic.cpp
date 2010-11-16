@@ -804,7 +804,7 @@ class spell_gen_animal_blood : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraApplication const* aurApp, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraApplication const* /*aurApp*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetUnitOwner()->IsInWater())
                     GetUnitOwner()->CastSpell(GetUnitOwner(), SPELL_SPAWN_BLOOD_POOL, true);

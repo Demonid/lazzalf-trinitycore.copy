@@ -490,15 +490,15 @@ INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`
    (17807,-1000638,'Champion Lightrend, make me proud!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'npc_second_trial_controller TEXT_SECOND_TRIAL_2'),
    (17807,-1000639,'Show this upstart how a real Blood Knight fights, Swiftblade!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'npc_second_trial_controller TEXT_SECOND_TRIAL_3'),
    (17807,-1000640,'Show $n the meaning of pain, Sunstriker!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'npc_second_trial_controller TEXT_SECOND_TRIAL_4'),
-   (4979,-1000641,'Hey, thanks.','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0, 'Theramore Guard - SAY_QUEST1'),
-   (4979,-1000642,'...receive 50 percent off deserter undergarments? What is this garbage?','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST2'),
-   (4979,-1000643,'...to establish a fund for the purchase of hair gel? I like my hair the way it is, thanks!','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST3'),
-   (4979,-1000644,'...the deserters seek a Theramore where citizens will be free to juggle at all hours of the day? What is this nonsense?','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST4'),
-   (4979,-1000645,'...to establish the chicken as the official symbol of Theramore?! These guys are nuts!','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST5'),
-   (4979,-1000646,'...as a deserter, you\'ll enjoy activities like tethered swimming and dog grooming? How ridiculous!','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST6'),
-   (4979,-1000647,'This... this is a joke, right?','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST7'),
-   (4979,-1000648,'I\'d never join anything like this. Better keep this, though. It\'ll come in handy in the privy...','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST8'),
-   (4979,-1000649,'What a bunch of lunatics! You actually believe this stuff?','NULL','NULL','NULL','NULL','NULL','NULL','NULL','NULL',0,0,0,0,'Theramore Guard - SAY_QUEST9'),
+   (4979,-1000641,'Hey, thanks.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0, 'Theramore Guard - SAY_QUEST1'),
+   (4979,-1000642,'...receive 50 percent off deserter undergarments? What is this garbage?',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST2'),
+   (4979,-1000643,'...to establish a fund for the purchase of hair gel? I like my hair the way it is, thanks!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST3'),
+   (4979,-1000644,'...the deserters seek a Theramore where citizens will be free to juggle at all hours of the day? What is this nonsense?',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST4'),
+   (4979,-1000645,'...to establish the chicken as the official symbol of Theramore?! These guys are nuts!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST5'),
+   (4979,-1000646,'...as a deserter, you\'ll enjoy activities like tethered swimming and dog grooming? How ridiculous!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST6'),
+   (4979,-1000647,'This... this is a joke, right?',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST7'),
+   (4979,-1000648,'I\'d never join anything like this. Better keep this, though. It\'ll come in handy in the privy...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST8'),
+   (4979,-1000649,'What a bunch of lunatics! You actually believe this stuff?',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Theramore Guard - SAY_QUEST9'),
 
    (26588,-1800001,'Um... I think one of those wolves is back...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'12027'),
    (26588,-1800002,'He''s going for Mr. Floppy! ',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'12027'),
@@ -2620,6 +2620,13 @@ INSERT INTO `script_texts` (`npc_entry`,`entry`,`content_default`,`content_loc1`
    (33288,-1603339,'Your will is no longer you own...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15759,5,0,0,'YoggSaron WHISP_INSANITY_1'),
    (33288,-1603340,'Destroy them minion, your master commands it!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15760,5,0,0,'YoggSaron WHISP_INSANITY_2'),
    (33288,-1603341,'Your fate is sealed. The end of days is finally upon you and ALL who inhabit this miserable little seedling. Uulwi ifis halahs gag erh''ongg w''ssh.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,15761,1,0,0,'YoggSaron SAY_DEATH'),
+
+-- Quest Smoke Em Out
+   (27570,-1603535,'We\'re all gonna die!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Smoke \'Em Out - Say1'),
+   (27570,-1603536,'Gotta get out of here!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Smoke \'Em Out - Say2'),
+   (27570,-1603537,'No way I\'m stickin\' around!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Smoke \'Em Out - Say3'),
+   (27570,-1603538,'Forget this! I\'m going home!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Smoke \'Em Out - Say4'),
+   (27570,-1603539,'I didn\'t sign up for this!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,'Smoke \'Em Out - Say5'),
 
 -- -1 604 000 GUNDRAK
 /* Moorabi */
