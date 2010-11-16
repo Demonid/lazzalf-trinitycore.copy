@@ -102,8 +102,8 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
 
     if (!gInfo)
     {
-        PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
-        SetSentErrorMessage(true);
+        handler->PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
+        handler->SetSentErrorMessage(true);
         return false;
     }
 
@@ -116,7 +116,7 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
         return false;
     }
 
-    Player *chr = m_session->GetPlayer();
+    Player *chr = handler->GetSession()->GetPlayer();
     float x = float(chr->GetPositionX());
     float y = float(chr->GetPositionY());
     float z = float(chr->GetPositionZ());
@@ -149,7 +149,7 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
         return false;
     }
 
-    sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
+    sLog.outDebug(handler->GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
 
     map->Add(pGameObj);
 
