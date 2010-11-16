@@ -4131,6 +4131,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectBasePoints[0] = 105;
             count++;
             break;
+        case 48266: //HackFix per Frost Presence threat
+            spellInfo->EffectBasePoints[1] = 105;
+            count++;
+            break;
         case 7376: //HackFix per Defensive Stance threat
             spellInfo->EffectBasePoints[2] = 105;
             count++;
