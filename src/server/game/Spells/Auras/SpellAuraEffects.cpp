@@ -2604,7 +2604,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
     {
         case FORM_CAT:
             spellId = 3025;
-            spellId2 = 48629;
+            spellId2 = 21184; //Rogue Passive (DND)
             HotWSpellId = 24900;
             break;
         case FORM_TREE:

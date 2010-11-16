@@ -4126,35 +4126,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 72856: // Unbound Plague
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
-            break;            
-        case 48629: //HackFix per CatForm threat
-            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_THREAT;
-            spellInfo->EffectBasePoints[0] = -30;
-            count++;
             break;
-        /*case 21178: //HackFix per Dudu BearForm threat
-            spellInfo->EffectBasePoints[0] = 105;
-            count++;
-            break;
-        case 48266: //HackFix per Frost Presence threat
-            spellInfo->EffectBasePoints[1] = 105;
-            count++;
-            break;
-        case 7376: //HackFix per Defensive Stance threat
-            spellInfo->EffectBasePoints[2] = 105;
-            count++;
-            break;
-        case 25780: //HackFix per Righteous Fury threat
-            spellInfo->EffectBasePoints[0] = 150;
-            spellInfo->Effect[3] = SPELL_EFFECT_APPLY_AURA;
-            spellInfo->EffectApplyAuraName[3] = SPELL_AURA_MOD_THREAT;
-            spellInfo->EffectImplicitTargetA[3] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetB[3] = 0;
-            spellInfo->EffectMiscValue[3] = 125; //All not Holy
-            spellInfo->EffectMiscValueB[3] = 0;
-            spellInfo->EffectBasePoints[3] = 43;
-            count++;
-            break;*/
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
