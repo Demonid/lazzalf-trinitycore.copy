@@ -8034,6 +8034,22 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                     *handled = true;
                 break;
             }
+            // // Item - Paladin Holy T8 2P
+            else if (dummySpell->Id == 64890)
+            {
+                // Holy Mending HoT on Holy Shock critical hit
+                if ((procSpell->SpellFamilyFlags[1] & 0x00010000) && (procEx & PROC_EX_CRITICAL_HIT))
+                {
+                    *handled = true;
+
+                    int32 bp0 = damage/20; //15% on 9 sec (5% for sec)
+
+                    // Holy Mending
+                    CastCustomSpell(pVictim, 64891, &bp0, NULL, NULL, true);
+                    return true;
+                }
+                break;
+            }
             break;
         }
         case SPELLFAMILY_MAGE:
