@@ -3822,6 +3822,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39805:    // Lightning Overload
         case 64823:    // Item - Druid T8 Balance 4P Bonus
         case 44401:
+        case 67210:    // Item - Rogue T9 2P Bonus
             spellInfo->procCharges = 1;
             count++;
             break;
