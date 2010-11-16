@@ -287,7 +287,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
                                 Vehicle* pVehicle=pSummon->GetVehicleKit();
                                 if (pVehicle)
                                     pVehicle->Dismiss();
-                                pSummon->SetVisibility(VISIBILITY_OFF);
+                                pSummon->SetVisible(false);
                             }
                     }
                     else if (uiData == DONE)
@@ -310,7 +310,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
                            
                             for(std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
                                 if (Creature* pSummon = instance->GetCreature(*itr))
-                                    pSummon->SetVisibility(VISIBILITY_ON);
+                                    pSummon->SetVisible(true);
 
                             //rimuovo le eventuali mount
                             if (!VehicleListChampion.empty())
@@ -406,7 +406,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
                     uiAggroDone = uiData;
                     if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
                     {  
-                        pAnnouncer->SetVisibility(VISIBILITY_OFF);                          
+                        pAnnouncer->SetVisible(false);                          
                     }
                     break;
                 case BOSS_ARGENT_CHALLENGE_P:

@@ -138,7 +138,7 @@ class boss_eregos : public CreatureScript
 				    {
 					    summon->Attack(pUnit,true);
 					    printf("PLANAR_ANOMALY attack uinit %s \n",pUnit->GetName());
-					    summon->SetVisibility(VISIBILITY_ON);
+					    summon->SetVisible(true);
 					    summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 					    summon->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
 				    }

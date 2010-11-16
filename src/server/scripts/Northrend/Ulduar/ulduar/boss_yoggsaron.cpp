@@ -466,7 +466,7 @@ class boss_sara : public CreatureScript
             }
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->SetVisibility(VISIBILITY_ON);
+            me->SetVisible(true);
             me->SetDisplayId(29117);
             me->setFaction(35);
             me->GetMotionMaster()->MoveTargetedHome();
@@ -1031,7 +1031,7 @@ class boss_yoggsaron : public CreatureScript
             {
                 case ACTION_YOGGSARON_PHASE_3:
                     if (Unit *pSara = me->ToTempSummon()->GetSummoner())
-                        pSara->SetVisibility(VISIBILITY_OFF);
+                        pSara->SetVisible(false);
                     DoScriptText(SAY_PHASE3, me);
                     me->RemoveAurasDueToSpell(SPELL_SHADOWY_BARRIER_LARGE);
                     DoCast(me, SPELL_YOGG_SARON_TRANSFORMATION, true);
