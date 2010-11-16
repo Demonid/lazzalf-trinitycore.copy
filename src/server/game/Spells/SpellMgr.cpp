@@ -27,6 +27,8 @@
 #include "BattlegroundMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
+#include "OutdoorPvPMgr.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -761,8 +763,13 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 case 34700: // Allergic Reaction
                 case 61987: // Avenging Wrath Marker
                 case 61988: // Divine Shield exclude aura
+                case 61248:                                         // Power of Tenebron
+                case 61251:                                         // Power of Vesperon
+                case 58105:                                         // Power of Shadron
+                case 63322:                                         // Saronite Vapors
                     return false;
                 case 30877: // Tag Murloc
+                case 12042:                                         // Arcane Power
                     return true;
                 default:
                     break;
@@ -790,8 +797,17 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
                 return true;
             break;
         case SPELLFAMILY_SHAMAN:
-            if (spellId == 30708)
-                return false;
+            switch (spellId)
+            {                
+                case 51466: // Elemental Oath Rank 1
+                case 51470: // Elemental Oath Rank 2
+                    return true;
+                case 30708:
+                    return false;
+                default:
+                    break;
+            }
+            break;
             break;
         default:
             break;
@@ -2861,8 +2877,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_WARLOCK:
         {
+            // Fear
+            if (spellproto->SpellFamilyFlags[1] & 0x00000400)
+                return DIMINISHING_FEAR_BLIND;
             // Death Coil
-            if (spellproto->SpellFamilyFlags[0] & 0x80000)
+            else if (spellproto->SpellFamilyFlags[0] & 0x80000)
                 return DIMINISHING_DEATHCOIL;
             // Curses/etc
             else if (spellproto->SpellFamilyFlags[0] & 0x80000000)
@@ -2871,7 +2890,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             else if (spellproto->SpellFamilyFlags[1] & 0x8)
                 return DIMINISHING_FEAR_BLIND;
             // Seduction
-            else if (spellproto->SpellFamilyFlags[0] & 0x40000000)
+            //else if (spellproto->SpellFamilyFlags[0] & 0x40000000)
+            else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
                 return DIMINISHING_FEAR_BLIND;
             break;
         }
@@ -2906,8 +2926,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_PALADIN:
         {
+            // Psychic Scream
+            if (spellproto->SpellFamilyFlags[0] & 0x1000)
+                return DIMINISHING_FEAR_BLIND;
             // Repentance
-            if (spellproto->SpellFamilyFlags[0] & 0x4)
+            else if (spellproto->SpellFamilyFlags[0] & 0x4)
                 return DIMINISHING_POLYMORPH;
             break;
         }
@@ -3093,18 +3116,51 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         if (!player || (auraSpell > 0 && !player->HasAura(auraSpell)) || (auraSpell < 0 && player->HasAura(-auraSpell)))
             return false;
 
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+
     // Extra conditions -- leaving the possibility add extra conditions...
     switch(spellId)
     {
-        case 58600: // No fly Zone - Dalaran
-            if (!player)
-                return false;
+        case 48388:  //Call Wintergarde Gryphon
+            {
+                if (!player)
+                    return false;
 
-            AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
-            if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
+                if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                    return false;
+            } break;
+         case 58600: // No fly Zone - Dalaran
+            {
+                if (!player)
+                    return false;
+
+                AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
+                if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                    return false;
+                if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
+                    return false;            	
+            } break;
+            /*if (!player || player->GetAreaId() == 4564 || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+                || player->HasAura(44795))
                 return false;
-            if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
+            break;*/
+        case 58730: // No fly Zone - Wintergrasp
+            if ((pvpWG && (pvpWG->isWarTime() == false)) || !player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
+               || player->HasAura(45472) || player->HasAura(44795))
                 return false;
+            break;
+        case SPELL_ESSENCE_OF_WINTERGRASP_WINNER:   // Essence of Wintergrasp - Wintergrasp
+        case SPELL_ESSENCE_OF_WINTERGRASP_WORLD:    // Essence of Wintergrasp - Northrend
+            {
+                if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+                {
+                    if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                        return false;
+                }
+                else
+                    return false;
+            }
             break;
     }
 
@@ -3139,6 +3195,14 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
         if (spellInfo_1->AttributesEx & SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS
             || spellInfo_1->AttributesEx3 & SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS)
             return true;
+
+        // Replenishment should not stack, Hackfix
+        //if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 57669)
+        //    return false;
+
+        // Yogg-Saron's Sanity should not stack
+        if (spellInfo_1->Id == spellInfo_2->Id && spellInfo_1->Id == 63050)
+            return false;
 
         // check same periodic auras
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3557,6 +3621,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
+		case 5171: 
+        case 6774:          // Slice and Dice
+		case 52916:         // Honor Among Thieves (triggered)
+			spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+			count++;
+            break;
         // Heroism
         case 32182:
             spellInfo->excludeCasterAuraSpell = 57723; // Exhaustion
@@ -3570,6 +3640,11 @@ void SpellMgr::LoadSpellCustomAttr()
         // Bloodlust
         case 2825:
             spellInfo->excludeCasterAuraSpell = 57724; // Sated
+            count++;
+            break;
+        // Titanic Storm
+        case 64172:
+            spellInfo->excludeTargetAuraSpell = 65294; // Empowered
             count++;
             break;
         // Heart of the Crusader
@@ -3643,6 +3718,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45761: // Shoot
         case 42611: // Shoot
         case 62374: // Pursued
+        case 63024: // Gravity Bomb Normal
+        case 64234: // Gravity Bomb Hero
+        case 63018: // Searing Light Normal
+        case 65121: // Searing Light Hero
+        case 62016: // Charge Orb
             spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
@@ -3651,6 +3731,34 @@ void SpellMgr::LoadSpellCustomAttr()
             // a trap always has dst = src?
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
             spellInfo->EffectImplicitTargetA[1] = TARGET_DST_CASTER;
+            count++;
+            break;
+        case 63830: // Malady of the Mind
+        case 63881: // Malady of the Mind proc
+        case 63795: // Psychosis
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[2] = TARGET_UNIT_TARGET_ANY;
+            count++;
+            break;
+        case 63802: // Brain Link
+            spellInfo->MaxAffectedTargets = 2;
+            spellInfo->EffectRadiusIndex[0] = 12; // 100 yard
+            count++;
+            break;
+        case 62714:     // Shadow Nova
+        case 65209:     // Shadow Nova
+             spellInfo->Effect[0] = 0;
+             count++;
+             break;
+        case 64145:     // Diminish Power
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            count++;
+            break;
+        case 63882:     // Death Ray Warning Visual
+        case 63886:     // Death Ray Damage Visual
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             count++;
             break;
         case 41376: // Spite
@@ -3714,6 +3822,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39805:    // Lightning Overload
         case 64823:    // Item - Druid T8 Balance 4P Bonus
         case 44401:
+        case 67210:    // Item - Rogue T9 2P Bonus
             spellInfo->procCharges = 1;
             count++;
             break;
@@ -3758,6 +3867,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 29809:     // Desecration Arm - 36 instead of 37 - typo? :/
             spellInfo->EffectRadiusIndex[0] = 37;
             count++;
+            break;
+        case 47573:     // Twisted Faith
+        case 47577:
+        case 47578:
+        case 51166:
+        case 51167:
+            spellInfo->EffectSpellClassMask[1][0] |= 0x800000;
             break;
         // Master Shapeshifter: missing stance data for forms other than bear - bear version has correct data
         // To prevent aura staying on target after talent unlearned
@@ -3811,6 +3927,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CANT_TARGET_SELF;
             count++;
             break;
+        //case 72752: // Will of the Forsaken Cooldown Triggers
+        //case 72757:
+        //    spellInfo->AttributesEx6 |= SPELL_ATTR_EX6_IGNORE_CASTER_AURAS;
+        //    count++;
+        //    break;
         // target allys instead of enemies, target A is src_caster, spells with effect like that have ally target
         // this is the only known exception, probably just wrong data
         case 29214: // Wrath of the Plaguebringer
@@ -3819,13 +3940,59 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ALLY_SRC;
             count++;
             break;
+        case 74410:     // Arena - Dampening
+        case 74411:     // Battleground - Dampening
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+            spellInfo->EffectBasePoints[0] = -11; // 1 -11 = -10
+            count++;
+            break;
         case 31687: // Summon Water Elemental
             // 322-330 switch - effect changed to dummy, target entry not changed in client:(
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             count++;
             break;
+        case 49838:     // Stop time (Amber Drake in oculus)
+            spellInfo->EffectRadiusIndex[0] = 150;
+            count++;
+            break;
+        case 62713:     // Ironbranch's Essence
+        case 62968:     // Brightleaf's Essence
+        //case 64320:     // Rune of Power
+            spellInfo->DurationIndex = 39;
+            count++;
+            break;
+        case 62775:     // Tympanic Tantrum
+            spellInfo->EffectRadiusIndex[0] = 41; // 150 yard
+            spellInfo->EffectRadiusIndex[1] = 41;
+            count++;
+            break;
+        //case 62038:     // Biting Cold
+            //spellInfo->EffectRadiusIndex[0] = 82; // 300 yard
+            //count++;
+            //break;
+        //case 61990:
+        //    spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+        //    count++;
+        //    break;
         case 25771: // Forbearance - wrong mechanic immunity in DBC since 3.0.x
             spellInfo->EffectMiscValue[0] = MECHANIC_IMMUNE_SHIELD;
+            count++;
+            break;
+        // case 53651:     // beacon of light
+        case 30708:     // totem of wrath debuff
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        case 62661:     // Searing Flames
+        case 61915:     // Lightning Whirl 10
+        case 63483:     // Lightning Whirl 25
+        case 55098:     // Transformation
+            spellInfo->InterruptFlags = 47;
+            count++;
+            break;
+        case 63676:     // Focused Eyebeam Visual 2
+        case 63702:     // Focused Eyebeam Visual Right Eye
+            spellInfo->EffectImplicitTargetA[0] = 92;
             count++;
             break;
         case 64321: // Potent Pheromones
@@ -3846,7 +4013,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 70836:     // Bone Storm
             spellInfo->EffectRadiusIndex[0] = 12;
             count++;
-            break;
+            break;           
         case 18500: // Wing Buffet
         case 33086: // Wild Bite
         case 49749: // Piercing Blow
@@ -3864,7 +4031,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 74439: // Machine Gun
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             count++;
-            break;
+            break;    
         // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
         // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
         // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)
@@ -3887,12 +4054,28 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             count++;
             break;
+        case 19970: // Entangling Roots (Rank 6)
+        case 19971: // Entangling Roots (Rank 5)
+        case 19972: // Entangling Roots (Rank 4)
+        case 19973: // Entangling Roots (Rank 3)
+        case 19974: // Entangling Roots (Rank 2)
+        case 19975: // Entangling Roots (Rank 1)
+        case 27010: // Entangling Roots (Rank 7)
+        case 53313: // Entangling Roots (Rank 8)
+            spellInfo->CastingTimeIndex = 1;
+            count++;
+            break;
         case 53241: // Marked for Death (Rank 1)
         case 53243: // Marked for Death (Rank 2)
         case 53244: // Marked for Death (Rank 3)
         case 53245: // Marked for Death (Rank 4)
         case 53246: // Marked for Death (Rank 5)
             spellInfo->EffectSpellClassMask[0] = flag96(423937, 276955137, 2049);
+            count++;
+            break;
+        case 49224: // Magic Suppression
+        case 49611:
+            spellInfo->procCharges = 0;
             count++;
             break;
         // this is here until targetAuraSpell and alike support SpellDifficulty.dbc
@@ -3944,6 +4127,34 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
+        case 21178: //HackFix per Dudu BearForm threat
+            spellInfo->EffectBasePoints[0] = 105;
+            count++;
+            break;
+        case 48266: //HackFix per Frost Presence threat
+            spellInfo->EffectBasePoints[1] = 105;
+            count++;
+            break;
+        case 7376: //HackFix per Defensive Stance threat
+            spellInfo->EffectBasePoints[2] = 105;
+            count++;
+            break;
+        case 48629: //HackFix per CatForm threat
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_THREAT;
+            spellInfo->EffectBasePoints[0] = -30;
+            count++;
+            break;
+        case 25780: //HackFix per Righteous Fury threat
+            spellInfo->EffectBasePoints[0] = 150;
+            spellInfo->Effect[3] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[3] = SPELL_AURA_MOD_THREAT;
+            spellInfo->EffectImplicitTargetA[3] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetB[3] = 0;
+            spellInfo->EffectMiscValue[3] = 125; //All not Holy
+            spellInfo->EffectMiscValueB[3] = 0;
+            spellInfo->EffectBasePoints[3] = 43;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
@@ -3974,7 +4185,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
                 // Roar
                 else if (spellInfo->SpellFamilyFlags[0] & 0x8)
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
+                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;                
                 else
                     break;
                 count++;
@@ -3986,6 +4197,25 @@ void SpellMgr::LoadSpellCustomAttr()
                 else
                     break;
                 count++;
+                break;
+            case SPELLFAMILY_WARLOCK:
+                switch(spellInfo->Id)
+                {
+                    //corruption should be affected by everlasting affliction
+                    case 172: 
+                    case 6222: 
+                    case 6223: 
+                    case 7648:
+                    case 11671: 
+                    case 11672: 
+                    case 25311:
+                    case 27216: 
+                    case 47812: 
+                    case 47813: //Corruption spellIDs
+                        spellInfo->SpellFamilyFlags[1] |= 256;
+                        count++;
+                        break;
+                }
                 break;
         }
     }
