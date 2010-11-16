@@ -134,8 +134,8 @@ public:
             switch(uiType)
             {
                 case TYPE_BJARNGRIM:
-                    if (uiData == DONE)
-                        DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
+                    //if (uiData == DONE)
+                    //    DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
                     m_auiEncounter[0] = uiData;
                     break;
                 case TYPE_VOLKHAN:
