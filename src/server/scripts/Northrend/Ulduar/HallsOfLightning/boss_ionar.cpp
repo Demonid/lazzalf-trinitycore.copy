@@ -71,7 +71,7 @@ class boss_ionar : public CreatureScript
 public:
     boss_ionar() : CreatureScript("boss_ionar") { }
 
-    bool EffectDummyCreature(Unit* /*pCaster*/, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+    bool OnDummyEffect(Unit* /*pCaster*/, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
     {
         //always check spellid and effectindex
         if (uiSpellId == SPELL_DISPERSE && uiEffIndex == 0)

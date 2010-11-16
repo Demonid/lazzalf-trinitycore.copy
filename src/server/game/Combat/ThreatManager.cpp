@@ -41,6 +41,25 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
 
         if (Player* modOwner = pHatedUnit->GetSpellModOwner())
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, fThreat);
+
+            switch (pThreatSpell->Id) //HackFix
+        {
+             case 779: //Swipe (bear) ranks
+             case 769:
+             case 780:
+             case 9754:
+             case 9908:
+             case 26997:
+             case 48561:
+             case 48562:
+                fThreat *= 1.5f;
+                break;
+             case 60141: //Rip
+                fThreat *= 0.5f;
+                break;
+            default:
+                break;
+        }
     }
 
     return pHatedUnit->ApplyTotalThreatModifier(fThreat, schoolMask);
