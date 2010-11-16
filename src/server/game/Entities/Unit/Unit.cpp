@@ -5795,7 +5795,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                     break;
                 }
                 // Purified Shard of the Scale
-                case 69755:
+                /*case 69755:
                 {                    
                     target = getVictim();
                     if (target)
@@ -5815,7 +5815,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                         else
                             triggered_spell_id = 69734;
                     break;
-                }
+                }*/
             }
             break;
         }
