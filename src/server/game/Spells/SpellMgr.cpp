@@ -4135,6 +4135,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectBasePoints[2] = 105;
             count++;
             break;
+        case 48629: //HackFix per CatForm threat
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOD_THREAT;
+            spellInfo->EffectBasePoints[0] = -30;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
