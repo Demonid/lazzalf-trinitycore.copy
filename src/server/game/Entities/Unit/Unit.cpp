@@ -4265,6 +4265,11 @@ void Unit::RemoveAllAurasOnDeath()
         else
             ++iter;
     }
+
+    // Reset Threat Modifier
+    if (GetTypeId() == TYPEID_PLAYER)
+        for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
+            m_threatModifier[i] = 1.0f;
 }
 
 void Unit::RemoveAllAurasRequiringDeadTarget()
