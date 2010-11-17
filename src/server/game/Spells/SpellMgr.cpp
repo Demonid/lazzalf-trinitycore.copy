@@ -4150,10 +4150,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case SPELLFAMILY_DRUID:
                 // Starfall Target Selection
-                if (spellInfo->SpellFamilyFlags[2] & 0x100)
+                if (spellInfo->SpellFamilyFlags[2] & SPELLFAMILYFLAG2_DRUID_STARFALL)
                     spellInfo->MaxAffectedTargets = 2;
                 // Starfall AOE Damage
-                else if (spellInfo->SpellFamilyFlags[2] & 0x800000)
+                else if (spellInfo->SpellFamilyFlags[1] & 0x800000)
                     mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
                 // Roar
                 else if (spellInfo->SpellFamilyFlags[0] & 0x8)
