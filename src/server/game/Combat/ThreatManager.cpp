@@ -57,6 +57,17 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 60141: //Rip
                 fThreat *= 0.5f;
                 break;
+             case 6343: //ThunderClap
+             case 8198:
+             case 8204:
+             case 8205:
+             case 11580:
+             case 11581:
+             case 25264:
+             case 47501:
+             case 47502:
+                fThreat *= 1.85f;
+                break;
             default:
                 break;
         }
