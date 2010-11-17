@@ -3086,6 +3086,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
     uint32 modelid = 0;
     Powers PowerType = POWER_MANA;
     ShapeshiftForm form = ShapeshiftForm(GetMiscValue());
+
     switch(form)
     {
         case FORM_CAT:
