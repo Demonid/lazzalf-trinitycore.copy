@@ -52,6 +52,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 26997:
              case 48561:
              case 48562:
+             case 57755:// Heroic Thrown
                 fThreat *= 1.5f;
                 break;
              case 60141: //Rip

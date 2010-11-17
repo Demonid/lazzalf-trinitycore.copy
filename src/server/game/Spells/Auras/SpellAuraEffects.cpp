@@ -2518,7 +2518,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
         Unit * triggerCaster = GetTriggeredSpellCaster(triggeredSpellInfo, caster, triggerTarget);
 
         // Earthen Power
-        if (triggeredSpellInfo->Id == 3600) // if cast earthbind
+        /*if (triggeredSpellInfo->Id == 3600) // if cast earthbind
         {
             Unit * casterOwner = triggerCaster->GetOwner();
             if (casterOwner && casterOwner->HasAura(51523))     //rank 1
@@ -2527,7 +2527,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
             }
             else if (casterOwner && casterOwner->HasAura(51524)) //rank 2
                 caster->CastSpell(triggerCaster, 59566, true);
-        }
+        }*/
 
         triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, NULL, this);
         sLog.outDebug("AuraEffect::TriggerSpell: Spell %u Trigger %u",GetId(), triggeredSpellInfo->Id);
