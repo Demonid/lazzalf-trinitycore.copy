@@ -77,6 +77,7 @@ class instance_ulduar : public InstanceMapScript
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
+			vehicleRepaired = false;
         }
 
         uint64 uiLeviathan;
@@ -117,6 +118,11 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiHodirYS;
         uint64 uiYoggSaronBrain;
         uint64 uiYoggSaron;
+		
+		//achievement
+		bool vehicleRepaired;
+		/*time_t minElderDiedTime;
+        time_t maxElderDiedTime;*/
             
         GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
@@ -390,8 +396,36 @@ class instance_ulduar : public InstanceMapScript
                     if (ThorimRareChest && value == GO_STATE_READY)
                         ThorimRareChest->SetRespawnTime(ThorimRareChest->GetRespawnDelay());
                     break;
+				case DATA_ACHI_UNBROKEN:
+					if (value == 1)
+						vehicleRepaired = true;
+					else if (value == 0)
+						vehicleRepaired = false;
+					break;
+				//case DATA_ELDER_START:
+				//	break;
+				//case DATA_ELDER_DONE:
+				//	if (value == 2)
+				//		//inizializza il tempo
+				//	else if (value == 0)
+				//		//ferma il tempo
+				//	break;
             }
         }
+
+		uint32 GetData (uint32 id)
+		{
+			switch (id)
+			{
+				case DATA_ACHI_UNBROKEN:
+					if (vehicleRepaired == true)
+						return 1;
+					else
+						return 0;
+				default:
+					return 0;
+			}
+		}
 
         bool SetBossState(uint32 id, EncounterState state)
         {

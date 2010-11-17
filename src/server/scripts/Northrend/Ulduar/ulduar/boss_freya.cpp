@@ -65,6 +65,7 @@ enum Yells
 #define ACHIEVEMENT_KNOCK_ON_WOOD_2      RAID_MODE(3178, 3186)
 #define ACHIEVEMENT_KNOCK_ON_WOOD_3      RAID_MODE(3179, 3187)
 #define ACHIEVEMENT_BACK_TO_NATURE       RAID_MODE(2982, 2983)
+#define ACHIEVEMENT_LUMBERJACKED         RAID_MODE(2979, 3118)
 
 enum Spells
 {
@@ -602,10 +603,12 @@ class boss_elder_brightleaf : public CreatureScript
         int32 uiSolarFlareTimer;
         int32 uiUnstableEnergyTimer;
         int32 uiBrightleafFluxTimer;
+		uint32 EldersCount;
         
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_BRIGHTLEAF_AGGRO, me);
+			EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -617,8 +620,18 @@ class boss_elder_brightleaf : public CreatureScript
         void JustDied(Unit *victim)
         {
             DoScriptText(SAY_BRIGHTLEAF_DEATH, me);
-        }
 
+			/*if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+                if (Ironbranch->isAlive())
+					EldersCount++;
+                
+			if (Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
+				if (Stonebark->isAlive())
+					EldersCount++;
+
+			if (m_pInstance)
+				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
+        }
 
         void Reset()
         {
@@ -741,6 +754,7 @@ class boss_elder_ironbranch : public CreatureScript
         int32 uiImpaleTimer;
         int32 uiThornSwarmTimer;
         int32 uiIronRootTimer;
+		uint32 EldersCount;
 
         void Reset()
         {
@@ -752,6 +766,7 @@ class boss_elder_ironbranch : public CreatureScript
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_IRONBRANCH_AGGRO, me);
+			EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -763,6 +778,17 @@ class boss_elder_ironbranch : public CreatureScript
         void JustDied(Unit *victim)
         {
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
+
+			/*if (Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
+				if (Brightleaf->isAlive())
+					EldersCount++;
+                
+			if (Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
+				if (Stonebark->isAlive())
+					EldersCount++;
+
+			if (m_pInstance)
+				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
         }
 
         void UpdateAI(const uint32 diff)
@@ -858,6 +884,7 @@ class boss_elder_stonebark : public CreatureScript
         int32 uiGroundTremorTimer;
         int32 uiFistsOfStoneTimer;
         int32 uiPetrifiedBarkTimer;
+		uint32 EldersCount;
 
         void Reset()
         {
@@ -869,6 +896,7 @@ class boss_elder_stonebark : public CreatureScript
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_STONEBARK_AGGRO, me);
+			EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -880,6 +908,17 @@ class boss_elder_stonebark : public CreatureScript
         void JustDied(Unit *victim)
         {
             DoScriptText(SAY_STONEBARK_DEATH, me);
+
+			/*if (Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
+				if (Brightleaf->isAlive()) 
+					EldersCount++;
+                
+			if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+				if (Ironbranch->isAlive())
+					EldersCount++;
+
+			if (m_pInstance)
+				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
         }
 
         void UpdateAI(const uint32 diff)
