@@ -4127,6 +4127,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
+        case 50294: // Druid - Starfall AOE rank
+        case 53188:
+        case 53189:
+        case 53190:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
