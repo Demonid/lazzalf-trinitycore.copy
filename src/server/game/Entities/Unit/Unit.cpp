@@ -4245,7 +4245,11 @@ void Unit::RemoveArenaAuras(bool onleave)
 }
 
 void Unit::RemoveAllAurasOnDeath()
-{
+{ 
+    // HackFix for paladin
+    if (ToPlayer() && ToPlayer()->getClass() == CLASS_PALADIN && HasAura(25780))
+        RemoveAurasDueToSpell(25780);
+
     // used just after dieing to remove all visible auras
     // and disable the mods for the passive ones
     for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
@@ -4265,11 +4269,6 @@ void Unit::RemoveAllAurasOnDeath()
         else
             ++iter;
     }
-
-    // Reset Threat Modifier for paladin
-    /*if (ToPlayer() && ToPlayer()->getClass() == CLASS_PALADIN)
-        for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
-            m_threatModifier[i] = 1.0f;*/
 }
 
 void Unit::RemoveAllAurasRequiringDeadTarget()
