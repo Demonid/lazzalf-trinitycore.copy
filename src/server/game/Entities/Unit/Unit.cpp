@@ -4266,8 +4266,8 @@ void Unit::RemoveAllAurasOnDeath()
             ++iter;
     }
 
-    // Reset Threat Modifier
-    if (GetTypeId() == TYPEID_PLAYER)
+    // Reset Threat Modifier for paladin
+    if (ToPlayer() && ToPlayer()->getClass() == CLASS_PALADIN)
         for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
             m_threatModifier[i] = 1.0f;
 }
