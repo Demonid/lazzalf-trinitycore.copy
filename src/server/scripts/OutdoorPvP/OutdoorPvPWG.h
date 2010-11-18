@@ -644,7 +644,9 @@ class OutdoorPvPWG : public OutdoorPvP
         void SendAreaSpiritHealerQueryOpcode(Player *pl, const uint64& guid);
         void AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid);
         void RemovePlayerFromResurrectQueue(uint64 player_guid);
-        void RelocateDeadPlayers(Creature *cr);
+        //void RelocateDeadPlayers(Creature *cr);
+        void RelocateAllianceDeadPlayers(Creature *cr);
+        void RelocateHordeDeadPlayers(Creature *cr);
         // BG end
 
         void ResetCreatureEntry(Creature *cr, uint32 entry);
@@ -743,6 +745,8 @@ class OPvPCapturePointWG : public OPvPCapturePoint
         uint32 *m_spiEntry;
         uint32 m_spiGuid;
         Creature *m_spiritguide;
+        Creature *m_spiritguide_horde;
+        Creature *m_spiritguide_alliance;
 
         uint32 *m_engEntry;
         uint32 m_engGuid;
