@@ -288,7 +288,7 @@ enum eAchievementData
     ICEHOWL_25H                             = 11542,
     JARAXXUS_25H                            = 11546,
     TWIN_25H                                = 11547,
-    ANUB_25H								= 11549
+    ANUB_25H                                = 11549
 };
 
 #endif
