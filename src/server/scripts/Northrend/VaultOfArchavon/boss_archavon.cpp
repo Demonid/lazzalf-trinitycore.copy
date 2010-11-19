@@ -63,6 +63,7 @@ class boss_archavon : public CreatureScript
         InstanceScript* pInstance;
         EventMap events;
         uint32 checktimer;
+        uint8 WatchersCount;
 
         void Reset()
         {
@@ -71,6 +72,7 @@ class boss_archavon : public CreatureScript
             CheckForVoA();
 
             checktimer = 10000;
+            WatchersCount = 0;
 
             if (pInstance)
                 pInstance->SetData(DATA_ARCHAVON_EVENT, NOT_STARTED);
@@ -94,9 +96,21 @@ class boss_archavon : public CreatureScript
 
         void JustDied(Unit* Killer)
         {
+            if (Creature* Emalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
+				if (Emalon->isAlive()) 
+					WatchersCount++;
+                
+			if (Creature* Koralon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KORALON) : 0))
+				if (Koralon->isAlive())
+					WatchersCount++;
+
             if (pInstance)
             {
+                if (WatchersCount == 2)
+                    pInstance->SetData(DATA_EWF_START, WatchersCount);                
+
                 pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
+                pInstance->SetData(DATA_EWF_COUNT, 1);
                 pInstance->SaveToDB();
             }
         }
@@ -236,7 +250,7 @@ class mob_archavon_warder : public CreatureScript
     {
         return new mob_archavon_warderAI(pCreature);
     };
-};    
+};
 
 void AddSC_boss_archavon()
 {
