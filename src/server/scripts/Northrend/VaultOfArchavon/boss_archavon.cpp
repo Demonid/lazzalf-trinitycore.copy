@@ -97,12 +97,12 @@ class boss_archavon : public CreatureScript
         void JustDied(Unit* Killer)
         {
             if (Creature* Emalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
-				if (Emalon->isAlive()) 
-					WatchersCount++;
+                if (Emalon->isAlive()) 
+                    WatchersCount++;
                 
-			if (Creature* Koralon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KORALON) : 0))
-				if (Koralon->isAlive())
-					WatchersCount++;
+            if (Creature* Koralon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KORALON) : 0))
+                if (Koralon->isAlive())
+                    WatchersCount++;
 
             if (pInstance)
             {
