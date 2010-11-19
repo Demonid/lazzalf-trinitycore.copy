@@ -450,11 +450,13 @@ class mob_feral_defender : public CreatureScript
                     Lifes--;
                     PounceTimer = 35000;
                     RushTimer = 42000;
-                    RessTimer = 30000;
-                    if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
-                        if (pAuriaya->AI())
-                            pAuriaya->AI()->DoAction(ACTION_NINE_LIVES);
+                    RessTimer = 30000;        
                 }
+                
+                // must be placed here to make the achievement work
+                if (Creature *pAuriaya = me->GetCreature(*me, pInstance->GetData64(DATA_AURIAYA)))
+                    if (pAuriaya->AI())
+                        pAuriaya->AI()->DoAction(ACTION_NINE_LIVES);
             }
         }
     };
