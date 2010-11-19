@@ -368,9 +368,9 @@ public:
                 if (uiData == FAIL)
                 {
                     if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
-							pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                            pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-					if (IsRaidWiped())
+                    if (IsRaidWiped())
                     {
                         --m_uiTrialCounter;
                         m_bNeedSave = true;
@@ -520,6 +520,10 @@ public:
                     };
                     return m_uiEventNPCId;
                 case DATA_HEALTH_TWIN_SHARED: return m_uiDataDamageTwin;
+                
+                //achievements
+                case DATA_SNOBOLD_COUNT: return m_uiSnoboldCount;
+                case DATA_MISTRESS_OF_PAIN_COUNT: return m_uiMistressOfPainCount;
             }
             return 0;
         }
@@ -618,6 +622,22 @@ public:
         //            return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
         //        case A_TRIBUTE_TO_DEDICATED_INSANITY:
         //            return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+        //         boss kill credits
+        //        case ICEHOWL_25:
+        //        case JARAXXUS_25:
+        //        case TWIN_25:
+        //        case ANUB_25:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL);
+        //        case ICEHOWL_10H:
+        //        case JARAXXUS_10H:
+        //        case TWIN_10H:
+        //        case ANUB_10H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC);
+        //        case ICEHOWL_25H:
+        //        case JARAXXUS_25H:
+        //        case TWIN_25H:
+        //        case ANUB_25H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC);
         //    }
 
         //    return false;

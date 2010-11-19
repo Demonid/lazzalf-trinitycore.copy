@@ -270,7 +270,25 @@ enum eAchievementData
     SPELL_TRAITOR_KING_25                   = 68515,
 
     // Timed events
-    EVENT_START_TWINS_FIGHT                 = 21853
+    EVENT_START_TWINS_FIGHT                 = 21853,
+
+    // Trial of the crusader 25 - boss credits - 3916
+    ICEHOWL_25                              = 11679,
+    JARAXXUS_25                             = 11680,
+    TWIN_25                                 = 11682,
+    ANUB_25                                 = 11683,
+
+    // Trial of the grand crusader 10 - boss credits - 3918
+    ICEHOWL_10H                             = 11689,
+    JARAXXUS_10H                            = 11690,
+    TWIN_10H                                = 11692,
+    ANUB_10H                                = 11693,
+
+    // Trial of the grand crusader 25 - boss credits - 3812
+    ICEHOWL_25H                             = 11542,
+    JARAXXUS_25H                            = 11546,
+    TWIN_25H                                = 11547,
+    ANUB_25H								= 11549
 };
 
 #endif
