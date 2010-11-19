@@ -2296,9 +2296,9 @@ void Spell::SpellDamageHeal(SpellEffIndex /*effIndex*/)
 
             addhealth += tickheal * tickcount;
 			
-			//2P tier 8 bonus
-			if (caster->HasAura(64756))
-				addhealth *= 1.1f;
+            //2P tier 8 bonus
+            if (caster->HasAura(64756))
+                addhealth *= 1.1f;
 
             // Glyph of Swiftmend
             if (!caster->HasAura(54824))

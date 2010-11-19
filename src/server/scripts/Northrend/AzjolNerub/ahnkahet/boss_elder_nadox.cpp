@@ -215,14 +215,17 @@ public:
 
         void JustDied(Unit * /*killer*/)
         {
-            if (pInstance)
-			{
-				if(IsHeroic())
-				{
-					if (Creature* pNadox = me->FindNearestCreature(ELDER_NADOX,60,true))
-					    CAST_AI(boss_elder_nadox::boss_elder_nadoxAI,pNadox->AI())->DeadAhnkaharGuardian = true;
-				}
-			}                
+            if (me->GetEntry() == MOB_AHNKAHAR_GUARDIAN_ENTRY)
+            {
+                if (pInstance)
+                {
+                    if(IsHeroic())
+                    {
+                        if (Creature* pNadox = me->FindNearestCreature(ELDER_NADOX,60,true))
+                            CAST_AI(boss_elder_nadox::boss_elder_nadoxAI,pNadox->AI())->DeadAhnkaharGuardian = true;
+                    }
+                }
+            }
         }
 
         void EnterCombat(Unit * /*who*/){}

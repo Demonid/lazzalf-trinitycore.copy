@@ -47,7 +47,7 @@ enum Yells
     SAY_WHISPER                                 = -1608044
 };
 
-#define ACHIEVEMENT_VOID_DANCE 2153 //new
+#define ACHIEVEMENT_VOID_DANCE 2153
 
 class boss_zuramat : public CreatureScript
 {
@@ -72,7 +72,7 @@ public:
         uint32 SpellSummonVoidTimer;
         uint32 SpellShroudOfDarknessTimer;
 
-		bool KilledVoidSentry;
+        bool KilledVoidSentry;
 
         void Reset()
         {
@@ -88,7 +88,7 @@ public:
             SpellVoidShiftTimer = 15000;
             SpellSummonVoidTimer = 12000;
 
-			KilledVoidSentry = false;
+            KilledVoidSentry = false;
         }
 
         void AttackStart(Unit* pWho)
@@ -158,11 +158,11 @@ public:
             DoScriptText(SAY_DEATH, me);
 
             if (pInstance)
-			{
-				if(IsHeroic() && !KilledVoidSentry)
-				pInstance->DoCompleteAchievement(ACHIEVEMENT_VOID_DANCE);					
-		
-				if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
+            {
+                if(IsHeroic() && !KilledVoidSentry)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_VOID_DANCE);					
+        
+                if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
                 {
                     pInstance->SetData(DATA_1ST_BOSS_EVENT, DONE);
                     pInstance->SetData(DATA_WAVE_COUNT, 7);
@@ -193,10 +193,6 @@ public:
 
 };
 
-/* new
-ricordare di legare l'npc allo script nel db!!!
-UPDATE creature_template SET ScriptName='mob_void_sentry' WHERE entry=29364
-*/
 class mob_void_sentry : public CreatureScript
 {
 public:
@@ -215,7 +211,7 @@ public:
         {
             if (IsHeroic())
                 if (Creature* pZuramat = me->FindNearestCreature(CREATURE_ZURAMAT,60,true))
-				    CAST_AI(boss_zuramat::boss_zuramatAI,pZuramat->AI())->KilledVoidSentry = true;
+                    CAST_AI(boss_zuramat::boss_zuramatAI,pZuramat->AI())->KilledVoidSentry = true;
         }
     };
 
@@ -225,5 +221,5 @@ public:
 void AddSC_boss_zuramat()
 {
     new boss_zuramat();
-	new mob_void_sentry(); //new
+    new mob_void_sentry();
 }

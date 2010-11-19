@@ -83,6 +83,8 @@ enum BossSpells
     SPELL_BERSERK               = 64238,
 };
 
+#define ACHI_PAIN_SPIKE RAID_MODE(3996,3997)
+
 /*######
 ## boss_jaraxxus
 ######*/
@@ -157,7 +159,12 @@ public:
             Summons.DespawnAll();
             DoScriptText(SAY_DEATH,me);
             if (m_pInstance)
+            {
                 m_pInstance->SetData(TYPE_JARAXXUS, DONE);
+
+                if(m_pInstance->GetData(DATA_MISTRESS_OF_PAIN_COUNT) >= 2)
+                    m_pInstance->DoCompleteAchievement(ACHI_PAIN_SPIKE);
+            }
         }
 
         void JustSummoned(Creature* pSummoned)

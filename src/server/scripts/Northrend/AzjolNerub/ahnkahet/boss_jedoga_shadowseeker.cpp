@@ -94,7 +94,7 @@ public:
 
         bool bFirstTime;
 
-		bool KilledVolunteer;
+        bool KilledVolunteer;
 
         void Reset()
         {
@@ -122,7 +122,7 @@ public:
 
             bFirstTime = false;
 
-			KilledVolunteer = false;
+            KilledVolunteer = false;
         }
 
         void EnterCombat(Unit* who)
@@ -155,12 +155,12 @@ public:
         {
             DoScriptText(TEXT_DEATH, me);
             if (pInstance)
-			{
+            {
                 pInstance->SetData(DATA_JEDOGA_SHADOWSEEKER_EVENT, DONE);
 
-				if(IsHeroic() && !KilledVolunteer)
-					pInstance->DoCompleteAchievement(ACHIEVEMENT_VOLUNTEER_WORK);
-			}
+                if(IsHeroic() && !KilledVolunteer)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_VOLUNTEER_WORK);
+            }
         }
 
         void MoveInLineOfSight(Unit* who)
@@ -402,15 +402,15 @@ public:
             }
 
             if (Killer->GetTypeId() == TYPEID_PLAYER) 
-			{
-				pInstance->SetData64(DATA_PL_JEDOGA_TARGET, Killer->GetGUID());
+            {
+                pInstance->SetData64(DATA_PL_JEDOGA_TARGET, Killer->GetGUID());
 
-				if(IsHeroic() && (pInstance->GetData(DATA_JEDOGA_SHADOWSEEKER_EVENT) == IN_PROGRESS))
-				{
-					if (Creature* pJedoga = me->FindNearestCreature(BOSS_JEDOGA,60,true))
-					    CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI,pJedoga->AI())->KilledVolunteer = true;
-				}					
-			}
+                if(IsHeroic() && (pInstance->GetData(DATA_JEDOGA_SHADOWSEEKER_EVENT) == IN_PROGRESS))
+                {
+                    if (Creature* pJedoga = me->FindNearestCreature(BOSS_JEDOGA,60,true))
+                        CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI,pJedoga->AI())->KilledVolunteer = true;
+                }					
+            }
         }
 
         void EnterCombat(Unit* who)

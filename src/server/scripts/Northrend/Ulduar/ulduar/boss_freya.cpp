@@ -65,7 +65,8 @@ enum Yells
 #define ACHIEVEMENT_KNOCK_ON_WOOD_2      RAID_MODE(3178, 3186)
 #define ACHIEVEMENT_KNOCK_ON_WOOD_3      RAID_MODE(3179, 3187)
 #define ACHIEVEMENT_BACK_TO_NATURE       RAID_MODE(2982, 2983)
-#define ACHIEVEMENT_LUMBERJACKED         RAID_MODE(2979, 3118)
+#define ACHIEVEMENT_DEFORESTATION        RAID_MODE(2985, 2984)
+#define DEFORESTATION_MAX_TIMER          10 * 1000 // 10s
 
 enum Spells
 {
@@ -228,28 +229,36 @@ class boss_freya : public CreatureScript
         Creature* Elemental[3];
         bool checkElementalAlive;
 
+        // achievement Deforestation
+        bool checkDeforestation;
+        uint32 deforestationTimer;
+        uint32 deforestationCount;
+
         void Reset()
         {
             _Reset();
 
             if (pInstance)
- 	        {
-  	            for (uint8 data = DATA_BRIGHTLEAF; data <= DATA_STONEBARK; ++data)
-  	            {
-  	                if (Creature *pCreature = Creature::GetCreature((*me), pInstance->GetData64(data)))
-  	                {
-  	                    if (pCreature->isAlive())
-  	                        pCreature->AI()->EnterEvadeMode();
-  	                }
-  	            }
-  	        }
+            {
+                for (uint8 data = DATA_BRIGHTLEAF; data <= DATA_STONEBARK; ++data)
+                {
+                    if (Creature *pCreature = Creature::GetCreature((*me), pInstance->GetData64(data)))
+                    {
+                        if (pCreature->isAlive())
+                            pCreature->AI()->EnterEvadeMode();
+                    }
+                }
+            }
 
             me->UpdateMaxHealth();
             
             spawnedAdds = 0;
             EldersCount = 0;
             checkElementalAlive = true;
-            randomizeSpawnOrder();        
+            checkDeforestation = false;
+            deforestationTimer = 0;
+            deforestationCount = 0;
+            randomizeSpawnOrder();
         }
 
         void KilledUnit(Unit *victim)
@@ -376,6 +385,24 @@ class boss_freya : public CreatureScript
             if (!UpdateVictim())
                 return;
 
+            if (checkDeforestation)
+                deforestationTimer += diff;
+
+            if (deforestationTimer > DEFORESTATION_MAX_TIMER)
+            {
+                checkDeforestation = false;
+                deforestationTimer = 0;
+                deforestationCount = 0;
+            }
+
+            // this achievement is awarded while fighting freya, not when the boss is killed.
+            if (checkDeforestation && deforestationCount == 6 && deforestationTimer <= DEFORESTATION_MAX_TIMER)
+            {
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_DEFORESTATION);
+                // after awarding the achievent, prevent further controls
+                checkDeforestation = false;
+            }
+
             // Elementals must be killed within 12 seconds of each other, or they will all revive and heal
             if (checkElementalAlive)
                 uiElemTimer = 0;
@@ -389,7 +416,12 @@ class boss_freya : public CreatureScript
                         if (Elemental[i]->isAlive())
                             Elemental[i]->SetHealth(Elemental[i]->GetMaxHealth());
                         else
+                        {
                             Elemental[i]->Respawn();
+                            // if the elemental was killed but it respawns, decrease the counter for deforestation
+                            if (deforestationCount > 0)
+                                deforestationCount--;
+                        }
                     }
                     checkElementalAlive = true;
                 }
@@ -575,6 +607,14 @@ class boss_freya : public CreatureScript
                     break;
             }
         }
+
+        void UpdateDeforestation()
+        {
+            if (!checkDeforestation)
+                checkDeforestation = true;
+
+            deforestationCount++;
+        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -603,12 +643,12 @@ class boss_elder_brightleaf : public CreatureScript
         int32 uiSolarFlareTimer;
         int32 uiUnstableEnergyTimer;
         int32 uiBrightleafFluxTimer;
-		uint32 EldersCount;
+        uint32 EldersCount;
         
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_BRIGHTLEAF_AGGRO, me);
-			EldersCount = 0;
+            EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -621,16 +661,21 @@ class boss_elder_brightleaf : public CreatureScript
         {
             DoScriptText(SAY_BRIGHTLEAF_DEATH, me);
 
-			/*if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
+            if (Creature* Ironbranch = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_IRONBRANCH) : 0))
                 if (Ironbranch->isAlive())
-					EldersCount++;
+                    EldersCount++;
                 
-			if (Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
-				if (Stonebark->isAlive())
-					EldersCount++;
+            if (Creature* Stonebark = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_STONEBARK) : 0))
+                if (Stonebark->isAlive())
+                    EldersCount++;
 
-			if (m_pInstance)
-				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
+            if (m_pInstance)
+            {
+                if (EldersCount == 2)
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
+
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+            }
         }
 
         void Reset()
@@ -754,7 +799,7 @@ class boss_elder_ironbranch : public CreatureScript
         int32 uiImpaleTimer;
         int32 uiThornSwarmTimer;
         int32 uiIronRootTimer;
-		uint32 EldersCount;
+        uint32 EldersCount;
 
         void Reset()
         {
@@ -766,7 +811,7 @@ class boss_elder_ironbranch : public CreatureScript
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_IRONBRANCH_AGGRO, me);
-			EldersCount = 0;
+            EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -779,16 +824,21 @@ class boss_elder_ironbranch : public CreatureScript
         {
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
 
-			/*if (Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
-				if (Brightleaf->isAlive())
-					EldersCount++;
+            if (Creature* Brightleaf = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
+                if (Brightleaf->isAlive())
+                    EldersCount++;
                 
-			if (Creature* Stonebark = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_STONEBARK) : 0))
-				if (Stonebark->isAlive())
-					EldersCount++;
+            if (Creature* Stonebark = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_STONEBARK) : 0))
+                if (Stonebark->isAlive())
+                    EldersCount++;
+            
+            if (m_pInstance)
+            {
+                if (EldersCount == 2)
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
 
-			if (m_pInstance)
-				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -884,7 +934,7 @@ class boss_elder_stonebark : public CreatureScript
         int32 uiGroundTremorTimer;
         int32 uiFistsOfStoneTimer;
         int32 uiPetrifiedBarkTimer;
-		uint32 EldersCount;
+        uint32 EldersCount;
 
         void Reset()
         {
@@ -896,7 +946,7 @@ class boss_elder_stonebark : public CreatureScript
         void EnterCombat(Unit* pWho)
         {
             DoScriptText(SAY_STONEBARK_AGGRO, me);
-			EldersCount = 0;
+            EldersCount = 0;
         }
         
         void KilledUnit(Unit *victim)
@@ -909,16 +959,21 @@ class boss_elder_stonebark : public CreatureScript
         {
             DoScriptText(SAY_STONEBARK_DEATH, me);
 
-			/*if (Creature* Brightleaf = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
-				if (Brightleaf->isAlive()) 
-					EldersCount++;
+            if (Creature* Brightleaf = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
+                if (Brightleaf->isAlive()) 
+                    EldersCount++;
                 
-			if (Creature* Ironbranch = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_IRONBRANCH) : 0))
-				if (Ironbranch->isAlive())
-					EldersCount++;
+            if (Creature* Ironbranch = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_IRONBRANCH) : 0))
+                if (Ironbranch->isAlive())
+                    EldersCount++;
 
-			if (m_pInstance)
-				m_pInstance->SetData(DATA_ELDER_DONE, EldersCount);*/
+            if (m_pInstance)
+            {
+                if (EldersCount == 2)
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
+
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -1241,7 +1296,10 @@ class creature_storm_lasher : public CreatureScript
         void JustDied(Unit* victim)
         {
             if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
+            {
+                CAST_AI(boss_freya::boss_freyaAI,Freya->AI())->UpdateDeforestation();
                 Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -1294,7 +1352,10 @@ class creature_snaplasher : public CreatureScript
         void JustDied(Unit* victim)
         {
             if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
+            {
+                CAST_AI(boss_freya::boss_freyaAI,Freya->AI())->UpdateDeforestation();
                 Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -1335,7 +1396,10 @@ class creature_ancient_water_spirit : public CreatureScript
         void JustDied(Unit* victim)
         {
             if(Creature* Freya = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_FREYA) : 0))
+            {
+                CAST_AI(boss_freya::boss_freyaAI,Freya->AI())->UpdateDeforestation();
                 Freya->AI()->DoAction(ACTION_ELEMENTAL_DEAD);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -1359,7 +1423,6 @@ class creature_ancient_water_spirit : public CreatureScript
         return new creature_ancient_water_spiritAI(pCreature);
     };
 };
-
 
 void AddSC_boss_freya()
 {
