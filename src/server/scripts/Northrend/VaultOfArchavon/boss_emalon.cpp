@@ -70,9 +70,14 @@ class boss_emalon : public CreatureScript
 
     struct boss_emalonAI : public BossAI
     {
-        boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT) {}
+        boss_emalonAI(Creature *c) : BossAI(c, DATA_EMALON_EVENT) 
+        {
+            pInstance = c->GetInstanceScript();
+        }
 
         uint32 checktimer;
+        InstanceScript* pInstance;
+        uint8 WatchersCount;
 
         void Reset()
         {
@@ -81,6 +86,7 @@ class boss_emalon : public CreatureScript
             CheckForVoA();
 
             checktimer = 10000;
+            WatchersCount = 0;
 
             for (uint8 i = 0; i < MAX_TEMPEST_MINIONS; ++i)
                 me->SummonCreature(MOB_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
@@ -111,6 +117,22 @@ class boss_emalon : public CreatureScript
         void JustDied(Unit* Killer)
         {
             _JustDied();
+
+            if (Creature* Archavon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ARCHAVON) : 0))
+                if (Archavon->isAlive())
+                    WatchersCount++;
+
+            if (Creature* Koralon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KORALON) : 0))
+                if (Koralon->isAlive())
+                    WatchersCount++;
+
+            if (pInstance)
+            {
+                if (WatchersCount == 2)
+                    pInstance->SetData(DATA_EWF_START, WatchersCount);                
+
+                pInstance->SetData(DATA_EWF_COUNT, 1);
+            }
         }
 
         void EnterCombat(Unit * who)
