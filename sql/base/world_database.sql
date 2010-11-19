@@ -677,6 +677,7 @@ INSERT INTO `command` VALUES
 ('server set motd',3,'Syntax: .server set motd $MOTD\r\n\r\nSet server Message of the day.'),
 ('server shutdown',3,'Syntax: .server shutdown #delay [#exit_code]\r\n\r\nShut the server down after #delay seconds. Use #exit_code or 0 as program exit code.'),
 ('server shutdown cancel',3,'Syntax: .server shutdown cancel\r\n\r\nCancel the restart/shutdown timer if any.'),
+('server togglequerylog',4,'Toggle SQL driver query logging.'),
 ('setskill',3,'Syntax: .setskill #skill #level [#max]\r\n\r\nSet a skill of id #skill with a current skill value of #level and a maximum value of #max (or equal current maximum if not provide) for the selected character. If no character is selected, you learn the skill.'),
 ('showarea',3,'Syntax: .showarea #areaid\r\n\r\nReveal the area of #areaid to the selected character. If no character is selected, reveal this area to you.'),
 ('start',0,'Syntax: .start\r\n\r\nTeleport you to the starting area of your character.'),
@@ -1571,31 +1572,6 @@ CREATE TABLE `creature_questrelation` (
 LOCK TABLES `creature_questrelation` WRITE;
 /*!40000 ALTER TABLE `creature_questrelation` DISABLE KEYS */;
 /*!40000 ALTER TABLE `creature_questrelation` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `creature_respawn`
---
-
-DROP TABLE IF EXISTS `creature_respawn`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `creature_respawn` (
-  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `respawntime` bigint(20) NOT NULL DEFAULT '0',
-  `instance` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guid`,`instance`),
-  KEY `instance` (`instance`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Grid Loading System';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `creature_respawn`
---
-
-LOCK TABLES `creature_respawn` WRITE;
-/*!40000 ALTER TABLE `creature_respawn` DISABLE KEYS */;
-/*!40000 ALTER TABLE `creature_respawn` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2632,31 +2608,6 @@ CREATE TABLE `gameobject_questrelation` (
 LOCK TABLES `gameobject_questrelation` WRITE;
 /*!40000 ALTER TABLE `gameobject_questrelation` DISABLE KEYS */;
 /*!40000 ALTER TABLE `gameobject_questrelation` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `gameobject_respawn`
---
-
-DROP TABLE IF EXISTS `gameobject_respawn`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `gameobject_respawn` (
-  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `respawntime` bigint(20) NOT NULL DEFAULT '0',
-  `instance` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guid`,`instance`),
-  KEY `instance` (`instance`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Grid Loading System';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `gameobject_respawn`
---
-
-LOCK TABLES `gameobject_respawn` WRITE;
-/*!40000 ALTER TABLE `gameobject_respawn` DISABLE KEYS */;
-/*!40000 ALTER TABLE `gameobject_respawn` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -16592,28 +16543,6 @@ LOCK TABLES `reputation_spillover_template` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `reserved_name`
---
-
-DROP TABLE IF EXISTS `reserved_name`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reserved_name` (
-  `name` varchar(12) NOT NULL DEFAULT '',
-  PRIMARY KEY (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player Reserved Names';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `reserved_name`
---
-
-LOCK TABLES `reserved_name` WRITE;
-/*!40000 ALTER TABLE `reserved_name` DISABLE KEYS */;
-/*!40000 ALTER TABLE `reserved_name` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `script_texts`
 --
 
@@ -26806,6 +26735,9 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 69172, 'spell_tyrannus_overlord_brand'),
 -- Icecrown Citadel
 ( 69057, 'spell_marrowgar_bone_spike_graveyard'),
+( 70826, 'spell_marrowgar_bone_spike_graveyard'),
+( 72088, 'spell_marrowgar_bone_spike_graveyard'),
+( 72089, 'spell_marrowgar_bone_spike_graveyard'),
 ( 69140, 'spell_marrowgar_coldflame'),
 ( 72705, 'spell_marrowgar_coldflame'),
 ( 69147, 'spell_marrowgar_coldflame_trigger'),
@@ -26815,7 +26747,13 @@ INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
 ( 70836, 'spell_marrowgar_bone_storm'),
 ( 70842, 'spell_deathwhisper_mana_barrier'),
 ( 70903, 'spell_cultist_dark_martyrdrom'),
+( 72498, 'spell_cultist_dark_martyrdrom'),
+( 72499, 'spell_cultist_dark_martyrdrom'),
+( 72500, 'spell_cultist_dark_martyrdrom'),
 ( 71236, 'spell_cultist_dark_martyrdrom'),
+( 72495, 'spell_cultist_dark_martyrdrom'),
+( 72496, 'spell_cultist_dark_martyrdrom'),
+( 72497, 'spell_cultist_dark_martyrdrom'),
 ( 72202, 'spell_deathbringer_blood_link'),
 ( 72178, 'spell_deathbringer_blood_link_aura'),
 ( 72371, 'spell_deathbringer_blood_power'),
@@ -27684,6 +27622,8 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 (1024, 'Character ''%s'' (GUID: %u Account %u) can''t be restored: account character list full!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1025, 'Character ''%s'' (GUID: %u Account %u) can''t be restored: new name already used!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1026, 'GUID: %u Name: %s Account: %s (%u) Date: %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1027, 'SQL driver query logging enabled.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1028, 'SQL driver query logging disabled.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1100, 'Account %s (Id: %u) have up to %u expansion allowed now.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1101, 'Message of the day changed to:\r\n%s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1102, 'Message sent to %s: %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),

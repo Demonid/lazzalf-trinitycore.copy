@@ -176,6 +176,7 @@ void Log::Initialize()
     m_logLevel     = sConfig.GetIntDefault("LogLevel", LOGL_NORMAL);
     m_logFileLevel = sConfig.GetIntDefault("LogFileLevel", LOGL_NORMAL);
     m_dbLogLevel   = sConfig.GetIntDefault("DBLogLevel", LOGL_NORMAL);
+    m_sqlDriverQueryLogging  = sConfig.GetBoolDefault("SQLDriverQueryLogging", false);
 
     m_logFilter = 0;
 
