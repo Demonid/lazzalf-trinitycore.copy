@@ -142,7 +142,7 @@ const Position PosColossus[2] =
 {368.768f,-46.847f,409.886f,3.036f}
 };
 
-#define ACHI_UNBROKEN RAID_MODE(2905,2906)
+#define ACHI_UNBROKEN             RAID_MODE(2905,2906)
 
 class boss_flame_leviathan : public CreatureScript
 {
@@ -158,7 +158,7 @@ class boss_flame_leviathan : public CreatureScript
             ColossusCount = 0;
 
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
             
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
             me->SetReactState(REACT_PASSIVE);
@@ -167,7 +167,7 @@ class boss_flame_leviathan : public CreatureScript
             if (me->isAlive())
                 for(uint32 i = 0; i < 2; ++i)
                     DoSummon(MOB_COLOSSUS, PosColossus[i], 7000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
-	    }
+        }
 
         InstanceScript* pInstance;
         Vehicle *vehicle;
@@ -588,7 +588,7 @@ class npc_keeper_norgannon : public CreatureScript
             {
                 case ACTION_VEHICLE_RESPAWN:
                     summons.DespawnAll();
-					pInstance->SetData(DATA_ACHI_UNBROKEN, 0);
+                    pInstance->SetData(DATA_ACHI_UNBROKEN, 0);
                     for(int32 i = 0; i < (RAID_MODE(2, 5)); ++i)
                     {
                         if (Creature* summon = DoSummon(VEHICLE_SIEGE, PosSiege[i], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
@@ -614,7 +614,7 @@ class npc_keeper_norgannon : public CreatureScript
                             summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CANNON, true);
                             summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_MORTAR, true);
                             summon->ApplySpellImmune(0, IMMUNITY_ID, SPELL_BOULDER, true);
-							summon->SetPower(POWER_ENERGY,summon->GetMaxPower(POWER_ENERGY));
+                            summon->SetPower(POWER_ENERGY,summon->GetMaxPower(POWER_ENERGY));
                         }
                     }
                     break;
@@ -627,7 +627,7 @@ class npc_keeper_norgannon : public CreatureScript
         if (pPlayer)
         {
             InstanceScript *instance = pCreature->GetInstanceScript();
- 	        if (instance && (instance->GetBossState(BOSS_LEVIATHAN) != DONE))
+            if (instance && (instance->GetBossState(BOSS_LEVIATHAN) != DONE))
             {
                 pPlayer->PrepareGossipMenu(pCreature);
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
@@ -735,8 +735,8 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
                 pPlayer->MonsterTextEmote(EMOTE_REPAIR, pPlayer->GetGUID(), true);
                 vehicle->SetHealth(vehicle->GetMaxHealth()); // Correct spell not works
                 pPlayer->CastSpell(vehicle, SPELL_AUTO_REPAIR, true);
-				if(InstanceScript *data = pPlayer->GetInstanceScript())
-					data->SetData(DATA_ACHI_UNBROKEN, 1);
+                if(InstanceScript *data = pPlayer->GetInstanceScript())
+                    data->SetData(DATA_ACHI_UNBROKEN, 1);
             }
         }
         return true;
@@ -782,7 +782,7 @@ class ulduar_repair_npc : public CreatureScript
                 _Creature->MonsterSay("Sei in combat con il leviathan!", LANG_UNIVERSAL, 0);
                 return;            
             }
-		
+        
         switch(action)
         {
             case 1005: //Chopper
@@ -790,8 +790,8 @@ class ulduar_repair_npc : public CreatureScript
                 {
                     vehicle->SetHealth(vehicle->GetMaxHealth());
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-					if (InstanceScript *data = player->GetInstanceScript())
-						data->SetData(DATA_ACHI_UNBROKEN, 1);
+                    if (InstanceScript *data = player->GetInstanceScript())
+                        data->SetData(DATA_ACHI_UNBROKEN, 1);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -802,8 +802,8 @@ class ulduar_repair_npc : public CreatureScript
                 {
                     vehicle->SetHealth(vehicle->GetMaxHealth());
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-					if (InstanceScript *data = player->GetInstanceScript())
-						data->SetData(DATA_ACHI_UNBROKEN, 1);
+                    if (InstanceScript *data = player->GetInstanceScript())
+                        data->SetData(DATA_ACHI_UNBROKEN, 1);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -813,9 +813,10 @@ class ulduar_repair_npc : public CreatureScript
                 if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
                 {
                     vehicle->SetHealth(vehicle->GetMaxHealth());
+                    vehicle->SetPower(POWER_ENERGY,vehicle->GetMaxPower(POWER_ENERGY));
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-					if (InstanceScript *data = player->GetInstanceScript())
-						data->SetData(DATA_ACHI_UNBROKEN, 1);
+                    if (InstanceScript *data = player->GetInstanceScript())
+                        data->SetData(DATA_ACHI_UNBROKEN, 1);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -883,10 +884,10 @@ class mob_flameleviathan_loot : public CreatureScript
                 damage = 0;            
         }
 
-		void JustDied(Unit *victim)
+        void JustDied(Unit *victim)
         {
             if (pInstance->GetData(DATA_ACHI_UNBROKEN) == 0)
-				pInstance->DoCompleteAchievement(ACHI_UNBROKEN);
+                pInstance->DoCompleteAchievement(ACHI_UNBROKEN);
         }
 
         void UpdateAI(const uint32 diff)
@@ -911,6 +912,35 @@ class mob_flameleviathan_loot : public CreatureScript
     };
 };
 
+class mob_steelforged_defender : public CreatureScript //33236
+{
+    public:
+        mob_steelforged_defender() : CreatureScript("mob_steelforged_defender") { }
+
+    struct mob_steelforged_defenderAI : public ScriptedAI
+    {
+       mob_steelforged_defenderAI(Creature *c) : ScriptedAI(c)
+       {
+           pInstance = me->GetInstanceScript();
+       }
+
+       InstanceScript* pInstance;
+
+       void JustDied(Unit *victim)
+       {
+           if(pInstance->GetData(DATA_DWARFAGEDDON_START) == 0)
+               pInstance->SetData(DATA_DWARFAGEDDON_START,1);
+           
+           pInstance->SetData(DATA_DWARFAGEDDON_COUNT,1);
+       }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_steelforged_defenderAI (pCreature);
+    };
+};
+
 void AddSC_boss_flame_leviathan()
 {
     new boss_flame_leviathan();
@@ -924,4 +954,5 @@ void AddSC_boss_flame_leviathan()
     new ulduar_repair_npc();
     new at_RX_214_repair_o_matic_station();
     new mob_flameleviathan_loot();
+    new mob_steelforged_defender();
 }

@@ -143,10 +143,10 @@ class boss_kologarn : public CreatureScript
         
         uint32 RubbleCount;
 
-		//achievement Disarmed
-		uint32 DisarmedTimer;
-		bool disarmed;
-		bool leftkilled, rightkilled;
+        //achievement Disarmed
+        uint32 DisarmedTimer;
+        bool disarmed;
+        bool leftkilled, rightkilled;
 
         void AttackStart(Unit *who)
         {
@@ -168,9 +168,9 @@ class boss_kologarn : public CreatureScript
         void JustDied(Unit *victim)
         {
             // Disarmed
-			if (leftkilled && rightkilled && disarmed && DisarmedTimer <= MAX_DISARMED_TIME)
-				 pInstance->DoCompleteAchievement(ACHIEVEMENT_DISARMED);
-			// Rubble and Roll
+            if (leftkilled && rightkilled && disarmed && DisarmedTimer <= MAX_DISARMED_TIME)
+                 pInstance->DoCompleteAchievement(ACHIEVEMENT_DISARMED);
+            // Rubble and Roll
             if (RubbleCount >= 5)
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_RUBBLE_AND_ROLL);
             // With Open Arms
@@ -184,8 +184,8 @@ class boss_kologarn : public CreatureScript
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->setFaction(35);
 
-			while (Unit* pTarget = me->FindNearestCreature(NPC_RUBBLE,50.0f))
-				pTarget->RemoveFromWorld();
+            while (Unit* pTarget = me->FindNearestCreature(NPC_RUBBLE,50.0f))
+                pTarget->RemoveFromWorld();
 
             // Chest spawn
             me->SummonGameObject(RAID_MODE(CACHE_OF_LIVING_STONE_10, CACHE_OF_LIVING_STONE_25), 1836.52f, -36.1111f, 448.81f, 0.558504f, 0, 0, 0.7f, 0.7f, 604800);
@@ -213,10 +213,10 @@ class boss_kologarn : public CreatureScript
                 GripTargetGUID[n] = NULL;
             Gripped = false;
 
-			DisarmedTimer = 0;
-			disarmed = false;
-			rightkilled = false;
-			leftkilled = false;
+            DisarmedTimer = 0;
+            disarmed = false;
+            rightkilled = false;
+            leftkilled = false;
             
             if (Creature *LeftArm = CAST_CRE(me->GetVehicleKit()->GetPassenger(0)))
                 LeftArm->AI()->DoZoneInCombat();
@@ -267,16 +267,16 @@ class boss_kologarn : public CreatureScript
             if (!left && !right)
                 DoCast(me, SPELL_STONE_SHOUT, true);
 
-			if (disarmed)
-				DisarmedTimer += diff;
-			else
-				DisarmedTimer = 0;
+            if (disarmed)
+                DisarmedTimer += diff;
+            else
+                DisarmedTimer = 0;
 
-			if (DisarmedTimer > MAX_DISARMED_TIME)
-			{
-				disarmed = false;
-				DisarmedTimer = 0;
-			}
+            if (DisarmedTimer > MAX_DISARMED_TIME)
+            {
+                disarmed = false;
+                DisarmedTimer = 0;
+            }
 
             switch(events.GetEvent())
             {
@@ -348,7 +348,7 @@ class boss_kologarn : public CreatureScript
                         RightArm->EnterVehicle(vehicle, 1);
                         DoCast(me, SPELL_ARM_RESPAWN, true);
                         me->MonsterTextEmote(EMOTE_RIGHT, 0, true);
-						rightkilled = false;
+                        rightkilled = false;
                     }
                     events.CancelEvent(EVENT_RIGHT);
                     break;
@@ -359,7 +359,7 @@ class boss_kologarn : public CreatureScript
                         LeftArm->EnterVehicle(vehicle, 0);
                         DoCast(me, SPELL_ARM_RESPAWN, true);
                         me->MonsterTextEmote(EMOTE_LEFT, 0, true);
-						leftkilled = false;
+                        leftkilled = false;
                     }
                     events.CancelEvent(EVENT_LEFT);
                     break;                
@@ -390,21 +390,21 @@ class boss_kologarn : public CreatureScript
             {
                 case ACTION_RESPAWN_RIGHT:
                     DoScriptText(SAY_RIGHT_ARM_GONE, me);
+                    rightkilled = true;
+                    if (!disarmed)
+                        disarmed = true;
                     me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15%
                     ++RubbleCount;
                     events.ScheduleEvent(EVENT_RIGHT, 30000);
-					rightkilled = true;
-					if (!disarmed)
-						disarmed = true;
                     break;
                 case ACTION_RESPAWN_LEFT:
                     DoScriptText(SAY_LEFT_ARM_GONE, me);
+                    leftkilled = true;
+                    if (!disarmed)
+                        disarmed = true;
                     me->DealDamage(me, ARM_DEAD_DAMAGE); // decreases Kologarn's health by 15%
                     ++RubbleCount;
                     events.ScheduleEvent(EVENT_LEFT, 30000);
-					leftkilled = true;
-					if (!disarmed)
-						disarmed = true;
                     break;
             }
         }
@@ -466,7 +466,7 @@ class mob_right_arm : public CreatureScript
             m_pInstance = me->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_ID, 64708, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
         }
 
         InstanceScript* m_pInstance;
@@ -625,7 +625,7 @@ class mob_left_arm : public CreatureScript
         {
             m_pInstance = me->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
         }
 
         InstanceScript* m_pInstance;
