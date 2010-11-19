@@ -219,10 +219,10 @@ public:
         void JustDied(Unit * /*killer*/)
         {
             if (IsHeroic() && (pInstance->GetData(DATA_ANOMALUS_EVENT) == IN_PROGRESS))//fix'd
-			{
-				if (Creature* pAnomalus = me->FindNearestCreature(BOSS_ANOMALUS,60,true))
-					CAST_AI(boss_anomalus::boss_anomalusAI,pAnomalus->AI())->bDeadChaoticRift = true;
-			}
+            {
+                if (Creature* pAnomalus = me->FindNearestCreature(BOSS_ANOMALUS,60,true))
+                    CAST_AI(boss_anomalus::boss_anomalusAI,pAnomalus->AI())->bDeadChaoticRift = true;
+            }
         }
 
         void UpdateAI(const uint32 diff)
