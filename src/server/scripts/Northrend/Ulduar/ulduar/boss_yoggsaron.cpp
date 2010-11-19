@@ -386,6 +386,18 @@ const Position SanityWellPos[10] =
 
 uint32 keepersactive;
 
+// Achievements
+#define ACHI_DRIVE_ME_CRAZY                 RAID_MODE(3008, 3010)
+#define ACHI_GETTING_ANY_OLDER              RAID_MODE(3012, 3013)
+#define MAX_SPEED_KILL_TIMER                7 * 60 * 1000 // 7 min
+#define ACHI_COMING_OUT_OF_THE_WALLS        RAID_MODE(3014, 3017)
+#define MAX_COMING_OUT_OF_THE_WALLS_TIMER   12 * 1000 // 12s
+
+// Hard Modes
+#define ACHI_THREE_LIGHTS_IN_THE_DARKNESS   RAID_MODE(3157, 3161)
+#define ACHI_TWO_LIGHTS_IN_THE_DARKNESS     RAID_MODE(3141, 3162)
+#define ACHI_ONE_LIGHT_IN_THE_DARKNESS      RAID_MODE(3158, 3163)
+#define ACHI_ALONE_IN_THE_DARKNESS          RAID_MODE(3159, 3164)
 
 /*------------------------------------------------------*
  *                        Sara                          *
@@ -421,6 +433,8 @@ class boss_sara : public CreatureScript
         uint32 uiPhase_timer;
         uint32 uiStep;
         bool wipe;
+
+        uint32 encounterTimer;
         
         void Reset()
         {
@@ -471,6 +485,7 @@ class boss_sara : public CreatureScript
             me->setFaction(35);
             me->GetMotionMaster()->MoveTargetedHome();
             phase = PHASE_NULL;
+            encounterTimer = 0;
             _Reset();
         }
         
@@ -498,6 +513,7 @@ class boss_sara : public CreatureScript
         void EnterCombat(Unit *who)
         {
             DoScriptText(RAND(SAY_SARA_AGGRO_1,SAY_SARA_AGGRO_2,SAY_SARA_AGGRO_3), me);
+            encounterTimer = 0;
             // Keepers activation
             if (pInstance)
             {
@@ -543,6 +559,8 @@ class boss_sara : public CreatureScript
                 return;
                 
             events.Update(diff);
+
+            encounterTimer += diff;
 
             if (me->hasUnitState(UNIT_STAT_CASTING))
                 return;
@@ -704,6 +722,11 @@ class boss_sara : public CreatureScript
             uiPhase_timer = uiTimer;
             ++uiStep;
         }
+
+        uint32 GetEncounterTimer()
+        {
+            return encounterTimer;
+        }
     };
 };
 
@@ -731,6 +754,7 @@ class boss_yoggsaron : public CreatureScript
             DoCast(me, SPELL_SHADOWY_BARRIER_LARGE, true);
             me->SetReactState(REACT_PASSIVE);
             DoScriptText(SAY_PHASE2_5, me);
+            someoneGotInsane = false;
         }
 
         InstanceScript *pInstance;
@@ -739,6 +763,9 @@ class boss_yoggsaron : public CreatureScript
         uint8 illusionOrder[3];
         uint8 illusionCount;
         uint8 spawnedTentacles;
+
+        // achievement
+        bool someoneGotInsane;
         
         void Reset()
         {
@@ -761,7 +788,7 @@ class boss_yoggsaron : public CreatureScript
                 case 2:
                     me->AddLootMode(LOOT_MODE_HARD_MODE_2);      // Add 2 Keepers loot
                 case 1:
-                    me->AddLootMode(LOOT_MODE_HARD_MODE_1);      // Add 1 Keepers loot
+                    me->AddLootMode(LOOT_MODE_HARD_MODE_1);      // Add 1 Keeper loot
                     break;                
                 default:
                     break;
@@ -816,6 +843,8 @@ class boss_yoggsaron : public CreatureScript
                             DoScriptText(RAND(WHISP_INSANITY_1, WHISP_INSANITY_1), pVoice, pPlayer);
 
                         DoCast(pPlayer, SPELL_INSANE, true);
+
+                        someoneGotInsane = true;
                     }
                 }
                 insaneTimer = 4000;
@@ -867,9 +896,9 @@ class boss_yoggsaron : public CreatureScript
                         case EVENT_SHADOW_BEACON:
                             if (Creature *pImmortal = me->FindNearestCreature(NPC_IMMORTAL_GUARDIAN,80,true))
                             {
-  	                            Map::PlayerList const &players = pInstance->instance->GetPlayers();
-  	                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-  	                                DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
+                                Map::PlayerList const &players = pInstance->instance->GetPlayers();
+                                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
                                 me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
                             }
                             events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
@@ -889,8 +918,32 @@ class boss_yoggsaron : public CreatureScript
             DoScriptText(SAY_DEATH, me);
             _JustDied();
             
+            // Award Hard Mode Achievements
+            switch (keepersactive)
+            {                
+                case 4:
+                    pInstance->DoCompleteAchievement(ACHI_ALONE_IN_THE_DARKNESS);
+                case 3:
+                    pInstance->DoCompleteAchievement(ACHI_ONE_LIGHT_IN_THE_DARKNESS);
+                case 2:
+                    pInstance->DoCompleteAchievement(ACHI_TWO_LIGHTS_IN_THE_DARKNESS);
+                case 1:
+                    pInstance->DoCompleteAchievement(ACHI_THREE_LIGHTS_IN_THE_DARKNESS);
+                    break;                
+                default:
+                    break;
+            }
+
+            if (!someoneGotInsane)
+                pInstance->DoCompleteAchievement(ACHI_DRIVE_ME_CRAZY);
+            
             if (Unit *pSara = me->ToTempSummon()->GetSummoner())
+            {
+                if (CAST_AI(boss_sara::boss_saraAI,pSara->ToCreature()->AI())->GetEncounterTimer() <= MAX_SPEED_KILL_TIMER)
+                    pInstance->DoCompleteAchievement(ACHI_GETTING_ANY_OLDER);
+
                 pSara->ToCreature()->DisappearAndDie();
+            }
 
             me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
             me->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
@@ -1405,18 +1458,18 @@ class npc_passive_illusions : public CreatureScript
     public:
         npc_passive_illusions(): CreatureScript("npc_passive_illusions") {}    
 
- 	CreatureAI* GetAI(Creature* pCreature) const
-  	{
-  	    return new npc_passive_illusionsAI (pCreature);
-  	};
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_passive_illusionsAI (pCreature);
+    };
 
     struct npc_passive_illusionsAI : public PassiveAI
- 	{
- 	    npc_passive_illusionsAI(Creature *c) : PassiveAI(c)
-  	    {
- 	        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
-  	    }
-  	};
+    {
+        npc_passive_illusionsAI(Creature *c) : PassiveAI(c)
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+    };
 };
 
 /*------------------------------------------------------*

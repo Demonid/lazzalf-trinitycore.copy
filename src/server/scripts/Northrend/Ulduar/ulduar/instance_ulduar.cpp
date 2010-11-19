@@ -61,6 +61,13 @@ enum eGameObjects
     GO_Keepers_DOOR          = 194255
 };
 
+#define ACHIEVEMENT_LUMBERJACKED_10 2979
+#define ACHIEVEMENT_LUMBERJACKED_25 3118
+#define LUMBERJACKED_MAX_TIMER 15 * 1000 // 15s
+#define ACHIEVEMENT_DWARFAGEDDON_10 3097
+#define ACHIEVEMENT_DWARFAGEDDON_25 3098
+#define MAX_DWARFAGEDDON_TIMER 10 * 1000 // 10s
+
 class instance_ulduar : public InstanceMapScript
 {
     public:
@@ -77,7 +84,15 @@ class instance_ulduar : public InstanceMapScript
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
-			vehicleRepaired = false;
+            vehicleRepaired = false;
+            dwarfageddonStartCount = false;
+            steelforgedDefendersCount = 0;
+            dwarfageddonTimer = 0;
+            achievementDwarfageddon = 0;
+            lumberjackedStartCount = false;
+            eldersCount = 0;
+            lumberjackedTimer = 0;
+            achievementLumberjacked = 0;
         }
 
         uint64 uiLeviathan;
@@ -118,11 +133,20 @@ class instance_ulduar : public InstanceMapScript
         uint64 uiHodirYS;
         uint64 uiYoggSaronBrain;
         uint64 uiYoggSaron;
-		
-		//achievement
-		bool vehicleRepaired;
-		/*time_t minElderDiedTime;
-        time_t maxElderDiedTime;*/
+        
+        // Achievements
+        // Unbroken
+        bool vehicleRepaired;
+        // Dwarfageddon
+        bool dwarfageddonStartCount;
+        uint32 steelforgedDefendersCount;
+        uint32 dwarfageddonTimer;
+        uint32 achievementDwarfageddon;
+        //Lumberjacked
+        bool lumberjackedStartCount;
+        uint32 eldersCount;
+        uint32 lumberjackedTimer;
+        uint32 achievementLumberjacked;
             
         GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
@@ -396,36 +420,64 @@ class instance_ulduar : public InstanceMapScript
                     if (ThorimRareChest && value == GO_STATE_READY)
                         ThorimRareChest->SetRespawnTime(ThorimRareChest->GetRespawnDelay());
                     break;
-				case DATA_ACHI_UNBROKEN:
-					if (value == 1)
-						vehicleRepaired = true;
-					else if (value == 0)
-						vehicleRepaired = false;
-					break;
-				//case DATA_ELDER_START:
-				//	break;
-				//case DATA_ELDER_DONE:
-				//	if (value == 2)
-				//		//inizializza il tempo
-				//	else if (value == 0)
-				//		//ferma il tempo
-				//	break;
+                case DATA_ACHI_UNBROKEN:
+                    if (value == 1)
+                        vehicleRepaired = true;
+                    else if (value == 0)
+                        vehicleRepaired = false;
+                    break;
+                case DATA_DWARFAGEDDON_START:
+                    if (value == 1)
+                        dwarfageddonStartCount = true;
+                    else if (value == 0)
+                        dwarfageddonStartCount = false;
+                    break;
+                case DATA_DWARFAGEDDON_COUNT:
+                    if (value == 1)
+                        steelforgedDefendersCount++;
+                    else if (value == 0)
+                        steelforgedDefendersCount = 0;
+                    break;
+                case DATA_LUMBERJACKED_START:
+                    if (value == 2)
+                        lumberjackedStartCount = true;
+                    else if (value == 0)
+                        lumberjackedStartCount = false;
+                    break;
+                case DATA_LUMBERJACKED_COUNT:
+                    if (value == 1)
+                        eldersCount++;
+                    else
+                        return;
+                    break;
             }
         }
 
-		uint32 GetData (uint32 id)
-		{
-			switch (id)
-			{
-				case DATA_ACHI_UNBROKEN:
-					if (vehicleRepaired == true)
-						return 1;
-					else
-						return 0;
-				default:
-					return 0;
-			}
-		}
+        uint32 GetData(uint32 id)
+        {
+            switch (id)
+            {
+                case DATA_ACHI_UNBROKEN:
+                    if (vehicleRepaired == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_DWARFAGEDDON_START:
+                    if (dwarfageddonStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_DWARFAGEDDON_COUNT: return steelforgedDefendersCount;
+                case DATA_LUMBERJACKED_START:
+                    if (lumberjackedStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_LUMBERJACKED_COUNT: return eldersCount;
+                default:
+                    return 0;
+            }
+        }
 
         bool SetBossState(uint32 id, EncounterState state)
         {
@@ -484,6 +536,61 @@ class instance_ulduar : public InstanceMapScript
                     for (uint32 i = BOSS_MIMIRON; i < BOSS_VEZAX; ++i)
                         if (data->GetBossState(i) != DONE)
                             pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
+            }
+        }
+
+        void Update(uint32 diff)
+        {
+            // Achievement Dwarfageddon control
+            if (GetData(DATA_DWARFAGEDDON_START) == 1)
+            {
+                dwarfageddonTimer += diff;
+
+                if (dwarfageddonTimer >= MAX_DWARFAGEDDON_TIMER)
+                {
+                    SetData(DATA_DWARFAGEDDON_START,0);
+                    SetData(DATA_DWARFAGEDDON_COUNT,0);
+                    dwarfageddonTimer = 0;
+                }
+
+                if (GetData(DATA_DWARFAGEDDON_COUNT) >= 100 && dwarfageddonTimer <= MAX_DWARFAGEDDON_TIMER)
+                {
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL)
+                        achievementDwarfageddon = ACHIEVEMENT_DWARFAGEDDON_10;
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL)
+                        achievementDwarfageddon = ACHIEVEMENT_DWARFAGEDDON_25;
+
+                    AchievementEntry const *AchievDwarfageddon = GetAchievementStore()->LookupEntry(achievementDwarfageddon);
+                    if (AchievDwarfageddon)
+                        DoCompleteAchievement(achievementDwarfageddon);
+
+                    SetData(DATA_DWARFAGEDDON_START,0);
+                    SetData(DATA_DWARFAGEDDON_COUNT,0);
+                    dwarfageddonTimer = 0;
+                }
+            }
+
+            // Achievement Lumberjacked control
+            if (GetData(DATA_LUMBERJACKED_START) == 1)
+            {
+                lumberjackedTimer += diff;
+
+                if (lumberjackedTimer >= LUMBERJACKED_MAX_TIMER)
+                    SetData(DATA_LUMBERJACKED_START,0);
+
+                if (GetData(DATA_LUMBERJACKED_COUNT) == 3 && lumberjackedTimer <= LUMBERJACKED_MAX_TIMER)
+                {
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL)
+                        achievementLumberjacked = ACHIEVEMENT_LUMBERJACKED_10;
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL)
+                        achievementLumberjacked = ACHIEVEMENT_LUMBERJACKED_25;
+
+                    AchievementEntry const *AchievLumberjacked = GetAchievementStore()->LookupEntry(achievementLumberjacked);
+                    if (AchievLumberjacked)
+                        DoCompleteAchievement(achievementLumberjacked);
+
+                    SetData(DATA_LUMBERJACKED_START,0);
+                }
             }
         }
     };
