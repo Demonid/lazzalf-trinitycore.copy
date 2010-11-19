@@ -128,7 +128,8 @@ enum Creatures
     NPC_WASTE                                              = 16427, // Soldiers of the Frozen Wastes
     NPC_ABOMINATION                                        = 16428, // Unstoppable Abominations
     NPC_WEAVER                                             = 16429, // Soul Weavers
-    NPC_ICECROWN                                           = 16441 // Guardians of Icecrown
+    NPC_ICECROWN                                           = 16441, // Guardians of Icecrown
+    KEL_THUZAD                                             = 15990
 };
 
 const Position Pos[12] =
@@ -265,10 +266,10 @@ public:
         boss_kelthuzadAI(Creature* c) : BossAI(c, BOSS_KELTHUZAD), spawns(c)
         {
             uiFaction = me->getFaction();
-			pInstance = c->GetInstanceScript();
+            pInstance = c->GetInstanceScript();
         }
 
-		InstanceScript* pInstance;
+        InstanceScript* pInstance;
 
         uint32 Phase;
         uint32 uiGuardiansOfIcecrownTimer;
@@ -285,7 +286,7 @@ public:
 
         SummonList spawns; // adds spawn by the trigger. kept in separated list (i.e. not in summons)
 
-		uint32 AbominationsCount;
+        uint32 AbominationsCount;
 
         void Reset()
         {
@@ -329,8 +330,8 @@ public:
             Phase = 0;
             nAbomination = 0;
             nWeaver = 0;
-			
-			AbominationsCount = 0;
+            
+            AbominationsCount = 0;
         }
 
         void KilledUnit()
@@ -351,10 +352,10 @@ public:
             }
             chained.clear();
 
-			if (pInstance) //new
-			{
-				if (AbominationsCount >= MIN_ABOMIN_COUNT)
-					pInstance->DoCompleteAchievement(ACHIEVEMENT_GET_ENOUGH);
+            if (pInstance) //new
+            {
+                if (AbominationsCount >= MIN_ABOMIN_COUNT)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_GET_ENOUGH);
             }
         }
 
@@ -652,9 +653,9 @@ public:
         }
 
         void UpdateAbominationCounter()
-	    {
-		    AbominationsCount++;
-	    }
+        {
+            AbominationsCount++;
+        }
     };	
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -663,12 +664,6 @@ public:
     }
 
 };
-
-/* new
-ricordare di legare l'npc allo script nel db!!!
-UPDATE creature_template SET ScriptName='mob_unstoppable_abomination' WHERE entry=16428
-*/
-#define KEL_THUZAD 15990
 
 class mob_unstoppable_abomination : public CreatureScript
 {
@@ -687,7 +682,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Creature* pKel = me->FindNearestCreature(KEL_THUZAD,100,true)) //metto 100 per essere più sicuri
-				CAST_AI(boss_kelthuzad::boss_kelthuzadAI,pKel->AI())->UpdateAbominationCounter();
+                CAST_AI(boss_kelthuzad::boss_kelthuzadAI,pKel->AI())->UpdateAbominationCounter();
         }
     };
 
@@ -760,6 +755,6 @@ public:
 void AddSC_boss_kelthuzad()
 {
     new boss_kelthuzad();
-	new mob_unstoppable_abomination(); //new
+    new mob_unstoppable_abomination();
     new at_kelthuzad_center();
 }
