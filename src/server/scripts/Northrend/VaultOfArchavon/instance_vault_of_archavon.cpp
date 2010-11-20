@@ -17,6 +17,8 @@
 
 #include "ScriptPCH.h"
 #include "vault_of_archavon.h"
+#include "OutdoorPvPMgr.h"
+#include "../../OutdoorPvP/OutdoorPvPWG.h"
 
 #define ENCOUNTERS  4
 
@@ -26,6 +28,11 @@
 3 - Koralon the Flame Watcher event
 4 - Toravon the Ice Watcher event
 */
+
+// Earth, Wind & Fire
+#define ACHIEVEMENT_EARTH_WIND_FIRE_10 4016
+#define ACHIEVEMENT_EARTH_WIND_FIRE_25 4017
+#define EWF_MAX_TIMER 60 * 1000 // 60s
 
 class instance_archavon : public InstanceMapScript
 {
@@ -48,6 +55,12 @@ public:
         uint64 uiKoralon;
         uint64 uiToravon;
 
+        // Earth Wind & Fire
+        bool ewfStartCount;
+        uint32 watchersCount;
+        uint32 timer;
+        uint32 achievementEWF;
+
         void Initialize()
         {
             uiArchavon = 0;
@@ -57,6 +70,11 @@ public:
 
             for (uint8 i = 0; i < ENCOUNTERS; i++)
                 uiEncounters[i] = NOT_STARTED;
+
+            ewfStartCount = false;
+            watchersCount = 0;
+            timer = 0;
+            achievementEWF = 0;
         }
 
         bool IsEncounterInProgress() const
@@ -67,6 +85,21 @@ public:
 
             return false;
         }
+
+        void OnPlayerEnter(Player *m_player)
+		{
+			if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+			{
+			    if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197))
+			    {
+			        if ((pvpWG->getDefenderTeamId()==TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == ALLIANCE))
+				        return;
+			        else if ((pvpWG->getDefenderTeamId()!=TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == HORDE))
+				        return;
+			        else m_player->CastSpell(m_player, SPELL_TELEPORT_FORTRESS, true);
+                }
+			}
+		}
 
         void OnCreatureCreate(Creature *creature, bool /*add*/)
         {
@@ -99,6 +132,12 @@ public:
                 case DATA_EMALON:   return uiEmalon;
                 case DATA_KORALON:  return uiKoralon;
                 case DATA_TORAVON:  return uiToravon;
+                case DATA_EWF_START:
+                    if (ewfStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_EWF_COUNT: return watchersCount;
             }
             return 0;
         }
@@ -111,10 +150,48 @@ public:
                 case DATA_EMALON_EVENT:     uiEncounters[1] = data; break;
                 case DATA_KORALON_EVENT:    uiEncounters[2] = data; break;
                 case DATA_TORAVON_EVENT:    uiEncounters[3] = data; break;
+                case DATA_EWF_START:
+                    if (data == 2)
+                        ewfStartCount = true;
+                    else if (data == 0)
+                        ewfStartCount = false;
+                    break;
+                case DATA_EWF_COUNT:
+                    if (data == 1)
+                        watchersCount++;
+                    else
+                        return;
+                    break;
             }
 
             if (data == DONE)
                 SaveToDB();
+        }
+
+        void Update(uint32 diff)
+        {
+            // Achievement Earth, Wind & Fire control
+            if (GetData(DATA_EWF_START) == 1)
+            {
+                timer += diff;
+
+                if (timer >= EWF_MAX_TIMER)
+                    SetData(DATA_EWF_START,0);
+
+                if (GetData(DATA_EWF_COUNT) == 3 && timer <= EWF_MAX_TIMER)
+                {
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL)
+                        achievementEWF = ACHIEVEMENT_EARTH_WIND_FIRE_10;
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL)
+                        achievementEWF = ACHIEVEMENT_EARTH_WIND_FIRE_25;
+
+                    AchievementEntry const *AchievEWF = GetAchievementStore()->LookupEntry(achievementEWF);
+                    if (AchievEWF)
+                        DoCompleteAchievement(achievementEWF);
+
+                    SetData(DATA_EWF_START,0);
+                }
+            }
         }
 
         std::string GetSaveData()
