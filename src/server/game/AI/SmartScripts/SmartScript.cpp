@@ -460,11 +460,13 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
         case SMART_ACTION_CALL_CASTEDCREATUREORGO:
             {
                 if (!me) return;
-                std::list<HostileReference*>& threatList = me->getThreatManager().getThreatList();
-                for (std::list<HostileReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
-                    if (Unit* Temp = Unit::GetUnit(*me,(*i)->getUnitGuid()))
-                        if (IsPlayer(Temp))
-                            Temp->ToPlayer()->CastedCreatureOrGO(e.action.castedCreatureOrGO.creature, me->GetGUID(), e.action.castedCreatureOrGO.spell);
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                {
+                    if (IsPlayer((*itr)))
+                        (*itr)->ToPlayer()->CastedCreatureOrGO(e.action.castedCreatureOrGO.creature, me->GetGUID(), e.action.castedCreatureOrGO.spell);
+                }
                 break;
             }
         case SMART_ACTION_REMOVEAURASFROMSPELL:
@@ -1138,6 +1140,29 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 SetScript9(e, urand(e.action.randTimedActionList.entry1, e.action.randTimedActionList.entry2));
                 break;
             }
+        case SMART_ACTION_ACTIVATE_TAXI:
+            {
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                    if (IsPlayer((*itr)))
+                        (*itr)->ToPlayer()->ActivateTaxiPathTo(e.action.taxi.id);
+                break;
+            }
+        case SMART_ACTION_RANDOM_MOVE:
+            {
+                ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                    if (IsCreature((*itr)))
+                    {
+                        if (e.action.moveRandom.distance)
+                            (*itr)->ToCreature()->GetMotionMaster()->MoveRandom((float)e.action.moveRandom.distance);
+                        else
+                            (*itr)->ToCreature()->GetMotionMaster()->MoveIdle();
+                    }
+                break;
+            }
         default:
             sLog.outErrorDb("SmartScript::ProcessAction: Unhandled Action type %u", e.GetActionType());
             break;
@@ -1471,6 +1496,15 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                 uint64 guid = me->GetCharmerOrOwnerGUID();
                 if (Unit* owner = ObjectAccessor::GetUnit(*me, guid))
                     l->push_back(owner);
+                break;
+            }
+        case SMART_TARGET_THREAT_LIST:
+            {
+                if (!me) return NULL;
+                std::list<HostileReference*>& threatList = me->getThreatManager().getThreatList();
+                for (std::list<HostileReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
+                    if (Unit* Temp = Unit::GetUnit(*me,(*i)->getUnitGuid()))
+                        l->push_back(Temp);
                 break;
             }
         case SMART_TARGET_POSITION:

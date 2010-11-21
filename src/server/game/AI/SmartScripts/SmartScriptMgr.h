@@ -404,7 +404,7 @@ enum SMART_ACTION
     SMART_ACTION_ATTACK_START                       = 49,     // 
     SMART_ACTION_SUMMON_GO                          = 50,     // GameObjectID, DespawnTime in ms, 
     SMART_ACTION_KILL_UNIT                          = 51,     // 
-    //SMART_ACTION_WP_LOAD                            = 52,     // pathID
+    SMART_ACTION_ACTIVATE_TAXI                      = 52,     // TaxiID
     SMART_ACTION_WP_START                           = 53,     // run/walk, pathID, canRepeat, quest, despawntime, reactState
     SMART_ACTION_WP_PAUSE                           = 54,     // time
     SMART_ACTION_WP_STOP                            = 55,     // despawnTime, quest, fail?
@@ -442,8 +442,9 @@ enum SMART_ACTION
     SMART_ACTION_CROSS_CAST                         = 86,     // spellID, castFlags, CasterTargetType, CasterTarget param1, CasterTarget param2, CasterTarget param3, ( + the origonal target fields as Destination target),   CasterTargets will cast spellID on all Targets (use with caution if targeting multiple * multiple units)
     SMART_ACTION_CALL_RANDOM_TIMED_ACTIONLIST       = 87,     // script9 ids 1-9
     SMART_ACTION_CALL_RANDOM_RANGE_TIMED_ACTIONLIST = 88,     // script9 id min, max
+    SMART_ACTION_RANDOM_MOVE                        = 89,     // maxDist
  
-    SMART_ACTION_END                                = 89,
+    SMART_ACTION_END                                = 90,
 };
 
 struct SmartAction
@@ -682,7 +683,7 @@ struct SmartAction
         struct
         {
             uint32 id;
-        } wpLoad;
+        } taxi;
         
 
         struct
@@ -855,7 +856,8 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_PLAYER                 = 21,   // none
     SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
     SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner
-    SMART_TARGET_END                            = 24,
+    SMART_TARGET_THREAT_LIST                    = 24,   // All units on creature's threat list
+    SMART_TARGET_END                            = 25,
 };
 
 struct SmartTarget
