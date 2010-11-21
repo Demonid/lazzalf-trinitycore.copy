@@ -74,13 +74,21 @@ public:
         uint32 m_uiChampionsKilled;
         bool   m_bInProgress;
 
-        void Reset()
+        void Inizialize()
         {
             m_uiChampionsNotStarted = 0;
             m_uiChampionsFailed = 0;
             m_uiChampionsKilled = 0;
             m_bInProgress = false;
         }
+        /*
+        void Reset()
+        {
+            m_uiChampionsNotStarted = 0;
+            m_uiChampionsFailed = 0;
+            m_uiChampionsKilled = 0;
+            m_bInProgress = false;
+        }*/
 
         std::vector<uint32> SelectChampions(Team playerTeam)
         {
