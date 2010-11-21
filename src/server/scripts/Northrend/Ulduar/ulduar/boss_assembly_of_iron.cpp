@@ -270,15 +270,15 @@ class boss_steelbreaker : public CreatureScript
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
                     if (AchievOnYourSide)
                     {
-	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        Map::PlayerList const &players = pMap->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
-		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                            if (itr->getSource() && itr->getSource()->isAlive() && 
                                 itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
                                 !itr->getSource()->isGameMaster())
-		                    {
+                            {
                                     itr->getSource()->CompletedAchievement(AchievOnYourSide);
-		                    }
+                            }
                         }
                     }
                 }
@@ -436,15 +436,15 @@ class boss_runemaster_molgeim : public CreatureScript
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
                     if (AchievOnYourSide)
                     {
-	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        Map::PlayerList const &players = pMap->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
-		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                            if (itr->getSource() && itr->getSource()->isAlive() && 
                                 itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
                                 !itr->getSource()->isGameMaster())
-		                    {
+                            {
                                     itr->getSource()->CompletedAchievement(AchievOnYourSide);
-		                    }
+                            }
                         }
                     }
                 }
@@ -631,15 +631,15 @@ class boss_stormcaller_brundir : public CreatureScript
                     AchievementEntry const *AchievOnYourSide = GetAchievementStore()->LookupEntry(ACHIEVEMENT_ON_YOUR_SIDE);
                     if (AchievOnYourSide)
                     {
-	                    Map::PlayerList const &players = pMap->GetPlayers();
+                        Map::PlayerList const &players = pMap->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
-		                    if (itr->getSource() && itr->getSource()->isAlive() && 
+                            if (itr->getSource() && itr->getSource()->isAlive() && 
                                 itr->getSource()->HasAura(SPELL_IRON_BOOT_FLASK) &&
                                 !itr->getSource()->isGameMaster())
-		                    {
+                            {
                                     itr->getSource()->CompletedAchievement(AchievOnYourSide);
-		                    }
+                            }
                         }
                     }
                 }

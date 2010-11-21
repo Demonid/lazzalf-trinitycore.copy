@@ -70,7 +70,7 @@ enum Events
 
 #define EMOTE_JETS    "Ignis the Furnace Master begins to cast Flame Jets!"
 
-// Mob and triggers
+ Mob and triggers
 #define MOB_IRON_CONSTRUCT                        33121
 #define GROUND_SCORCH                             33119
 
@@ -87,13 +87,13 @@ enum ConstructSpells
     SPELL_FREEZE_ANIM                           = 69609
 };
 
-// Achievements
+ Achievements
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
 #define ACHIEVEMENT_SHATTERED                 RAID_MODE(2925, 2926)
 #define ACHIEVEMENT_HOT_POCKET                RAID_MODE(2927, 2928)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
-// Water coords
+ Water coords
 #define WATER_1_X                                646.77f
 #define WATER_2_X                                526.77f
 #define WATER_Y                                  277.79f
@@ -135,7 +135,7 @@ class boss_ignis : public CreatureScript
             assert(vehicle);
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
- 	        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip
         }
 
         Vehicle *vehicle;
@@ -153,7 +153,7 @@ class boss_ignis : public CreatureScript
         {
             _Reset();
 
-            // i golem vengono despawnati da _Reset()
+             i golem vengono despawnati da _Reset()
             construct_list.clear();
 
             if (vehicle)
@@ -184,13 +184,13 @@ class boss_ignis : public CreatureScript
             _JustDied();
             DoScriptText(SAY_DEATH, me);
 
-            // Achievements
+             Achievements
             if (pInstance)
             {
-                // Shattered
+                 Shattered
                 if (Shattered)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_SHATTERED);
-                // Stokin' the Furnace
+                 Stokin' the Furnace
                 if (EncounterTime <= MAX_ENCOUNTER_TIME)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_STOKIN_THE_FURNACE);
             }
@@ -260,13 +260,13 @@ class boss_ignis : public CreatureScript
                             SlagPotTarget->ExitVehicle();
                             SlagPotTarget->CastSpell(SlagPotTarget, RAID_MODE(SPELL_SLAG_IMBUED_10, SPELL_SLAG_IMBUED_25), true);
 
-							//database handling of this achievement doesn't seem to work :|
-							if (Player* pSlagPotPlayer = SlagPotTarget->ToPlayer())
-							{
-								AchievementEntry const *AchievHotPocket = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HOT_POCKET);
-								if (AchievHotPocket)
-									pSlagPotPlayer->CompletedAchievement(AchievHotPocket);
-							}
+                            database handling of this achievement doesn't seem to work :|
+                            if (Player* pSlagPotPlayer = SlagPotTarget->ToPlayer())
+                            {
+                                AchievementEntry const *AchievHotPocket = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HOT_POCKET);
+                                if (AchievHotPocket)
+                                    pSlagPotPlayer->CompletedAchievement(AchievHotPocket);
+                            }
 
                             events.CancelEvent(EVENT_END_POT);
                         }
@@ -333,7 +333,7 @@ class boss_ignis : public CreatureScript
             {
                 case ACTION_REMOVE_BUFF:
                     me->RemoveAuraFromStack(SPELL_STRENGHT);
-                    // Shattered Achievement
+                     Shattered Achievement
                     if (ConstructTimer >= 5000)
                         ConstructTimer = 0;
                     else Shattered = true;
@@ -396,7 +396,7 @@ class mob_iron_construct : public CreatureScript
             }
         }
 
-	    void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(const uint32 uiDiff)
         {
             Map *cMap = me->GetMap();
 
@@ -413,7 +413,7 @@ class mob_iron_construct : public CreatureScript
                 }
             }
 
-            // Water pools
+             Water pools
             if(cMap->GetId() == 603 && !Brittled && me->HasAura(SPELL_MOLTEN))
                 if (me->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || me->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
                 {

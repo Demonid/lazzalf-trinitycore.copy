@@ -109,8 +109,8 @@ class boss_archavon : public CreatureScript
                 if (WatchersCount == 2)
                     pInstance->SetData(DATA_EWF_START, WatchersCount);                
 
-                pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
                 pInstance->SetData(DATA_EWF_COUNT, 1);
+                pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
                 pInstance->SaveToDB();
             }
         }

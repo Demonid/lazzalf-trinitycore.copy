@@ -87,19 +87,19 @@ public:
         }
 
         void OnPlayerEnter(Player *m_player)
-		{
-			if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
-			{
-			    if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197))
-			    {
-			        if ((pvpWG->getDefenderTeamId()==TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == ALLIANCE))
-				        return;
-			        else if ((pvpWG->getDefenderTeamId()!=TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == HORDE))
-				        return;
-			        else m_player->CastSpell(m_player, SPELL_TELEPORT_FORTRESS, true);
+        {
+            if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+            {
+                if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197))
+                {
+                    if ((pvpWG->getDefenderTeamId()==TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == ALLIANCE))
+                        return;
+                    else if ((pvpWG->getDefenderTeamId()!=TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == HORDE))
+                        return;
+                    else m_player->CastSpell(m_player, SPELL_TELEPORT_FORTRESS, true);
                 }
-			}
-		}
+            }
+        }
 
         void OnCreatureCreate(Creature *creature, bool /*add*/)
         {
@@ -132,12 +132,6 @@ public:
                 case DATA_EMALON:   return uiEmalon;
                 case DATA_KORALON:  return uiKoralon;
                 case DATA_TORAVON:  return uiToravon;
-                case DATA_EWF_START:
-                    if (ewfStartCount == true)
-                        return 1;
-                    else
-                        return 0;
-                case DATA_EWF_COUNT: return watchersCount;
             }
             return 0;
         }
@@ -166,6 +160,19 @@ public:
 
             if (data == DONE)
                 SaveToDB();
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            switch(type)
+            {
+                case DATA_EWF_START:
+                    if (ewfStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_EWF_COUNT: return watchersCount;
+            }
         }
 
         void Update(uint32 diff)

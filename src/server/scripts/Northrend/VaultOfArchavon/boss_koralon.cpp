@@ -120,8 +120,8 @@ class boss_koralon : public CreatureScript
                 if (WatchersCount == 2)
                     pInstance->SetData(DATA_EWF_START, WatchersCount);                
 
-                pInstance->SetData(DATA_KORALON_EVENT, DONE);
                 pInstance->SetData(DATA_EWF_COUNT, 1);
+                pInstance->SetData(DATA_KORALON_EVENT, DONE);
                 pInstance->SaveToDB();
             }
         }
