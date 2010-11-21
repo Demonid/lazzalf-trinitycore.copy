@@ -87,7 +87,7 @@ enum ConstructSpells
     SPELL_FREEZE_ANIM                           = 69609
 };
 
- Achievements
+// Achievements
 #define ACHIEVEMENT_STOKIN_THE_FURNACE        RAID_MODE(2930, 2929)
 #define ACHIEVEMENT_SHATTERED                 RAID_MODE(2925, 2926)
 #define ACHIEVEMENT_HOT_POCKET                RAID_MODE(2927, 2928)
@@ -184,7 +184,7 @@ class boss_ignis : public CreatureScript
             _JustDied();
             DoScriptText(SAY_DEATH, me);
 
-             Achievements
+            // Achievements
             if (pInstance)
             {
                 // Shattered
@@ -260,7 +260,6 @@ class boss_ignis : public CreatureScript
                             SlagPotTarget->ExitVehicle();
                             SlagPotTarget->CastSpell(SlagPotTarget, RAID_MODE(SPELL_SLAG_IMBUED_10, SPELL_SLAG_IMBUED_25), true);
 
-                            database handling of this achievement doesn't seem to work :|
                             if (Player* pSlagPotPlayer = SlagPotTarget->ToPlayer())
                             {
                                 AchievementEntry const *AchievHotPocket = GetAchievementStore()->LookupEntry(ACHIEVEMENT_HOT_POCKET);

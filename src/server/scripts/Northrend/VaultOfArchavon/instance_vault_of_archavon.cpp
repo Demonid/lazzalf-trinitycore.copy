@@ -120,6 +120,12 @@ public:
                 case DATA_EMALON_EVENT:     return uiEncounters[1];
                 case DATA_KORALON_EVENT:    return uiEncounters[2];
                 case DATA_TORAVON_EVENT:    return uiEncounters[3];
+                case DATA_EWF_START:
+                    if (ewfStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_EWF_COUNT: return watchersCount;
             }
             return 0;
         }
@@ -160,19 +166,6 @@ public:
 
             if (data == DONE)
                 SaveToDB();
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            switch(type)
-            {
-                case DATA_EWF_START:
-                    if (ewfStartCount == true)
-                        return 1;
-                    else
-                        return 0;
-                case DATA_EWF_COUNT: return watchersCount;
-            }
         }
 
         void Update(uint32 diff)
