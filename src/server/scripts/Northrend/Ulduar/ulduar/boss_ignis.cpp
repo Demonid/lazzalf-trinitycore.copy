@@ -70,7 +70,7 @@ enum Events
 
 #define EMOTE_JETS    "Ignis the Furnace Master begins to cast Flame Jets!"
 
- Mob and triggers
+// Mob and triggers
 #define MOB_IRON_CONSTRUCT                        33121
 #define GROUND_SCORCH                             33119
 
@@ -93,7 +93,7 @@ enum ConstructSpells
 #define ACHIEVEMENT_HOT_POCKET                RAID_MODE(2927, 2928)
 #define MAX_ENCOUNTER_TIME                    4 * 60 * 1000
 
- Water coords
+// Water coords
 #define WATER_1_X                                646.77f
 #define WATER_2_X                                526.77f
 #define WATER_Y                                  277.79f
@@ -153,7 +153,7 @@ class boss_ignis : public CreatureScript
         {
             _Reset();
 
-             i golem vengono despawnati da _Reset()
+            // i golem vengono despawnati da _Reset()
             construct_list.clear();
 
             if (vehicle)
@@ -187,10 +187,10 @@ class boss_ignis : public CreatureScript
              Achievements
             if (pInstance)
             {
-                 Shattered
+                // Shattered
                 if (Shattered)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_SHATTERED);
-                 Stokin' the Furnace
+                // Stokin' the Furnace
                 if (EncounterTime <= MAX_ENCOUNTER_TIME)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_STOKIN_THE_FURNACE);
             }
@@ -333,7 +333,7 @@ class boss_ignis : public CreatureScript
             {
                 case ACTION_REMOVE_BUFF:
                     me->RemoveAuraFromStack(SPELL_STRENGHT);
-                     Shattered Achievement
+                    // Shattered Achievement
                     if (ConstructTimer >= 5000)
                         ConstructTimer = 0;
                     else Shattered = true;
@@ -413,7 +413,7 @@ class mob_iron_construct : public CreatureScript
                 }
             }
 
-             Water pools
+            // Water pools
             if(cMap->GetId() == 603 && !Brittled && me->HasAura(SPELL_MOLTEN))
                 if (me->GetDistance(WATER_1_X, WATER_Y, WATER_Z) <= 18 || me->GetDistance(WATER_2_X, WATER_Y, WATER_Z) <= 18)
                 {
