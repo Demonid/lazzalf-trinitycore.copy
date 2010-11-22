@@ -390,8 +390,6 @@ uint32 keepersactive;
 #define ACHI_DRIVE_ME_CRAZY                 RAID_MODE(3008, 3010)
 #define ACHI_GETTING_ANY_OLDER              RAID_MODE(3012, 3013)
 #define MAX_SPEED_KILL_TIMER                7 * 60 * 1000 // 7 min
-#define ACHI_COMING_OUT_OF_THE_WALLS        RAID_MODE(3014, 3017)
-#define MAX_COMING_OUT_OF_THE_WALLS_TIMER   12 * 1000 // 12s
 
 // Hard Modes
 #define ACHI_THREE_LIGHTS_IN_THE_DARKNESS   RAID_MODE(3157, 3161)
@@ -1302,6 +1300,15 @@ class npc_guardian_yoggsaron : public CreatureScript
             if (Creature *pSara = me->FindNearestCreature(NPC_SARA,15,true))
                 if (phase == PHASE_1)
                     me->DealDamage(pSara, 25000);
+            
+            if (pInstance)
+            {
+                if (pInstance->GetData(DATA_COMING_OUT_START) == 0)
+                    pInstance->SetData(DATA_COMING_OUT_START, 1);
+
+                pInstance->SetData(DATA_COMING_OUT_COUNT, 1);
+            }
+
             me->ForcedDespawn(3000);
         }
 

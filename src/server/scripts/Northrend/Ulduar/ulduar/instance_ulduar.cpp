@@ -61,12 +61,15 @@ enum eGameObjects
     GO_Keepers_DOOR          = 194255
 };
 
-#define ACHIEVEMENT_LUMBERJACKED_10 2979
-#define ACHIEVEMENT_LUMBERJACKED_25 3118
-#define LUMBERJACKED_MAX_TIMER 15 * 1000 // 15s
-#define ACHIEVEMENT_DWARFAGEDDON_10 3097
-#define ACHIEVEMENT_DWARFAGEDDON_25 3098
-#define MAX_DWARFAGEDDON_TIMER 10 * 1000 // 10s
+#define ACHIEVEMENT_LUMBERJACKED_10         2979
+#define ACHIEVEMENT_LUMBERJACKED_25         3118
+#define LUMBERJACKED_MAX_TIMER              15 * 1000 // 15s
+#define ACHIEVEMENT_DWARFAGEDDON_10         3097
+#define ACHIEVEMENT_DWARFAGEDDON_25         3098
+#define MAX_DWARFAGEDDON_TIMER              10 * 1000 // 10s
+#define ACHI_COMING_OUT_OF_THE_WALLS_10     3014
+#define ACHI_COMING_OUT_OF_THE_WALLS_25     3017
+#define MAX_COMING_OUT_TIMER                12 * 1000 // 12s
 
 class instance_ulduar : public InstanceMapScript
 {
@@ -93,6 +96,10 @@ class instance_ulduar : public InstanceMapScript
             eldersCount = 0;
             lumberjackedTimer = 0;
             achievementLumberjacked = 0;
+            comingOutStartCount = false;
+            guardiansCount = 0;
+            comingOutTimer = 0;
+            achievementComingOut = 0;
         }
 
         uint64 uiLeviathan;
@@ -142,11 +149,16 @@ class instance_ulduar : public InstanceMapScript
         uint32 steelforgedDefendersCount;
         uint32 dwarfageddonTimer;
         uint32 achievementDwarfageddon;
-        //Lumberjacked
+        // Lumberjacked
         bool lumberjackedStartCount;
         uint32 eldersCount;
         uint32 lumberjackedTimer;
         uint32 achievementLumberjacked;
+        // They're Coming Out of the Walls
+        bool comingOutStartCount;
+        uint32 guardiansCount;
+        uint32 comingOutTimer;
+        uint32 achievementComingOut;
             
         GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
@@ -449,6 +461,17 @@ class instance_ulduar : public InstanceMapScript
                         eldersCount++;
                     else
                         return;
+                case DATA_COMING_OUT_START:
+                    if (value == 1)
+                        comingOutStartCount = true;
+                    else if (value == 0)
+                        comingOutStartCount = false;
+                    break;
+                case DATA_COMING_OUT_COUNT:
+                    if (value == 1)
+                        guardiansCount++;
+                    else
+                        return;
                     break;
             }
         }
@@ -474,6 +497,12 @@ class instance_ulduar : public InstanceMapScript
                     else
                         return 0;
                 case DATA_LUMBERJACKED_COUNT: return eldersCount;
+                case DATA_COMING_OUT_START:
+                    if (comingOutStartCount == true)
+                        return 1;
+                    else
+                        return 0;
+                case DATA_COMING_OUT_COUNT: return guardiansCount;
                 default:
                     return 0;
             }
@@ -546,7 +575,7 @@ class instance_ulduar : public InstanceMapScript
             {
                 dwarfageddonTimer += diff;
 
-                if (dwarfageddonTimer >= MAX_DWARFAGEDDON_TIMER)
+                if (dwarfageddonTimer > MAX_DWARFAGEDDON_TIMER)
                 {
                     SetData(DATA_DWARFAGEDDON_START,0);
                     SetData(DATA_DWARFAGEDDON_COUNT,0);
@@ -575,7 +604,7 @@ class instance_ulduar : public InstanceMapScript
             {
                 lumberjackedTimer += diff;
 
-                if (lumberjackedTimer >= LUMBERJACKED_MAX_TIMER)
+                if (lumberjackedTimer > LUMBERJACKED_MAX_TIMER)
                     SetData(DATA_LUMBERJACKED_START,0);
 
                 if (GetData(DATA_LUMBERJACKED_COUNT) == 3 && lumberjackedTimer <= LUMBERJACKED_MAX_TIMER)
@@ -590,6 +619,35 @@ class instance_ulduar : public InstanceMapScript
                         DoCompleteAchievement(achievementLumberjacked);
 
                     SetData(DATA_LUMBERJACKED_START,0);
+                }
+            }
+
+            // Achievement They're Coming Out of the Walls control
+            if (GetData(DATA_COMING_OUT_START) == 1)
+            {
+                comingOutTimer += diff;
+
+                if (comingOutTimer > MAX_COMING_OUT_TIMER)
+                {
+                    SetData(DATA_COMING_OUT_START,0);
+                    SetData(DATA_COMING_OUT_COUNT,0);
+                    comingOutTimer = 0;
+                }
+
+                if (GetData(DATA_COMING_OUT_COUNT) >= 9 && comingOutTimer <= MAX_COMING_OUT_TIMER)
+                {
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL)
+                        achievementComingOut = ACHI_COMING_OUT_OF_THE_WALLS_10;
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL)
+                        achievementComingOut = ACHI_COMING_OUT_OF_THE_WALLS_25;
+
+                    AchievementEntry const *AchievComingOut = GetAchievementStore()->LookupEntry(achievementComingOut);
+                    if (AchievComingOut)
+                        DoCompleteAchievement(achievementComingOut);
+
+                    SetData(DATA_COMING_OUT_START,0);
+                    SetData(DATA_COMING_OUT_COUNT,0);
+                    comingOutTimer = 0;
                 }
             }
         }
