@@ -196,9 +196,9 @@ void Vehicle::RemoveAllPassengers()
             if (itr->second.passenger)
             {
                 sLog.outCrash("Vehicle %u cannot remove passenger %u. %u is still on vehicle.", me->GetEntry(), passenger->GetEntry(), itr->second.passenger->GetEntry());
-                //ASSERT(!itr->second.passenger);
                 itr->second.passenger = NULL;
             }
+
             // creature passengers mounted on player mounts should be despawned at dismount
             if (GetBase()->GetTypeId() == TYPEID_PLAYER && passenger->ToCreature())
                 passenger->ToCreature()->ForcedDespawn();
@@ -208,14 +208,16 @@ void Vehicle::RemoveAllPassengers()
 bool Vehicle::HasEmptySeat(int8 seatId) const
 {
     SeatMap::const_iterator seat = m_Seats.find(seatId);
-    if (seat == m_Seats.end()) return false;
+    if (seat == m_Seats.end())
+        return false;
     return !seat->second.passenger;
 }
 
 Unit *Vehicle::GetPassenger(int8 seatId) const
 {
     SeatMap::const_iterator seat = m_Seats.find(seatId);
-    if (seat == m_Seats.end()) return NULL;
+    if (seat == m_Seats.end())
+        return NULL;
     return seat->second.passenger;
 }
 
@@ -237,6 +239,7 @@ int8 Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
                 seat = m_Seats.end();
             --seat;
         }
+
         if (seat->first == seatId)
             return -1; // no available seat
     }
@@ -258,11 +261,11 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion)
         passenger->ExitVehicle(); // this should not happen
     }
 
-    //TODO: accessory should be minion
     if (Creature *accessory = me->SummonCreature(entry, *me, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000))
     {
         if (minion)
             accessory->AddUnitTypeMask(UNIT_MASK_ACCESSORY);
+
         accessory->EnterVehicle(this, seatId);
         // This is not good, we have to send update twice
         accessory->SendMovementFlagUpdate();
@@ -413,8 +416,6 @@ void Vehicle::RemovePassenger(Unit *unit)
 
     unit->clearUnitState(UNIT_STAT_ONVEHICLE);
 
-    //SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-
     if (me->GetTypeId() == TYPEID_UNIT
         && unit->GetTypeId() == TYPEID_PLAYER
         && seat->first == 0 && seat->second.seatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
@@ -434,7 +435,7 @@ void Vehicle::RemovePassenger(Unit *unit)
 
     // only for flyable vehicles
     if (unit->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
-        me->CastSpell(unit, 45472, true);                           // Parachute
+        me->CastSpell(unit, VEHICLE_SPELL_PARACHUTE, true);
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
         sScriptMgr.OnRemovePassenger(this, unit);
