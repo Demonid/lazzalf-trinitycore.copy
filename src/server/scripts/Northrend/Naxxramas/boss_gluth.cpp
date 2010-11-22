@@ -62,25 +62,25 @@ public:
             // Do not let Gluth be affected by zombies' debuff
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_INFECTED_WOUND, true);
 
-        pMap = NULL;
-	    if(me)	
+            pMap = NULL;
+            if(me)
                 pMap = me->GetMap();        
-	    // valuta il team in instance 
-        if(pMap)
-	    {	
-	        Map::PlayerList const& players = pMap->GetPlayers();
-            if (!players.isEmpty())
+            // valuta il team in instance 
+            if(pMap)
             {
-                if (Player* pPlayer = players.begin()->getSource())
+                Map::PlayerList const& players = pMap->GetPlayers();
+                if (!players.isEmpty())
                 {
-                    TeamInInstance = pPlayer->GetTeam();
+                    if (Player* pPlayer = players.begin()->getSource())
+                    {
+                        TeamInInstance = pPlayer->GetTeam();
+                    }
                 }
-            }
-	    }	
+            }	
         }
 
-    Map* pMap;
-    uint32 TeamInInstance;
+        Map* pMap;
+        uint32 TeamInInstance;
 
         void MoveInLineOfSight(Unit *who)
         {
@@ -109,6 +109,15 @@ public:
             if (summon->GetEntry() == MOB_ZOMBIE)
                 summon->AI()->AttackStart(me);
             summons.Summon(summon);
+        }
+
+        void KilledUnit(Unit* Victim)
+        {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -156,12 +165,12 @@ public:
                         {
                             Creature* current = DoSummon(MOB_ZOMBIE, PosSummon[rand()%3]);
                             if(current)
-		    	    {
-			        if (TeamInInstance == ALLIANCE)
+                            {
+                                if (TeamInInstance == ALLIANCE)
                                     current->setFaction(2);
                                 else
                                     current->setFaction(1);
-			    }
+                            }			    
                         }
                         events.ScheduleEvent(EVENT_SUMMON, 10000);
                         break;

@@ -55,22 +55,29 @@ public:
 
     struct boss_heiganAI : public BossAI
     {
-        boss_heiganAI(Creature *c) : BossAI(c, BOSS_HEIGAN) {}
+        boss_heiganAI(Creature *c) : BossAI(c, BOSS_HEIGAN) { }
 
         uint32 eruptSection;
         bool eruptDirection;
-    bool bIsSomeoneDied;
+        bool bIsSomeoneDied;
         Phases phase;
 
-    void Reset()
-    {
-        bIsSomeoneDied = false;
-        _Reset();
-    }
-
-    void KilledUnit(Unit* Victim)
+        void Reset()
         {
-        bIsSomeoneDied = true;
+            bIsSomeoneDied = false;
+            _Reset();
+        }
+
+        void KilledUnit(Unit* Victim)
+        {
+            bIsSomeoneDied = true;
+
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
         }
@@ -80,8 +87,8 @@ public:
             _JustDied();
             DoScriptText(SAY_DEATH, me);
 
-        if (instance && !bIsSomeoneDied)
-            instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
+            if (instance && !bIsSomeoneDied)
+                instance->DoCompleteAchievement(ACHIEV_SAFETY_DANCE);
         }
 
         void EnterCombat(Unit *who)
@@ -98,7 +105,7 @@ public:
             eruptSection = 3;
             if (phase == PHASE_FIGHT)
             {
-            me->SetReactState(REACT_AGGRESSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
                 events.ScheduleEvent(EVENT_DISRUPT, urand(10000, 25000));
                 events.ScheduleEvent(EVENT_FEVER, urand(15000, 20000));
                 events.ScheduleEvent(EVENT_PHASE, 90000);
@@ -109,7 +116,7 @@ public:
                 float x, y, z, o;
                 me->GetHomePosition(x, y, z, o);
                 me->NearTeleportTo(x, y, z, o);
-            me->SetReactState(REACT_PASSIVE);
+                me->SetReactState(REACT_PASSIVE);
                 DoCastAOE(SPELL_PLAGUE_CLOUD);
                 events.ScheduleEvent(EVENT_PHASE, 45000);
                 events.ScheduleEvent(EVENT_ERUPT, 8000);

@@ -334,8 +334,14 @@ public:
             AbominationsCount = 0;
         }
 
-        void KilledUnit()
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
         }
 

@@ -77,6 +77,15 @@ public:
             }
         }
 
+        void KilledUnit(Unit* Victim)
+        {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+        }
+
         void EnterCombat(Unit * /*who*/)
         {
             _EnterCombat();

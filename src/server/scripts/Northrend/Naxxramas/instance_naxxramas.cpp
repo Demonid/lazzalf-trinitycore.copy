@@ -119,6 +119,8 @@ public:
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
             LoadMinionData(minionData);
+            // finchè l'implementazione non sarà completa, non si deve dare l'achievement
+            somebodyDied = true;
         }
 
         //std::set<uint64> HeiganEruptionGUID[4];
@@ -144,6 +146,8 @@ public:
 
         time_t minHorsemenDiedTime;
         time_t maxHorsemenDiedTime;
+
+        bool somebodyDied;
 
         void OnCreatureCreate(Creature* pCreature, bool add)
         {
@@ -241,6 +245,10 @@ public:
 
                         maxHorsemenDiedTime = now;
                     }
+                    break;
+                case DATA_IMMORTAL:
+                    if (value == 1)
+                        somebodyDied = true;
                     break;
             }
         }
