@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
 /* ScriptData
 SDName: instance_trial_of_the_crusader
@@ -25,7 +23,15 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "trial_of_the_crusader.h"
-class instance_trial_of_the_crusader : public InstanceMapScript
+
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_10          3936
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_25          3937
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10   3798
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25   3814
+#define ACHIEVEMENT_SALT_AND_PEPPER_10          3799
+#define ACHIEVEMENT_SALT_AND_PEPPER_25          3815
+
+class instance_trial_of_the_crusader : public InstanceMapScript
 {
 public:
     instance_trial_of_the_crusader() : InstanceMapScript("instance_trial_of_the_crusader", 649) { }
@@ -79,7 +85,11 @@ public:
 
         // Achievement stuff
         uint32 m_uiNotOneButTwoJormungarsTimer;
+        uint32 achievementNotOneButTwoJormungars;
         uint32 m_uiResilienceWillFixItTimer;
+        uint32 achievementResilienceWillFixIt;
+        uint32 saltAndPepperTimer;
+        uint32 achievementSaltAndPepper;
         uint8  m_uiSnoboldCount;
         uint8  m_uiMistressOfPainCount;
         bool   m_bTributeToImmortalityElegible;
@@ -104,8 +114,14 @@ public:
 
             m_uiEventTimer = 1000;
 
+            m_uiAcidmawGUID = 0;
+
             m_uiNotOneButTwoJormungarsTimer = 0;
+            achievementNotOneButTwoJormungars = 0;
             m_uiResilienceWillFixItTimer = 0;
+            achievementResilienceWillFixIt = 0;
+            saltAndPepperTimer = 0;
+            achievementSaltAndPepper = 0;
             m_uiSnoboldCount = 0;
             m_uiMistressOfPainCount = 0;
             m_bTributeToImmortalityElegible = true;
@@ -236,7 +252,17 @@ public:
                         case DONE:
                             DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_DEFEAT_FACTION_CHAMPIONS);
                             if (m_uiResilienceWillFixItTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25;
+
+                                AchievementEntry const *AchievResilienceWillFixIt = GetAchievementStore()->LookupEntry(achievementResilienceWillFixIt);
+                                if (AchievResilienceWillFixIt)
+                                    DoCompleteAchievement(achievementResilienceWillFixIt);
+                            }
                             if (GameObject* pChest = instance->GetGameObject(m_uiCrusadersCacheGUID))
                                 if (pChest && !pChest->isSpawned())
                                     pChest->SetRespawnTime(7*DAY);
@@ -247,6 +273,8 @@ public:
                 case TYPE_VALKIRIES:
                     switch (uiData)
                     {
+                        case IN_PROGRESS:
+                            saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
                         case FAIL:
                             if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) uiData = NOT_STARTED;
                             break;
@@ -254,6 +282,17 @@ public:
                             if (m_auiEncounter[TYPE_VALKIRIES] == SPECIAL) uiData = DONE;
                             break;
                         case DONE:
+                            if (saltAndPepperTimer > 0)
+                            {
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_25;
+
+                                AchievementEntry const *AchievSaltAndPepper = GetAchievementStore()->LookupEntry(achievementSaltAndPepper);
+                                if (AchievSaltAndPepper)
+                                    DoCompleteAchievement(achievementSaltAndPepper);
+                            }
                             if (instance->GetPlayers().getFirst()->getSource()->GetTeam() == ALLIANCE)
                                 m_uiEvent = 4020;
                             else
@@ -318,7 +357,17 @@ public:
                         case SNAKES_SPECIAL: m_uiNotOneButTwoJormungarsTimer = 10*IN_MILLISECONDS; break;
                         case SNAKES_DONE:
                             if (m_uiNotOneButTwoJormungarsTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_25;
+
+                                AchievementEntry const *AchievNotOneButTwo = GetAchievementStore()->LookupEntry(achievementNotOneButTwoJormungars);
+                                if (AchievNotOneButTwo)
+                                    DoCompleteAchievement(achievementNotOneButTwoJormungars);
+                            }
                             m_uiEvent = 300;
                             SetData(TYPE_NORTHREND_BEASTS,IN_PROGRESS);
                             SetData(TYPE_BEASTS,IN_PROGRESS);
@@ -366,6 +415,9 @@ public:
                 sLog.outBasic("[ToCr] m_auiEncounter[uiType %u] %u = uiData %u;",uiType,m_auiEncounter[uiType],uiData);
                 if (uiData == FAIL)
                 {
+                    if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
+                            pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
                     if (IsRaidWiped())
                     {
                         --m_uiTrialCounter;
@@ -516,6 +568,10 @@ public:
                     };
                     return m_uiEventNPCId;
                 case DATA_HEALTH_TWIN_SHARED: return m_uiDataDamageTwin;
+                
+                //achievements
+                case DATA_SNOBOLD_COUNT: return m_uiSnoboldCount;
+                case DATA_MISTRESS_OF_PAIN_COUNT: return m_uiMistressOfPainCount;
             }
             return 0;
         }
@@ -534,6 +590,13 @@ public:
                 if (m_uiResilienceWillFixItTimer <= uiDiff)
                     m_uiResilienceWillFixItTimer = 0;
                 else m_uiResilienceWillFixItTimer -= uiDiff;
+            }
+
+            if (GetData(TYPE_VALKIRIES) == IN_PROGRESS && saltAndPepperTimer)
+            {
+                if (saltAndPepperTimer <= uiDiff)
+                    saltAndPepperTimer = 0;
+                else saltAndPepperTimer -= uiDiff;
             }
         }
 
@@ -584,40 +647,56 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-        {
-            switch (criteria_id)
-            {
-                case UPPER_BACK_PAIN_10_PLAYER:
-                case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 2;
-                case UPPER_BACK_PAIN_25_PLAYER:
-                case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 4;
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
-                    return m_uiMistressOfPainCount >= 2;
-                case A_TRIBUTE_TO_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 25;
-                case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 45;
-                case A_TRIBUTE_TO_INSANITY_10_PLAYER:
-                case A_TRIBUTE_TO_INSANITY_25_PLAYER:
-                case REALM_FIRST_GRAND_CRUSADER:
-                    return m_uiTrialCounter == 50;
-                case A_TRIBUTE_TO_IMMORTALITY_HORDE:
-                case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
-                    return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
-                case A_TRIBUTE_TO_DEDICATED_INSANITY:
-                    return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
-            }
+        //bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+        //{
+        //    switch (criteria_id)
+        //    {
+        //        case UPPER_BACK_PAIN_10_PLAYER:
+        //        case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 2;
+        //        case UPPER_BACK_PAIN_25_PLAYER:
+        //        case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 4;
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
+        //            return m_uiMistressOfPainCount >= 2;
+        //        case A_TRIBUTE_TO_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 25;
+        //        case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 45;
+        //        case A_TRIBUTE_TO_INSANITY_10_PLAYER:
+        //        case A_TRIBUTE_TO_INSANITY_25_PLAYER:
+        //        case REALM_FIRST_GRAND_CRUSADER:
+        //            return m_uiTrialCounter == 50;
+        //        case A_TRIBUTE_TO_IMMORTALITY_HORDE:
+        //        case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
+        //            return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
+        //        case A_TRIBUTE_TO_DEDICATED_INSANITY:
+        //            return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+        //         boss kill credits
+        //        case ICEHOWL_25:
+        //        case JARAXXUS_25:
+        //        case TWIN_25:
+        //        case ANUB_25:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL);
+        //        case ICEHOWL_10H:
+        //        case JARAXXUS_10H:
+        //        case TWIN_10H:
+        //        case ANUB_10H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC);
+        //        case ICEHOWL_25H:
+        //        case JARAXXUS_25H:
+        //        case TWIN_25H:
+        //        case ANUB_25H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
     };
 
 };
