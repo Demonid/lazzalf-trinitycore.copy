@@ -32,7 +32,6 @@ enum Spells
     SPELL_STAMPEDE                                = 55218,   
     SPELL_WHIRLING_SLASH                          = 55250,
     H_SPELL_WHIRLING_SLASH                        = 59824,
-    SPELL_ECK_RESIDUE                             = 55817
 };
 
 //Yells
@@ -99,7 +98,7 @@ public:
         uint8 uiPhaseCounter;
 
         bool bStartOfTransformation;
-    SummonList lSummons;
+        SummonList lSummons;
 
         InstanceScript* pInstance;
 
@@ -115,7 +114,7 @@ public:
             uiPhaseCounter = 0;
 
             lImpaledPlayers.clear();
-        lSummons.DespawnAll();
+            lSummons.DespawnAll();
 
             bStartOfTransformation = true;
 
@@ -266,12 +265,15 @@ public:
                         Map::PlayerList const &players = pInstance->instance->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             if (itr->getSource()->HasAura(SPELL_ECK_RESIDUE))
+                            {
                                 itr->getSource()->CompletedAchievement(achievWhatTheEck);
+                                itr->getSource()->RemoveAura(SPELL_ECK_RESIDUE);
+                            }
                     }
                 }
 
                 pInstance->SetData(DATA_GAL_DARAH_EVENT, DONE);
-            lSummons.DespawnAll();
+                lSummons.DespawnAll();
             }
         }
 
