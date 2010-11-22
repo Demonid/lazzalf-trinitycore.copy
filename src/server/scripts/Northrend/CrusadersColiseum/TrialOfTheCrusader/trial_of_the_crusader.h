@@ -27,6 +27,8 @@ enum
     DATA_SNOBOLD_COUNT                   = 301,
     DATA_MISTRESS_OF_PAIN_COUNT          = 302,
     DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE = 303,
+    DATA_TRAITOR_KING_START              = 304,
+    DATA_TRAITOR_KING_COUNT              = 305,
 
     INCREASE                    = 501,
     DECREASE                    = 502,

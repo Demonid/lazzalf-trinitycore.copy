@@ -74,17 +74,26 @@ public:
                 pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
         }
 
-    void DeleteFromThreatList(uint64 TargetGUID)
-    {
-        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+        void DeleteFromThreatList(uint64 TargetGUID)
         {
-            if ((*itr)->getUnitGuid() == TargetGUID)
+            for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
             {
-                (*itr)->removeReference();
-                break;
+                if ((*itr)->getUnitGuid() == TargetGUID)
+                {
+                    (*itr)->removeReference();
+                    break;
+                }
             }
         }
-    }
+
+        void SpellHitTarget(Unit* pTarget, const SpellEntry *spell)
+        {
+            if (spell->Id == SPELL_ECK_SPIT)
+            {
+                if (pTarget->GetTypeId() == TYPEID_PLAYER && !pTarget->HasAura(SPELL_ECK_RESIDUE))
+                    pTarget->CastSpell(pTarget,SPELL_ECK_RESIDUE,true);
+            }
+        }
 
         void UpdateAI(const uint32 diff)
         {
@@ -110,7 +119,7 @@ public:
                 if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
                 {
                     DoCast(pTarget, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
-                CAST_AI(boss_eckAI, me->AI())->DeleteFromThreatList(me->GetGUID());
+                    CAST_AI(boss_eckAI, me->AI())->DeleteFromThreatList(me->GetGUID());
                     uiSpringTimer = urand(5*IN_MILLISECONDS,10*IN_MILLISECONDS);
                 }
             } else uiSpringTimer -= diff;
