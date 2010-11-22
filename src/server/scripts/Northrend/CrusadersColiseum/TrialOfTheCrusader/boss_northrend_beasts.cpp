@@ -747,6 +747,9 @@ public:
                 if(m_pInstance->GetData(DATA_SNOBOLD_COUNT) >= SNOBOLD_COUNT)
                     m_pInstance->DoCompleteAchievement(ACHI_UPPER_BACK_PAIN);
             }
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_SNOBOLD_VASSAL,100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void MovementInform(uint32 uiType, uint32 uiId)

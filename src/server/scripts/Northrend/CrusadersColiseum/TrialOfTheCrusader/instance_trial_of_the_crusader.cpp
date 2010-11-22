@@ -24,6 +24,13 @@ EndScriptData */
 #include "ScriptPCH.h"
 #include "trial_of_the_crusader.h"
 
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_10          3936
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_25          3937
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10   3798
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25   3814
+#define ACHIEVEMENT_SALT_AND_PEPPER_10          3799
+#define ACHIEVEMENT_SALT_AND_PEPPER_25          3815
+
 class instance_trial_of_the_crusader : public InstanceMapScript
 {
 public:
@@ -78,7 +85,11 @@ public:
 
         // Achievement stuff
         uint32 m_uiNotOneButTwoJormungarsTimer;
+        uint32 achievementNotOneButTwoJormungars;
         uint32 m_uiResilienceWillFixItTimer;
+        uint32 achievementResilienceWillFixIt;
+        uint32 saltAndPepperTimer;
+        uint32 achievementSaltAndPepper;
         uint8  m_uiSnoboldCount;
         uint8  m_uiMistressOfPainCount;
         bool   m_bTributeToImmortalityElegible;
@@ -106,7 +117,11 @@ public:
             m_uiAcidmawGUID = 0;
 
             m_uiNotOneButTwoJormungarsTimer = 0;
+            achievementNotOneButTwoJormungars = 0;
             m_uiResilienceWillFixItTimer = 0;
+            achievementResilienceWillFixIt = 0;
+            saltAndPepperTimer = 0;
+            achievementSaltAndPepper = 0;
             m_uiSnoboldCount = 0;
             m_uiMistressOfPainCount = 0;
             m_bTributeToImmortalityElegible = true;
@@ -237,7 +252,17 @@ public:
                         case DONE:
                             DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_DEFEAT_FACTION_CHAMPIONS);
                             if (m_uiResilienceWillFixItTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25;
+
+                                AchievementEntry const *AchievResilienceWillFixIt = GetAchievementStore()->LookupEntry(achievementResilienceWillFixIt);
+                                if (AchievResilienceWillFixIt)
+                                    DoCompleteAchievement(achievementResilienceWillFixIt);
+                            }
                             if (GameObject* pChest = instance->GetGameObject(m_uiCrusadersCacheGUID))
                                 if (pChest && !pChest->isSpawned())
                                     pChest->SetRespawnTime(7*DAY);
@@ -248,6 +273,8 @@ public:
                 case TYPE_VALKIRIES:
                     switch (uiData)
                     {
+                        case IN_PROGRESS:
+                            saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
                         case FAIL:
                             if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) uiData = NOT_STARTED;
                             break;
@@ -255,6 +282,17 @@ public:
                             if (m_auiEncounter[TYPE_VALKIRIES] == SPECIAL) uiData = DONE;
                             break;
                         case DONE:
+                            if (saltAndPepperTimer > 0)
+                            {
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_25;
+
+                                AchievementEntry const *AchievSaltAndPepper = GetAchievementStore()->LookupEntry(achievementSaltAndPepper);
+                                if (AchievSaltAndPepper)
+                                    DoCompleteAchievement(achievementSaltAndPepper);
+                            }
                             if (instance->GetPlayers().getFirst()->getSource()->GetTeam() == ALLIANCE)
                                 m_uiEvent = 4020;
                             else
@@ -319,7 +357,17 @@ public:
                         case SNAKES_SPECIAL: m_uiNotOneButTwoJormungarsTimer = 10*IN_MILLISECONDS; break;
                         case SNAKES_DONE:
                             if (m_uiNotOneButTwoJormungarsTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_25;
+
+                                AchievementEntry const *AchievNotOneButTwo = GetAchievementStore()->LookupEntry(achievementNotOneButTwoJormungars);
+                                if (AchievNotOneButTwo)
+                                    DoCompleteAchievement(achievementNotOneButTwoJormungars);
+                            }
                             m_uiEvent = 300;
                             SetData(TYPE_NORTHREND_BEASTS,IN_PROGRESS);
                             SetData(TYPE_BEASTS,IN_PROGRESS);
@@ -542,6 +590,13 @@ public:
                 if (m_uiResilienceWillFixItTimer <= uiDiff)
                     m_uiResilienceWillFixItTimer = 0;
                 else m_uiResilienceWillFixItTimer -= uiDiff;
+            }
+
+            if (GetData(TYPE_VALKIRIES) == IN_PROGRESS && saltAndPepperTimer)
+            {
+                if (saltAndPepperTimer <= uiDiff)
+                    saltAndPepperTimer = 0;
+                else saltAndPepperTimer -= uiDiff;
             }
         }
 
