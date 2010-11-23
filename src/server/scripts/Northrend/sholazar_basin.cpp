@@ -521,8 +521,8 @@ public:
 
 enum eEnums_oracle_frezy
 {
-    NPC_ORACLE       = 628668,
-    NPC_FREZYNE      = 64561,
+    NPC_ORACLE       = 28667,
+    NPC_FREZYNE      = 28668,
 };
 
 class npc_oracle_frezy : public CreatureScript
