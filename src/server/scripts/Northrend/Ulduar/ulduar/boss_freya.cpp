@@ -418,6 +418,8 @@ class boss_freya : public CreatureScript
 
             if (me->HasAura(SPELL_ATTUNED_TO_NATURE))
                 buffStackAmount = me->GetAura(SPELL_ATTUNED_TO_NATURE, 0)->GetStackAmount();
+            else
+                buffStackAmount = 0;
 
             // Elementals must be killed within 12 seconds of each other, or they will all revive and heal
             if (checkElementalAlive)
