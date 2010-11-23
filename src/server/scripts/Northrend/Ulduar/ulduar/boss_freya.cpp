@@ -67,6 +67,7 @@ enum Yells
 #define ACHIEVEMENT_BACK_TO_NATURE       RAID_MODE(2982, 2983)
 #define ACHIEVEMENT_DEFORESTATION        RAID_MODE(2985, 2984)
 #define DEFORESTATION_MAX_TIMER          10 * 1000 // 10s
+#define ACHIEVEMENT_CONSPEEDATORY        RAID_MODE(2980, 2981)
 
 enum Spells
 {
@@ -229,10 +230,12 @@ class boss_freya : public CreatureScript
         Creature* Elemental[3];
         bool checkElementalAlive;
 
-        // achievement Deforestation
+        // Achievement Deforestation
         bool checkDeforestation;
         uint32 deforestationTimer;
         uint32 deforestationCount;
+        // Achievement Getting Back to Nature
+        uint8 buffStackAmount;
 
         void Reset()
         {
@@ -284,19 +287,28 @@ class boss_freya : public CreatureScript
             {
                 // Kill credit
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65074);
-                // Knock on Wood
-                if (EldersCount == 1)
-                    pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_1);
-                // Knock, Knock on Wood 
-                if (EldersCount == 2)
-                    pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_2);
-                // Knock, Knock, Knock on Wood
-                if (EldersCount == 3)
-                    pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_3);
+                switch (EldersCount)
+                {
+                    case 3:
+                         // Knock, Knock, Knock on Wood
+                        pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_3);
+                    case 2:
+                        // Knock, Knock on Wood 
+                        pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_2);
+                    case 1:
+                        // Knock on Wood
+                        pInstance->DoCompleteAchievement(ACHIEVEMENT_KNOCK_ON_WOOD_1);
+                        break;
+                }       
                 // Getting Back to Nature
-                if (me->HasAura(SPELL_ATTUNED_TO_NATURE))
-                    if (me->GetAura(SPELL_ATTUNED_TO_NATURE, 0)->GetStackAmount() >= 25)
-                        pInstance->DoCompleteAchievement(ACHIEVEMENT_BACK_TO_NATURE);
+                if (buffStackAmount >= 25)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_BACK_TO_NATURE);
+                // Con-speed-atory
+                if (pInstance->GetData(DATA_CONSPEEDATORY) == ACHI_IS_IN_PROGRESS)
+                {
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_CONSPEEDATORY);
+                    pInstance->SetData(DATA_CONSPEEDATORY, ACHI_COMPLETED);
+                }
             }
             
             // Hard mode chest
@@ -385,7 +397,8 @@ class boss_freya : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            if (checkDeforestation)
+            // Achievement Deforestation control
+             if (checkDeforestation)
                 deforestationTimer += diff;
 
             if (deforestationTimer > DEFORESTATION_MAX_TIMER)
@@ -402,6 +415,9 @@ class boss_freya : public CreatureScript
                 // after awarding the achievent, prevent further controls
                 checkDeforestation = false;
             }
+
+            if (me->HasAura(SPELL_ATTUNED_TO_NATURE))
+                buffStackAmount = me->GetAura(SPELL_ATTUNED_TO_NATURE, 0)->GetStackAmount();
 
             // Elementals must be killed within 12 seconds of each other, or they will all revive and heal
             if (checkElementalAlive)
@@ -672,9 +688,9 @@ class boss_elder_brightleaf : public CreatureScript
             if (m_pInstance)
             {
                 if (EldersCount == 2)
-                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, ACHI_START);
 
-                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT, ACHI_INCREASE);
             }
         }
 
@@ -835,9 +851,9 @@ class boss_elder_ironbranch : public CreatureScript
             if (m_pInstance)
             {
                 if (EldersCount == 2)
-                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, ACHI_START);
 
-                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT, ACHI_INCREASE);
             }
         }
 
@@ -970,9 +986,9 @@ class boss_elder_stonebark : public CreatureScript
             if (m_pInstance)
             {
                 if (EldersCount == 2)
-                    m_pInstance->SetData(DATA_LUMBERJACKED_START, EldersCount);
+                    m_pInstance->SetData(DATA_LUMBERJACKED_START, ACHI_START);
 
-                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT,1);
+                m_pInstance->SetData(DATA_LUMBERJACKED_COUNT, ACHI_INCREASE);
             }
         }
 
@@ -1424,6 +1440,35 @@ class creature_ancient_water_spirit : public CreatureScript
     };
 };
 
+class mob_freya_trash : public CreatureScript
+{
+public:
+    mob_freya_trash() : CreatureScript("mob_freya_trash") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_freya_trashAI (pCreature);
+    }
+
+    struct mob_freya_trashAI : public ScriptedAI
+    {
+        mob_freya_trashAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void JustDied(Unit* killer)
+        {
+            if (pInstance)
+                if (pInstance->GetData(DATA_CONSPEEDATORY) == ACHI_IS_NOT_STARTED)
+                    pInstance->SetData(DATA_CONSPEEDATORY, ACHI_START);
+        }
+    };
+
+};
+
 void AddSC_boss_freya()
 {
     new boss_freya();
@@ -1441,4 +1486,5 @@ void AddSC_boss_freya()
     new creature_storm_lasher();
     new creature_snaplasher();
     new creature_ancient_water_spirit();
+    new mob_freya_trash();
 }

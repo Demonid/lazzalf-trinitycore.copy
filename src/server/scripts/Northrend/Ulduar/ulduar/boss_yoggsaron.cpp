@@ -1303,10 +1303,10 @@ class npc_guardian_yoggsaron : public CreatureScript
             
             if (pInstance)
             {
-                if (pInstance->GetData(DATA_COMING_OUT_START) == 0)
-                    pInstance->SetData(DATA_COMING_OUT_START, 1);
+                if (pInstance->GetData(DATA_COMING_OUT_START) == ACHI_IS_NOT_STARTED)
+                    pInstance->SetData(DATA_COMING_OUT_START, ACHI_START);
 
-                pInstance->SetData(DATA_COMING_OUT_COUNT, 1);
+                pInstance->SetData(DATA_COMING_OUT_COUNT, ACHI_INCREASE);
             }
 
             me->ForcedDespawn(3000);

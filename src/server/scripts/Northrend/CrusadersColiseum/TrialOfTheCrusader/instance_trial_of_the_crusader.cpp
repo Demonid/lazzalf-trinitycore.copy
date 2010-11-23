@@ -33,6 +33,7 @@ EndScriptData */
 #define ACHIEVEMENT_TRAITOR_KING_10             3800
 #define ACHIEVEMENT_TRAITOR_KING_25             3816
 #define TRAITOR_KING_MAX_TIMER                  30 * IN_MILLISECONDS
+#define TRAITOR_KING_MIN_COUNT                  40
 #define ACHIEVEMENT_TRIBUTE_SKILL_10            3808
 #define ACHIEVEMENT_TRIBUTE_MAD_SKILL_10        3809
 #define ACHIEVEMENT_TRIBUTE_INSANITY_10         3810
@@ -103,7 +104,6 @@ public:
         uint8  m_uiMistressOfPainCount;
         bool   m_bTributeToImmortalityElegible;
         //std::list<uint32> m_vScarabTimeOfDeath; not used, not needed :|
-        bool traitorKingStartCount;
         uint32 scarabsCount;
         uint32 traitorKingTimer;
         uint32 achievementTraitorKing;
@@ -139,7 +139,6 @@ public:
             m_uiSnoboldCount = 0;
             m_uiMistressOfPainCount = 0;
             m_bTributeToImmortalityElegible = true;
-            traitorKingStartCount = false;
             scarabsCount = 0;
             traitorKingTimer = 0;
             achievementTraitorKing = 0;
@@ -432,16 +431,17 @@ public:
                         --m_uiMistressOfPainCount;
                     break;
                 case DATA_TRAITOR_KING_START:
-                    if (uiData == 1)
-                        traitorKingStartCount = true;
-                    else if (uiData == 0)
-                        traitorKingStartCount = false;
+                    if (uiData == ACHI_START)
+                        traitorKingTimer = TRAITOR_KING_MAX_TIMER;
+                    else if (uiData == ACHI_RESET)
+                    {
+                        traitorKingTimer = 0;
+                        scarabsCount = 0;
+                    }
                     break;
                 case DATA_TRAITOR_KING_COUNT:
-                    if (uiData == 1)
+                    if (uiData == ACHI_INCREASE)
                         scarabsCount++;
-                    else
-                        return;
                 case DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE:
                     m_bTributeToImmortalityElegible = false;
                     break;
@@ -642,11 +642,10 @@ public:
                 case DATA_SNOBOLD_COUNT: return m_uiSnoboldCount;
                 case DATA_MISTRESS_OF_PAIN_COUNT: return m_uiMistressOfPainCount;
                 case DATA_TRAITOR_KING_START:
-                    if (traitorKingStartCount == true)
-                        return 1;
+                    if (traitorKingTimer > 0)
+                        return ACHI_IS_IN_PROGRESS;
                     else
-                        return 0;
-                case DATA_TRAITOR_KING_COUNT: return scarabsCount;
+                        return ACHI_IS_NOT_STARTED;
             }
             return 0;
         }
@@ -675,18 +674,9 @@ public:
             }
 
             // Achievement The Traitor King control
-            if (GetData(DATA_TRAITOR_KING_START) == 1)
+            if (traitorKingTimer)
             {
-                traitorKingTimer += uiDiff;
-
-                if (traitorKingTimer > TRAITOR_KING_MAX_TIMER)
-                {
-                    SetData(DATA_TRAITOR_KING_START,0);
-                    SetData(DATA_TRAITOR_KING_COUNT,0);
-                    traitorKingTimer = 0;
-                }
-
-                if (GetData(DATA_TRAITOR_KING_COUNT) >= 40 && traitorKingTimer <= TRAITOR_KING_MAX_TIMER)
+                if (scarabsCount >= TRAITOR_KING_MIN_COUNT)
                 {
                     if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
                         achievementTraitorKing = ACHIEVEMENT_TRAITOR_KING_10;
@@ -697,10 +687,12 @@ public:
                     if (AchievTraitorKing)
                         DoCompleteAchievement(achievementTraitorKing);
 
-                    SetData(DATA_TRAITOR_KING_START,0);
-                    SetData(DATA_TRAITOR_KING_COUNT,0);
-                    traitorKingTimer = 0;
+                    SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
                 }
+
+                if (traitorKingTimer <= uiDiff)
+                    SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
+                else traitorKingTimer -= uiDiff;
             }
         }
 

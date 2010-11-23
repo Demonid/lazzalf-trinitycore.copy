@@ -293,4 +293,15 @@ enum eAchievementData
     ANUB_25H                                = 11549
 };
 
+enum AchievementControl
+{
+    ACHI_IS_NOT_STARTED,
+    ACHI_START,
+    ACHI_IS_IN_PROGRESS,
+    ACHI_COMPLETED,
+    ACHI_FAILED,
+    ACHI_RESET,
+    ACHI_INCREASE,
+};
+
 #endif

@@ -127,9 +127,9 @@ class boss_emalon : public CreatureScript
             if (pInstance)
             {
                 if (WatchersCount == 2)
-                    pInstance->SetData(DATA_EWF_START, WatchersCount);                
+                    pInstance->SetData(DATA_EWF_START, ACHI_START);                
 
-                pInstance->SetData(DATA_EWF_COUNT, 1);
+                pInstance->SetData(DATA_EWF_COUNT, ACHI_INCREASE);
             }
 
             _JustDied();

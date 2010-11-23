@@ -454,10 +454,10 @@ public:
         {
             //DoCast(pKiller,RAID_MODE(SPELL_TRAITOR_KING_10,SPELL_TRAITOR_KING_25));
 
-            if(m_pInstance->GetData(DATA_TRAITOR_KING_START) == 0)
-               m_pInstance->SetData(DATA_TRAITOR_KING_START,1);
+            if(m_pInstance->GetData(DATA_TRAITOR_KING_START) == ACHI_IS_NOT_STARTED)
+               m_pInstance->SetData(DATA_TRAITOR_KING_START, ACHI_START);
            
-            m_pInstance->SetData(DATA_TRAITOR_KING_COUNT,1);
+            m_pInstance->SetData(DATA_TRAITOR_KING_COUNT, ACHI_INCREASE);
         }
 
         void UpdateAI(const uint32 uiDiff)

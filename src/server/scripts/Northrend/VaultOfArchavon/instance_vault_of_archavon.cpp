@@ -30,9 +30,10 @@
 */
 
 // Earth, Wind & Fire
-#define ACHIEVEMENT_EARTH_WIND_FIRE_10 4016
-#define ACHIEVEMENT_EARTH_WIND_FIRE_25 4017
-#define EWF_MAX_TIMER 60 * 1000 // 60s
+#define ACHIEVEMENT_EARTH_WIND_FIRE_10  4016
+#define ACHIEVEMENT_EARTH_WIND_FIRE_25  4017
+#define EWF_MAX_TIMER                   60 * 1000 // 60s
+#define EWF_WATCHERS_COUNT              3
 
 class instance_archavon : public InstanceMapScript
 {
@@ -120,12 +121,6 @@ public:
                 case DATA_EMALON_EVENT:     return uiEncounters[1];
                 case DATA_KORALON_EVENT:    return uiEncounters[2];
                 case DATA_TORAVON_EVENT:    return uiEncounters[3];
-                case DATA_EWF_START:
-                    if (ewfStartCount == true)
-                        return 1;
-                    else
-                        return 0;
-                case DATA_EWF_COUNT: return watchersCount;
             }
             return 0;
         }
@@ -151,16 +146,14 @@ public:
                 case DATA_KORALON_EVENT:    uiEncounters[2] = data; break;
                 case DATA_TORAVON_EVENT:    uiEncounters[3] = data; break;
                 case DATA_EWF_START:
-                    if (data == 2)
-                        ewfStartCount = true;
-                    else if (data == 0)
-                        ewfStartCount = false;
+                    if (data == ACHI_START)
+                        timer = EWF_MAX_TIMER;
+                    else if (data == ACHI_FAILED || data == ACHI_COMPLETED)
+                        timer = 0;
                     break;
                 case DATA_EWF_COUNT:
-                    if (data == 1)
+                    if (data == ACHI_INCREASE)
                         watchersCount++;
-                    else
-                        return;
                     break;
             }
 
@@ -171,14 +164,9 @@ public:
         void Update(uint32 diff)
         {
             // Achievement Earth, Wind & Fire control
-            if (GetData(DATA_EWF_START) == 1)
+            if (timer)
             {
-                timer += diff;
-
-                if (timer >= EWF_MAX_TIMER)
-                    SetData(DATA_EWF_START,0);
-
-                if (GetData(DATA_EWF_COUNT) == 3 && timer <= EWF_MAX_TIMER)
+                if (watchersCount == EWF_WATCHERS_COUNT)
                 {
                     if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL)
                         achievementEWF = ACHIEVEMENT_EARTH_WIND_FIRE_10;
@@ -189,8 +177,12 @@ public:
                     if (AchievEWF)
                         DoCompleteAchievement(achievementEWF);
 
-                    SetData(DATA_EWF_START,0);
+                    SetData(DATA_EWF_START, ACHI_COMPLETED);
                 }
+
+                if (timer <= diff)
+                    SetData(DATA_EWF_START, ACHI_FAILED);
+                else timer -= diff;
             }
         }
 

@@ -736,7 +736,7 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
                 vehicle->SetHealth(vehicle->GetMaxHealth()); // Correct spell not works
                 pPlayer->CastSpell(vehicle, SPELL_AUTO_REPAIR, true);
                 if(InstanceScript *data = pPlayer->GetInstanceScript())
-                    data->SetData(DATA_ACHI_UNBROKEN, 1);
+                    data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
             }
         }
         return true;
@@ -791,7 +791,7 @@ class ulduar_repair_npc : public CreatureScript
                     vehicle->SetHealth(vehicle->GetMaxHealth());
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
                     if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, 1);
+                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -803,7 +803,7 @@ class ulduar_repair_npc : public CreatureScript
                     vehicle->SetHealth(vehicle->GetMaxHealth());
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
                     if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, 1);
+                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -816,7 +816,7 @@ class ulduar_repair_npc : public CreatureScript
                     vehicle->SetPower(POWER_ENERGY,vehicle->GetMaxPower(POWER_ENERGY));
                     _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
                     if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, 1);
+                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -886,7 +886,7 @@ class mob_flameleviathan_loot : public CreatureScript
 
         void JustDied(Unit *victim)
         {
-            if (pInstance->GetData(DATA_ACHI_UNBROKEN) == 0)
+            if (pInstance->GetData(DATA_ACHI_UNBROKEN) == ACHI_IS_IN_PROGRESS)
                 pInstance->DoCompleteAchievement(ACHI_UNBROKEN);
         }
 
@@ -928,10 +928,10 @@ class mob_steelforged_defender : public CreatureScript //33236
 
        void JustDied(Unit *victim)
        {
-           if(pInstance->GetData(DATA_DWARFAGEDDON_START) == 0)
-               pInstance->SetData(DATA_DWARFAGEDDON_START,1);
+           if(pInstance->GetData(DATA_DWARFAGEDDON_START) == ACHI_IS_NOT_STARTED)
+               pInstance->SetData(DATA_DWARFAGEDDON_START, ACHI_START);
            
-           pInstance->SetData(DATA_DWARFAGEDDON_COUNT,1);
+           pInstance->SetData(DATA_DWARFAGEDDON_COUNT, ACHI_INCREASE);
        }
     };
 
