@@ -269,7 +269,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     Player *plMover = mover->GetTypeId() == TYPEID_PLAYER ? (Player*)mover : NULL;
     Vehicle *vehMover = mover->GetVehicleKit();
     if (vehMover)
-        if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+        if (mover->ToPlayer() && mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
             if (Unit *charmer = mover->GetCharmer())
                 if (charmer->GetTypeId() == TYPEID_PLAYER)
                     plMover = (Player*)charmer;
