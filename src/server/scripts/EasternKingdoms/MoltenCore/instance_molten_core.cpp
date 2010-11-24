@@ -88,277 +88,277 @@ public:
             Lucifron = 0;
             Magmadar = 0;
             Gehennas = 0;
-		    Garr = 0;
-		    Geddon = 0;
-		    Shazzrah = 0;
-		    Sulfuron = 0;
-		    Golemagg = 0;
-		    Domo = 0;
-		    Ragnaros = 0;
-		    FlamewakerPriest = 0;
+            Garr = 0;
+            Geddon = 0;
+            Shazzrah = 0;
+            Sulfuron = 0;
+            Golemagg = 0;
+            Domo = 0;
+            Ragnaros = 0;
+            FlamewakerPriest = 0;
 
-		    RuneKoro = 0;
-		    RuneZeth = 0;
-		    RuneMazj = 0;
-		    RuneTheri = 0;
-		    RuneBlaz = 0;
-		    RuneKress = 0;
-		    RuneMohn = 0;
+            RuneKoro = 0;
+            RuneZeth = 0;
+            RuneMazj = 0;
+            RuneTheri = 0;
+            RuneBlaz = 0;
+            RuneKress = 0;
+            RuneMohn = 0;
 
-		    rag_ele_counter = 0;
+            rag_ele_counter = 0;
 
-		    m_uiFirelordCacheGUID = 0;
+            m_uiFirelordCacheGUID = 0;
 
-		    IsBossDied[0] = false;
-		    IsBossDied[1] = false;
-		    IsBossDied[2] = false;
-		    IsBossDied[3] = false;
-		    IsBossDied[4] = false;
-		    IsBossDied[5] = false;
-		    IsBossDied[6] = false;
-		    IsBossDied[7] = false;
-		    IsBossDied[8] = false;
-		    summoned = false;
-		    rag_summoned = false;
-	    }
+            IsBossDied[0] = false;
+            IsBossDied[1] = false;
+            IsBossDied[2] = false;
+            IsBossDied[3] = false;
+            IsBossDied[4] = false;
+            IsBossDied[5] = false;
+            IsBossDied[6] = false;
+            IsBossDied[7] = false;
+            IsBossDied[8] = false;
+            summoned = false;
+            rag_summoned = false;
+        }
 
-	    bool IsEncounterInProgress() const
-	    {
-		    return false;
-	    }
+        bool IsEncounterInProgress() const
+        {
+            return false;
+        }
 
-	    void OnGameObjectCreate(GameObject* pGo, bool /*add*/)
-	    {
-		    switch(pGo->GetEntry())
-		    {
-			    case 176951:                                    //Sulfuron
-				    RuneKoro = pGo->GetGUID();
-				    break;
-			    case 176952:                                    //Geddon
-				    RuneZeth = pGo->GetGUID();
-				    break;
-			    case 176953:                                    //Shazzrah
-				    RuneMazj = pGo->GetGUID();
-				    break;
-			    case 176954:                                    //Golemagg
-				    RuneTheri = pGo->GetGUID();
-				    break;
-			    case 176955:                                    //Garr
-				    RuneBlaz = pGo->GetGUID();
-				    break;
-			    case 176956:                                    //Magmadar
-				    RuneKress = pGo->GetGUID();
-				    break;
-			    case 176957:                                    //Gehennas
-				    RuneMohn = pGo->GetGUID();
-				    break;
-			    case 179703:
-				    m_uiFirelordCacheGUID = pGo->GetGUID();      //when majordomo event == DONE DoRespawnGameObject(m_uiFirelordCacheGUID,);
-				    break;
-		    }
-	    }
+        void OnGameObjectCreate(GameObject* pGo, bool /*add*/)
+        {
+            switch(pGo->GetEntry())
+            {
+                case 176951:                                    //Sulfuron
+                    RuneKoro = pGo->GetGUID();
+                    break;
+                case 176952:                                    //Geddon
+                    RuneZeth = pGo->GetGUID();
+                    break;
+                case 176953:                                    //Shazzrah
+                    RuneMazj = pGo->GetGUID();
+                    break;
+                case 176954:                                    //Golemagg
+                    RuneTheri = pGo->GetGUID();
+                    break;
+                case 176955:                                    //Garr
+                    RuneBlaz = pGo->GetGUID();
+                    break;
+                case 176956:                                    //Magmadar
+                    RuneKress = pGo->GetGUID();
+                    break;
+                case 176957:                                    //Gehennas
+                    RuneMohn = pGo->GetGUID();
+                    break;
+                case 179703:
+                    m_uiFirelordCacheGUID = pGo->GetGUID();      //when majordomo event == DONE DoRespawnGameObject(m_uiFirelordCacheGUID,);
+                    break;
+            }
+        }
 
-	    void OnCreatureCreate(Creature* pCreature, bool /*add*/)
-	    {
-		    switch (pCreature->GetEntry())
-		    {
-			    case ID_LUCIFRON:
-				    Lucifron = pCreature->GetGUID();
-				    break;
+        void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+        {
+            switch (pCreature->GetEntry())
+            {
+                case ID_LUCIFRON:
+                    Lucifron = pCreature->GetGUID();
+                    break;
 
-			    case ID_MAGMADAR:
-				    Magmadar = pCreature->GetGUID();
-				    break;
+                case ID_MAGMADAR:
+                    Magmadar = pCreature->GetGUID();
+                    break;
 
-			    case ID_GEHENNAS:
-				    Gehennas = pCreature->GetGUID();
-				    break;
+                case ID_GEHENNAS:
+                    Gehennas = pCreature->GetGUID();
+                    break;
 
-			    case ID_GARR:
-				    Garr = pCreature->GetGUID();
-				    break;
+                case ID_GARR:
+                    Garr = pCreature->GetGUID();
+                    break;
 
-			    case ID_GEDDON:
-				    Geddon = pCreature->GetGUID();
-				    break;
+                case ID_GEDDON:
+                    Geddon = pCreature->GetGUID();
+                    break;
 
-			    case ID_SHAZZRAH:
-				    Shazzrah = pCreature->GetGUID();
-				    break;
+                case ID_SHAZZRAH:
+                    Shazzrah = pCreature->GetGUID();
+                    break;
 
-			    case ID_SULFURON:
-				    Sulfuron = pCreature->GetGUID();
-			       break;
+                case ID_SULFURON:
+                    Sulfuron = pCreature->GetGUID();
+                   break;
 
-			    case ID_GOLEMAGG:
-				    Golemagg = pCreature->GetGUID();
-				    break;
+                case ID_GOLEMAGG:
+                    Golemagg = pCreature->GetGUID();
+                    break;
 
-			    case ID_DOMO:
-				    Domo = pCreature->GetGUID();
-				    break;
+                case ID_DOMO:
+                    Domo = pCreature->GetGUID();
+                    break;
 
-			    case ID_RAGNAROS:
-				    Ragnaros = pCreature->GetGUID();
-				    break;
+                case ID_RAGNAROS:
+                    Ragnaros = pCreature->GetGUID();
+                    break;
 
-			    case ID_FLAMEWAKERPRIEST:
-				    FlamewakerPriest = pCreature->GetGUID();
-				    break;
-		    }
-	    }
+                case ID_FLAMEWAKERPRIEST:
+                    FlamewakerPriest = pCreature->GetGUID();
+                    break;
+            }
+        }
 
-	    uint64 GetData64 (uint32 identifier)
-	    {
-		    switch(identifier)
-		    {
-			    case DATA_SULFURON:
-				    return Sulfuron;
-			    case DATA_GOLEMAGG:
-				    return Golemagg;
+        uint64 GetData64 (uint32 identifier)
+        {
+            switch(identifier)
+            {
+                case DATA_SULFURON:
+                    return Sulfuron;
+                case DATA_GOLEMAGG:
+                    return Golemagg;
+                case DATA_MAJORDOMO_GUID:
+                    return Domo;
+                case DATA_FLAMEWAKERPRIEST:
+                    return FlamewakerPriest;
+            }
+            return 0;
+        }
 
-			    case DATA_FLAMEWAKERPRIEST:
-				    return FlamewakerPriest;
-		    }
-		    return 0;
-	    }
+        uint32 GetData(uint32 type)
+        {
+            switch(type)
+            {
+                case DATA_LUCIFRONISDEAD:
+                    if (IsBossDied[0])
+                        return 1;
+                    break;
 
-	    uint32 GetData(uint32 type)
-	    {
-		    switch(type)
-		    {
-			    case DATA_LUCIFRONISDEAD:
-				    if (IsBossDied[0])
-					    return 1;
-				    break;
+                case DATA_MAGMADARISDEAD:
+                    if (IsBossDied[1])
+                        return 1;
+                    break;
 
-			    case DATA_MAGMADARISDEAD:
-				    if (IsBossDied[1])
-					    return 1;
-				    break;
+                case DATA_GEHENNASISDEAD:
+                    if (IsBossDied[2])
+                        return 1;
+                    break;
 
-			    case DATA_GEHENNASISDEAD:
-				    if (IsBossDied[2])
-					    return 1;
-				    break;
+                case DATA_GARRISDEAD:
+                    if (IsBossDied[3])
+                        return 1;
+                    break;
 
-			    case DATA_GARRISDEAD:
-				    if (IsBossDied[3])
-					    return 1;
-				    break;
+                case DATA_GEDDONISDEAD:
+                    if (IsBossDied[4])
+                        return 1;
+                    break;
 
-			    case DATA_GEDDONISDEAD:
-				    if (IsBossDied[4])
-					    return 1;
-				    break;
+                case DATA_SHAZZRAHISDEAD:
+                    if (IsBossDied[5])
+                        return 1;
+                    break;
 
-			    case DATA_SHAZZRAHISDEAD:
-				    if (IsBossDied[5])
-					    return 1;
-				    break;
+                case DATA_SULFURONISDEAD:
+                    if (IsBossDied[6])
+                        return 1;
+                    break;
 
-			    case DATA_SULFURONISDEAD:
-				    if (IsBossDied[6])
-					    return 1;
-				    break;
+                case DATA_GOLEMAGGISDEAD:
+                    if (IsBossDied[7])
+                        return 1;
+                    break;
 
-			    case DATA_GOLEMAGGISDEAD:
-				    if (IsBossDied[7])
-					    return 1;
-				    break;
+                case DATA_MAJORDOMOISDEAD:
+                    if (IsBossDied[8])
+                        return 1;
+                    break;
+                case DATA_RAG_ELE_COUNTER:
+                    return rag_ele_counter;
+                    break;
+            }
+            return 0;
+        }
 
-			    case DATA_MAJORDOMOISDEAD:
-				    if (IsBossDied[8])
-					    return 1;
-				    break;
-			    case DATA_RAG_ELE_COUNTER:
-				    return rag_ele_counter;
-				    break;
-		    }
-		    return 0;
-	    }
+        /*bool SetBossState(uint32 id, EncounterState state)
+        {
+            if (!InstanceData::SetBossState(id, state))
+                return false;
 
-	    /*bool SetBossState(uint32 id, EncounterState state)
-	    {
-		    if (!InstanceData::SetBossState(id, state))
-			    return false;
+            if (id == DATA_MAJORDOMO && state == DONE)
+            {
+                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID)){
+                    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
+                }
+                instance->SummonCreature(ID_RAGNAROS, Pos[9], TEMPSUMMON_CORPSE_DESPAWN);
+            }
+            return true;
+        } */
 
-		    if (id == DATA_MAJORDOMO && state == DONE)
-		    {
-			    if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID)){
-				    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
-			    }
-			    instance->SummonCreature(ID_RAGNAROS, Pos[9], TEMPSUMMON_CORPSE_DESPAWN);
-		    }
-		    return true;
-	    } */
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_LUCIFRON)
+                IsBossDied[0] = true;
 
-	    void SetData(uint32 type, uint32 data)
-	    {
-		    if (type == DATA_LUCIFRON)
-			    IsBossDied[0] = true;
+            if (type == DATA_MAGMADAR)
+                IsBossDied[1] = true;
 
-		    if (type == DATA_MAGMADAR)
-			    IsBossDied[1] = true;
+            if (type == DATA_GEHENNAS)
+                IsBossDied[2] = true;
 
-		    if (type == DATA_GEHENNAS)
-			    IsBossDied[2] = true;
+            if (type == DATA_GARR)
+                IsBossDied[3] = true;
 
-		    if (type == DATA_GARR)
-			    IsBossDied[3] = true;
+            if (type == DATA_SHAZZRAH)
+                IsBossDied[4] = true;
+            
+            if (type == DATA_GEDDON)
+                IsBossDied[5] = true;
 
-		    if (type == DATA_SHAZZRAH)
-			    IsBossDied[4] = true;
-    		
-		    if (type == DATA_GEDDON)
-			    IsBossDied[5] = true;
+            if (type == DATA_GOLEMAGG)
+                IsBossDied[6] = true;
 
-		    if (type == DATA_GOLEMAGG)
-			    IsBossDied[6] = true;
+            if (type == DATA_SULFURON)
+                IsBossDied[7] = true;
 
-		    if (type == DATA_SULFURON)
-			    IsBossDied[7] = true;
+            if (type == DATA_RAGNAROS)
+            {
+                rag_summoned = true;
+                instance->SummonCreature(ID_RAGNAROS, Pos[9]);
+            }
 
-		    if (type == DATA_RAGNAROS)
-		    {
-			    rag_summoned = true;
-			    instance->SummonCreature(ID_RAGNAROS, Pos[9]);
-		    }
+            if (type == DATA_RAG_ELE_COUNTER)
+            {
+                if(data == 1)
+                    ++rag_ele_counter;
+                else if(data == 0)
+                    rag_ele_counter = 0;
+            }
 
-		    if (type == DATA_RAG_ELE_COUNTER)
-		    {
-			    if(data == 1)
-				    ++rag_ele_counter;
-			    else if(data == 0)
-				    rag_ele_counter = 0;
-		    }
+            if (type == DATA_MAJORDOMO)
+            {
+                IsBossDied[8] = true;
+                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID))
+                    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
+            }
 
-		    if (type == DATA_MAJORDOMO){
-			    IsBossDied[8] = true;
-			    if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID))
-				    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
-
-			    instance->SummonCreature(ID_RAGNAROS, Pos[9]);
-		    }
-
-		    if(summoned == false)
-		    {
-			    for(int i = 0; i < 8; i++)
-				    if(IsBossDied[i] == false)
-					    return;
-    		
-			    instance->SummonCreature(ID_DOMO, Pos[0]);
-			    instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[1]);
-			    instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[2]);
-			    instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[3]);
-			    instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[4]);
-			    instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[5]);
-			    instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[6]);
-			    instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[7]);
-			    instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[8]);
-			    summoned = true;
-		    }
-	    }
+            if(summoned == false)
+            {
+                for(int i = 0; i < 8; i++)
+                    if(IsBossDied[i] == false)
+                        return;
+            
+                instance->SummonCreature(ID_DOMO, Pos[0]);
+                instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[1]);
+                instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[2]);
+                instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[3]);
+                instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[4]);
+                instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[5]);
+                instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[6]);
+                instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[7]);
+                instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[8]);
+                summoned = true;
+            }
+        }
     };
 };
 
