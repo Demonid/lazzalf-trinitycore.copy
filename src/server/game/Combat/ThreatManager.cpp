@@ -52,13 +52,13 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 26997:
              case 48561:
              case 48562:
-             case 57755:// Heroic Thrown
+             case 57755: // Heroic Thrown
                 fThreat *= 1.5f;
                 break;
-             case 60141: //Rip
+             case 60141: // Rip
                 fThreat *= 0.5f;
                 break;
-             case 6343: //ThunderClap
+             case 6343: // ThunderClap
              case 8198:
              case 8204:
              case 8205:
@@ -69,7 +69,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 47502:
                 fThreat *= 1.85f;
                 break;
-             case 11433:  //Death And Decay Ranks
+             case 11433: // Death And Decay Ranks
              case 31258:
              case 34642:
              case 39347:
