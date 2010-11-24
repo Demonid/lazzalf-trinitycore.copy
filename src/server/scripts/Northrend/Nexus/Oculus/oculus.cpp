@@ -28,6 +28,18 @@
 
 #define HAS_ESSENCE(a) ((a)->HasItemCount(ITEM_EMERALD_ESSENCE,1) || (a)->HasItemCount(ITEM_AMBER_ESSENCE,1) || (a)->HasItemCount(ITEM_RUBY_ESSENCE,1))
 
+static Position InsideInstanceTeleport =
+{
+    985.333740, 1057.043457, 359.967
+};
+
+static Position OutsideInstanceTeleport =
+{
+    3864.169189, 6983.767578, 106.320381
+};
+
+#define BOREAN_TUNDRA_MAP 571
+
 enum Drakes
 {
     GOSSIP_TEXTID_DRAKES                          = 13267,
@@ -226,8 +238,48 @@ class npc_oculus_drake : public CreatureScript
     };
 };
 
+class go_orb_of_the_nexus : public GameObjectScript
+{
+public:
+    go_orb_of_the_nexus() : GameObjectScript("go_orb_of_the_nexus") { }
+
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+    {
+        InstanceScript* pInstance = pGo->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        pPlayer->TeleportTo(BOREAN_TUNDRA_MAP,OutsideInstanceTeleport.GetPositionX(),OutsideInstanceTeleport.GetPositionY(),OutsideInstanceTeleport.GetPositionZ(),pPlayer->GetOrientation());
+        
+        return true;
+    }
+
+};
+
+class go_nexus_portal : public GameObjectScript
+{
+public:
+    go_nexus_portal() : GameObjectScript("go_nexus_portal") { }
+
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+    {
+        InstanceScript* pInstance = pGo->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        pPlayer->TeleportTo(pPlayer->GetMapId(),InsideInstanceTeleport.GetPositionX(),InsideInstanceTeleport.GetPositionY(),InsideInstanceTeleport.GetPositionZ(),pPlayer->GetOrientation());
+        
+        return true;
+    }
+
+};
+
 void AddSC_oculus()
 {
     new npc_oculus_drake;
     new mob_centrifige_construct;
+    new go_orb_of_the_nexus();
+    new go_nexus_portal();
 }
