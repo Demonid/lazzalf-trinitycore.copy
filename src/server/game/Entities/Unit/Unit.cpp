@@ -4250,7 +4250,7 @@ void Unit::RemoveAllAurasOnDeath()
     if (ToPlayer() && ToPlayer()->getClass() == CLASS_PALADIN && HasAura(25780))
     {
         RemoveAurasDueToSpell(25780);
-        ApplyPercentModFloatVar(target->m_threatModifier[SPELL_SCHOOL_HOLY], 0.8f, false);
+        ApplyPercentModFloatVar(ToPlayer()->m_threatModifier[SPELL_SCHOOL_HOLY], 0.8f, false);
     }
 
     // used just after dieing to remove all visible auras
