@@ -48,6 +48,8 @@ enum Data
     DATA_HORSEMEN1,
     DATA_HORSEMEN2,
     DATA_HORSEMEN3,
+
+    DATA_IMMORTAL,
 };
 
 enum Data64
@@ -67,6 +69,23 @@ enum Data64
     DATA_KELTHUZAD_PORTAL04,
     DATA_KELTHUZAD_TRIGGER,
 };
+
+const Position TeleporterPositions[5] =
+{
+    // Four Horsemen
+    {2563.346f, -2995.048f, 241.417f, 2.427f},
+    // Loatheb
+    {2919.880f, -3954.188f, 273.582f, 4.780f},
+    // Maexxna
+    {3462.289f, -3850.636f, 307.369f, 5.566f},
+    // Thaddius
+    {3441.054f, -2998.450f, 297.159f, 3.956f},
+    // Kel'Thuzad
+    {3658.311f, -5087.248f, 143.624f, 4.489f},
+};
+
+#define CREATURE_TELEPORTER     60200
+#define KEL_THUZAD              15990
 
 #define GO_BIRTH                181356
 
