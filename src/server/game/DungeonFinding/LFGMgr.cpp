@@ -538,6 +538,7 @@ void LFGMgr::Join(Player* plr)
                 type = GetDungeonType(*it);
                 switch(type)
                 {
+                    case LFG_TYPE_RANDOM:
                     case LFG_TYPE_DUNGEON:
                     case LFG_TYPE_HEROIC:
                         if (isRaid)
@@ -1403,51 +1404,58 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap &groles, bool removeLeaderFlag /*= true
 
     for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
     {
-        switch(it->second)
-        {
-        case ROLE_NONE:
+        if (it->second == ROLE_NONE)
             return false;
-        case ROLE_TANK:
-            if (tank == LFG_TANKS_NEEDED)
+
+        if (it->second & ROLE_TANK)
+        {
+            if  (tank == LFG_TANKS_NEEDED)
                 return false;
-            tank++;
-            break;
-        case ROLE_HEALER:
-            if (healer == LFG_HEALERS_NEEDED)
-                return false;
-            healer++;
-            break;
-        case ROLE_DAMAGE:
-            if (damage == LFG_DPS_NEEDED)
-                return false;
-            damage++;
-            break;
-        default:
-            if (it->second & ROLE_TANK)
+
+            if (it->second != ROLE_TANK)
             {
                 it->second -= ROLE_TANK;
                 if (CheckGroupRoles(groles, false))
                     return true;
                 it->second += ROLE_TANK;
             }
+            else
+                tank++;
+        }
 
-            if (it->second & ROLE_HEALER)
+        if (it->second & ROLE_HEALER)
+        {
+            if  (healer == LFG_HEALERS_NEEDED)
+                return false;
+
+            if (it->second != ROLE_HEALER)
             {
                 it->second -= ROLE_HEALER;
                 if (CheckGroupRoles(groles, false))
                     return true;
                 it->second += ROLE_HEALER;
             }
+            else
+                healer++;
+        }
 
-            if (it->second & ROLE_DAMAGE)
+        if (it->second & ROLE_DAMAGE)
+        {
+            if  (damage == LFG_DPS_NEEDED)
+                return false;
+
+            if (it->second != ROLE_DAMAGE)
             {
                 it->second -= ROLE_DAMAGE;
-                return CheckGroupRoles(groles, false);
+                if (CheckGroupRoles(groles, false))
+                    return true;
+                it->second += ROLE_DAMAGE;
             }
-            break;
+            else
+                damage++;
         }
     }
-    return true;
+    return (tank + healer + damage) == groles.size();
 }
 
 /// <summary>
