@@ -588,26 +588,29 @@ ArenaLog.ExtendedInfo = 0
 #    CheatLogFile
 #        Log file of AntiCheat exception
 #        Default: "" - do not create cheat log file
-#
+
+CheatLogFile = ""
+
 #    CheatLogTimestamp
 #        Cheat Logfile with timestamp of server start in name
 #         in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
 #        Default: 0 - no timestamp in name
 #                 1 - add timestamp in name
-#
+
+CheatLogTimestamp = 0
+
 #    MailLogFile
 #        Log file character's mails
 #        Default: "" - do not create mail log file
-#
+
+MailLogFile = ""
+
 #    MailLogTimestamp
 #        Mail Logfile with timestamp of server start in name
 #         in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
 #        Default: 0 - no timestamp in name
 #                 1 - add timestamp in name
 
-CheatLogFile = ""
-CheatLogTimestamp = 0
-MailLogFile = ""
 MailLogTimestamp = 0
 
 #
@@ -795,10 +798,6 @@ ChatLogs.Addon = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-CheatLogFile = ""
-CheatLogTimestamp = 0
-MailLogFile = ""
-MailLogTimestamp = 0
 ChatLogs.BattleGround = 0
 
 #
@@ -2496,6 +2495,11 @@ Network.OutUBuff = 65536
 #                     1 - (Disabled, More traffic, Less latency, TCP_NO_DELAY)
 
 Network.TcpNodelay = 1
+
+#
+###################################################################################################################
+
+###################################################################################################################
 # ARENA MOD SETTINGS
 # 
 #    ArenaMod.Enable
@@ -2926,4 +2930,6 @@ LevelReq.Auction = 1
 LevelReq.Mail = 1
 
 LootAutoDistribute.Enable = 1 
+
+#
 ###################################################################################################
