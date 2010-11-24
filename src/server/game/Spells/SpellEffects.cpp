@@ -3139,6 +3139,8 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     uint32 amount = damage > 0 ? damage : 1;
                     if (m_spellInfo->Id == 18662) // Curse of Doom
                         amount = 1;
+                    if (m_spellInfo->Id == 65783) // Ogre Pinata
+                        amount = 1;
 
                     for (uint32 count = 0; count < amount; ++count)
                     {

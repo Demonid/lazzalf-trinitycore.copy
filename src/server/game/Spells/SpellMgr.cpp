@@ -4134,6 +4134,10 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
             count++;
             break;
+        case 65783: // Ogre Pinata
+            spellInfo->EffectBasePoints[0] = 1;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
