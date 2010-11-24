@@ -160,7 +160,7 @@ class boss_thaddius : public CreatureScript
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
-            //me->SummonCreature(39000, 3517.93f, -2942.52f, 303.12f, 2.096f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000); // Spawn NPC Teleporter, not offylike
+            me->SummonCreature(CREATURE_TELEPORTER, TeleporterPositions[3]);
         }
 
         void Reset()

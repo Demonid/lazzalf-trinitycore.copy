@@ -762,7 +762,7 @@ class ulduar_repair_npc : public CreatureScript
         return true;
     };
 
-    void SendDefaultMenu_ulduar_repair_npc(Player *player, Creature *_Creature, uint32 action )
+    void SendDefaultMenu_ulduar_repair_npc(Player *player, Creature *_Creature, uint32 action)
     {
         if (!player)
             return;
