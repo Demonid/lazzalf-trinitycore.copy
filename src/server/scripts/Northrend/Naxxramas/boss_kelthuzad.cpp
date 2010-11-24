@@ -129,7 +129,6 @@ enum Creatures
     NPC_ABOMINATION                                        = 16428, // Unstoppable Abominations
     NPC_WEAVER                                             = 16429, // Soul Weavers
     NPC_ICECROWN                                           = 16441, // Guardians of Icecrown
-    KEL_THUZAD                                             = 15990
 };
 
 const Position Pos[12] =
@@ -358,11 +357,13 @@ public:
             }
             chained.clear();
 
-            if (pInstance) //new
+            if (pInstance)
             {
                 if (AbominationsCount >= MIN_ABOMIN_COUNT)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_GET_ENOUGH);
             }
+
+            me->SummonCreature(CREATURE_TELEPORTER, TeleporterPositions[4]);
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -687,7 +688,7 @@ public:
 
         void JustDied(Unit* killer)
         {
-            if (Creature* pKel = me->FindNearestCreature(KEL_THUZAD,100,true)) //metto 100 per essere più sicuri
+            if (Creature* pKel = me->FindNearestCreature(KEL_THUZAD,100,true))
                 CAST_AI(boss_kelthuzad::boss_kelthuzadAI,pKel->AI())->UpdateAbominationCounter();
         }
     };
