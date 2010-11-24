@@ -191,7 +191,7 @@ public:
             }
             else
             {
-                if(Phase == 1)
+                if (Phase == 1)
                 {
                     if (Phase_Timer <= diff)
                     {
@@ -200,17 +200,17 @@ public:
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     } else Phase_Timer -= diff;
                 }
-                if(Phase == 3)
+                if (Phase == 3)
                 {
                     if (Phase_Timer <= diff)
                     {
-                        if(m_pInstance)
-                            m_pInstance->SetData(DATA_RAGNAROS, TRUE);
+                        if (m_pInstance)
+                            m_pInstance->SetData(DATA_RAGNAROS, true);
                         Phase = 4;
                         Phase_Timer = 16000; 
                     } else Phase_Timer -= diff;
                 }
-                if(Phase == 4)
+                if (Phase == 4)
                 {
                     if (Phase_Timer <= diff)
                     {
