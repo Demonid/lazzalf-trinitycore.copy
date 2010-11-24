@@ -318,6 +318,8 @@ public:
                 instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 59450);
             }
 
+            me->SummonCreature(CREATURE_TELEPORTER, TeleporterPositions[0]);
+
             DoScriptText(SAY_DEATH[id], me);
         }
 

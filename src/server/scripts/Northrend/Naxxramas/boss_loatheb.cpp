@@ -75,6 +75,8 @@ public:
                 if(!KilledSpore)     
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_SPORE_LOSER);
             }
+
+            me->SummonCreature(CREATURE_TELEPORTER, TeleporterPositions[1]);
         }
 
         void KilledUnit(Unit* Victim)
