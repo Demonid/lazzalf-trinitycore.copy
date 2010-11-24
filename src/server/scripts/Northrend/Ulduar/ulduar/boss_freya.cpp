@@ -205,6 +205,18 @@ enum Actions
     ACTION_ELEMENTAL_DEAD                       = 3
 };
 
+enum Caches
+{
+    CACHE_0_10 = 194324,
+    CACHE_1_10 = 194325,
+    CACHE_2_10 = 194326,
+    CACHE_3_10 = 194327,
+    CACHE_0_25 = 194328,
+    CACHE_1_25 = 194329,
+    CACHE_2_25 = 194330,
+    CACHE_3_25 = 194331,
+};
+
 uint64 pRootTargetGUID;
 
 class boss_freya : public CreatureScript
@@ -317,16 +329,16 @@ class boss_freya : public CreatureScript
             switch (EldersCount)
             {
                 case 0:
-                    chest = RAID_MODE(194324, 194328);
+                    chest = RAID_MODE(CACHE_0_10, CACHE_0_25);
                     break;
                 case 1:
-                    chest = RAID_MODE(194325, 194329);
+                    chest = RAID_MODE(CACHE_1_10, CACHE_1_25);
                     break;
                 case 2:
-                    chest = RAID_MODE(194326, 194330);
+                    chest = RAID_MODE(CACHE_2_10, CACHE_2_25);
                     break;
                 case 3:
-                    chest = RAID_MODE(194327, 194331);
+                    chest = RAID_MODE(CACHE_3_10, CACHE_3_25);
                     break;
             }
             // Summon spells not work correctly, chest respawn is infinite
@@ -397,8 +409,8 @@ class boss_freya : public CreatureScript
             if (!UpdateVictim())
                 return;
 
-            // Achievement Deforestation control
-             if (checkDeforestation)
+            // Achievement Deforestation control             
+            if (checkDeforestation)
                 deforestationTimer += diff;
 
             if (deforestationTimer > DEFORESTATION_MAX_TIMER)
