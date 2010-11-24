@@ -321,18 +321,9 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             m_Count = 0;
-            if (!IsHeroic())
-            {
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-                m_CountMax = 3;
-                m_Timer = 15*IN_MILLISECONDS;
-            }
-            else
-            {
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-                m_CountMax = 0;
-                m_Timer = 0;
-            }
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+            m_CountMax = 3;
+            m_Timer = 15*IN_MILLISECONDS;
             Summons.DespawnAll();
         }
 
@@ -455,16 +446,8 @@ public:
             me->SetReactState(REACT_PASSIVE);
             m_Timer = 10*IN_MILLISECONDS;
             m_Count = 0;
-            if (!IsHeroic())
-            {
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-                m_CountMax = 1;
-            }
-            else
-            {
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-                m_CountMax = 0;
-            }
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
+            m_CountMax = 1;
             Summons.DespawnAll();
         }
 
