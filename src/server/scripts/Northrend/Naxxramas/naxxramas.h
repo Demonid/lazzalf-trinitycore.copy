@@ -63,6 +63,7 @@ enum Data64
     DATA_FEUGEN,
     DATA_STALAGG,
     DATA_KELTHUZAD,
+    DATA_KELTHUZAD_2,
     DATA_KELTHUZAD_PORTAL01,
     DATA_KELTHUZAD_PORTAL02,
     DATA_KELTHUZAD_PORTAL03,
@@ -85,7 +86,6 @@ const Position TeleporterPositions[5] =
 };
 
 #define CREATURE_TELEPORTER     60200
-#define KEL_THUZAD              15990
 
 #define GO_BIRTH                181356
 

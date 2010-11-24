@@ -144,6 +144,8 @@ public:
         uint64 uiKelthuzadTrigger;
         uint64 uiPortals[4];
 
+        uint64 uiKelthuzad_2;
+
         GOState gothikDoorState;
 
         time_t minHorsemenDiedTime;
@@ -165,6 +167,7 @@ public:
                 case 15930: uiFeugen = pCreature->GetGUID(); return;
                 case 15929: uiStalagg = pCreature->GetGUID(); return;
                 case 15990: uiKelthuzad = pCreature->GetGUID(); return;
+                case 60201: uiKelthuzad_2 = pCreature->GetGUID(); return;
             }
 
             AddMinion(pCreature, add);
@@ -287,6 +290,8 @@ public:
                 return uiPortals[3];
             case DATA_KELTHUZAD_TRIGGER:
                 return uiKelthuzadTrigger;
+            case DATA_KELTHUZAD_2:
+                return uiKelthuzad_2;
             }
             return 0;
         }
@@ -459,9 +464,8 @@ class mr_bigglesworth_npc : public CreatureScript
 
         void JustDied(Unit* killer)
         {
-            /*if (Creature* KelThuzad = Unit::GetCreature(*me, pInstance ? KEL_THUZAD : 0))
-                if (KelThuzad->isAlive())
-                    KelThuzad->MonsterYellToZone(MR_BIGGLESWORTH_DEATH_YELL, LANG_UNIVERSAL, 0);*/                    
+            if (Creature* KelThuzad = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KELTHUZAD_2) : 0))
+                KelThuzad->MonsterYellToZone(MR_BIGGLESWORTH_DEATH_YELL, LANG_UNIVERSAL, 0);
         }
     };
 };

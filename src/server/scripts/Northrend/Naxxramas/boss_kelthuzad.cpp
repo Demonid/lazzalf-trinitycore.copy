@@ -129,6 +129,7 @@ enum Creatures
     NPC_ABOMINATION                                        = 16428, // Unstoppable Abominations
     NPC_WEAVER                                             = 16429, // Soul Weavers
     NPC_ICECROWN                                           = 16441, // Guardians of Icecrown
+    KEL_THUZAD                                             = 15990
 };
 
 const Position Pos[12] =
