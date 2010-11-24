@@ -133,7 +133,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (Phase = 0)
+            if (Phase == 0)
             {
                 if (!UpdateVictim())
                     return;
@@ -147,6 +147,9 @@ public:
                     if (m_pInstance)
                         m_pInstance->SetData(DATA_MAJORDOMO, DONE);
                     //m_pInstance->SetBossState(DATA_MAJORDOMO, DONE);
+
+                    Phase_Timer = 32000;
+                    Phase = 1;
                 }
 
                 //Cast Ageis if less than 50% hp

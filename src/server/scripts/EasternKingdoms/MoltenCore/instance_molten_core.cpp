@@ -216,7 +216,8 @@ public:
 				    return Sulfuron;
 			    case DATA_GOLEMAGG:
 				    return Golemagg;
-
+                case DATA_MAJORDOMO_GUID:
+                    return Domo;
 			    case DATA_FLAMEWAKERPRIEST:
 				    return FlamewakerPriest;
 		    }
@@ -333,12 +334,11 @@ public:
 				    rag_ele_counter = 0;
 		    }
 
-		    if (type == DATA_MAJORDOMO){
+		    if (type == DATA_MAJORDOMO)
+            {
 			    IsBossDied[8] = true;
 			    if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID))
 				    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
-
-			    instance->SummonCreature(ID_RAGNAROS, Pos[9]);
 		    }
 
 		    if(summoned == false)
