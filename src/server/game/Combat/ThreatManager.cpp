@@ -69,6 +69,12 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* /*pHatingUnit*/, floa
              case 47502:
                 fThreat *= 1.85f;
                 break;
+             case 11433:  //Death And Decay Ranks
+             case 31258:
+             case 34642:
+             case 39347:
+                fThreat *= 1.9f;
+                break;
             default:
                 break;
         }
