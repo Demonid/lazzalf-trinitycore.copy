@@ -418,7 +418,7 @@ class naxxramas_teleporter_npc : public CreatureScript
         {
             case 1:
                 // Teletrasporta all'entrata
-                player->TeleportTo(533, 3021.639, -3402.989, 298.220, 2.973);
+                player->TeleportTo(533, 3021.639f, -3402.989f, 298.220f, 2.973f);
                 player->CLOSE_GOSSIP_MENU();
                 _Creature->MonsterWhisper("Ecco fatto!", player->GetGUID());
                 break;
