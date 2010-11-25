@@ -30,12 +30,12 @@
 
 static Position InsideInstanceTeleport =
 {
-    985.333740, 1057.043457, 359.967
+    985.333740f, 1057.043457f, 359.967f
 };
 
 static Position OutsideInstanceTeleport =
 {
-    3864.169189, 6983.767578, 106.320381
+    3864.169189f, 6983.767578f, 106.320381f
 };
 
 #define BOREAN_TUNDRA_MAP 571
