@@ -730,7 +730,7 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
 
         if (Creature* vehicle = pPlayer->GetVehicleCreatureBase())
         {
-            if (!vehicle->HasAura(SPELL_AUTO_REPAIR))
+            if (!vehicle->HasAura(SPELL_AUTO_REPAIR) && (vehicle->GetHealth() != vehicle->GetMaxHealth()))
             {
                 pPlayer->MonsterTextEmote(EMOTE_REPAIR, pPlayer->GetGUID(), true);
                 vehicle->SetHealth(vehicle->GetMaxHealth()); // Correct spell not works
@@ -788,10 +788,15 @@ class ulduar_repair_npc : public CreatureScript
             case 1005: //Chopper
                 if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_CHOPPER, 20))
                 {
-                    vehicle->SetHealth(vehicle->GetMaxHealth());
-                    _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-                    if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    if (vehicle->GetHealth() != vehicle->GetMaxHealth())
+                    {
+                        vehicle->SetHealth(vehicle->GetMaxHealth());
+                        _Creature->MonsterSay("Chopper riparato!", LANG_UNIVERSAL, 0);
+                        if (InstanceScript *data = player->GetInstanceScript())
+                            data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    }
+                    else
+                        _Creature->MonsterSay("Il chopper non ha bisogno di riparazioni!", LANG_UNIVERSAL, 0);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un chopper nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -800,10 +805,15 @@ class ulduar_repair_npc : public CreatureScript
             case 1010: //Siege
                 if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_SIEGE, 20))
                 {
-                    vehicle->SetHealth(vehicle->GetMaxHealth());
-                    _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-                    if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    if (vehicle->GetHealth() != vehicle->GetMaxHealth())
+                    {
+                        vehicle->SetHealth(vehicle->GetMaxHealth());
+                        _Creature->MonsterSay("Siege riparato!", LANG_UNIVERSAL, 0);
+                        if (InstanceScript *data = player->GetInstanceScript())
+                            data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    }
+                    else
+                        _Creature->MonsterSay("Il siege non ha bisogno di riparazioni!", LANG_UNIVERSAL, 0);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un siege nelle vicinanze", LANG_UNIVERSAL, 0);
@@ -812,11 +822,16 @@ class ulduar_repair_npc : public CreatureScript
             case 1015: //Demolisher
                 if (Creature* vehicle = _Creature->FindNearestCreature(VEHICLE_DEMOLISHER, 20))
                 {
-                    vehicle->SetHealth(vehicle->GetMaxHealth());
-                    vehicle->SetPower(POWER_ENERGY,vehicle->GetMaxPower(POWER_ENERGY));
-                    _Creature->MonsterSay("Riparato!", LANG_UNIVERSAL, 0);
-                    if (InstanceScript *data = player->GetInstanceScript())
-                        data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    if ((vehicle->GetHealth() != vehicle->GetMaxHealth()) || (vehicle->GetPower(POWER_ENERGY) != vehicle->GetMaxPower(POWER_ENERGY)))
+                    {
+                        vehicle->SetHealth(vehicle->GetMaxHealth());
+                        vehicle->SetPower(POWER_ENERGY,vehicle->GetMaxPower(POWER_ENERGY));
+                        _Creature->MonsterSay("Demolisher riparato!", LANG_UNIVERSAL, 0);
+                        if (InstanceScript *data = player->GetInstanceScript())
+                            data->SetData(DATA_ACHI_UNBROKEN, ACHI_FAILED);
+                    }
+                    else
+                        _Creature->MonsterSay("Il demolisher non ha bisogno di riparazioni!", LANG_UNIVERSAL, 0);
                 }
                 else
                     _Creature->MonsterSay("Non trovo un demolisher nelle vicinanze", LANG_UNIVERSAL, 0);
