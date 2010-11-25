@@ -8060,7 +8060,7 @@ bool Unit::HandleAuraProc(Unit * pVictim, uint32 damage, Aura * triggeredByAura,
                 {
                     *handled = true;
 
-                    int32 bp0 = damage/20; //15% on 9 sec (5% for sec)
+                    int32 bp0 = (damage/9) * SpellMgr::CalculateSpellEffectAmount(dummySpell, 0)/100;;
 
                     // Holy Mending
                     CastCustomSpell(pVictim, 64891, &bp0, NULL, NULL, true);
