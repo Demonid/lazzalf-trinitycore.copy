@@ -59,6 +59,8 @@ public:
         uint32 Minute;
         uint32 tMinutes;
 
+        bool m_started;
+
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
 
@@ -82,6 +84,7 @@ public:
             LastTimer = 1500000;
             Minute = 60000;
             tMinutes = 0;
+            m_started = false;
         }
 
         void OnCreatureCreate(Creature* pCreature, bool /*add*/)
@@ -177,6 +180,9 @@ public:
                         DoUpdateWorldState(WORLD_STATE_TIME_COUNTER, 0);
                     }
                     break;
+                case DATA_INFINITE_EVENT_START:
+                    m_started = true;
+                    break;
             }
 
             if (data == DONE)
@@ -228,14 +234,15 @@ public:
                DoUpdateWorldState(WORLD_STATE_TIMER, 0);             
            }
 
-           if (Minute <= diff)
-           {
-              LastTimer = EventTimer;
-              tMinutes++;
-              DoUpdateWorldState(WORLD_STATE_TIME_COUNTER, 25 - tMinutes);
-              Minute = 60000;
-           }
-           else Minute -= diff;
+           if (m_started)
+               if (Minute <= diff)
+               {
+                  LastTimer = EventTimer;
+                  tMinutes++;
+                  DoUpdateWorldState(WORLD_STATE_TIME_COUNTER, 25 - tMinutes);
+                  Minute = 60000;
+               }
+               else Minute -= diff;
            return;
         }
 

@@ -290,6 +290,8 @@ public:
                 case 1:
                     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ARTHAS_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                     pPlayer->SEND_GOSSIP_MENU(GOSSIP_MENU_ARTHAS_1, pCreature->GetGUID());
+                    if (pPlayer->GetInstanceScript())
+                        pPlayer->GetInstanceScript()->SetData(DATA_INFINITE_EVENT_START, IN_PROGRESS);
                     break;
                 case 2:
                     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ARTHAS_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
@@ -375,7 +377,8 @@ public:
 
             WavesCounter = 0;
 
-            if (pInstance) {
+            if (pInstance) 
+            {
                 pInstance->SetData(DATA_ARTHAS_EVENT, NOT_STARTED);
                 switch(pInstance->GetData(DATA_ARTHAS_EVENT))
                 {
