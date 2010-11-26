@@ -328,9 +328,9 @@ public:
 
             if (type == DATA_RAG_ELE_COUNTER)
             {
-                if(data == 1)
+                if (data == 1)
                     ++rag_ele_counter;
-                else if(data == 0)
+                else if (data == 0)
                     rag_ele_counter = 0;
             }
 
@@ -341,10 +341,10 @@ public:
                     pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
             }
 
-            if(summoned == false)
+            if (summoned == false)
             {
-                for(int i = 0; i < 8; i++)
-                    if(IsBossDied[i] == false)
+                for (int i = 0; i < 8; i++)
+                    if (IsBossDied[i] == false)
                         return;
             
                 instance->SummonCreature(ID_DOMO, Pos[0]);
