@@ -74,6 +74,7 @@ LogsDir = ""
 #    LoginDatabaseInfo
 #    WorldDatabaseInfo
 #    CharacterDatabaseInfo
+#    ExtraDatabaseInfo
 #        Description: Database connection settings for the world server.
 #        Example:     "hostname;port;username;password;database"
 #                     ".;somenumber;username;password;database" - (Use named pipes on Windows
@@ -88,11 +89,13 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+ExtraDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;extra"
 
 #
 #    LoginDatabase.WorkerThreads
 #    WorldDatabase.WorkerThreads
 #    CharacterDatabase.WorkerThreads
+#    ExtraDatabase.WorkerThreads
 #        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
 #                     statements. Each worker thread is mirrored with its own connection to the
 #                     MySQL server and their own thread on the MySQL server.
@@ -103,11 +106,13 @@ CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 LoginDatabase.WorkerThreads     = 1
 WorldDatabase.WorkerThreads     = 1
 CharacterDatabase.WorkerThreads = 1
+ExtraDatabase.WorkerThreads     = 1
 
 #
 #    LoginDatabase.SynchThreads
 #    WorldDatabase.SynchThreads
 #    CharacterDatabase.SynchThreads
+#    ExtraDatabase.SynchThreads
 #        Description: The amount of MySQL connections spawned to handle.
 #        Default:     1 - (LoginDatabase.WorkerThreads)
 #                     1 - (WorldDatabase.WorkerThreads)
@@ -116,6 +121,7 @@ CharacterDatabase.WorkerThreads = 1
 LoginDatabase.SynchThreads     = 1
 WorldDatabase.SynchThreads     = 1
 CharacterDatabase.SynchThreads = 2
+ExtraDatabase.SynchThreads     = 1
 
 #
 #    MaxPingTime
