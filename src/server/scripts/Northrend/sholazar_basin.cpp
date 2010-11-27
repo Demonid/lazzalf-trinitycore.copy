@@ -535,6 +535,7 @@ public:
         npc_oracle_frezyAI(Creature* pCreature) : ScriptedAI(pCreature) 
         { 
             entry = pCreature->GetEntry();
+            me->setFaction(14);
         }
 
         uint32 entry;
