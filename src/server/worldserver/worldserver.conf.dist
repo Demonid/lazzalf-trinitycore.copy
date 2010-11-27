@@ -74,6 +74,7 @@ LogsDir = ""
 #    LoginDatabaseInfo
 #    WorldDatabaseInfo
 #    CharacterDatabaseInfo
+#    ExtraDatabaseInfo
 #        Description: Database connection settings for the world server.
 #        Example:     "hostname;port;username;password;database"
 #                     ".;somenumber;username;password;database" - (Use named pipes on Windows
@@ -88,11 +89,13 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+ExtraDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;extra"
 
 #
 #    LoginDatabase.WorkerThreads
 #    WorldDatabase.WorkerThreads
 #    CharacterDatabase.WorkerThreads
+#    ExtraDatabase.WorkerThreads
 #        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
 #                     statements. Each worker thread is mirrored with its own connection to the
 #                     MySQL server and their own thread on the MySQL server.
@@ -103,11 +106,13 @@ CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 LoginDatabase.WorkerThreads     = 1
 WorldDatabase.WorkerThreads     = 1
 CharacterDatabase.WorkerThreads = 1
+ExtraDatabase.WorkerThreads     = 1
 
 #
 #    LoginDatabase.SynchThreads
 #    WorldDatabase.SynchThreads
 #    CharacterDatabase.SynchThreads
+#    ExtraDatabase.SynchThreads
 #        Description: The amount of MySQL connections spawned to handle.
 #        Default:     1 - (LoginDatabase.WorkerThreads)
 #                     1 - (WorldDatabase.WorkerThreads)
@@ -116,6 +121,7 @@ CharacterDatabase.WorkerThreads = 1
 LoginDatabase.SynchThreads     = 1
 WorldDatabase.SynchThreads     = 1
 CharacterDatabase.SynchThreads = 2
+ExtraDatabase.SynchThreads     = 1
 
 #
 #    MaxPingTime
@@ -378,12 +384,22 @@ AddonChannel = 1
 MapUpdate.Threads = 1
 
 #
+
 #    CleanCharacterDB
 #        Description: Clean out deprecated achievements, skills, spells and talents from the db.
 #        Default:     0 - (Disabled)
 #                     1 - (Enable)
 
 CleanCharacterDB = 0
+
+#   CrashRecover.MaxCrashCount
+#   Default: 5
+#
+#   CrashRecover.CountResetTime
+#   Default: 300000
+CrashRecover.Enable = 0
+CrashRecover.MaxCrashCount = 5
+CrashRecover.CountResetTime = 300000
 
 #
 ###################################################################################################
@@ -573,6 +589,35 @@ ArenaLogFile = ""
 #                     1 - (Enabled)
 
 ArenaLog.ExtendedInfo = 0
+
+#
+#    CheatLogFile
+#        Log file of AntiCheat exception
+#        Default: "" - do not create cheat log file
+
+CheatLogFile = ""
+
+#    CheatLogTimestamp
+#        Cheat Logfile with timestamp of server start in name
+#         in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
+#        Default: 0 - no timestamp in name
+#                 1 - add timestamp in name
+
+CheatLogTimestamp = 0
+
+#    MailLogFile
+#        Log file character's mails
+#        Default: "" - do not create mail log file
+
+MailLogFile = ""
+
+#    MailLogTimestamp
+#        Mail Logfile with timestamp of server start in name
+#         in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
+#        Default: 0 - no timestamp in name
+#                 1 - add timestamp in name
+
+MailLogTimestamp = 0
 
 #
 #    SQLDriverLogFile
@@ -2457,7 +2502,99 @@ Network.OutUBuff = 65536
 Network.TcpNodelay = 1
 
 #
-###################################################################################################
+###################################################################################################################
+
+###################################################################################################################
+# ARENA MOD SETTINGS
+# 
+#    ArenaMod.Enable
+#        Enable/Disable Arena Mod
+#    Default: 0 (disabled)
+#
+#    ArenaMod.Mode
+#        Three possible modes are available, they are addable as flags :
+#        - Mode 1 : Player mode
+#          Only activates limitations for each player
+#        - Mode 2 : Team mode
+#          Only activates limitations for the whole arenateam
+#        - Mode 1 + 2 = Mode 3 : Player & Team mode
+#          Activates limitations for each player and whole arenateam
+#    Default: 3
+#
+#    ArenaMod.MaximalTeamWins
+#        Sets the maximal amount of all wins of a team against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalTeamWinsAgainstTeam
+#        Sets the maximal amount of wins of a team against another specific team
+#    Default: 15
+#
+#    ArenaMod.MaximalPlayerWins
+#        Sets the maximal amount of all wins of a single player against any team
+#    Default: 30
+#
+#    ArenaMod.MaximalPlayerWinsAgainstTeam
+#        Sets the maximal amount of wins of a single player against another specific team
+#    Default: 30
+#
+#    ArenaMod.TimeToReset
+#        Sets the time intervall in HOURS for resetting the limitation
+#    Default: 24
+#
+#    ArenaMod.ControllIp
+#        Enable/Disable Controll Ip for Arena Team
+#    Default: 0
+###################################################################################################################
+
+ArenaMod.Enabled = 0
+ArenaMod.Mode = 3
+ArenaMod.MaximalTeamWins = 40
+ArenaMod.MaximalTeamWinsAgainstTeam = 20
+ArenaMod.MaximalPlayerWins = 30
+ArenaMod.MaximalPlayerWinsAgainstTeam = 15
+ArenaMod.TimeToReset = 24
+ArenaMod.ControllIp = 0
+
+###############################################################################
+# MOVEMENT ANTICHEAT
+#
+#    Anticheat.Movement.Enable
+#        Enable Movement Anticheat
+#        Default: 1 - on
+#                 0 - off
+#
+#    Anticheat.Movement.TeleportToPlaneAlarms
+#        maximum alarms before logging mode will be switched from debug to error (default 50, allowed 20 - 100)
+#
+#    Anticheat.Movement.MistimingDelta
+#        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
+#
+#    Anticheat.Movement.MistimingAlarms
+#        mistiming alarms before logging mode will be switched from debug to error (default 200, allowed 100 - 500)
+#
+###################################################################################################################
+
+Anticheat.Movement.Enable = 0
+Anticheat.Movement.Mistiming.Enable             = 1
+Anticheat.Movement.MistimingBlock.Enable        = 1
+Anticheat.Movement.AntiGravity.Enable           = 1
+Anticheat.Movement.AntiGravityBlock.Enable      = 1
+Anticheat.Movement.AntiMultiJump.Enable         = 1
+Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1
+Anticheat.Movement.AntiSpeedTele.Enable         = 1
+Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1
+Anticheat.Movement.AntiMountainHack.Enable      = 1
+Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+Anticheat.Movement.AntiFlyHack.Enable           = 1
+Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
+Anticheat.Movement.AntiWaterwalk.Enable         = 1
+Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
+Anticheat.Movement.TeleportToPlane.Enable       = 1
+Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
+Anticheat.Movement.TeleportToPlaneAlarms = 50
+Anticheat.Movement.MistimingDelta = 15000
+Anticheat.Movement.MistimingAlarms = 200
+Anticheat.LogCheatDeltaTime = 0
 
 ###################################################################################################
 # CONSOLE AND REMOTE ACCESS
@@ -2660,6 +2797,78 @@ NoResetTalentsCost = 0
 Guild.AllowMultipleGuildMaster = 0
 
 #
+#   OutdoorPvP.Wintergrasp.Enabled
+#       Determines whether the Wintergrasp battle is enabled or not.
+#        Default: 0 = Disable
+#                 1 = Enable
+#
+#   OutdoorPvP.Wintergrasp.StartTime
+#       The start time of the first battle after server starts (in minutes)
+#       Default: 30
+#
+#   OutdoorPvP.Wintergrasp.BattleTime
+#       Time limit of a battle (in minutes)
+#       Default: 30
+#
+#   OutdoorPvP.Wintergrasp.Interval
+#       Interval between battles (in minutes)
+#       Default: 150
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorRewards
+#       Defines whether custom honor rewards should be given to player
+#        for partaking in the Wintergrasp Battle.
+#        Default: 0 = Disable
+#                 1 = Enable
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorBattleWin
+#       Defines the amount of honor points that should be given to the
+#        team winning the Wintergrasp Battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 3000
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorBattleLose
+#       Defines the amount of honor points that should be given to the
+#        team losing the Wintergrasp Battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 1250
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDamageTower
+#       Defines the amount of honor points that should be given to the
+#        team for damaging a tower.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower
+#       Defines the amount of honor points that should be given to the
+#        team for destroying a tower.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding
+#       Defines the amount of honor points that should be given to the
+#        team for damaged buildings after the battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 750
+#
+#   OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding
+#       Defines the amount of honor points that should be given to the
+#        team for intact buildings after the battle.
+#       Requires OutdoorPvP.Wintergrasp.CustomHonorRewards = 1.
+#       Default: 1500
+
+OutdoorPvP.Wintergrasp.Enabled = 0
+OutdoorPvP.Wintergrasp.StartTime = 30
+OutdoorPvP.Wintergrasp.BattleTime = 30
+OutdoorPvP.Wintergrasp.Interval = 150
+OutdoorPvP.Wintergrasp.CustomHonorRewards = 0
+OutdoorPvP.Wintergrasp.CustomHonorBattleWin = 3000
+OutdoorPvP.Wintergrasp.CustomHonorBattleLose = 1250
+OutdoorPvP.Wintergrasp.CustomHonorDamageTower = 750
+OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower = 750
+OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding = 750
+OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding = 1500
+
+#
 #     ShowKickInWorld
 #        Description: Determines whether a message is broadcasted to the entire server when a
 #                     player gets kicked
@@ -2716,8 +2925,16 @@ LevelReq.Auction = 1
 #     LevelReq.Mail
 #        Description: Level requirement for characters to be able to send and receive mails.
 #        Default:     1
+#    LootAutoDistribute.Enable
+#        Enable Autodistribute token.
+#        Default 1 - on
+#                0 - off
+#
+
 
 LevelReq.Mail = 1
+
+LootAutoDistribute.Enable = 1 
 
 #
 ###################################################################################################

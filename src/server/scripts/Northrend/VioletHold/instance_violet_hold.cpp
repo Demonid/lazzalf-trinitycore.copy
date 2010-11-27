@@ -568,7 +568,10 @@ public:
             {
                 case 6:
                     if (uiFirstBoss == 0)
-                        uiFirstBoss = urand(1,6);
+                        do
+                        {                            
+                            uiFirstBoss = urand(1,6);
+                        } while (uiFirstBoss == 3);
                     if (Creature *pSinclari = instance->GetCreature(uiSinclari))
                     {
                         if(Creature *pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))
@@ -582,7 +585,7 @@ public:
                         do
                         {
                             uiSecondBoss = urand(1,6);
-                        } while (uiSecondBoss == uiFirstBoss);
+                        } while ((uiSecondBoss == uiFirstBoss) || (uiSecondBoss == 3));
                     if (Creature *pSinclari = instance->GetCreature(uiSinclari))
                     {
                         if(Creature *pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))

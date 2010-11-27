@@ -61,7 +61,8 @@ enum eEnums
 
     //OTHER SPELLS
     //SPELL_CHARGE_UP                         = 52098,      // only used when starting walk from one platform to the other
-    //SPELL_TEMPORARY_ELECTRICAL_CHARGE       = 52092,      // triggered part of above
+    SPELL_TEMPORARY_ELECTRICAL_CHARGE       = 52092,      // triggered part of above
+    TEMPORARY_ELECTRICAL_CHARGE_AURA        = 52097,
 
     NPC_STORMFORGED_LIEUTENANT              = 29240,
     SPELL_ARC_WELD                          = 59085,
@@ -76,6 +77,8 @@ enum eEnums
     STANCE_BERSERKER                        = 1,
     STANCE_BATTLE                           = 2
 };
+
+#define ACHIEVEMENT_LIGHTNING_STRUCK 1834
 
 /*######
 ## boss_bjarngrim
@@ -123,6 +126,8 @@ public:
         uint32 m_uiSlam_Timer;
 
         uint64 m_auiStormforgedLieutenantGUID[2];
+
+        bool isCharged;
 
         void Reset()
         {
@@ -188,7 +193,12 @@ public:
             DoScriptText(SAY_DEATH, me);
 
             if (m_pInstance)
+            {
                 m_pInstance->SetData(TYPE_BJARNGRIM, DONE);
+
+                if (IsHeroic() && isCharged)
+                    m_pInstance->DoCompleteAchievement(ACHIEVEMENT_LIGHTNING_STRUCK);
+            }
         }
 
         //TODO: remove when removal is done by the core
@@ -211,8 +221,13 @@ public:
         void UpdateAI(const uint32 uiDiff)
         {
             //Return since we have no target
-         if (!UpdateVictim())
+            if (!UpdateVictim())
                 return;
+
+            if (me->HasAura(TEMPORARY_ELECTRICAL_CHARGE_AURA))
+                isCharged = true;
+            else
+                isCharged = false;
 
             // Change stance
             if (m_uiChangeStance_Timer <= uiDiff)
@@ -432,10 +447,45 @@ public:
 
 };
 
+class lightning_charge_trigger : public CreatureScript
+{
+public:
+    lightning_charge_trigger() : CreatureScript("lightning_charge_trigger") { }
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new lightning_charge_triggerAI (pCreature);
+    }
+
+    struct lightning_charge_triggerAI : public ScriptedAI
+    {
+        lightning_charge_triggerAI(Creature *pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (Creature* Bjarngrim = me->FindNearestCreature(NPC_BJARNGRIM, 10.0f, true))
+            {
+                if (!me->HasAura(SPELL_TEMPORARY_ELECTRICAL_CHARGE))
+                    me->AddAura(SPELL_TEMPORARY_ELECTRICAL_CHARGE, me);
+            }
+            else
+            {
+                if (me->HasAura(SPELL_TEMPORARY_ELECTRICAL_CHARGE))
+                    me->RemoveAura(SPELL_TEMPORARY_ELECTRICAL_CHARGE);
+            }
+        }
+    };
+
+};
 
 void AddSC_boss_bjarngrim()
 {
     new boss_bjarngrim();
     new mob_stormforged_lieutenant();
+    new lightning_charge_trigger();
 }
