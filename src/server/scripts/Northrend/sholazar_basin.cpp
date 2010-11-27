@@ -543,7 +543,10 @@ public:
         void JustDied(Unit* /*pKiller*/)
         {
             if (Unit* pTarget = me->FindNearestCreature(me->GetEntry() == NPC_ORACLE ? NPC_FREZYNE : NPC_ORACLE, 100.0f))
+            {            
                 pTarget->setFaction(35);
+                pTarget->CombatStop();
+            }
         }
     };
 
