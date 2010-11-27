@@ -59,7 +59,7 @@ class spell_pri_mana_burn : public SpellScriptLoader
                 if (!unitTarget)
                     return;
 
-                unitTarget->RemoveAurasWithMechanic((1 << MECHANIC_FEAR) | (1 << MECHANIC_POLYMORPH));
+                unitTarget->HandleAuraEffectsWithMechanic(false, (1 << MECHANIC_FEAR) | (1 << MECHANIC_POLYMORPH));
             }
 
             void Register()
