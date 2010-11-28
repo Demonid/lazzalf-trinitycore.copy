@@ -41,9 +41,9 @@ public:
         return new boss_shazzrahAI (pCreature);
     }
 
-    struct boss_shazzrahAI : public ScriptedAI
+    struct boss_shazzrahAI : public BossAI
     {
-        boss_shazzrahAI(Creature *pCreature) : ScriptedAI(pCreature)
+        boss_shazzrahAI(Creature *pCreature) : BossAI(pCreature, BOSS_SHAZZRAH)
         {
             m_pInstance = pCreature->GetInstanceScript();
         }
@@ -58,6 +58,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             ArcaneExplosion_Timer = 6000;                       //These times are probably wrong
             ShazzrahCurse_Timer = 10000;
             DeadenMagic_Timer = 24000;
@@ -67,12 +68,14 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            _JustDied();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_SHAZZRAH, 0);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)
