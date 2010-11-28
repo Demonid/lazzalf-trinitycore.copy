@@ -49,9 +49,9 @@ public:
         return new boss_golemaggAI (pCreature);
     }
 
-    struct boss_golemaggAI : public ScriptedAI
+    struct boss_golemaggAI : public BossAI
     {
-        boss_golemaggAI(Creature* pCreature) : ScriptedAI(pCreature)
+        boss_golemaggAI(Creature* pCreature) : BossAI(pCreature, BOSS_GOLEMAGG)
         {
             m_pInstance = pCreature->GetInstanceScript();
         }
@@ -65,6 +65,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             m_uiPyroblastTimer = 7*IN_MILLISECONDS;              // These timers are probably wrong
             m_uiEarthquakeTimer = 3*IN_MILLISECONDS;
             m_uiBuffTimer = 2500;
@@ -75,8 +76,14 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            _JustDied();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_GOLEMAGG, 0);
+        }
+
+        void EnterCombat(Unit * /*who*/)
+        {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 uiDiff)

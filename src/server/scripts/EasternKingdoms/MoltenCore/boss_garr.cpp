@@ -45,9 +45,9 @@ public:
         return new boss_garrAI (pCreature);
     }
 
-    struct boss_garrAI : public ScriptedAI
+    struct boss_garrAI : public BossAI
     {
-        boss_garrAI(Creature *pCreature) : ScriptedAI(pCreature) 
+        boss_garrAI(Creature *pCreature) : BossAI(pCreature, BOSS_GARR)
         {
             m_pInstance = pCreature->GetInstanceScript();
         }
@@ -62,6 +62,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             AntiMagicPulse_Timer = 25000;                       //These times are probably wrong
             MagmaShackles_Timer = 15000;
             CheckAdds_Timer = 2000;
@@ -69,12 +70,14 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            _JustDied();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_GARR, 0);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)

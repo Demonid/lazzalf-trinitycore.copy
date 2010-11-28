@@ -40,9 +40,9 @@ public:
         return new boss_lucifronAI (pCreature);
     }
 
-    struct boss_lucifronAI : public ScriptedAI
+    struct boss_lucifronAI : public BossAI
     {
-        boss_lucifronAI(Creature *pCreature) : ScriptedAI(pCreature)
+        boss_lucifronAI(Creature *pCreature) : BossAI(pCreature, BOSS_LUCIFRON)
         {
             m_pInstance = pCreature->GetInstanceScript();
         }
@@ -55,6 +55,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             ImpendingDoom_Timer = 10000;                        //Initial cast after 10 seconds so the debuffs alternate
             LucifronCurse_Timer = 20000;                        //Initial cast after 20 seconds
             ShadowShock_Timer = 6000;                           //6 seconds
@@ -62,12 +63,14 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            _JustDied();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_LUCIFRON, 0);
         }
 
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)

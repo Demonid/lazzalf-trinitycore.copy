@@ -40,9 +40,9 @@ public:
         return new boss_gehennasAI (pCreature);
     }
 
-    struct boss_gehennasAI : public ScriptedAI
+    struct boss_gehennasAI : public BossAI
     {
-        boss_gehennasAI(Creature *pCreature) : ScriptedAI(pCreature)
+        boss_gehennasAI(Creature *pCreature) : BossAI(pCreature, BOSS_GEHENNAS)
         {
             m_pInstance = pCreature->GetInstanceScript();
         }
@@ -55,6 +55,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             ShadowBolt_Timer = 6000;
             RainOfFire_Timer = 10000;
             GehennasCurse_Timer = 12000;
@@ -62,11 +63,15 @@ public:
 
         void JustDied(Unit* /*pKiller*/)
         {
+            _JustDied();
             if (m_pInstance)
                 m_pInstance->SetData(DATA_GEHENNAS, 0);
         }
 
-        void EnterCombat(Unit * /*who*/) {}
+        void EnterCombat(Unit * /*who*/)
+        {
+            _EnterCombat();
+        }
 
         void UpdateAI(const uint32 diff)
         {

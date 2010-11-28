@@ -135,6 +135,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             WrathOfRagnaros_Timer = 30000;
             HandOfRagnaros_Timer = 25000;
             LavaBurst_Timer = 10000;
@@ -153,6 +154,11 @@ public:
             me->RemoveFlag(UNIT_NPC_EMOTESTATE,EMOTE_STATE_SUBMERGED);
         }
 
+        void JustDied(Unit* /*pKiller*/)
+        {
+            _JustDied();
+        }
+
         void KilledUnit(Unit* /*victim*/)
         {
             if (rand()%5)
@@ -163,6 +169,7 @@ public:
 
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)

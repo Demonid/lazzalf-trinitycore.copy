@@ -74,9 +74,7 @@ public:
         uint64 RuneKoro, RuneZeth, RuneMazj, RuneTheri, RuneBlaz, RuneKress, RuneMohn, m_uiFirelordCacheGUID;
         uint8 rag_ele_counter;
 
-        //If all Bosses are dead.
-        bool IsBossDied[9];
-        bool summoned;
+        bool domo_summoned;
         bool rag_summoned;
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
@@ -109,16 +107,7 @@ public:
 
             m_uiFirelordCacheGUID = 0;
 
-            IsBossDied[0] = false;
-            IsBossDied[1] = false;
-            IsBossDied[2] = false;
-            IsBossDied[3] = false;
-            IsBossDied[4] = false;
-            IsBossDied[5] = false;
-            IsBossDied[6] = false;
-            IsBossDied[7] = false;
-            IsBossDied[8] = false;
-            summoned = false;
+            domo_summoned = false;
             rag_summoned = false;
         }
 
@@ -229,47 +218,47 @@ public:
             switch(type)
             {
                 case DATA_LUCIFRONISDEAD:
-                    if (IsBossDied[0])
+                    if (InstanceScript::GetBossState(BOSS_LUCIFRON) == DONE)
                         return 1;
                     break;
 
                 case DATA_MAGMADARISDEAD:
-                    if (IsBossDied[1])
+                    if (InstanceScript::GetBossState(BOSS_MAGMADAR) == DONE)
                         return 1;
                     break;
 
                 case DATA_GEHENNASISDEAD:
-                    if (IsBossDied[2])
+                    if (InstanceScript::GetBossState(BOSS_GEHENNAS) == DONE)
                         return 1;
                     break;
 
                 case DATA_GARRISDEAD:
-                    if (IsBossDied[3])
+                    if (InstanceScript::GetBossState(BOSS_GARR) == DONE)
                         return 1;
                     break;
 
                 case DATA_GEDDONISDEAD:
-                    if (IsBossDied[4])
+                    if (InstanceScript::GetBossState(BOSS_GEDDON) == DONE)
                         return 1;
                     break;
 
                 case DATA_SHAZZRAHISDEAD:
-                    if (IsBossDied[5])
+                    if (InstanceScript::GetBossState(BOSS_SHAZZRAH) == DONE)
                         return 1;
                     break;
 
                 case DATA_SULFURONISDEAD:
-                    if (IsBossDied[6])
+                    if (InstanceScript::GetBossState(BOSS_SULFURON) == DONE)
                         return 1;
                     break;
 
                 case DATA_GOLEMAGGISDEAD:
-                    if (IsBossDied[7])
+                    if (InstanceScript::GetBossState(BOSS_GOLEMAGG) == DONE)
                         return 1;
                     break;
 
                 case DATA_MAJORDOMOISDEAD:
-                    if (IsBossDied[8])
+                    if (InstanceScript::GetBossState(BOSS_MAJORDOMO) == DONE)
                         return 1;
                     break;
                 case DATA_RAG_ELE_COUNTER:
@@ -279,74 +268,17 @@ public:
             return 0;
         }
 
-        /*bool SetBossState(uint32 id, EncounterState state)
+        bool SetBossState(uint32 id, EncounterState state)
         {
-            if (!InstanceData::SetBossState(id, state))
+            if (!InstanceScript::SetBossState(id, state))
                 return false;
 
-            if (id == DATA_MAJORDOMO && state == DONE)
+            for (int i = BOSS_LUCIFRON; i < BOSS_MAJORDOMO; i++)
+                    if (InstanceScript::GetBossState(i) != DONE)
+                        return true;
+
+            if (InstanceScript::GetBossState(BOSS_MAJORDOMO) != DONE && !domo_summoned)
             {
-                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID)){
-                    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
-                }
-                instance->SummonCreature(ID_RAGNAROS, Pos[9], TEMPSUMMON_CORPSE_DESPAWN);
-            }
-            return true;
-        } */
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_LUCIFRON)
-                IsBossDied[0] = true;
-
-            if (type == DATA_MAGMADAR)
-                IsBossDied[1] = true;
-
-            if (type == DATA_GEHENNAS)
-                IsBossDied[2] = true;
-
-            if (type == DATA_GARR)
-                IsBossDied[3] = true;
-
-            if (type == DATA_SHAZZRAH)
-                IsBossDied[4] = true;
-            
-            if (type == DATA_GEDDON)
-                IsBossDied[5] = true;
-
-            if (type == DATA_GOLEMAGG)
-                IsBossDied[6] = true;
-
-            if (type == DATA_SULFURON)
-                IsBossDied[7] = true;
-
-            if (type == DATA_RAGNAROS)
-            {
-                rag_summoned = true;
-                instance->SummonCreature(ID_RAGNAROS, Pos[9]);
-            }
-
-            if (type == DATA_RAG_ELE_COUNTER)
-            {
-                if (data == 1)
-                    ++rag_ele_counter;
-                else if (data == 0)
-                    rag_ele_counter = 0;
-            }
-
-            if (type == DATA_MAJORDOMO)
-            {
-                IsBossDied[8] = true;
-                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID))
-                    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
-            }
-
-            if (summoned == false)
-            {
-                for (int i = 0; i < 8; i++)
-                    if (IsBossDied[i] == false)
-                        return;
-            
                 instance->SummonCreature(ID_DOMO, Pos[0]);
                 instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[1]);
                 instance->SummonCreature(ID_FLAMEWAKERHEALER, Pos[2]);
@@ -356,9 +288,63 @@ public:
                 instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[6]);
                 instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[7]);
                 instance->SummonCreature(ID_FLAMEWAKERELITE, Pos[8]);
-                summoned = true;
+                domo_summoned = true;
+            }
+
+            if (InstanceScript::GetBossState(BOSS_RAGNAROS) != DONE)
+                if (InstanceScript::GetBossState(BOSS_MAJORDOMO) == DONE && !rag_summoned)
+                {
+                    rag_summoned = true;
+                    instance->SummonCreature(ID_RAGNAROS, Pos[9]);
+                }
+            /*
+            if (id == DATA_MAJORDOMO && state == DONE)
+            {
+                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID)){
+                    pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
+                }
+                instance->SummonCreature(ID_RAGNAROS, Pos[9], TEMPSUMMON_CORPSE_DESPAWN);
+            }*/
+            return true;
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            /*if (type == DATA_RAGNAROS && !rag_summoned)
+            {
+                rag_summoned = true;
+                instance->SummonCreature(ID_RAGNAROS, Pos[9]);
+            }*/
+
+            if (type == DATA_RAG_ELE_COUNTER)
+            {
+                if (data == 1)
+                    ++rag_ele_counter;
+                else if (data == 0)
+                    rag_ele_counter = 0;
+            }
+
+            if (type == BOSS_MAJORDOMO && data == DONE)
+            {
+                if (GameObject *pFirelordCache = instance->GetGameObject(m_uiFirelordCacheGUID))
+                        pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
             }
         }
+        /*
+        std::string GetSaveData()
+        {
+            std::ostringstream saveStream;
+            saveStream << GetBossSaveData();
+            return saveStream.str();
+        }
+
+        void Load(const char * data)
+        {
+            std::istringstream loadStream(LoadBossState(data));
+            uint32 buff;
+            loadStream >> buff;
+            m_summoned = GOState(buff);
+        }*/
     };
 };
 
