@@ -72,7 +72,7 @@ public:
         return true;
     }
 
-    bool EffectDummyCreature(Unit *pCaster, uint32 spellId, uint32 effIndex, Creature *pCreatureTarget)
+    bool OnDummyEffect(Unit *pCaster, uint32 spellId, uint32 effIndex, Creature *pCreatureTarget)
     {
         //always check spellid and effectindex
         if (spellId == SPELL_KODO_KOMBO_ITEM && effIndex == 0)

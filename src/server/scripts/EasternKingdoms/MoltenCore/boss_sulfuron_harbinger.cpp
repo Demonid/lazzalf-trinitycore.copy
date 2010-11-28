@@ -47,9 +47,14 @@ public:
         return new boss_sulfuronAI (pCreature);
     }
 
-    struct boss_sulfuronAI : public ScriptedAI
+    struct boss_sulfuronAI : public BossAI
     {
-        boss_sulfuronAI(Creature *c) : ScriptedAI(c) {}
+        boss_sulfuronAI(Creature *pCreature) : BossAI(pCreature, BOSS_SULFURON)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
 
         uint32 Darkstrike_Timer;
         uint32 DemoralizingShout_Timer;
@@ -59,6 +64,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             Darkstrike_Timer=10000;                             //These times are probably wrong
             DemoralizingShout_Timer = 15000;
             Inspire_Timer = 13000;
@@ -66,8 +72,16 @@ public:
             Flamespear_Timer = 2000;
         }
 
+        void JustDied(Unit* /*pKiller*/)
+        {
+            _JustDied();
+            if (m_pInstance)
+                m_pInstance->SetData(DATA_SULFURON, 0);
+        }
+
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)
