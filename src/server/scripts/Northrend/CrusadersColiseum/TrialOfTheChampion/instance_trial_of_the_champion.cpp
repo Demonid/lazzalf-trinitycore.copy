@@ -101,8 +101,8 @@ class instance_trial_of_the_champion : public InstanceMapScript
             uiGrandChampion3GUID          = 0;
             uiChampionLootGUID            = 0;
             uiArgentChampionGUID          = 0;
-	        uiBlackLootChestH			  = 0;
-	        uiBlackLootChestN			  = 0;
+            uiBlackLootChestH			  = 0;
+            uiBlackLootChestN			  = 0;
 
             bDone = false;
 
@@ -231,12 +231,12 @@ class instance_trial_of_the_champion : public InstanceMapScript
                 case GO_MAIN_GATE1:
                     uiMainGate1GUID = pGO->GetGUID();
                     break;
-	        case GO_BK_LOOT:
-		            uiBlackLootChestN = pGO->GetGUID();
-		            break;
+                case GO_BK_LOOT:
+                    uiBlackLootChestN = pGO->GetGUID();
+                    break;
                 case GO_BK_LOOT_H:
-		            uiBlackLootChestH = pGO->GetGUID();
-		            break;
+                    uiBlackLootChestH = pGO->GetGUID();
+                    break;
                 case GO_CHAMPIONS_LOOT:
                 case GO_CHAMPIONS_LOOT_H:
                     uiChampionLootGUID = pGO->GetGUID();
@@ -244,24 +244,24 @@ class instance_trial_of_the_champion : public InstanceMapScript
             }
         }
 
-	    bool SetBossState(uint32 id, EncounterState state)
+        bool SetBossState(uint32 id, EncounterState state)
         {         
             if (id == NPC_BLACK_KNIGHT && state == DONE)
             {
-			    if(instance) 
-			    {
-				    if (instance->IsHeroic())
-				    {
-					    if(GameObject* Bh = instance->GetGameObject(uiBlackLootChestH))
-						    Bh->SetRespawnTime(Bh->GetRespawnDelay());
-				    }
+                if(instance) 
+                {
+                    if (instance->IsHeroic())
+                    {
+                        if(GameObject* Bh = instance->GetGameObject(uiBlackLootChestH))
+                            Bh->SetRespawnTime(Bh->GetRespawnDelay());
+                    }
                     else
-				    {
-					    if(GameObject* Bn = instance->GetGameObject(uiBlackLootChestN))
-						    Bn->SetRespawnTime(Bn->GetRespawnDelay());
-				    }
-			    }			
-		    }        
+                    {
+                        if(GameObject* Bn = instance->GetGameObject(uiBlackLootChestN))
+                            Bn->SetRespawnTime(Bn->GetRespawnDelay());
+                    }
+                }			
+            }        
             return true;
         }
 
