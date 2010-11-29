@@ -238,6 +238,11 @@ enum eGameObject
     GO_MAIN_GATE_DOOR           = 195647,
     GO_EAST_PORTCULLIS          = 195648,
     GO_WEB_DOOR                 = 195485,
+
+    GO_TWIN_CHEST_10            = 320011,
+    GO_TWIN_CHEST_25            = 320012,
+    GO_TWIN_CHEST_10_H          = 320013,
+    GO_TWIN_CHEST_25_H          = 320014,
 };
 
 enum eAchievementData
