@@ -2573,6 +2573,7 @@ ArenaMod.ControllIp = 0
 
 Anticheat.Movement.Enable = 0
 Anticheat.Movement.IgnoreGM = 1
+Anticheat.Movement.EnableDBLog = 1
 Anticheat.Movement.Mistiming.Enable             = 1
 Anticheat.Movement.MistimingBlock.Enable        = 1
 Anticheat.Movement.AntiGravity.Enable           = 1

@@ -72,7 +72,7 @@ bool AntiCheat_Local::GetAndUpdateBlockDiff(uint32 diff)
 bool AntiCheat_Local::GetAndUpdateCount()
 {
     ac_count++;
-	if (ac_count >= sWorld.getBoolConfig(CONFIG_AC_SLEEP_COUNT))
+	if (ac_count >= int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_COUNT)))
 		ac_count = 0;
 		
 	return ac_count <= 0;
@@ -180,54 +180,67 @@ void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
 
 void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movementInfo)
 {
+    std::string cheat_type = "";
 	switch (m_cheat)
 	{
 		case CHEAT_MISTIMING:
 			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, mistiming exception #%d, mistiming: %dms", 
                 plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 			    plMover->ac_local.m_anti_MistimingCount, sync_time);
-			break;
+            cheat_type = "Mistiming";
+            break;
 		case CHEAT_GRAVITY:
 		    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
                 plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 				JumpHeight, plMover->ac_local.m_anti_Last_VSpeed);
+            cheat_type = "Gravity";
 			break;
 		case CHEAT_MULTIJUMP:
 			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, multi jump  exception",
                 plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-			break;
+			cheat_type = "MultiJump";
+            break;
 		case CHEAT_SPEED:
 			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
 				plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
-			break;
+			cheat_type = "Speed";
+            break;
 		case CHEAT_TELEPORT:
 			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
 				plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
-			break;
+			cheat_type = "Teleport";
+            break;
 		case CHEAT_MOUNTAIN:
 			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, umountain exception | tg_z=%f", 
                 plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
                 tg_z);
-			break;
+			cheat_type = "Mountain";
+            break;
 		case CHEAT_FLY:
 			sLog.outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
 							plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 							plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
 							plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
 							plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());                        
-			break;
+			cheat_type = "Fly";
+            break;
 		case CHEAT_WATERWALK:
 			sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {movementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
                             plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
                             movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
-			break;
+			cheat_type = "Waterwalk";
+            break;
 		case CHEAT_TELETOPLANE:
 			sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
 							plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->ac_local.m_anti_TeleToPlane_Count);
-			break;
+			cheat_type = "TeleToPlane";
+            break;
         default:
             break;
 	}
+    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
+        ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
+            cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
 }
 
 void AntiCheat::CalcVariables(Player* plMover, MovementInfo& movementInfo, Unit *mover)

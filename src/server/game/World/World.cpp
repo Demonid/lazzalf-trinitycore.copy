@@ -564,6 +564,7 @@ void World::LoadConfigSettings(bool reload)
 
     // movement anticheat
     m_bool_configs[CONFIG_AC_ENABLE]                       = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_DBLOG]                 = sConfig.GetBoolDefault("Anticheat.Movement.EnableDBLog", true);
     m_bool_configs[CONFIG_AC_DISABLE_GM]                   = sConfig.GetBoolDefault("Anticheat.Movement.IgnoreGM", true);    
     m_bool_configs[CONFIG_AC_ENABLE_MISTIMING]             = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
     m_bool_configs[CONFIG_AC_ENABLE_MISTIMING_BLOCK]       = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
