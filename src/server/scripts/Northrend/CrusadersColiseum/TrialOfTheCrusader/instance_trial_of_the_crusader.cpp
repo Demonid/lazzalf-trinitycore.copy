@@ -85,6 +85,7 @@ public:
         uint64 m_uiAnubarakGUID;
 
         uint64 m_uiCrusadersCacheGUID;
+        uint64 m_uiTwinChestGUID;
         uint64 m_uiFloorGUID;
 
         uint64 m_uiTributeChestGUID;
@@ -98,8 +99,8 @@ public:
         uint32 achievementNotOneButTwoJormungars;
         uint32 m_uiResilienceWillFixItTimer;
         uint32 achievementResilienceWillFixIt;
-        uint32 saltAndPepperTimer;
-        uint32 achievementSaltAndPepper;
+        //uint32 saltAndPepperTimer;
+        //uint32 achievementSaltAndPepper;
         uint8  m_uiSnoboldCount;
         uint8  m_uiMistressOfPainCount;
         bool   m_bTributeToImmortalityElegible;
@@ -118,6 +119,7 @@ public:
             m_uiEvent = 0;
 
             m_uiTributeChestGUID = 0;
+            m_uiTwinChestGUID = 0;
             m_uiDataDamageTwin = 0;
 
             m_uiMainGateDoorGUID = 0;
@@ -134,8 +136,8 @@ public:
             achievementNotOneButTwoJormungars = 0;
             m_uiResilienceWillFixItTimer = 0;
             achievementResilienceWillFixIt = 0;
-            saltAndPepperTimer = 0;
-            achievementSaltAndPepper = 0;
+            //saltAndPepperTimer = 0;
+            //achievementSaltAndPepper = 0;
             m_uiSnoboldCount = 0;
             m_uiMistressOfPainCount = 0;
             m_bTributeToImmortalityElegible = true;
@@ -249,6 +251,22 @@ public:
                 case GO_TRIBUTE_CHEST_25H_50:
                 case GO_TRIBUTE_CHEST_25H_99:
                     m_uiTributeChestGUID = pGO->GetGUID(); break;
+                case GO_TWIN_CHEST_10:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_NORMAL)
+                        m_uiTwinChestGUID = pGO->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_25:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_NORMAL)
+                        m_uiTwinChestGUID = pGO->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_10_H:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        m_uiTwinChestGUID = pGO->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_25_H:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        m_uiTwinChestGUID = pGO->GetGUID();
+                    break;
             }
         }
 
@@ -291,8 +309,8 @@ public:
                 case TYPE_VALKIRIES:
                     switch (uiData)
                     {
-                        case IN_PROGRESS:
-                            saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
+                        //case IN_PROGRESS:
+                            //saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
                         case FAIL:
                             if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) uiData = NOT_STARTED;
                             break;
@@ -300,7 +318,7 @@ public:
                             if (m_auiEncounter[TYPE_VALKIRIES] == SPECIAL) uiData = DONE;
                             break;
                         case DONE:
-                            if (saltAndPepperTimer > 0)
+                            /*if (saltAndPepperTimer > 0)
                             {
                                 if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
                                     achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_10;
@@ -310,7 +328,10 @@ public:
                                 AchievementEntry const *AchievSaltAndPepper = GetAchievementStore()->LookupEntry(achievementSaltAndPepper);
                                 if (AchievSaltAndPepper)
                                     DoCompleteAchievement(achievementSaltAndPepper);
-                            }
+                            }*/
+                            if (GameObject* pChest = instance->GetGameObject(m_uiTwinChestGUID))
+                                if (pChest && !pChest->isSpawned())
+                                    pChest->SetRespawnTime(7*DAY);
                             if (instance->GetPlayers().getFirst()->getSource()->GetTeam() == ALLIANCE)
                                 m_uiEvent = 4020;
                             else
@@ -666,12 +687,12 @@ public:
                 else m_uiResilienceWillFixItTimer -= uiDiff;
             }
 
-            if (GetData(TYPE_VALKIRIES) == IN_PROGRESS && saltAndPepperTimer)
+            /*if (GetData(TYPE_VALKIRIES) == IN_PROGRESS && saltAndPepperTimer)
             {
                 if (saltAndPepperTimer <= uiDiff)
                     saltAndPepperTimer = 0;
                 else saltAndPepperTimer -= uiDiff;
-            }
+            }*/
 
             // Achievement The Traitor King control
             if (traitorKingTimer)
