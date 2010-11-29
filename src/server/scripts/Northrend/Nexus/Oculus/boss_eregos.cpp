@@ -77,9 +77,13 @@ enum EmeraldDrake
     SPELL_EMERALD_DREAM_FUNNEL                    = 50344         //(60 yds) - Channeled - Transfers 5% of the caster's max health to a friendly drake every second for 10 seconds as long as the caster channels.
 };
 
+#define ACHI_RUBY_VOID      2044
+#define ACHI_EMERALD_VOID   2045
+#define ACHI_AMBER_VOID     2046
+
 enum adds
 {
-	PLANAR_ANOMALY				= 30879
+    PLANAR_ANOMALY				= 30879
 };
 
 class boss_eregos : public CreatureScript
@@ -95,127 +99,139 @@ class boss_eregos : public CreatureScript
         }
 
         InstanceScript* pInstance;
-	    uint32 uiArcaneBarrage_Timer;
-	    uint32 uiArcaneVolley_Timer;
-	    uint32 uiEnragedAssault_Timer;
-	    bool hp1,hp2,started;
-	    int phase;
-	    SummonList lSummons;
+        uint32 uiArcaneBarrage_Timer;
+        uint32 uiArcaneVolley_Timer;
+        uint32 uiEnragedAssault_Timer;
+        bool hp1,hp2,started;
+        int phase;
+        SummonList lSummons;
+
+        uint8 rubyDrakesNumber;
+        uint8 emeraldDrakesNumber;
+        uint8 amberDrakesNumber;
 
         void Reset()
         {
             if (pInstance)
-		    {
+            {
                 pInstance->SetData(DATA_EREGOS_EVENT, NOT_STARTED);
-		    }
-		    uiArcaneBarrage_Timer   = 3000;
-		    uiArcaneVolley_Timer	= 10000;
-		    uiEnragedAssault_Timer	= 30000;
-		    hp1 = false;
-		    hp2 = false;
-		    phase = 1;
-		    started = false;
-		    lSummons.DespawnAll();
-		    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            }
+            uiArcaneBarrage_Timer   = 3000;
+            uiArcaneVolley_Timer	= 10000;
+            uiEnragedAssault_Timer	= 30000;
+            hp1 = false;
+            hp2 = false;
+            phase = 1;
+            started = false;
+            lSummons.DespawnAll();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		    me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
-		    me->GetMotionMaster()->Clear();
-		    me->GetMotionMaster()->MoveRandom(80.0f);
-		    me->SetReactState(REACT_PASSIVE);
+            me->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveRandom(80.0f);
+            me->SetReactState(REACT_PASSIVE);
+
+            rubyDrakesNumber = 0;
+            emeraldDrakesNumber = 0;
+            amberDrakesNumber = 0;
         }
 
-	    void SummonPlanarAnomaly()
-	    {
-		    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
-		    std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
-		    for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
-		    {
-			    Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
-			    if (pUnit )
-			    {
-				    Creature* summon = DoSummon(PLANAR_ANOMALY, me, 3.0f, 30000, TEMPSUMMON_DEAD_DESPAWN);
-				    if(summon)
-				    {
-					    summon->Attack(pUnit,true);
-					    printf("PLANAR_ANOMALY attack uinit %s \n",pUnit->GetName());
-					    summon->SetVisible(true);
-					    summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-					    summon->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
-				    }
-			    }
-		    }
-	    }
+        void SummonPlanarAnomaly()
+        {
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
+            for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
+            {
+                Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
+                if (pUnit )
+                {
+                    Creature* summon = DoSummon(PLANAR_ANOMALY, me, 3.0f, 30000, TEMPSUMMON_DEAD_DESPAWN);
+                    if(summon)
+                    {
+                        summon->Attack(pUnit,true);
+                        printf("PLANAR_ANOMALY attack uinit %s \n",pUnit->GetName());
+                        summon->SetVisible(true);
+                        summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        summon->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
+                    }
+                }
+            }
+        }
 
         void EnterCombat(Unit* who)
         {
             if (pInstance)
-		    {
+            {
                 pInstance->SetData(DATA_EREGOS_EVENT, IN_PROGRESS);
-		    }
+            }
+
+            rubyDrakesNumber = 0;
+            emeraldDrakesNumber = 0;
+            amberDrakesNumber = 0;
         }
 
         void UpdateAI(const uint32 uiDiff)
         {
-		    if(!started && pInstance->GetData(DATA_UROM_EVENT) == DONE)
-		    {
-			    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-			    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-			    me->RemoveAllAuras();
-			    me->SetReactState(REACT_AGGRESSIVE);
-			    started=true;
-		    }
+            if(!started && pInstance->GetData(DATA_UROM_EVENT) == DONE)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveAllAuras();
+                me->SetReactState(REACT_AGGRESSIVE);
+                started=true;
+            }
             //Return since we have no target
             if (!UpdateVictim())
                 return;
 
-		    if(!hp1 && HealthBelowPct(60))
-		    {
-			    phase = 2;
-			    hp1=true;
-		    }
+            if(!hp1 && HealthBelowPct(60))
+            {
+                phase = 2;
+                hp1=true;
+            }
 
-		    if(!hp2 && HealthBelowPct(20))
-		    {
-			    phase = 2;
-			    hp2=true;
-		    }
+            if(!hp2 && HealthBelowPct(20))
+            {
+                phase = 2;
+                hp2=true;
+            }
 
-		    switch(phase)
-		    {
-			    case 1:
-				    if(!me->HasAura(SPELL_PLANAR_SHIFT))
-				    {
-					    lSummons.DespawnAll();
-					    if(uiArcaneBarrage_Timer <= uiDiff)
-					    {
-						    uiArcaneBarrage_Timer = 3000;
-						    DoCast(me->getVictim(),DUNGEON_MODE(SPELL_ARCANE_BARRAGE,H_SPELL_ARCANE_BARRAGE)); 
-					    } else uiArcaneBarrage_Timer -= uiDiff;
+            switch(phase)
+            {
+                case 1:
+                    if(!me->HasAura(SPELL_PLANAR_SHIFT))
+                    {
+                        lSummons.DespawnAll();
+                        if(uiArcaneBarrage_Timer <= uiDiff)
+                        {
+                            uiArcaneBarrage_Timer = 3000;
+                            DoCast(me->getVictim(),DUNGEON_MODE(SPELL_ARCANE_BARRAGE,H_SPELL_ARCANE_BARRAGE)); 
+                        } else uiArcaneBarrage_Timer -= uiDiff;
 
-					    if(uiArcaneVolley_Timer <= uiDiff)
-					    {
-						    uiArcaneVolley_Timer = 8000;
-						    DoCast(DUNGEON_MODE(SPELL_ARCANE_VOLLEY,H_SPELL_ARCANE_VOLLEY)); 
-					    } else uiArcaneVolley_Timer -= uiDiff;
+                        if(uiArcaneVolley_Timer <= uiDiff)
+                        {
+                            uiArcaneVolley_Timer = 8000;
+                            DoCast(DUNGEON_MODE(SPELL_ARCANE_VOLLEY,H_SPELL_ARCANE_VOLLEY)); 
+                        } else uiArcaneVolley_Timer -= uiDiff;
 
-					    if(uiEnragedAssault_Timer <= uiDiff)
-					    {
-						    uiEnragedAssault_Timer = 30000;
-						    DoCast(SPELL_ENRAGED_ASSAULT); 
-					    } else uiEnragedAssault_Timer -= uiDiff;
-					    DoMeleeAttackIfReady();
-				    }
-				    break;
-			    case 2:
-				    SummonPlanarAnomaly();
-				    DoCast(SPELL_PLANAR_SHIFT);
-				    phase = 1;
-				    break;
+                        if(uiEnragedAssault_Timer <= uiDiff)
+                        {
+                            uiEnragedAssault_Timer = 30000;
+                            DoCast(SPELL_ENRAGED_ASSAULT); 
+                        } else uiEnragedAssault_Timer -= uiDiff;
+                        DoMeleeAttackIfReady();
+                    }
+                    break;
+                case 2:
+                    SummonPlanarAnomaly();
+                    DoCast(SPELL_PLANAR_SHIFT);
+                    phase = 1;
+                    break;
 
-		    }
+            }
         }
 
-	    void JustSummoned(Creature* summoned)
+        void JustSummoned(Creature* summoned)
         {
             lSummons.Summon(summoned);
         }
@@ -223,11 +239,50 @@ class boss_eregos : public CreatureScript
         void JustDied(Unit* killer)
         {
             if (pInstance)
-		    {
+            {
                 pInstance->SetData(DATA_EREGOS_EVENT, DONE);
-		    }
-		    lSummons.DespawnAll();
+
+                if (IsHeroic())
+                    drakeCheck();
+            }
+            lSummons.DespawnAll();
         }
+
+        // è ancora da testare se funziona
+        void drakeCheck()
+        {
+            Map* pMap = me->GetMap();
+            if (pMap)
+            {
+                Map::PlayerList const &players = pMap->GetPlayers();
+                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                {
+                    if (Creature* vehicle = itr->getSource()->GetVehicleCreatureBase())
+                    {
+                        switch (vehicle->GetEntry())
+                        {
+                            case NPC_AMBER_DRAKE_VEHICLE:                                
+                                amberDrakesNumber++;
+                                break;
+                            case NPC_RUBY_DRAKE_VEHICLE:                                
+                                rubyDrakesNumber++;
+                                break;
+                            case NPC_EMERALD_DRAKE_VEHICLE:                                
+                                emeraldDrakesNumber++;
+                                break;
+                        }
+                    }
+                }
+            }
+           
+            if (amberDrakesNumber == 0)
+                pInstance->DoCompleteAchievement(ACHI_AMBER_VOID);
+            if (rubyDrakesNumber == 0)
+                pInstance->DoCompleteAchievement(ACHI_RUBY_VOID);
+            if (emeraldDrakesNumber == 0)
+                pInstance->DoCompleteAchievement(ACHI_EMERALD_VOID);
+        }
+
     };
 
     CreatureAI* GetAI(Creature* pCreature)
