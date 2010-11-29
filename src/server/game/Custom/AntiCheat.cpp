@@ -141,7 +141,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 			if (!CheckAntiTeleToPlane(plMover, vehMover, movementInfo))
 				check_passed = false;
 	}
-	return check_passed;	
+	return check_passed;
 }
 
 void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)

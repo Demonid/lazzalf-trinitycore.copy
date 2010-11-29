@@ -37,7 +37,7 @@
 #include "Battleground.h"
 #include "DBCEnums.h"
 #include "LFG.h"
-#include "AntiCheat.h"
+#include "../../Custom/AntiCheat.h"
 
 #include<string>
 #include<vector>
