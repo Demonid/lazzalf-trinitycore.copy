@@ -168,6 +168,24 @@ enum WorldBoolConfigs
     CONFIG_LOOT_AUTO_DISTRIBUTE,
     CONFIG_AUTOBROADCAST,
     CONFIG_ALLOW_TICKETS,
+    CONFIG_AC_ENABLE,
+    CONFIG_AC_DISABLE_GM,
+    CONFIG_AC_ENABLE_MISTIMING,
+    CONFIG_AC_ENABLE_MISTIMING_BLOCK,
+    CONFIG_AC_ENABLE_ANTIGRAVITY,
+    CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK,
+    CONFIG_AC_ENABLE_ANTIMULTIJUMP,
+    CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK,
+    CONFIG_AC_ENABLE_ANTISPEEDTELE,
+    CONFIG_AC_ENABLE_ANTISPEEDTELE_BLOCK,
+    CONFIG_AC_ENABLE_ANTIMOUNTAIN,
+    CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK,
+    CONFIG_AC_ENABLE_ANTIFLY,
+    CONFIG_AC_ENABLE_ANTIFLY_BLOCK,
+    CONFIG_AC_ENABLE_ANTIWATERWALK,
+    CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -330,6 +348,11 @@ enum WorldIntConfigs
     CONFIG_AUTOBROADCAST_INTERVAL,
     CONFIG_MAX_RESULTS_LOOKUP_COMMANDS,
     CONFIG_DB_PING_INTERVAL,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS,
+    CONFIG_AC_ENABLE_MISTIMING_DELTHA,
+    CONFIG_AC_DELTA_LOG,
+    CONFIG_AC_SLEEP_COUNT,
+    CONFIG_AC_ALARM_COUNT,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -739,30 +762,6 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
-        // movement anticheat
-        static bool GetEnableMvAnticheat()           { return m_EnableMvAnticheat;         }
-        static bool GetEnableMistiming()             { return m_EnableMistiming;           }
-        static bool GetEnableMistimingBlock()        { return m_EnableMistimingBlock;      }
-        static bool GetEnableAntiGravity()           { return m_EnableAntiGravity;         }
-        static bool GetEnableAntiMultiJump()         { return m_EnableAntiMultiJump;       }
-        static bool GetEnableAntiSpeedTele()         { return m_EnableAntiSpeedTele;       }
-        static bool GetEnableAntiMountainHack()      { return m_EnableAntiMountainHack;    }
-        static bool GetEnableAntiFlyHack()           { return m_EnableAntiFlyHack;         }
-        static bool GetEnableAntiWaterwalk()         { return m_EnableAntiWaterwalk;       }
-        static bool GetEnableTeleportToPlane()       { return m_EnableTeleportToPlane;     }
-        static bool GetEnableAntiGravityBlock()      { return m_EnableAntiGravityBlock;         }
-        static bool GetEnableAntiMultiJumpBlock()    { return m_EnableAntiMultiJumpBlock;       }
-        static bool GetEnableAntiSpeedTeleBlock()    { return m_EnableAntiSpeedTeleBlock;       }
-        static bool GetEnableAntiMountainHackBlock() { return m_EnableAntiMountainHackBlock;    }
-        static bool GetEnableAntiFlyHackBlock()      { return m_EnableAntiFlyHackBlock;         }
-        static bool GetEnableAntiWaterwalkBlock()    { return m_EnableAntiWaterwalkBlock;       }
-        static bool GetEnableTeleportToPlaneBlock()  { return m_EnableTeleportToPlaneBlock;     }
-        static uint32 GetTeleportToPlaneAlarms()     { return m_TeleportToPlaneAlarms;     }
-        static uint32 GetMistimingDelta()            { return m_MistimingDelta;            }
-        static uint32 GetMistimingAlarms()           { return m_MistimingAlarms;           }
-        static uint32 GetLogCheatDeltaTime()         { return m_LogCheatDeltaTime;         }
-        // end movement anticheat
-
         bool GetBGTimerAnnounce()                    { return m_BGTimerAnnounce;         }
         void SetBGTimerAnnounceFalse()               { m_BGTimerAnnounce = false;        }
 
@@ -868,29 +867,6 @@ class World
         static int32 m_visibility_notify_periodOnContinents;
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
-
-        // movement anticheat enable flag
-        static bool m_EnableMvAnticheat;
-        static bool m_EnableMistiming;
-        static bool m_EnableMistimingBlock;  
-        static bool m_EnableAntiGravity;
-        static bool m_EnableAntiMultiJump;
-        static bool m_EnableAntiSpeedTele;
-        static bool m_EnableAntiMountainHack;
-        static bool m_EnableAntiFlyHack;
-        static bool m_EnableAntiWaterwalk;
-        static bool m_EnableTeleportToPlane;
-        static bool m_EnableAntiGravityBlock;
-        static bool m_EnableAntiMultiJumpBlock;
-        static bool m_EnableAntiSpeedTeleBlock;
-        static bool m_EnableAntiMountainHackBlock;
-        static bool m_EnableAntiFlyHackBlock;
-        static bool m_EnableAntiWaterwalkBlock;
-        static bool m_EnableTeleportToPlaneBlock;
-        static uint32 m_TeleportToPlaneAlarms;
-        static uint32 m_MistimingDelta;
-        static uint32 m_MistimingAlarms;
-        static uint32 m_LogCheatDeltaTime;
 
         bool m_BGTimerAnnounce;
 

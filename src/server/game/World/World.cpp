@@ -86,28 +86,6 @@ int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
-// movement anticheat
-bool World::m_EnableMvAnticheat = true;
-bool World::m_EnableMistiming = true;
-bool World::m_EnableMistimingBlock = true;
-bool World::m_EnableAntiGravity = true;
-bool World::m_EnableAntiGravityBlock = true;
-bool World::m_EnableAntiMultiJump = true;
-bool World::m_EnableAntiMultiJumpBlock = true;
-bool World::m_EnableAntiSpeedTele = true;
-bool World::m_EnableAntiSpeedTeleBlock = true;
-bool World::m_EnableAntiMountainHack = true;
-bool World::m_EnableAntiMountainHackBlock = true;
-bool World::m_EnableAntiFlyHack = true;
-bool World::m_EnableAntiFlyHackBlock = true;
-bool World::m_EnableAntiWaterwalk = true;
-bool World::m_EnableAntiWaterwalkBlock = true;
-bool World::m_EnableTeleportToPlane = true;
-bool World::m_EnableTeleportToPlaneBlock = true;
-uint32 World::m_TeleportToPlaneAlarms = 50;
-uint32 World::m_MistimingAlarms = 200;
-uint32 World::m_MistimingDelta = 15000;
-uint32 World::m_LogCheatDeltaTime = 0;
 bool m_BGTimerAnnounce = true;
 /// World constructor
 World::World()
@@ -585,67 +563,59 @@ void World::LoadConfigSettings(bool reload)
     }
 
     // movement anticheat
-    m_EnableMvAnticheat = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);    
-    m_EnableMistiming = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
-    m_EnableMistimingBlock = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
-    m_EnableAntiGravity = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravity.Enable", true);
-    m_EnableAntiGravityBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravityBlock.Enable", true);
-    m_EnableAntiMultiJump = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJump.Enable", true);
-    m_EnableAntiMultiJumpBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJumpBlock.Enable", true);
-    m_EnableAntiSpeedTele = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTele.Enable", true);
-    m_EnableAntiSpeedTeleBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTeleBlock.Enable", true);
-    m_EnableAntiMountainHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHack.Enable", true);
-    m_EnableAntiMountainHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
-    m_EnableAntiFlyHack = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHack.Enable", true);
-    m_EnableAntiFlyHackBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHackBlock.Enable", true);
-    m_EnableAntiWaterwalk = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalk.Enable", true);
-    m_EnableAntiWaterwalkBlock = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalkBlock.Enable", true);
-    m_EnableTeleportToPlane = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlane.Enable", true);
-    m_EnableTeleportToPlaneBlock = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlaneBlock.Enable", true);
-    m_TeleportToPlaneAlarms = sConfig.GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
-    if (m_TeleportToPlaneAlarms < 20)
+    m_bool_configs[CONFIG_AC_ENABLE]                       = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);
+    m_bool_configs[CONFIG_AC_DISABLE_GM]                   = sConfig.GetBoolDefault("Anticheat.Movement.IgnoreGM", true);    
+    m_bool_configs[CONFIG_AC_ENABLE_MISTIMING]             = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_MISTIMING_BLOCK]       = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIGRAVITY]           = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravity.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK]     = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravityBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIMULTIJUMP]         = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJump.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK]   = sConfig.GetBoolDefault("Anticheat.Movement.AntiMultiJumpBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTISPEEDTELE]         = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTele.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTISPEEDTELE_BLOCK]   = sConfig.GetBoolDefault("Anticheat.Movement.AntiSpeedTeleBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIMOUNTAIN]          = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHack.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK]    = sConfig.GetBoolDefault("Anticheat.Movement.AntiMountainHackBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIFLY]               = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHack.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIFLY_BLOCK]         = sConfig.GetBoolDefault("Anticheat.Movement.AntiFlyHackBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIWATERWALK]         = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalk.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK]   = sConfig.GetBoolDefault("Anticheat.Movement.AntiWaterwalkBlock.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE]       = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlane.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK] = sConfig.GetBoolDefault("Anticheat.Movement.TeleportToPlaneBlock.Enable", true);
+    m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = sConfig.GetIntDefault("Anticheat.Movement.TeleportToPlaneAlarms", 50);
+    if (m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] < 20)
     {
-        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_TeleportToPlaneAlarms);
-        m_TeleportToPlaneAlarms = 20;
+        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
+        m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = 20;
     }
-    if (m_TeleportToPlaneAlarms > 100)
+    if (m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] > 100)
     {
-        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_TeleportToPlaneAlarms);
-        m_TeleportToPlaneAlarms = 100;
+        sLog.outError("Anticheat.Movement.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
+        m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = 100;
     }
-    m_MistimingDelta = sConfig.GetIntDefault("Anticheat.Movement.MistimingDelta", 15000);
-    if (m_MistimingDelta < 5000)
+    m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = sConfig.GetIntDefault("Anticheat.Movement.MistimingDelta", 15000);
+    if (m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] < 5000)
     {
-        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_MistimingDelta);
-        m_MistimingDelta = 5000;
+        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
+        m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = 5000;
     }
-    if (m_MistimingDelta > 50000)
+    if (m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] > 50000)
     {
-        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_MistimingDelta);
-        m_MistimingDelta = 50000;
+        sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
+        m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = 50000;
     }
-    m_MistimingAlarms = sConfig.GetIntDefault("Anticheat.Movement.MistimingAlarms", 200);
-    if (m_MistimingAlarms < 100)
+    m_int_configs[CONFIG_AC_DELTA_LOG] = sConfig.GetIntDefault("Anticheat.LogCheatDeltaTime", 5000);
+    if (m_int_configs[CONFIG_AC_DELTA_LOG] < 0)
     {
-        sLog.outError("Anticheat.Movement.MistimingAlarms (%d) must be >= 100. Using 100 instead.", m_MistimingAlarms);
-        m_MistimingAlarms = 100;
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
+        m_int_configs[CONFIG_AC_DELTA_LOG] = 0;
     }
-    if (m_MistimingAlarms > 500)
+    if (m_int_configs[CONFIG_AC_DELTA_LOG] > 60000)
     {
-        sLog.outError("Anticheat.Movement.m_MistimingAlarms (%d) must be <= 500. Using 500 instead.", m_MistimingAlarms);
-        m_MistimingAlarms = 500;    
+        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
+        m_int_configs[CONFIG_AC_DELTA_LOG] = 0;    
     }
-    m_LogCheatDeltaTime = sConfig.GetIntDefault("Anticheat.LogCheatDeltaTime", 5000);
-    if (m_LogCheatDeltaTime < 0)
-    {
-        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be >= 0. Using 0 instead.", m_LogCheatDeltaTime);
-        m_LogCheatDeltaTime = 0;
-    }
-    if (m_LogCheatDeltaTime > 60000)
-    {
-        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_LogCheatDeltaTime);
-        m_LogCheatDeltaTime = 0;    
-    }
+    m_int_configs[CONFIG_AC_SLEEP_COUNT] = sConfig.GetIntDefault("Anticheat.LogSleepCount", 0);
+    m_int_configs[CONFIG_AC_ALARM_COUNT] = sConfig.GetIntDefault("Anticheat.LogAlarmCount", 20);
     ///- Read other configuration items from the config file
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig.GetBoolDefault("DurabilityLoss.InPvP", false);

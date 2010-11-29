@@ -1084,6 +1084,7 @@ struct SpellProcEventEntry;                                 // used only private
 
 class Unit : public WorldObject
 {
+    friend class AntiCheat;
     public:
         typedef std::set<Unit*> AttackerSet;
         typedef std::set<Unit*> ControlList;

@@ -32,11 +32,7 @@
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
-
-// Movement anticheat defines
-//#define ANTICHEAT_DEBUG
-#define ANTICHEAT_EXCEPTION_INFO
-// End Movement anticheat defines
+#include "AntiCheat.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 {
@@ -365,8 +361,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (opcode == MSG_MOVE_FALL_LAND && plMover && !plMover->isInFlight())
     {
         // movement anticheat
-        plMover->m_anti_JumpCount = 0;
-        plMover->m_anti_JumpBaseZ = 0;
+        plMover->ac_local.m_anti_JumpCount = 0;
+        plMover->ac_local.m_anti_JumpBaseZ = 0;
         if (!vehMover)
             plMover->HandleFall(movementInfo);
     }
@@ -380,7 +376,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
    /*----------------------*/
 
     // begin anti cheat
-    #define FROSTBROOD_VANQUISHER 28670
+    /*#define FROSTBROOD_VANQUISHER 28670
     bool check_passed = true;
     #ifdef ANTICHEAT_DEBUG
     sLog.outBasic("AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] opcode[%s] | transport (xyzo): %f, %f, %fo(%f)",
@@ -471,14 +467,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     }
                     plMover->FallGround(2);
                 }
-
-                /* Disabled, not passive at all, and apparently causing crashes:
-                if (plMover->m_anti_MistimingCount > World::GetMistimingAlarms())
-                {
-                    sWorld.SendWorldText(3, strcat("Kicking cheater: ", plMover->GetName()));
-                    KickPlayer();
-                    return;
-                } */ 
             }
             // end mistiming checks
 
@@ -776,10 +764,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                                     sLog.outCheat("AC2-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
                                         plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->m_anti_TeleToPlane_Count);
                                 }
-                                /* Disabled, not passive at all, and apparently causing crashes:
-                                sWorld.SendWorldText(3, strcat("Kicking cheater: ", plMover->GetName()));
-                                KickPlayer();
-                                return; */
+                                
                             }
                             #endif
                             if (World::GetEnableTeleportToPlaneBlock())
@@ -796,7 +781,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     plMover->m_anti_TeleToPlane_Count = 0;
             }
         }
-    }
+    }*/
+    AntiCheat m_anticheat;
+
+    bool check_passed = m_anticheat.Check(plMover, vehMover, opcode, movementInfo, mover);		
 
     if (check_passed)
     {
@@ -850,10 +838,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
         }
         // movement anticheat
-        if (plMover->m_anti_AlarmCount > 0)
+        if (plMover->ac_local.m_anti_AlarmCount > 0)
         {
-            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->m_anti_AlarmCount);
-            plMover->m_anti_AlarmCount = 0;
+            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->ac_local.m_anti_AlarmCount);
+            plMover->ac_local.m_anti_AlarmCount = 0;
         }
         // end movement anticheat
     }
@@ -878,7 +866,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             plMover->m_transport = NULL;
         }
         plMover->m_temp_transport = NULL;
-        ++(plMover->m_anti_AlarmCount);
+        ++(plMover->ac_local.m_anti_AlarmCount);
         WorldPacket data;
         plMover->SetUnitMovementFlags(0);
         plMover->SendTeleportAckPacket();
@@ -1167,11 +1155,11 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
     #endif
 
     _player->m_movementInfo = movementInfo;
-    _player->m_anti_Last_HSpeed = movementInfo.j_xyspeed;
-    _player->m_anti_Last_VSpeed = movementInfo.j_zspeed < 3.2f ? movementInfo.j_zspeed - 1.0f : 3.2f;
+    _player->ac_local.m_anti_Last_HSpeed = movementInfo.j_xyspeed;
+    _player->ac_local.m_anti_Last_VSpeed = movementInfo.j_zspeed < 3.2f ? movementInfo.j_zspeed - 1.0f : 3.2f;
 
-    const uint32 dt = (_player->m_anti_Last_VSpeed < 0) ? int(ceil(_player->m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->m_anti_Last_VSpeed/25)*1000);
-    _player->m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
+    const uint32 dt = (_player->ac_local.m_anti_Last_VSpeed < 0) ? int(ceil(_player->ac_local.m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->ac_local.m_anti_Last_VSpeed/25)*1000);
+    _player->ac_local.m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)

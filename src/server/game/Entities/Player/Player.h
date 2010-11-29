@@ -37,6 +37,7 @@
 #include "Battleground.h"
 #include "DBCEnums.h"
 #include "LFG.h"
+#include "AntiCheat.h"
 
 #include<string>
 #include<vector>
@@ -988,6 +989,10 @@ class Player : public Unit, public GridObject<Player>
     public:
         explicit Player (WorldSession *session);
         ~Player ();
+
+        // movement anticheat
+        AntiCheat_Local ac_local; // AntiCheat
+        // end movement anticheat
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -2612,28 +2617,7 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
-
-        // movement anticheat
-        time_t m_anti_LastClientTime;           // last movement client time
-        time_t m_anti_LastServerTime;           // last movement server time
-        time_t m_anti_DeltaClientTime;          // client side session time
-        time_t m_anti_DeltaServerTime;          // server side session time
-        uint32 m_anti_MistimingCount;           // mistiming count
-        time_t m_logcheat_time;
-
-        time_t m_anti_LastSpeedChangeTime;      // last speed change time
-
-        float m_anti_Last_HSpeed;               // horizontal speed, default RUN speed
-        float m_anti_Last_VSpeed;               // vertical speed, default max jump height
-
-        uint32 m_anti_TeleToPlane_Count;        // Teleport To Plane alarm counter
-
-        uint64 m_anti_AlarmCount;               // alarm counter
-
-        uint16 m_anti_JumpCount;                // Jump already began, anti air jump check
-        float m_anti_JumpBaseZ;                 // Z coord before jump
-        // end movement anticheat
-
+        
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
         uint32 m_usedTalentCount;

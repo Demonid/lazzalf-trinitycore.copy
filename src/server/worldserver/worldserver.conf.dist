@@ -2569,12 +2569,10 @@ ArenaMod.ControllIp = 0
 #    Anticheat.Movement.MistimingDelta
 #        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
 #
-#    Anticheat.Movement.MistimingAlarms
-#        mistiming alarms before logging mode will be switched from debug to error (default 200, allowed 100 - 500)
-#
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 0
+Anticheat.Movement.IgnoreGM = 1
 Anticheat.Movement.Mistiming.Enable             = 1
 Anticheat.Movement.MistimingBlock.Enable        = 1
 Anticheat.Movement.AntiGravity.Enable           = 1
@@ -2593,7 +2591,8 @@ Anticheat.Movement.TeleportToPlane.Enable       = 1
 Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
 Anticheat.Movement.TeleportToPlaneAlarms = 50
 Anticheat.Movement.MistimingDelta = 15000
-Anticheat.Movement.MistimingAlarms = 200
+Anticheat.LogSleepCount = 0
+Anticheat.LogAlarmCount = 0
 Anticheat.LogCheatDeltaTime = 0
 
 ###################################################################################################
