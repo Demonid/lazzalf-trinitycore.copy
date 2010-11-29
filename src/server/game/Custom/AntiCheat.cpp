@@ -72,7 +72,7 @@ bool AntiCheat_Local::GetAndUpdateBlockDiff(uint32 diff)
 bool AntiCheat_Local::GetAndUpdateCount()
 {
     ac_count++;
-	if (ac_count >= CONFIG_AC_SLEEP_COUNT)
+	if (ac_count >= sWorld.getBoolConfig(CONFIG_AC_SLEEP_COUNT))
 		ac_count = 0;
 		
 	return ac_count <= 0;
