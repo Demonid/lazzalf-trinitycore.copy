@@ -615,6 +615,12 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
         m_int_configs[CONFIG_AC_DELTA_LOG] = 0;    
     }
+    m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDBLogDelta", 5000);
+    if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] < 0)
+    {
+        sLog.outError("Anticheat.CheatResetListDBLogDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA]);
+        m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] = 0;
+    }
     m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDelta", 5000);
     if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] < 0)
     {

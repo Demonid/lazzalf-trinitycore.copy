@@ -25,6 +25,10 @@ AntiCheat_Local::AntiCheat_Local()
 	ac_delta = 0;
 
     for (int i = 0; i < MAX_CHEAT; i++)
+        m_CheatList_DBlog[i] = 0;
+    m_CheatList_DBlog_reset_diff = 0;
+
+    for (int i = 0; i < MAX_CHEAT; i++)
         m_CheatList[i] = 0;
     m_CheatList_reset_diff = 0;
 	
@@ -83,8 +87,28 @@ bool AntiCheat_Local::GetAndUpdateDelta(uint32 diff)
 	return ac_delta <= 0;
 }
 
+void AntiCheat_Local::ResetCheatListDBLog(uint32 diff)
+{
+    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA) == 0)
+        return;
+
+    if (m_CheatList_DBlog_reset_diff >= diff)
+		m_CheatList_DBlog_reset_diff -= diff;
+	else 
+		m_CheatList_DBlog_reset_diff = 0;
+
+	if (!m_CheatList_DBlog_reset_diff)
+		for (int i = 0; i < MAX_CHEAT; i++)
+            m_CheatList_DBlog[i] = 0;
+
+    m_CheatList_DBlog_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA);
+}
+
 void AntiCheat_Local::ResetCheatList(uint32 diff)
 {
+    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
+        return;
+
     if (m_CheatList_reset_diff >= diff)
 		m_CheatList_reset_diff -= diff;
 	else 
@@ -116,24 +140,28 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	// Calc Delthas for AntiCheat
 	CalcDeltas(plMover, movementInfo);
 	
-	if (!plMover->ac_local.GetAndUpdateBlockDiff(cServerTimeDelta))
-		return true;
+    // Not used for now
+	//if (!plMover->ac_local.GetAndUpdateBlockDiff(cServerTimeDelta))
+	//	return true;
+
+    // Clean player cheatlist for DB Log
+    plMover->ac_local.ResetCheatListDBLog(cServerTimeDelta);
 
     // Clean player cheatlist
     plMover->ac_local.ResetCheatList(cServerTimeDelta);
 	
-    // Clean player cheatlist
+    // Diff for AntiCheat sleep
 	if (!plMover->ac_local.GetAndUpdateDelta(cServerTimeDelta))
         return true;    
 
-    // AntiCheat Block
-	if (plMover->ac_local.GetBlock())
-		return true;
+    // AntiCheat Block (not used for now)
+	//if (plMover->ac_local.GetBlock())
+	//	return true;
 		
 	// Set to false if find a Cheat
 	bool check_passed = true;
 	
-	// Mistiming Cheast
+	// Mistiming Cheat
 	if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_MISTIMING))
 		if (!CheckMistiming(plMover, vehMover, movementInfo))
 			check_passed = false;
@@ -264,14 +292,14 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
     if (m_cheat >= MAX_CHEAT)
         return;
 
-    (plMover->ac_local.m_CheatList[m_cheat])++;
+    (plMover->ac_local.m_CheatList_DBlog[m_cheat])++;
 
     if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
-        if (plMover->ac_local.m_CheatList[m_cheat] >= sWorld.getIntConfig(CONFIG_AC_DBLOG_COUNT))
+        if (plMover->ac_local.m_CheatList_DBlog[m_cheat] >= sWorld.getIntConfig(CONFIG_AC_DBLOG_COUNT))
         {
             ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
                 cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-            plMover->ac_local.m_CheatList[m_cheat] = 0;
+            plMover->ac_local.m_CheatList_DBlog[m_cheat] = 0;
         }
 }
 
@@ -361,6 +389,7 @@ bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo&
 		if (bMistimingModulo)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;
 		    if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 			{
 				plMover->ac_local.m_logcheat_time = cServerTime;				
@@ -397,6 +426,7 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
     if (no_fly_auras && no_swim_in_water && plMover->ac_local.m_anti_JumpBaseZ != 0 && JumpHeight < plMover->ac_local.m_anti_Last_VSpeed)
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+        (plMover->ac_local.m_CheatList[CHEAT_GRAVITY])++;
 		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 		{
 			plMover->ac_local.m_logcheat_time = cServerTime;
@@ -434,6 +464,7 @@ bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementI
 		if (plMover->ac_local.m_anti_JumpCount >= 1)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;
 			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 			{
 				plMover->ac_local.m_logcheat_time = cServerTime;
@@ -482,6 +513,7 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
 		if (real_delta > allowed_delta)
 		{	
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+            (plMover->ac_local.m_CheatList[CHEAT_SPEED])++; // Speed and teleport are logged in one
 			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 			{
 				plMover->ac_local.m_logcheat_time = cServerTime;
@@ -508,6 +540,7 @@ bool AntiCheat::CheckAntiMountain(Player* plMover, Vehicle *vehMover, MovementIn
 	if (delta_z < plMover->ac_local.m_anti_Last_VSpeed && plMover->ac_local.m_anti_JumpCount == 0 && tg_z > 2.37f)
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+        (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN])++;
 		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 		{
 			plMover->ac_local.m_logcheat_time = cServerTime;
@@ -530,6 +563,7 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& m
 		if (no_fly_auras && !no_fly_flags)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+            (plMover->ac_local.m_CheatList[CHEAT_FLY])++;
 			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 			{
 				plMover->ac_local.m_logcheat_time = cServerTime;
@@ -566,6 +600,7 @@ bool AntiCheat::CheckAntiWaterwalk(Player* plMover, Vehicle *vehMover, MovementI
 	if (no_waterwalk_auras && !no_waterwalk_flags)
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+        (plMover->ac_local.m_CheatList[CHEAT_WATERWALK])++;
 		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 		{
 			plMover->ac_local.m_logcheat_time = cServerTime;
@@ -610,6 +645,7 @@ bool AntiCheat::CheckAntiTeleToPlane(Player* plMover, Vehicle *vehMover, Movemen
 				if (plMover->ac_local.m_anti_TeleToPlane_Count > sWorld.getIntConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS))
 				{
 					plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+                    (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE])++;
 					if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
 					{
 						plMover->ac_local.m_logcheat_time = cServerTime;
