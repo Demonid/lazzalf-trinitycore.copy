@@ -51,7 +51,8 @@ class AntiCheat_Local
         time_t m_anti_DeltaClientTime;          // client side session time
         time_t m_anti_DeltaServerTime;          // server side session time
         uint32 m_anti_MistimingCount;           // mistiming count
-        time_t m_logcheat_time;
+        time_t m_logfile_time;
+        time_t m_logdb_time;        
 
         time_t m_anti_LastSpeedChangeTime;      // last speed change time
 
@@ -80,10 +81,11 @@ class AntiCheat
 	private:
 		// Delthas
 		int32 cClientTimeDelta;
-		uint64 cServerTime;
-		uint32 difftime_log;
+		uint64 cServerTime;		
 		uint32 cServerTimeDelta;
 		int32 sync_time;
+        uint32 difftime_log_file;
+        uint32 difftime_log_db;
 
 		// Variables
 		float current_speed;

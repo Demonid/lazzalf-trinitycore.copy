@@ -604,16 +604,27 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.Movement.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
         m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = 50000;
     }
-    m_int_configs[CONFIG_AC_DELTA_LOG] = sConfig.GetIntDefault("Anticheat.LogCheatDeltaTime", 5000);
-    if (m_int_configs[CONFIG_AC_DELTA_LOG] < 0)
+    m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = sConfig.GetIntDefault("Anticheat.LogFileDelta", 1000);
+    if (m_int_configs[CONFIG_AC_DELTA_LOG_FILE] < 0)
     {
-        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
-        m_int_configs[CONFIG_AC_DELTA_LOG] = 0;
+        sLog.outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
+        m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = 0;
     }
-    if (m_int_configs[CONFIG_AC_DELTA_LOG] > 60000)
+    if (m_int_configs[CONFIG_AC_DELTA_LOG_FILE] > 60000)
     {
-        sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
-        m_int_configs[CONFIG_AC_DELTA_LOG] = 0;    
+        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
+        m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = 0;    
+    }
+    m_int_configs[CONFIG_AC_DELTA_LOG_DB] = sConfig.GetIntDefault("Anticheat.LogDBDelta", 1000);
+    if (m_int_configs[CONFIG_AC_DELTA_LOG_DB] < 0)
+    {
+        sLog.outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
+        m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 0;
+    }
+    if (m_int_configs[CONFIG_AC_DELTA_LOG_DB] > 60000)
+    {
+        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
+        m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 0;    
     }
     m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDBLogDelta", 5000);
     if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] < 0)

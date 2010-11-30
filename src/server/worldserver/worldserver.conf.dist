@@ -2601,6 +2601,14 @@ Anticheat.IgnoreGM = 1
 
 Anticheat.EnableDBLog = 0
 
+#    Anticheat.LogFileDelta
+#        Delta for every Character AntiCheatLog on File (default 0)
+#    Anticheat.LogDBDelta
+#        Delta for every Character AntiCheatLog on DB (default 0)
+
+Anticheat.LogFileDelta = 0
+Anticheat.LogDBDelta = 0
+
 #    Anticheat.LogDBCount
 #        A query of log on DB every LogDBCount rilevation of one cheat (default 0)
 #    Anticheat.CheatResetListDBLogDelta
@@ -2608,6 +2616,11 @@ Anticheat.EnableDBLog = 0
 
 Anticheat.LogDBCount = 0
 Anticheat.CheatResetListDBLogDelta = 0
+
+#    Anticheat.LogSleepDelta
+#        Sleep delta time for AntiCheat controll on every character (default 500)
+#    Anticheat.LogAlarmDelta
+#        Don't go to sleep for LogAlarmDeltaSleep after found a cheat (default 5000)
 
 Anticheat.LogSleepDelta = 500
 Anticheat.LogAlarmDelta = 5000
