@@ -2562,45 +2562,56 @@ ArenaMod.ControllIp = 0
 #        Enable Movement Anticheat
 #        Default: 1 - on
 #                 0 - off
-#
-#    Anticheat.Movement.TeleportToPlaneAlarms
-#        maximum alarms before logging mode will be switched from debug to error (default 50, allowed 20 - 100)
+
+Anticheat.Movement.Enable = 0
+
 #
 #    Anticheat.Movement.MistimingDelta
 #        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
-#
-###################################################################################################################
 
-Anticheat.Movement.Enable = 0
 Anticheat.Movement.Mistiming.Enable             = 1
 Anticheat.Movement.MistimingBlock.Enable        = 1
+Anticheat.Movement.MistimingDelta = 15000
+
 Anticheat.Movement.AntiGravity.Enable           = 1
 Anticheat.Movement.AntiGravityBlock.Enable      = 1
+
 Anticheat.Movement.AntiMultiJump.Enable         = 1
 Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1
+
 Anticheat.Movement.AntiSpeedTele.Enable         = 1
 Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1
+
 Anticheat.Movement.AntiMountainHack.Enable      = 1
 Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+
 Anticheat.Movement.AntiFlyHack.Enable           = 1
 Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
+
 Anticheat.Movement.AntiWaterwalk.Enable         = 1
 Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
+
+#
+#    Anticheat.Movement.TeleportToPlaneAlarms
+#        maximum alarms before log TeleToPlane cheat (default 50, allowed 20 - 100)
+
 Anticheat.Movement.TeleportToPlane.Enable       = 1
 Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
 Anticheat.Movement.TeleportToPlaneAlarms = 50
-Anticheat.Movement.MistimingDelta = 15000
 
+#
 #    Anticheat.IgnoreGM
 #        ignore GM in anticheat controll (default 1)
 
 Anticheat.IgnoreGM = 1
 
+#
 #    Anticheat.EnableDBLog
 #        Enable DBLog con extra database for cheat (default 0)
 
 Anticheat.EnableDBLog = 0
 
+#
 #    Anticheat.LogFileDelta
 #        Delta for every Character AntiCheatLog on File (default 0)
 #    Anticheat.LogDBDelta
@@ -2609,6 +2620,7 @@ Anticheat.EnableDBLog = 0
 Anticheat.LogFileDelta = 0
 Anticheat.LogDBDelta = 0
 
+#
 #    Anticheat.LogSleepDelta
 #        Sleep delta time for AntiCheat controll on every character (default 500)
 #    Anticheat.LogAlarmDelta
@@ -2618,6 +2630,9 @@ Anticheat.LogSleepDelta = 500
 Anticheat.LogAlarmDelta = 5000
 
 Anticheat.CheatResetListDelta = 5000
+
+#
+###################################################################################################################
 
 ###################################################################################################
 # CONSOLE AND REMOTE ACCESS
