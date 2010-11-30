@@ -300,7 +300,7 @@ void AntiCheat::CalcVariables(Player* plMover, MovementInfo& movementInfo, Unit 
 
 	allowed_delta = plMover->m_transport || plMover->m_temp_transport ? 2 : // movement distance allowed delta
 		pow(std::max(current_speed, plMover->ac_local.m_anti_Last_HSpeed) * time_delta, 2)
-	   + 2                                                                             // minimum allowed delta
+	    + 2                                                                             // minimum allowed delta
 		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                     // mountain fall allowed delta
 
 	if (movementInfo.time > plMover->ac_local.m_anti_LastSpeedChangeTime)
