@@ -35,10 +35,13 @@ class AntiCheat_Local
 	private:
 		bool ac_block;
 		uint32 ac_block_diff;
-		int32 ac_count;
+		int32 ac_delta;
 		
 	public:
-		AntiCheat_Local();	
+		AntiCheat_Local();
+
+        uint32 m_CheatList[MAX_CHEAT];
+        uint32 m_CheatList_reset_diff;
 	
 		time_t m_anti_LastClientTime;           // last movement client time
         time_t m_anti_LastServerTime;           // last movement server time
@@ -63,8 +66,9 @@ class AntiCheat_Local
 		bool GetBlock();
         void AddBlockDiff(uint32 /*diff*/);
 		bool GetAndUpdateBlockDiff(uint32 /*diff*/);
-		bool GetAndUpdateCount();
-		void SetCount(int32 /*m_num*/);	
+		bool GetAndUpdateDelta(uint32 /*diff*/);
+		void SetDelta(int32 /*delta*/);	
+        void ResetCheatList(uint32 /*diff*/);
 };
 
 class AntiCheat
@@ -136,6 +140,6 @@ class AntiCheat
 // int CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS
 // int CONFIG_AC_ENABLE_MISTIMING_DELTHA
 // int CONFIG_AC_DELTA_LOG
-// int CONFIG_AC_SLEEP_COUNT
-// int CONFIG_AC_ALARM_COUNT
+// int CONFIG_AC_SLEEP_DELTA
+// int CONFIG_AC_ALARM_DELTA
 #endif
