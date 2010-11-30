@@ -24,7 +24,7 @@
 #include "Util.h"
 #include "SharedDefines.h"
 #include "SpellMgr.h"
-
+#include "Group.h"
 #include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "OutdoorPvPMgr.h"
 

@@ -33,6 +33,7 @@
 #include "Object.h"
 #include "Opcodes.h"
 #include "DisableMgr.h"
+#include "Group.h"
 
 // Temporal fix to wintergrasp spirit guides till 3.2
 #include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"

@@ -60,6 +60,7 @@
 #include "LFGMgr.h"
 #include "CreatureTextMgr.h"
 #include "SmartAI.h"
+#include "Group.h"
 
 bool ChatHandler::HandleJailReloadCommand(const char* arg)
 {

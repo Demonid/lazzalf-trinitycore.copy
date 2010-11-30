@@ -29,6 +29,7 @@
 #include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
+#include "Group.h"
 #include "OutdoorPvPMgr.h"
 
 #define DEFAULT_GRID_EXPIRY     300
