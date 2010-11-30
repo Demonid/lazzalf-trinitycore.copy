@@ -626,12 +626,6 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
         m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 0;    
     }
-    m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDBLogDelta", 5000);
-    if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] < 0)
-    {
-        sLog.outError("Anticheat.CheatResetListDBLogDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA]);
-        m_int_configs[CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA] = 0;
-    }
     m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDelta", 5000);
     if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] < 0)
     {
@@ -649,12 +643,6 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog.outError("Anticheat.Anticheat.LogAlarmDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ALARM_DELTA]);
         m_int_configs[CONFIG_AC_ALARM_DELTA] = 0;
-    }
-    m_int_configs[CONFIG_AC_DBLOG_COUNT] = sConfig.GetIntDefault("Anticheat.LogDBCount", 0);
-    if (m_int_configs[CONFIG_AC_DBLOG_COUNT] < 0)
-    {
-        sLog.outError("Anticheat.Anticheat.LogDBCount (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DBLOG_COUNT]);
-        m_int_configs[CONFIG_AC_DBLOG_COUNT] = 0;
     }
     ///- Read other configuration items from the config file
 
