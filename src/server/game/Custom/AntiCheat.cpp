@@ -413,10 +413,10 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
 			{
 				plMover->ac_local.m_logfile_time = cServerTime;  
 			    sLog.outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
-							    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-							    plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-							    plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
-							    plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());                        
+				    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+				    plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
+				    plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
+				    plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());                        
             }
             cheat_type = "Fly";
             break;
@@ -425,8 +425,8 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
 			{
 				plMover->ac_local.m_logfile_time = cServerTime;  
 			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {movementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
-                                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-                                movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+                    movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
             }
             cheat_type = "Waterwalk";
             break;
@@ -435,7 +435,7 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
 			{
 				plMover->ac_local.m_logfile_time = cServerTime;  
 			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
-							    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->ac_local.m_anti_TeleToPlane_Count);
+				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->ac_local.m_anti_TeleToPlane_Count);
             }
             cheat_type = "TeleToPlane";
             break;
