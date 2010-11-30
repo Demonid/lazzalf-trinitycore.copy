@@ -323,6 +323,32 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
     return res;
 }
 
+bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+{
+    bool res = SetOneFactionReputation(factionEntry, standing, false);
+    if (res)
+    {
+        // now we can send it
+        FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+        if (itr != m_factions.end())
+            SendState(&itr->second);
+    }
+    return res;
+}
+
+bool ReputationMgr::ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
+{            
+    bool res = SetOneFactionReputation(factionEntry, standing, true);
+    if (res)
+    {
+        // now we can send it
+        FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
+        if (itr != m_factions.end())
+            SendState(&itr->second);
+    }
+    return res;
+}
+
 bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
 {
     FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
