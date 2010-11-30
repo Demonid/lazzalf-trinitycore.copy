@@ -441,12 +441,6 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
             break;
 	}
 
-    // Controll for crash
-    if (m_cheat >= MAX_CHEAT)
-        return;
-
-    (plMover->ac_local.m_CheatList_DBlog[m_cheat])++;
-
     if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
         if (difftime_log_db > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_DB))
         {		                    
