@@ -25,10 +25,6 @@ AntiCheat_Local::AntiCheat_Local()
     ac_goactivate = false;
 
     for (int i = 0; i < MAX_CHEAT; i++)
-        m_CheatList_DBlog[i] = 0;
-    m_CheatList_DBlog_reset_diff = 0;
-
-    for (int i = 0; i < MAX_CHEAT; i++)
         m_CheatList[i] = 0;
     m_CheatList_reset_diff = 0;
 	
@@ -109,23 +105,6 @@ void AntiCheat_Local::SetDelta(int32 delta)
     ac_delta = delta;
 }
 
-void AntiCheat_Local::ResetCheatListDBLog(uint32 diff)
-{
-    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA) == 0)
-        return;
-
-    if (m_CheatList_DBlog_reset_diff >= diff)
-		m_CheatList_DBlog_reset_diff -= diff;
-	else 
-		m_CheatList_DBlog_reset_diff = 0;
-
-	if (!m_CheatList_DBlog_reset_diff)
-		for (int i = 0; i < MAX_CHEAT; i++)
-            m_CheatList_DBlog[i] = 0;
-
-    m_CheatList_DBlog_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DBLOG_DELTA);
-}
-
 void AntiCheat_Local::ResetCheatList(uint32 diff)
 {
     if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
@@ -160,9 +139,6 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
     // Not used for now
 	//if (!plMover->ac_local.GetAndUpdateBlockDiff(cServerTimeDelta))
 	//	return true;
-
-    // Clean player cheatlist for DB Log
-    plMover->ac_local.ResetCheatListDBLog(cServerTimeDelta);
 
     // Clean player cheatlist
     plMover->ac_local.ResetCheatList(cServerTimeDelta);
@@ -473,13 +449,11 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
 
     if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
         if (difftime_log_db > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_DB))
-            if (plMover->ac_local.m_CheatList_DBlog[m_cheat] >= sWorld.getIntConfig(CONFIG_AC_DBLOG_COUNT))
-	        {		                    
-                ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
-                    cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-                plMover->ac_local.m_CheatList_DBlog[m_cheat] = 0;
-                plMover->ac_local.m_logdb_time = cServerTime;
-            }
+        {		                    
+            ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
+                cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            plMover->ac_local.m_logdb_time = cServerTime;
+        }
 }
 
 bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo& movementInfo)
