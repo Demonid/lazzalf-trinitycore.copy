@@ -829,6 +829,8 @@ public:
                                 DoScriptText(SAY_PHASE206, pMalganis);
                                 pMalganis->SetUInt64Value(UNIT_FIELD_TARGET, me->GetGUID());
                                 pMalganis->SetReactState(REACT_PASSIVE);
+                                pMalganis->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                                pMalganis->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             }
                             JumpToNextStep(11000);
                             break;
