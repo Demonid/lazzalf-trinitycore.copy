@@ -148,7 +148,12 @@ enum WorldBoolConfigs
     CONFIG_START_ALL_REP,
     CONFIG_ALWAYS_MAXSKILL,
     CONFIG_PVP_TOKEN_ENABLE,
-    CONFIG_NO_RESET_TALENT_COST,
+    CONFIG_NO_RESET_TALENT_COST,        
+    CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED,    
+    CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR,    
+	CONFIG_ARENAMOD_ENABLE,    
+    CONFIG_ARENAMOD_CONTROLL_IP,    
+    CONFIG_CRASH_RECOVER_ENABLE,
     CONFIG_SHOW_KICK_IN_WORLD,
     CONFIG_CHATLOG_CHANNEL,
     CONFIG_CHATLOG_WHISPER,
@@ -160,8 +165,28 @@ enum WorldBoolConfigs
     CONFIG_CHATLOG_ADDON,
     CONFIG_CHATLOG_BGROUND,
     CONFIG_DUNGEON_FINDER_ENABLE,
+    CONFIG_LOOT_AUTO_DISTRIBUTE,
     CONFIG_AUTOBROADCAST,
     CONFIG_ALLOW_TICKETS,
+    CONFIG_AC_ENABLE,
+    CONFIG_AC_ENABLE_DBLOG,
+    CONFIG_AC_DISABLE_GM,
+    CONFIG_AC_ENABLE_MISTIMING,
+    CONFIG_AC_ENABLE_MISTIMING_BLOCK,
+    CONFIG_AC_ENABLE_ANTIGRAVITY,
+    CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK,
+    CONFIG_AC_ENABLE_ANTIMULTIJUMP,
+    CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK,
+    CONFIG_AC_ENABLE_ANTISPEEDTELE,
+    CONFIG_AC_ENABLE_ANTISPEEDTELE_BLOCK,
+    CONFIG_AC_ENABLE_ANTIMOUNTAIN,
+    CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK,
+    CONFIG_AC_ENABLE_ANTIFLY,
+    CONFIG_AC_ENABLE_ANTIFLY_BLOCK,
+    CONFIG_AC_ENABLE_ANTIWATERWALK,
+    CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK,
     BOOL_CONFIG_VALUE_COUNT
 };
 
@@ -288,11 +313,28 @@ enum WorldIntConfigs
     CONFIG_PVP_TOKEN_MAP_TYPE,
     CONFIG_PVP_TOKEN_ID,
     CONFIG_PVP_TOKEN_COUNT,
+    CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL,
+    CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER,
+    CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING,
+    CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING,
+	CONFIG_ARENAMOD_MODE,
+    CONFIG_ARENAMOD_MAX_TEAM_WIN,	
+	CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM,
+    CONFIG_ARENAMOD_MAX_PLAYER_WIN,
+    CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM,
+    CONFIG_ARENAMOD_TIME_RESET,
     CONFIG_INTERVAL_LOG_UPDATE,
     CONFIG_MIN_LOG_UPDATE,
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PLAYER_ALLOW_COMMANDS,
     CONFIG_NUMTHREADS,
+    CONFIG_UINT32_MAX_CRASH_COUNT,
+    CONFIG_UINT32_CRASH_COUNT_RESET,
     CONFIG_LOGDB_CLEARINTERVAL,
     CONFIG_LOGDB_CLEARTIME,
     CONFIG_CLIENTCACHE_VERSION,
@@ -307,6 +349,13 @@ enum WorldIntConfigs
     CONFIG_AUTOBROADCAST_INTERVAL,
     CONFIG_MAX_RESULTS_LOOKUP_COMMANDS,
     CONFIG_DB_PING_INTERVAL,
+    CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS,
+    CONFIG_AC_ENABLE_MISTIMING_DELTHA,
+    CONFIG_AC_DELTA_LOG_FILE,
+    CONFIG_AC_DELTA_LOG_DB,
+    CONFIG_AC_RESET_CHEATLIST_DELTA,
+    CONFIG_AC_SLEEP_DELTA,
+    CONFIG_AC_ALARM_DELTA,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -451,6 +500,11 @@ enum WorldStates
 {
     WS_WEEKLY_QUEST_RESET_TIME = 20002,                      // Next weekly reset time
     WS_BG_DAILY_RESET_TIME     = 20003                       // Next daily BG reset time
+};
+
+enum ArenaModSystem
+{
+    LAST_TIME_MOD_RESET = 80001
 };
 
 // DB scripting commands
@@ -606,7 +660,7 @@ class World
         time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
         time_t GetNextWeeklyQuestsResetTime() const { return m_NextWeeklyQuestReset; }
         time_t GetNextRandomBGResetTime() const { return m_NextRandomBGReset; }
-
+ 
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
         {
@@ -711,6 +765,21 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
+        bool GetBGTimerAnnounce()                    { return m_BGTimerAnnounce;         }
+        void SetBGTimerAnnounceFalse()               { m_BGTimerAnnounce = false;        }
+
+        void SetWintergrapsTimer(uint32 timer, uint32 state)
+        {
+            m_WintergrapsTimer = timer;
+            m_WintergrapsState = state;
+        }
+
+        uint32 GetWintergrapsTimer() { return m_WintergrapsTimer; }
+        uint32 GetWintergrapsState() { return m_WintergrapsState; }
+
+        uint32 m_WintergrapsTimer;
+        uint32 m_WintergrapsState;
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -743,9 +812,9 @@ class World
 
         void InitDailyQuestResetTime();
         void InitWeeklyQuestResetTime();
-        void InitRandomBGResetTime();
         void ResetDailyQuests();
         void ResetWeeklyQuests();
+        void InitRandomBGResetTime();
         void ResetRandomBG();
     private:
         static volatile bool m_stopEvent;
@@ -802,6 +871,8 @@ class World
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
 
+        bool m_BGTimerAnnounce;
+
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*,ACE_Thread_Mutex> cliCmdQueue;
 
@@ -809,6 +880,11 @@ class World
         time_t m_NextDailyQuestReset;
         time_t m_NextWeeklyQuestReset;
         time_t m_NextRandomBGReset;
+
+        // GuildHouse controll 
+        uint32 m_guildhousetimer;
+
+        uint32 m_BGannouncetimer;
 
         //Player Queue
         Queue m_QueuedPlayer;
@@ -832,4 +908,3 @@ extern uint32 realmID;
 
 #define sWorld (*ACE_Singleton<World, ACE_Null_Mutex>::instance())
 #endif
-/// @}
