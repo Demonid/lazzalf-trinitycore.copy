@@ -4,6 +4,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "Chat.h"
+#include "Group.h"
 #include "MapManager.h"
 #include "ScriptedCreature.h"
 
