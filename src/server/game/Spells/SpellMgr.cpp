@@ -3987,6 +3987,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 61915:     // Lightning Whirl 10
         case 63483:     // Lightning Whirl 25
         case 55098:     // Transformation
+        case 65875:     // Twin Pact (Dark)
+        case 65876:     // Twin Pact (Light)
             spellInfo->InterruptFlags = 47;
             count++;
             break;
