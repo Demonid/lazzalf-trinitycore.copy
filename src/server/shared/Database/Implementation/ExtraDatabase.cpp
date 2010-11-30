@@ -29,5 +29,8 @@ bool ExtraDatabaseConnection::Open()
         LOAD YOUR PREPARED STATEMENTS HERE
         ##################################
     */
+
+    PrepareStatement(EXTRA_ADD_ITEMSTAT, "INSERT INTO item_stats (guid, item, state) VALUES (?, ?, ?)");
+
     return true;
 }

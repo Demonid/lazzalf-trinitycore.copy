@@ -41,6 +41,7 @@ enum ExtraDatabaseStatements
         When updating more than one field, consider looking at the calling function
         name for a suiting suffix.
     */
+    EXTRA_ADD_ITEMSTAT,
     MAX_EXTRADATABASE_STATEMENTS,
 };
 
