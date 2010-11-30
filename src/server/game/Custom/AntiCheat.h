@@ -40,6 +40,9 @@ class AntiCheat_Local
 	public:
 		AntiCheat_Local();
 
+        uint32 m_CheatList_DBlog[MAX_CHEAT];
+        uint32 m_CheatList_DBlog_reset_diff;
+
         uint32 m_CheatList[MAX_CHEAT];
         uint32 m_CheatList_reset_diff;
 	
@@ -68,6 +71,7 @@ class AntiCheat_Local
 		bool GetAndUpdateBlockDiff(uint32 /*diff*/);
 		bool GetAndUpdateDelta(uint32 /*diff*/);
 		void SetDelta(int32 /*delta*/);	
+        void ResetCheatListDBLog(uint32 /*diff*/);
         void ResetCheatList(uint32 /*diff*/);
 };
 
