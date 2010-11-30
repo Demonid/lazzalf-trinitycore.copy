@@ -564,8 +564,8 @@ void World::LoadConfigSettings(bool reload)
 
     // movement anticheat
     m_bool_configs[CONFIG_AC_ENABLE]                       = sConfig.GetBoolDefault("Anticheat.Movement.Enable", true);
-    m_bool_configs[CONFIG_AC_ENABLE_DBLOG]                 = sConfig.GetBoolDefault("Anticheat.Movement.EnableDBLog", true);
-    m_bool_configs[CONFIG_AC_DISABLE_GM]                   = sConfig.GetBoolDefault("Anticheat.Movement.IgnoreGM", true);    
+    m_bool_configs[CONFIG_AC_ENABLE_DBLOG]                 = sConfig.GetBoolDefault("Anticheat.EnableDBLog", true);
+    m_bool_configs[CONFIG_AC_DISABLE_GM]                   = sConfig.GetBoolDefault("Anticheat.IgnoreGM", true);    
     m_bool_configs[CONFIG_AC_ENABLE_MISTIMING]             = sConfig.GetBoolDefault("Anticheat.Movement.Mistiming.Enable", true);
     m_bool_configs[CONFIG_AC_ENABLE_MISTIMING_BLOCK]       = sConfig.GetBoolDefault("Anticheat.Movement.MistimingBlock.Enable", true);
     m_bool_configs[CONFIG_AC_ENABLE_ANTIGRAVITY]           = sConfig.GetBoolDefault("Anticheat.Movement.AntiGravity.Enable", true);
@@ -615,8 +615,30 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.LogCheatDeltaTime (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG]);
         m_int_configs[CONFIG_AC_DELTA_LOG] = 0;    
     }
-    m_int_configs[CONFIG_AC_SLEEP_COUNT] = sConfig.GetIntDefault("Anticheat.LogSleepCount", 0);
-    m_int_configs[CONFIG_AC_ALARM_COUNT] = sConfig.GetIntDefault("Anticheat.LogAlarmCount", 20);
+    m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDelta", 5000);
+    if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] < 0)
+    {
+        sLog.outError("Anticheat.CheatResetListDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA]);
+        m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = 0;
+    }
+    m_int_configs[CONFIG_AC_SLEEP_DELTA] = sConfig.GetIntDefault("Anticheat.LogSleepDelta", 500);
+    if (m_int_configs[CONFIG_AC_SLEEP_DELTA] < 0)
+    {
+        sLog.outError("Anticheat.LogSleepDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_SLEEP_DELTA]);
+        m_int_configs[CONFIG_AC_SLEEP_DELTA] = 0;
+    }
+    m_int_configs[CONFIG_AC_ALARM_DELTA] = sConfig.GetIntDefault("Anticheat.LogAlarmDelta", 5000);
+    if (m_int_configs[CONFIG_AC_ALARM_DELTA] < 0)
+    {
+        sLog.outError("Anticheat.Anticheat.LogAlarmDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ALARM_DELTA]);
+        m_int_configs[CONFIG_AC_ALARM_DELTA] = 0;
+    }
+    m_int_configs[CONFIG_AC_DBLOG_COUNT] = sConfig.GetIntDefault("Anticheat.LogDBCount", 0);
+    if (m_int_configs[CONFIG_AC_DBLOG_COUNT] < 0)
+    {
+        sLog.outError("Anticheat.Anticheat.LogDBCount (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DBLOG_COUNT]);
+        m_int_configs[CONFIG_AC_DBLOG_COUNT] = 0;
+    }
     ///- Read other configuration items from the config file
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig.GetBoolDefault("DurabilityLoss.InPvP", false);

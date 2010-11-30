@@ -2572,8 +2572,6 @@ ArenaMod.ControllIp = 0
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 0
-Anticheat.Movement.IgnoreGM = 1
-Anticheat.Movement.EnableDBLog = 1
 Anticheat.Movement.Mistiming.Enable             = 1
 Anticheat.Movement.MistimingBlock.Enable        = 1
 Anticheat.Movement.AntiGravity.Enable           = 1
@@ -2592,9 +2590,29 @@ Anticheat.Movement.TeleportToPlane.Enable       = 1
 Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
 Anticheat.Movement.TeleportToPlaneAlarms = 50
 Anticheat.Movement.MistimingDelta = 15000
-Anticheat.LogSleepCount = 0
-Anticheat.LogAlarmCount = 0
+
+#    Anticheat.IgnoreGM
+#        ignore GM in anticheat controll (default 1)
+
+Anticheat.IgnoreGM = 1
+
+#    Anticheat.EnableDBLog
+#        Enable DBLog con extra database for cheat (default 0)
+
+Anticheat.EnableDBLog = 0
+
+#    Anticheat.LogDBCount
+#        A query of log on DB every LogDBCount rilevation of one cheat (default 0)
+#    Anticheat.LogCheatDeltaTime
+#        Reset count cheat every LogCheatDeltaTime (default 0)
+
+Anticheat.LogDBCount = 0
 Anticheat.LogCheatDeltaTime = 0
+
+Anticheat.LogSleepDelta = 500
+Anticheat.LogAlarmDelta = 5000
+
+Anticheat.CheatResetListDelta = 5000
 
 ###################################################################################################
 # CONSOLE AND REMOTE ACCESS
