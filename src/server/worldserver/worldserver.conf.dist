@@ -2609,8 +2609,6 @@ Anticheat.EnableDBLog = 0
 Anticheat.LogDBCount = 0
 Anticheat.CheatResetListDBLogDelta = 0
 
-Anticheat.CheatResetListDelta = 0
-
 Anticheat.LogSleepDelta = 500
 Anticheat.LogAlarmDelta = 5000
 

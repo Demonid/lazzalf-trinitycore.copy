@@ -14,15 +14,15 @@
  *
  * @Authors : Lazzalf based on AC2
  *
- * @Version : 0.1
- *
  **/
 
 AntiCheat_Local::AntiCheat_Local()
 {
 	ac_block = false;
 	ac_block_diff = 0;
+
 	ac_delta = 0;
+    ac_goactivate = false;
 
     for (int i = 0; i < MAX_CHEAT; i++)
         m_CheatList_DBlog[i] = 0;
@@ -69,22 +69,42 @@ void AntiCheat_Local::AddBlockDiff(uint32 diff)
 
 bool AntiCheat_Local::GetAndUpdateBlockDiff(uint32 diff)
 {
-	if (ac_block_diff >= diff)
+    if (ac_block_diff == 0)
+        return true;
+
+	if (ac_block_diff > diff)
 		ac_block_diff -= diff;
-	else 
+	else
+    {
 		ac_block_diff = 0;
+        ac_goactivate = true;
+    }        
 	
 	return ac_block_diff == 0;
 }
 
 bool AntiCheat_Local::GetAndUpdateDelta(uint32 diff)
 {
+    if (ac_goactivate)
+    {
+        ac_goactivate = false;
+        return true;
+    }
+
     ac_delta += diff;
 
 	if (ac_delta >= int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)))
+    {
 		ac_delta = 0;
+        ac_goactivate = true;
+    }
 		
 	return ac_delta <= 0;
+}
+
+void AntiCheat_Local::SetDelta(int32 delta)
+{
+    ac_delta = delta;
 }
 
 void AntiCheat_Local::ResetCheatListDBLog(uint32 diff)
@@ -121,11 +141,6 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
     m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
 }
 
-void AntiCheat_Local::SetDelta(int32 delta)
-{
-    ac_delta = delta;
-}
-
 bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, MovementInfo& movementInfo, Unit *mover)
 {
 	if (!plMover)
@@ -152,12 +167,12 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	
     // Diff for AntiCheat sleep
 	if (!plMover->ac_local.GetAndUpdateDelta(cServerTimeDelta))
-        return true;    
-
+        return true;
+  
     // AntiCheat Block (not used for now)
 	//if (plMover->ac_local.GetBlock())
-	//	return true;
-		
+	//	return true;	
+
 	// Set to false if find a Cheat
 	bool check_passed = true;
 	
@@ -166,28 +181,49 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 		if (!CheckMistiming(plMover, vehMover, movementInfo))
 			check_passed = false;
 
-	const uint32 curDest = plMover->m_taxi.GetTaxiDestination(); // check taxi flight
+    // check taxi flight
+    const uint32 curDest = plMover->m_taxi.GetTaxiDestination();	
 	if (!curDest)
-	{
-		CalcVariables(plMover, movementInfo, mover);
+	{            
+        if (plMover->ac_local.ac_goactivate)
+        {
+            CalcVariablesSmall(plMover, movementInfo, mover);
+            return true;
+        }
+        else
+		    CalcVariables(plMover, movementInfo, mover);
+
+        // Gravity Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIGRAVITY))
 			if (!CheckAntiGravity(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // MultiJump Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMULTIJUMP) && opcode == MSG_MOVE_JUMP)
 			if (!CheckAntiMultiJump(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // Speed and Tele Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
 			if (!CheckAntiSpeedTeleport(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // Mountain Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN))
 			if (!CheckAntiMountain(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // Fly Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIFLY))
 			if (!CheckAntiFly(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // Waterwalk Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIWATERWALK))
 			if (!CheckAntiWaterwalk(plMover, vehMover, movementInfo))
 				check_passed = false;
+
+        // Tele To Plane Cheat
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE))
 			if (!CheckAntiTeleToPlane(plMover, vehMover, movementInfo))
 				check_passed = false;
@@ -227,6 +263,108 @@ void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
 		plMover->ac_local.m_anti_DeltaClientTime = plMover->ac_local.m_anti_DeltaServerTime;
 
 	sync_time = plMover->ac_local.m_anti_DeltaClientTime - plMover->ac_local.m_anti_DeltaServerTime;
+}
+
+// Calc variables for next AntiCheat activation
+void AntiCheat::CalcVariablesSmall(Player* plMover, MovementInfo& movementInfo, Unit *mover)
+{
+	// calculating section
+    // current speed
+    UnitMoveType move_type;
+	if (movementInfo.flags & MOVEMENTFLAG_FLYING)
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
+	else if (movementInfo.flags & MOVEMENTFLAG_SWIMMING)
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
+	else if (movementInfo.flags & MOVEMENTFLAG_WALKING)
+		move_type = MOVE_WALK;
+	// hmm... in first time after login player has MOVE_SWIMBACK instead MOVE_WALKBACK
+	else
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
+
+	current_speed = mover->GetSpeed(move_type);
+	// end current speed
+
+    if (current_speed < plMover->ac_local.m_anti_Last_HSpeed && plMover->ac_local.m_anti_LastSpeedChangeTime == 0)
+		plMover->ac_local.m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
+
+	if (movementInfo.time > plMover->ac_local.m_anti_LastSpeedChangeTime)
+	{
+		plMover->ac_local.m_anti_Last_HSpeed = current_speed;                                    // store current speed
+		plMover->ac_local.m_anti_Last_VSpeed = -2.3f;
+		plMover->ac_local.m_anti_LastSpeedChangeTime = 0;
+	}
+}
+
+void AntiCheat::CalcVariables(Player* plMover, MovementInfo& movementInfo, Unit *mover)
+{
+	// calculating section
+    // current speed
+    UnitMoveType move_type;
+	if (movementInfo.flags & MOVEMENTFLAG_FLYING)
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
+	else if (movementInfo.flags & MOVEMENTFLAG_SWIMMING)
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
+	else if (movementInfo.flags & MOVEMENTFLAG_WALKING)
+		move_type = MOVE_WALK;
+	// hmm... in first time after login player has MOVE_SWIMBACK instead MOVE_WALKBACK
+	else
+		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
+
+	current_speed = mover->GetSpeed(move_type);
+	// end current speed
+
+	vehicleEntry = 0;
+	if (plMover->GetVehicle())
+	{
+		if (plMover->GetVehicleCreatureBase())
+			vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
+	}
+
+	// movement distance
+	delta_x = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionX() - movementInfo.pos.GetPositionX();
+	delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - movementInfo.pos.GetPositionY();
+	delta_z = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionZ() - movementInfo.pos.GetPositionZ();
+	real_delta = plMover->m_transport || plMover->m_temp_transport ? 0 : pow(delta_x, 2) + pow(delta_y, 2);
+	// end movement distance
+
+	no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
+		|| plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
+		|| plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
+		|| (plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER));
+	no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0;
+
+	no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
+	no_swim_in_water = !mover->IsInWater();
+	no_swim_above_water = movementInfo.pos.GetPositionZ()-7.0f >= mover->GetBaseMap()->GetWaterLevel(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY());
+	no_swim_water = no_swim_in_water && no_swim_above_water;
+
+	no_waterwalk_flags = (movementInfo.flags & MOVEMENTFLAG_WATERWALKING) == 0;
+	no_waterwalk_auras = !(plMover->HasAuraType(SPELL_AURA_WATER_WALK) || plMover->HasAuraType(SPELL_AURA_GHOST));
+
+	if (cClientTimeDelta < 0)
+		cClientTimeDelta = 0;
+	time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
+
+	tg_z = (real_delta != 0 && no_fly_auras && no_swim_flags) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
+
+	if (current_speed < plMover->ac_local.m_anti_Last_HSpeed && plMover->ac_local.m_anti_LastSpeedChangeTime == 0)
+		plMover->ac_local.m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
+
+	allowed_delta = plMover->m_transport || plMover->m_temp_transport ? 2 : // movement distance allowed delta
+		pow(std::max(current_speed, plMover->ac_local.m_anti_Last_HSpeed) * time_delta, 2)
+	    + 2                                                                             // minimum allowed delta
+		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                     // mountain fall allowed delta
+
+	if (movementInfo.time > plMover->ac_local.m_anti_LastSpeedChangeTime)
+	{
+		plMover->ac_local.m_anti_Last_HSpeed = current_speed;                                    // store current speed
+		plMover->ac_local.m_anti_Last_VSpeed = -2.3f;
+		plMover->ac_local.m_anti_LastSpeedChangeTime = 0;
+	}
+	// end calculating section
+
+	// AntiGravity (thanks to Meekro)
+	JumpHeight = plMover->ac_local.m_anti_JumpBaseZ - movementInfo.pos.GetPositionZ();
 }
 
 void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movementInfo)
@@ -301,78 +439,6 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
                 cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             plMover->ac_local.m_CheatList_DBlog[m_cheat] = 0;
         }
-}
-
-void AntiCheat::CalcVariables(Player* plMover, MovementInfo& movementInfo, Unit *mover)
-{
-	// calculating section
-    // current speed
-    UnitMoveType move_type;
-	if (movementInfo.flags & MOVEMENTFLAG_FLYING)
-		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_FLIGHT_BACK : MOVE_FLIGHT;
-	else if (movementInfo.flags & MOVEMENTFLAG_SWIMMING)
-		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_SWIM;
-	else if (movementInfo.flags & MOVEMENTFLAG_WALKING)
-		move_type = MOVE_WALK;
-	// hmm... in first time after login player has MOVE_SWIMBACK instead MOVE_WALKBACK
-	else
-		move_type = movementInfo.flags & MOVEMENTFLAG_BACKWARD ? MOVE_SWIM_BACK : MOVE_RUN;
-
-	current_speed = mover->GetSpeed(move_type);
-	// end current speed
-
-	vehicleEntry = 0;
-	if (plMover->GetVehicle())
-	{
-		if (plMover->GetVehicleCreatureBase())
-			vehicleEntry = plMover->GetVehicleCreatureBase()->GetEntry();
-	}
-
-	// movement distance
-	delta_x = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionX() - movementInfo.pos.GetPositionX();
-	delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - movementInfo.pos.GetPositionY();
-	delta_z = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionZ() - movementInfo.pos.GetPositionZ();
-	real_delta = plMover->m_transport || plMover->m_temp_transport ? 0 : pow(delta_x, 2) + pow(delta_y, 2);
-	// end movement distance
-
-	no_fly_auras = !(plMover->HasAuraType(SPELL_AURA_FLY) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
-		|| plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
-		|| plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK)
-		|| (plMover->GetVehicle() && vehicleEntry == FROSTBROOD_VANQUISHER));
-	no_fly_flags = (movementInfo.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0;
-
-	no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
-	no_swim_in_water = !mover->IsInWater();
-	no_swim_above_water = movementInfo.pos.GetPositionZ()-7.0f >= mover->GetBaseMap()->GetWaterLevel(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY());
-	no_swim_water = no_swim_in_water && no_swim_above_water;
-
-	no_waterwalk_flags = (movementInfo.flags & MOVEMENTFLAG_WATERWALKING) == 0;
-	no_waterwalk_auras = !(plMover->HasAuraType(SPELL_AURA_WATER_WALK) || plMover->HasAuraType(SPELL_AURA_GHOST));
-
-	if (cClientTimeDelta < 0)
-		cClientTimeDelta = 0;
-	time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
-
-	tg_z = (real_delta != 0 && no_fly_auras && no_swim_flags) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
-
-	if (current_speed < plMover->ac_local.m_anti_Last_HSpeed && plMover->ac_local.m_anti_LastSpeedChangeTime == 0)
-		plMover->ac_local.m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
-
-	allowed_delta = plMover->m_transport || plMover->m_temp_transport ? 2 : // movement distance allowed delta
-		pow(std::max(current_speed, plMover->ac_local.m_anti_Last_HSpeed) * time_delta, 2)
-	    + 2                                                                             // minimum allowed delta
-		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                     // mountain fall allowed delta
-
-	if (movementInfo.time > plMover->ac_local.m_anti_LastSpeedChangeTime)
-	{
-		plMover->ac_local.m_anti_Last_HSpeed = current_speed;                                    // store current speed
-		plMover->ac_local.m_anti_Last_VSpeed = -2.3f;
-		plMover->ac_local.m_anti_LastSpeedChangeTime = 0;
-	}
-	// end calculating section
-
-	// AntiGravity (thanks to Meekro)
-	JumpHeight = plMover->ac_local.m_anti_JumpBaseZ - movementInfo.pos.GetPositionZ();
 }
 
 bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo& movementInfo)

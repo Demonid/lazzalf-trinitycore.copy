@@ -7,8 +7,6 @@
  *
  * @Authors : Lazzalf based on AC2
  *
- * @Version : 0.1
- *
  **/
 
 #include "Common.h"
@@ -35,10 +33,12 @@ class AntiCheat_Local
 	private:
 		bool ac_block;
 		uint32 ac_block_diff;
-		int32 ac_delta;
-		
+
+		int32 ac_delta;   
 	public:
 		AntiCheat_Local();
+
+        bool ac_goactivate;
 
         uint32 m_CheatList_DBlog[MAX_CHEAT];
         uint32 m_CheatList_DBlog_reset_diff;
@@ -107,6 +107,7 @@ class AntiCheat
 		
 		void CalcDeltas(Player* /*plMover*/, MovementInfo& /*movementInfo*/);
 		void CalcVariables(Player* /*plMover*/, MovementInfo& /*movementInfo*/, Unit* /*mover*/);
+        void CalcVariablesSmall(Player* /*plMover*/, MovementInfo& /*movementInfo*/, Unit* /*mover*/);
 		
 		bool CheckMistiming(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*movementInfo*/);
 		bool CheckAntiGravity(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*movementInfo*/);
@@ -122,28 +123,4 @@ class AntiCheat
 		bool Check(Player* /*plMover*/, Vehicle* /*vehMover*/, uint16 /*opcode*/, MovementInfo& /*movementInfo*/, Unit* /*mover*/);		
 };
 
-// bool CONFIG_AC_ENABLE
-// bool CONFIG_AC_DISABLE_GM
-// bool CONFIG_AC_ENABLE_MISTIMING
-// bool CONFIG_AC_ENABLE_MISTIMING_BLOCK
-// bool CONFIG_AC_ENABLE_ANTIGRAVITY
-// bool CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK
-// bool CONFIG_AC_ENABLE_ANTIMULTIJUMP
-// bool CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK
-// bool CONFIG_AC_ENABLE_ANTISPEEDTELE
-// bool CONFIG_AC_ENABLE_ANTISPEEDTELE_BLOCK
-// bool CONFIG_AC_ENABLE_ANTIMOUNTAIN
-// bool CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK
-// bool CONFIG_AC_ENABLE_ANTIFLY
-// bool CONFIG_AC_ENABLE_ANTIFLY_BLOCK
-// bool CONFIG_AC_ENABLE_ANTIWATERWALK
-// bool CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK
-// bool CONFIG_AC_ENABLE_ANTITELETOPLANE
-// bool CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK
-
-// int CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS
-// int CONFIG_AC_ENABLE_MISTIMING_DELTHA
-// int CONFIG_AC_DELTA_LOG
-// int CONFIG_AC_SLEEP_DELTA
-// int CONFIG_AC_ALARM_DELTA
 #endif
