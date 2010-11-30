@@ -49,7 +49,9 @@ AntiCheat_Local::AntiCheat_Local()
 
     m_anti_JumpCount = 0;                // Jump already began, anti air jump check
     m_anti_JumpBaseZ = 0;                // Z coord before jump (AntiGrav)
-    m_logcheat_time = 0;                 // Time for logs
+
+    m_logfile_time = 0;                  // Time for logs file
+    m_logdb_time = 0;                    // Time for logs DB
 }
 
 void AntiCheat_Local::SetBlock(bool block)
@@ -65,7 +67,7 @@ bool AntiCheat_Local::GetBlock()
 void AntiCheat_Local::AddBlockDiff(uint32 diff)
 {
 	ac_block_diff += diff;
-}	
+}
 
 bool AntiCheat_Local::GetAndUpdateBlockDiff(uint32 diff)
 {
@@ -246,7 +248,8 @@ void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
 
 	cServerTime = getMSTime();
 
-	difftime_log = cServerTime - plMover->ac_local.m_logcheat_time;
+	difftime_log_file = cServerTime - plMover->ac_local.m_logfile_time;
+    difftime_log_db = cServerTime - plMover->ac_local.m_logdb_time;
 
 	cServerTimeDelta = 1500;
 	if (plMover->ac_local.m_anti_LastServerTime != 0)
@@ -373,56 +376,92 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
 	switch (m_cheat)
 	{
 		case CHEAT_MISTIMING:
-			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, mistiming exception #%d, mistiming: %dms", 
-                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-			    plMover->ac_local.m_anti_MistimingCount, sync_time);
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;    
+			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, mistiming exception #%d, mistiming: %dms", 
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+			        plMover->ac_local.m_anti_MistimingCount, sync_time);
+            }
             cheat_type = "Mistiming";
             break;
 		case CHEAT_GRAVITY:
-		    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
-                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-				JumpHeight, plMover->ac_local.m_anti_Last_VSpeed);
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;   
+		        sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+				    JumpHeight, plMover->ac_local.m_anti_Last_VSpeed);
+            }
             cheat_type = "Gravity";
 			break;
 		case CHEAT_MULTIJUMP:
-			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, multi jump  exception",
-                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-			cheat_type = "MultiJump";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, multi jump  exception",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            }
+            cheat_type = "MultiJump";
             break;
 		case CHEAT_SPEED:
-			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
-				plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
-			cheat_type = "Speed";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
+            }	
+            cheat_type = "Speed";
             break;
 		case CHEAT_TELEPORT:
-			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
-				plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
-			cheat_type = "Teleport";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, current_speed, plMover->ac_local.m_anti_Last_HSpeed, time_delta);
+            }
+            cheat_type = "Teleport";
             break;
 		case CHEAT_MOUNTAIN:
-			sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, umountain exception | tg_z=%f", 
-                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-                tg_z);
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, umountain exception | tg_z=%f", 
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+                    tg_z);
+            }
 			cheat_type = "Mountain";
             break;
 		case CHEAT_FLY:
-			sLog.outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
-							plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-							plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-							plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
-							plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());                        
-			cheat_type = "Fly";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
+							    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+							    plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
+							    plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
+							    plMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plMover->GetVehicle());                        
+            }
+            cheat_type = "Fly";
             break;
 		case CHEAT_WATERWALK:
-			sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {movementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
-                            plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
-                            movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
-			cheat_type = "Waterwalk";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {movementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
+                                plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
+                                movementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
+            }
+            cheat_type = "Waterwalk";
             break;
 		case CHEAT_TELETOPLANE:
-			sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
-							plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->ac_local.m_anti_TeleToPlane_Count);
-			cheat_type = "TeleToPlane";
+            if (difftime_log_file > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+			{
+				plMover->ac_local.m_logfile_time = cServerTime;  
+			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
+							    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->ac_local.m_anti_TeleToPlane_Count);
+            }
+            cheat_type = "TeleToPlane";
             break;
 	}
 
@@ -433,12 +472,14 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
     (plMover->ac_local.m_CheatList_DBlog[m_cheat])++;
 
     if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
-        if (plMover->ac_local.m_CheatList_DBlog[m_cheat] >= sWorld.getIntConfig(CONFIG_AC_DBLOG_COUNT))
-        {
-            ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
-                cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-            plMover->ac_local.m_CheatList_DBlog[m_cheat] = 0;
-        }
+        if (difftime_log_db > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_DB))
+            if (plMover->ac_local.m_CheatList_DBlog[m_cheat] >= sWorld.getIntConfig(CONFIG_AC_DBLOG_COUNT))
+	        {		                    
+                ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
+                    cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+                plMover->ac_local.m_CheatList_DBlog[m_cheat] = 0;
+                plMover->ac_local.m_logdb_time = cServerTime;
+            }
 }
 
 bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo& movementInfo)
@@ -455,12 +496,8 @@ bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo&
 		if (bMistimingModulo)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;
-		    if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-			{
-				plMover->ac_local.m_logcheat_time = cServerTime;				
-				LogCheat(CHEAT_MISTIMING, plMover, movementInfo);
-		    }
+            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;		    	
+			LogCheat(CHEAT_MISTIMING, plMover, movementInfo);
 		}
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_MISTIMING_BLOCK))
 		{
@@ -493,11 +530,7 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_GRAVITY])++;
-		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-		{
-			plMover->ac_local.m_logcheat_time = cServerTime;
-			LogCheat(CHEAT_GRAVITY, plMover, movementInfo);
-		}
+		LogCheat(CHEAT_GRAVITY, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK))
 		{
 			if (vehMover)
@@ -530,12 +563,8 @@ bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementI
 		if (plMover->ac_local.m_anti_JumpCount >= 1)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;
-			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-			{
-				plMover->ac_local.m_logcheat_time = cServerTime;
-				LogCheat(CHEAT_MULTIJUMP, plMover, movementInfo);
-			}
+            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;			
+			LogCheat(CHEAT_MULTIJUMP, plMover, movementInfo);
 			if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK))
 			{
 				// don't process new jump packet
@@ -579,15 +608,11 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
 		if (real_delta > allowed_delta)
 		{	
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_SPEED])++; // Speed and teleport are logged in one
-			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-			{
-				plMover->ac_local.m_logcheat_time = cServerTime;
-				if (real_delta < 4900.0f)
-					LogCheat(CHEAT_SPEED, plMover, movementInfo);
-				else
-					LogCheat(CHEAT_TELEPORT, plMover, movementInfo);
-			}
+            (plMover->ac_local.m_CheatList[CHEAT_SPEED])++; // Speed and teleport are logged in one			
+			if (real_delta < 4900.0f)
+				LogCheat(CHEAT_SPEED, plMover, movementInfo);
+			else
+				LogCheat(CHEAT_TELEPORT, plMover, movementInfo);
 			if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE_BLOCK))
 			{
 				if (vehMover)
@@ -607,11 +632,7 @@ bool AntiCheat::CheckAntiMountain(Player* plMover, Vehicle *vehMover, MovementIn
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN])++;
-		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-		{
-			plMover->ac_local.m_logcheat_time = cServerTime;
-			LogCheat(CHEAT_MOUNTAIN, plMover, movementInfo);
-		}
+		LogCheat(CHEAT_MOUNTAIN, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK))
 		{
 			if (vehMover)
@@ -630,11 +651,7 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& m
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
             (plMover->ac_local.m_CheatList[CHEAT_FLY])++;
-			if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-			{
-				plMover->ac_local.m_logcheat_time = cServerTime;
-				LogCheat(CHEAT_FLY, plMover, movementInfo);
-			}
+			LogCheat(CHEAT_FLY, plMover, movementInfo);
 			if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIFLY_BLOCK))
 			{
 				if (vehMover)
@@ -667,11 +684,7 @@ bool AntiCheat::CheckAntiWaterwalk(Player* plMover, Vehicle *vehMover, MovementI
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_WATERWALK])++;
-		if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-		{
-			plMover->ac_local.m_logcheat_time = cServerTime;
-			LogCheat(CHEAT_WATERWALK, plMover, movementInfo);
-		}
+		LogCheat(CHEAT_WATERWALK, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK))
 		{
 			if (vehMover)
@@ -712,11 +725,7 @@ bool AntiCheat::CheckAntiTeleToPlane(Player* plMover, Vehicle *vehMover, Movemen
 				{
 					plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
                     (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE])++;
-					if (difftime_log > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG))
-					{
-						plMover->ac_local.m_logcheat_time = cServerTime;
-						LogCheat(CHEAT_TELETOPLANE, plMover, movementInfo);
-					}
+					LogCheat(CHEAT_TELETOPLANE, plMover, movementInfo);
 					if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK))
 					{						
 						if (vehMover)
