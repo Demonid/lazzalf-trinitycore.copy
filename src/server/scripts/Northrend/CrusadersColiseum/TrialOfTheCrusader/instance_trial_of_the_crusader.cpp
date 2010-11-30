@@ -312,7 +312,10 @@ public:
                         //case IN_PROGRESS:
                             //saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
                         case FAIL:
-                            if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) uiData = NOT_STARTED;
+                            if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) 
+                                uiData = NOT_STARTED;
+                            if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
+                                pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                             break;
                         case SPECIAL:
                             if (m_auiEncounter[TYPE_VALKIRIES] == SPECIAL) uiData = DONE;
