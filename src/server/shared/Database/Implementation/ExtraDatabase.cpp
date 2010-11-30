@@ -30,7 +30,7 @@ bool ExtraDatabaseConnection::Open()
         ##################################
     */
 
-    PrepareStatement(EXTRA_ADD_ITEMSTAT, "INSERT INTO item_stats (guid, item, state) VALUES (?, ?, ?)");
+    PrepareStatement(EXTRA_ADD_ITEMSTAT, "INSERT INTO item_stats (guid, item, state, date) VALUES (?, ?, ?, NOW())");
 
     return true;
 }

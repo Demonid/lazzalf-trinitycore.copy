@@ -6,6 +6,7 @@ CREATE TABLE `item_stats` (
   `guid` int(9) NOT NULL,                               -- Player GUID
   `item` int(6) NOT NULL,                               -- Item Template Entry
   `state` tinyint(1) NOT NULL,                          -- Item State: 0 Added / 1 Deleted
+  `date` datetime NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `guid` (`guid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
