@@ -289,9 +289,7 @@ public:
                     break;
                 case 1:
                     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ARTHAS_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-                    pPlayer->SEND_GOSSIP_MENU(GOSSIP_MENU_ARTHAS_1, pCreature->GetGUID());
-                    if (pPlayer->GetInstanceScript())
-                        pPlayer->GetInstanceScript()->SetData(DATA_INFINITE_EVENT_START, IN_PROGRESS);
+                    pPlayer->SEND_GOSSIP_MENU(GOSSIP_MENU_ARTHAS_1, pCreature->GetGUID());                    
                     break;
                 case 2:
                     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ARTHAS_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
@@ -754,6 +752,8 @@ public:
                             break;
                         //After waypoint 9
                         case 27:
+                            if (me->GetInstanceScript())
+                                me->GetInstanceScript()->SetData(DATA_INFINITE_EVENT_START, IN_PROGRESS);
                             me->SetUInt64Value(UNIT_FIELD_TARGET, uiCitymenGUID[0]);
                             if (Creature* pCityman = Unit::GetCreature(*me, uiCitymenGUID[0]))
                             {

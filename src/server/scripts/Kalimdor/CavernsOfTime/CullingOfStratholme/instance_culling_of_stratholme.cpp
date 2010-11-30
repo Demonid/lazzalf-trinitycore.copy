@@ -54,8 +54,6 @@ public:
         uint64 uiMalGanisGate2;
         uint64 uiExitGate;
         uint64 uiMalGanisChest;
-        uint32 EventTimer;
-        uint32 LastTimer;
         uint32 Minute;
         uint32 tMinutes;
 
@@ -80,8 +78,6 @@ public:
             DoUpdateWorldState(WORLD_STATE_CRATES, 0);
             DoUpdateWorldState(WORLD_STATE_CRATES_2, 0);
 
-            EventTimer = 1500000;
-            LastTimer = 1500000;
             Minute = 60000;
             tMinutes = 0;
             m_started = false;
@@ -235,14 +231,16 @@ public:
            }
 
            if (m_started)
+           {
                if (Minute <= diff)
                {
-                  LastTimer = EventTimer;
                   tMinutes++;
                   DoUpdateWorldState(WORLD_STATE_TIME_COUNTER, 25 - tMinutes);
                   Minute = 60000;
                }
-               else Minute -= diff;
+               else 
+                   Minute -= diff;
+           }
            return;
         }
 
