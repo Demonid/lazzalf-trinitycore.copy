@@ -90,7 +90,7 @@ bool AntiCheat_Local::GetAndUpdateDelta(int32 diff)
     }
     else if (ac_delta < 0)
     {
-        if (ac_delta < diff)
+        if (ac_delta < -diff)
             ac_delta += diff;
         else
         {
