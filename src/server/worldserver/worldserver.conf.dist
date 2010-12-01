@@ -2600,10 +2600,10 @@ Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
 Anticheat.Movement.TeleportToPlaneAlarms = 50
 
 #
-#    Anticheat.IgnoreGM
-#        ignore GM in anticheat controll (default 1)
+#    Anticheat.IgnoreGMLevel
+#        ignore GMLevel min in anticheat controll (default 3)
 
-Anticheat.IgnoreGM = 1
+Anticheat.IgnoreGMLevel = 3
 
 #
 #    Anticheat.EnableDBLog
@@ -2628,6 +2628,20 @@ Anticheat.LogDBDelta = 0
 
 Anticheat.LogSleepDelta = 500
 Anticheat.LogAlarmDelta = 5000
+
+#
+#    Anticheat.Punisher.TypeBan
+#        Default: 0 - off
+#                 1 - kill
+#                 2 - kick
+#                 3 - ban character (use Punisher.BanTime for time, -1 permaban)
+#                 2 - ban account   (use Punisher.BanTime for time, -1 permaban)
+#                 2 - ban ip        (use Punisher.BanTime for time, -1 permaban)
+Anticheat.Punisher.TypeBan = 0
+Anticheat.Punisher.CountCheat = 1
+Anticheat.Punisher.LevelMax = 80
+Anticheat.Punisher.BanTime = -1
+Anticheat.Punisher.MapSmall = 0
 
 Anticheat.CheatResetListDelta = 5000
 

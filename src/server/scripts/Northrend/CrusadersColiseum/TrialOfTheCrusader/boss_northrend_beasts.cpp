@@ -744,7 +744,7 @@ public:
             {
                 m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ICEHOWL_DONE);
 
-                if(m_pInstance->GetData(DATA_SNOBOLD_COUNT) >= SNOBOLD_COUNT)
+                if (int32(m_pInstance->GetData(DATA_SNOBOLD_COUNT)) >= SNOBOLD_COUNT)
                     m_pInstance->DoCompleteAchievement(ACHI_UPPER_BACK_PAIN);
             }
 

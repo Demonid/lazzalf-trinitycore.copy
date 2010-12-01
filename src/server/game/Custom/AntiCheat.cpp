@@ -3,6 +3,7 @@
 #include "WorldPacket.h"
 #include "Opcodes.h"
 #include "Corpse.h"
+#include "Config.h"
 #include "Player.h"
 #include "Vehicle.h"
 #include "Transport.h"
@@ -15,6 +16,11 @@
  * @Authors : Lazzalf based on AC2
  *
  **/
+
+AntiCheat::AntiCheat()
+{
+	cheat_find = false;
+}
 
 AntiCheat_Local::AntiCheat_Local()
 {
@@ -124,7 +130,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	if (!sWorld.getBoolConfig(CONFIG_AC_ENABLE))
 		return true;
 		
-	if (sWorld.getBoolConfig(CONFIG_AC_DISABLE_GM) && plMover->GetSession() && plMover->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+	if (plMover->GetSession() && plMover->GetSession()->GetSecurity() >= int32(sWorld.getIntConfig(CONFIG_AC_DISABLE_GM_LEVEL)))
 		return true;
 	
 	// Calc Delthas for AntiCheat
@@ -196,7 +202,108 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 			if (!CheckAntiTeleToPlane(plMover, vehMover, movementInfo))
 				check_passed = false;
 	}
+    if (cheat_find)
+        check_passed = AntiCheatPunisher(plMover, movementInfo);
 	return check_passed;
+}
+
+bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
+{
+    if (!sWorld.getIntConfig(CONFIG_AC_PUNI_TYPE))
+        return true;
+
+    if (plMover->getLevel() > sWorld.getIntConfig(CONFIG_AC_PUNI_LEVEL_MAX))
+        return true;
+
+    if (sWorld.getBoolConfig(CONFIG_AC_PUNI_MAP_SMALL))
+        if (plMover->GetMapId() != 0 && plMover->GetMapId() != 1)
+            return true;
+
+    bool find = false;
+    for (int i = 0; i < MAX_CHEAT; i++)
+    {
+        if (plMover->ac_local.m_CheatList[i] >= sWorld.getIntConfig(CONFIG_AC_PUNI_COUNT))
+            find = true;
+    }
+
+    if (!find)
+        return true;
+
+    std::string announce = "";
+    switch (CONFIG_AC_PUNI_TYPE)
+    {
+        case PUNI_NONE:
+            return true;
+        case PUNI_KILL:
+            plMover->DealDamage(plMover, plMover->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KILL",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            return false;
+        case PUNI_KICK:
+            plMover->GetSession()->KickPlayer();
+            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KICK",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            announce = "AntiCheatPunisher ha Kickato il player ";
+            announce += plMover->GetName();
+            announce += "per uso di Hack";
+            sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+            return false;
+        case PUNI_BAN_CHAR:
+            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_CHARACTER",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());            
+            sWorld.BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+            announce = "AntiCheatPunisher ha bannato il player ";
+            announce += plMover->GetName();
+            announce += "per uso di Hack";
+            sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+            return false;
+        case PUNI_BAN_ACC:
+            {
+                sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_ACCOUNT",
+                        plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+                announce = "AntiCheatPunisher ha bannato l'account del player ";
+                announce += plMover->GetName();
+                announce += "per uso di Hack";
+                sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+                QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id=%u", plMover->GetSession()->GetAccountId());
+                if (result)
+                {
+
+                    Field *fields = result->Fetch();
+                    std::string Username = fields[0].GetString();
+                    if(!Username.empty())
+                    {
+                        sWorld.BanAccount(BAN_ACCOUNT, Username,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                    }
+                }
+                return false;
+            }
+        case PUNI_BAN_IP:
+            {
+                sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_IP",
+                        plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+                announce = "AntiCheatPunisher ha bannato l'ip del player ";
+                announce += plMover->GetName();
+                announce += "per uso di Hack";
+                sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+                QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", plMover->GetSession()->GetAccountId());
+                if (result)
+                {
+
+                    Field *fields = result->Fetch();
+                    std::string LastIP = fields[0].GetString();
+                    if(!LastIP.empty())
+                    {
+                        sWorld.BanAccount(BAN_IP,LastIP,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                    }
+                }
+                return false;
+            }
+        default:
+            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER TYPE NOT VALID",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            return false;
+    }
 }
 
 void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
@@ -454,7 +561,8 @@ bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo&
 		if (bMistimingModulo)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;		    	
+            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;		
+            cheat_find = true;
 			LogCheat(CHEAT_MISTIMING, plMover, movementInfo);
 		}
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_MISTIMING_BLOCK))
@@ -488,6 +596,7 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_GRAVITY])++;
+        cheat_find = true;
 		LogCheat(CHEAT_GRAVITY, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIGRAVITY_BLOCK))
 		{
@@ -521,7 +630,8 @@ bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementI
 		if (plMover->ac_local.m_anti_JumpCount >= 1)
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;			
+            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;
+            cheat_find = true;
 			LogCheat(CHEAT_MULTIJUMP, plMover, movementInfo);
 			if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMULTIJUMP_BLOCK))
 			{
@@ -566,7 +676,8 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
 		if (real_delta > allowed_delta)
 		{	
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
-            (plMover->ac_local.m_CheatList[CHEAT_SPEED])++; // Speed and teleport are logged in one			
+            (plMover->ac_local.m_CheatList[CHEAT_SPEED])++; // Speed and teleport are logged in one
+            cheat_find = true;
 			if (real_delta < 4900.0f)
 				LogCheat(CHEAT_SPEED, plMover, movementInfo);
 			else
@@ -590,6 +701,7 @@ bool AntiCheat::CheckAntiMountain(Player* plMover, Vehicle *vehMover, MovementIn
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN])++;
+        cheat_find = true;
 		LogCheat(CHEAT_MOUNTAIN, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN_BLOCK))
 		{
@@ -609,6 +721,7 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& m
 		{
 			plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
             (plMover->ac_local.m_CheatList[CHEAT_FLY])++;
+            cheat_find = true;
 			LogCheat(CHEAT_FLY, plMover, movementInfo);
 			if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIFLY_BLOCK))
 			{
@@ -642,6 +755,7 @@ bool AntiCheat::CheckAntiWaterwalk(Player* plMover, Vehicle *vehMover, MovementI
 	{
 		plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
         (plMover->ac_local.m_CheatList[CHEAT_WATERWALK])++;
+        cheat_find = true;
 		LogCheat(CHEAT_WATERWALK, plMover, movementInfo);
 		if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIWATERWALK_BLOCK))
 		{
@@ -683,6 +797,7 @@ bool AntiCheat::CheckAntiTeleToPlane(Player* plMover, Vehicle *vehMover, Movemen
 				{
 					plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
                     (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE])++;
+                    cheat_find = true;
 					LogCheat(CHEAT_TELETOPLANE, plMover, movementInfo);
 					if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_BLOCK))
 					{						
