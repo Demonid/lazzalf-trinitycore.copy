@@ -119,7 +119,7 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
 bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, MovementInfo& movementInfo, Unit *mover)
 {
 	if (!plMover)
-		return false;
+		return true;
 	
 	if (!sWorld.getBoolConfig(CONFIG_AC_ENABLE))
 		return true;
@@ -156,7 +156,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
         if (plMover->ac_local.ac_goactivate)
         {
             CalcVariablesSmall(plMover, movementInfo, mover);
-            return true;
+            return check_passed;
         }
         else
 		    CalcVariables(plMover, movementInfo, mover);
