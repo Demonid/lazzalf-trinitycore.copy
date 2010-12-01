@@ -77,6 +77,7 @@ bool AntiCheat_Local::GetAndUpdateDelta(int32 diff)
         else
         {
             ac_delta = 0;
+            // It's come from sleep
             ac_goactivate = true;
         }
     }
@@ -87,7 +88,6 @@ bool AntiCheat_Local::GetAndUpdateDelta(int32 diff)
         else
         {
             ac_delta = 0;
-            ac_goactivate = true;
         }
     }
 		
