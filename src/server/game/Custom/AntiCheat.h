@@ -28,6 +28,17 @@ enum eCheat
     MAX_CHEAT
 };
 
+enum ePuniType
+{
+    PUNI_NONE,
+	PUNI_KILL,
+	PUNI_KICK,
+	PUNI_BAN_CHAR,
+    PUNI_BAN_ACC,
+    PUNI_BAN_IP,
+    MAX_PUNI
+};
+
 class AntiCheat_Local
 {
 	private:
@@ -70,8 +81,10 @@ class AntiCheat_Local
 };
 
 class AntiCheat
-{
-	private:
+{        
+	private: 
+        bool cheat_find;
+
 		// Delthas
 		int32 cClientTimeDelta;
 		uint64 cServerTime;		
@@ -113,8 +126,10 @@ class AntiCheat
 		bool CheckAntiWaterwalk(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*movementInfo*/);
 		bool CheckAntiTeleToPlane(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*movementInfo*/);
         void LogCheat(eCheat /*m_cheat*/, Player* /*plMover*/, MovementInfo& /*movementInfo*/);
+        bool AntiCheatPunisher(Player* /*plMover*/, MovementInfo& /*movementInfo*/);
 	
-	public:
+    public:
+        AntiCheat();
 		bool Check(Player* /*plMover*/, Vehicle* /*vehMover*/, uint16 /*opcode*/, MovementInfo& /*movementInfo*/, Unit* /*mover*/);		
 };
 
