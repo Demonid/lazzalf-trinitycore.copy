@@ -132,7 +132,9 @@ enum eEnums
     ACHIEV_TWILIGHT_DUO                         = 2050,
     H_ACHIEV_TWILIGHT_DUO                       = 2053,
     ACHIEV_TWILIGHT_ZONE                        = 2051,
-    H_ACHIEV_TWILIGHT_ZONE                      = 2054
+    H_ACHIEV_TWILIGHT_ZONE                      = 2054,
+    ACHIEV_GONNA_GO                             = 2047,
+    H_ACHIEV_GONNA_GO                           = 2048,
 };
 
 //each dragons special points. First where fly to before connect to connon, second where land point is.
@@ -236,6 +238,8 @@ class boss_sartharion : public CreatureScript
         uint32 achievProgress;
         uint32 Acolytes;
 
+        std::set<uint64> lLavaStriked;
+
         void Reset()
         {
             _Reset();
@@ -270,6 +274,8 @@ class boss_sartharion : public CreatureScript
 
             achievProgress = 0;
             Acolytes = 2;
+
+            lLavaStriked.clear();
         }
 
         void EnterCombat(Unit* pWho)
@@ -344,6 +350,19 @@ class boss_sartharion : public CreatureScript
                     instance->DoCompleteAchievement(RAID_MODE(ACHIEV_TWILIGHT_DUO,H_ACHIEV_TWILIGHT_DUO));
                 if (achievProgress == 3)
                     instance->DoCompleteAchievement(RAID_MODE(ACHIEV_TWILIGHT_ZONE,H_ACHIEV_TWILIGHT_ZONE));
+
+                /*AchievementEntry const *achievGonnaGo = GetAchievementStore()->LookupEntry(RAID_MODE(ACHIEV_GONNA_GO, H_ACHIEV_GONNA_GO));
+                if (achievGonnaGo)
+                {
+                    Map::PlayerList const &players = instance->instance->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    {
+                        if (lLavaStriked.find(itr->getSource()->GetGUID()) != lLavaStriked.end())
+                            continue;
+                        else
+                            itr->getSource()->CompletedAchievement(achievGonnaGo);
+                    }
+                }*/
             }
         }
 
@@ -561,6 +580,13 @@ class boss_sartharion : public CreatureScript
             for(uint32 i = 0; i < rnd; ++i)
                 ++itr;
             (*itr)->CastSpell(target, SPELL_LAVA_STRIKE, true);
+        }
+
+        void SpellHitTarget(Unit* pTarget, const SpellEntry *spell)
+        {
+            if (spell->Id == SPELL_LAVA_STRIKE)
+                if (pTarget->GetTypeId() == TYPEID_PLAYER)
+                    lLavaStriked.insert(pTarget->ToPlayer()->GetGUID());
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -1481,18 +1507,18 @@ class mob_acolyte_of_vesperon : public CreatureScript
         void UpdateAI(const uint32 uiDiff)
         {  
             // This is needed for interrupt Vesperon.
- 	        if (ToInterrupt && CheckForInterrupt <= uiDiff)
- 	        {
-  	            Creature* pTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_VESPERON));
-  	            if (pTarget)
- 	            {
- 	                pTarget->InterruptNonMeleeSpells(true, 0, true);
- 	                ToInterrupt = false;
-  	                CheckForInterrupt = 5000;
+            if (ToInterrupt && CheckForInterrupt <= uiDiff)
+            {
+                Creature* pTarget = pInstance->instance->GetCreature(pInstance->GetData64(DATA_VESPERON));
+                if (pTarget)
+                {
+                    pTarget->InterruptNonMeleeSpells(true, 0, true);
+                    ToInterrupt = false;
+                    CheckForInterrupt = 5000;
                 }
-  	        }
-  	        else
-  	            CheckForInterrupt -= uiDiff;
+            }
+            else
+                CheckForInterrupt -= uiDiff;
 
             if (!UpdateVictim())
                 return;
