@@ -256,13 +256,14 @@ public:
             {
                 if (IsHeroic())
                 {
-                    if (lImpaledPlayers.size() == 5)
+                    Map::PlayerList const &players = pInstance->instance->GetPlayers();
+
+                    if (lImpaledPlayers.size() == players.getSize())
                         pInstance->DoCompleteAchievement(ACHIEV_SHARE_THE_LOVE);
 
                     AchievementEntry const *achievWhatTheEck = GetAchievementStore()->LookupEntry(ACHIEV_WHAT_THE_ECK);
                     if (achievWhatTheEck)
                     {
-                        Map::PlayerList const &players = pInstance->instance->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             if (itr->getSource()->HasAura(SPELL_ECK_RESIDUE))
                             {
