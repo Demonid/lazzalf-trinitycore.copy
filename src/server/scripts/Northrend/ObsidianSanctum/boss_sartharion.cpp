@@ -1467,7 +1467,8 @@ class mob_acolyte_of_vesperon : public CreatureScript
         {         
             if (pInstance)
             {
-                me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);            
+                if (me->IsInWorld())
+                    me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);            
             }
 
             ToInterrupt = true;
