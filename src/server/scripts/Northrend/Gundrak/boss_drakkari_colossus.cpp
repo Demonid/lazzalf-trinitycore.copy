@@ -167,7 +167,7 @@ public:
 
         uint32 uiSurgeTimer;
 
-        bool bGoToColossus;
+        bool bGoToColossus; //inutile
 
         void Reset()
         {
@@ -204,12 +204,12 @@ public:
             {
                 if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                 {
-                //    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->HealthBelowPct(6))
-                //    {
+                    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->bHealth1)
+                    {
                         me->InterruptNonMeleeSpells(true);
-                        DoCast(pColossus, SPELL_MERGE);
+                        DoCast(me, SPELL_MERGE);
                         bGoToColossus = true;
-                //    }
+                    }
                 }
             }
 
@@ -222,11 +222,11 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        //void JustDied(Unit* /*killer*/)
-        //{
-        //    if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
-        //        pColossus->Kill(pColossus);
-        //}
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                pColossus->Kill(pColossus);
+        }
     };
 
 };
