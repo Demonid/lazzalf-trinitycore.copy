@@ -25,13 +25,14 @@ AntiCheat::AntiCheat()
 AntiCheat_Local::AntiCheat_Local()
 {
 	ac_block = false;
+    ac_find_cheat = false;
 
 	ac_delta = 0;
     ac_goactivate = false;
 
     for (int i = 0; i < MAX_CHEAT; i++)
         m_CheatList[i] = 0;
-    m_CheatList_reset_diff = 0;
+    m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
 	
 	m_anti_LastClientTime  = 0;          // last movement client time
     m_anti_LastServerTime  = 0;          // last movement server time
@@ -120,6 +121,7 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
             m_CheatList[i] = 0;
 
     m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
+    ac_find_cheat = false;
 }
 
 bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, MovementInfo& movementInfo, Unit *mover)
@@ -137,7 +139,8 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	CalcDeltas(plMover, movementInfo);
 
     // Clean player cheatlist
-    plMover->ac_local.ResetCheatList(cServerTimeDelta);
+    if (plMover->ac_local.ac_find_cheat)
+        plMover->ac_local.ResetCheatList(cServerTimeDelta);
 	
     // Diff for AntiCheat sleep
 	if (!plMover->ac_local.GetAndUpdateDelta(int32(cServerTimeDelta)))
@@ -203,7 +206,10 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 				check_passed = false;
 	}
     if (cheat_find)
+    {
+        plMover->ac_local.ac_find_cheat = true;
         check_passed = AntiCheatPunisher(plMover, movementInfo);
+    }
 	return check_passed;
 }
 
@@ -227,6 +233,11 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
     }
 
     if (!find)
+        return true;
+
+    // Lagghi test
+    if ((plMover->ac_local.m_CheatList[CHEAT_MISTIMING] >= (plMover->ac_local.m_CheatList[CHEAT_SPEED] / 15)) &&
+        (plMover->ac_local.m_CheatList[CHEAT_FLY] < (plMover->ac_local.m_CheatList[CHEAT_SPEED] / 10)))
         return true;
 
     std::string announce = "";

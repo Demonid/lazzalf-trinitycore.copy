@@ -43,6 +43,7 @@ class AntiCheat_Local
 {
 	private:
 		bool ac_block;
+        bool ac_find_cheat;
 		int32 ac_delta;
 
 	public:
