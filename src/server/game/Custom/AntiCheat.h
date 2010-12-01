@@ -42,13 +42,13 @@ enum ePuniType
 class AntiCheat_Local
 {
 	private:
-		bool ac_block;
-        bool ac_find_cheat;
+		bool ac_block;        
 		int32 ac_delta;
 
 	public:
 		AntiCheat_Local();
 
+        bool ac_find_cheat;
         bool ac_goactivate;
 
         uint32 m_CheatList[MAX_CHEAT];

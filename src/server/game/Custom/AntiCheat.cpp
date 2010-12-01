@@ -138,7 +138,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	// Calc Delthas for AntiCheat
 	CalcDeltas(plMover, movementInfo);
 
-    // Clean player cheatlist
+    // Clean player cheatlist only if we founded a cheat
     if (plMover->ac_local.ac_find_cheat)
         plMover->ac_local.ResetCheatList(cServerTimeDelta);
 	
@@ -158,12 +158,14 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 		if (!CheckMistiming(plMover, vehMover, movementInfo))
 			check_passed = false;
 
-    // check taxi flight
+    // Check taxi flight
     const uint32 curDest = plMover->m_taxi.GetTaxiDestination();	
 	if (!curDest)
-	{            
+	{
+        // If we come from sleep
         if (plMover->ac_local.ac_goactivate)
         {
+            // Calc Variables for next run of AntiCheat
             CalcVariablesSmall(plMover, movementInfo, mover);
             return check_passed;
         }
@@ -207,8 +209,8 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	}
     if (cheat_find)
     {
-        plMover->ac_local.ac_find_cheat = true;
-        check_passed = AntiCheatPunisher(plMover, movementInfo);
+        plMover->ac_local.ac_find_cheat = true; // Yes, we found a cheater
+        check_passed = AntiCheatPunisher(plMover, movementInfo); // Try Punish him
     }
 	return check_passed;
 }
@@ -240,6 +242,7 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
         (plMover->ac_local.m_CheatList[CHEAT_FLY] < (plMover->ac_local.m_CheatList[CHEAT_SPEED] / 10)))
         return true;
 
+    // Yes, We Can!
     std::string announce = "";
     switch (CONFIG_AC_PUNI_TYPE)
     {
