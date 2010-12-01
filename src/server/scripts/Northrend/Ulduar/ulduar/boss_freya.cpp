@@ -705,6 +705,9 @@ class boss_elder_brightleaf : public CreatureScript
                     m_pInstance->SetData(DATA_LUMBERJACKED_START, ACHI_START);
 
                 m_pInstance->SetData(DATA_LUMBERJACKED_COUNT, ACHI_INCREASE);
+
+                if (m_pInstance->GetData(DATA_CONSPEEDATORY) == ACHI_IS_NOT_STARTED)
+                    m_pInstance->SetData(DATA_CONSPEEDATORY, ACHI_START);
             }
         }
 
@@ -868,6 +871,9 @@ class boss_elder_ironbranch : public CreatureScript
                     m_pInstance->SetData(DATA_LUMBERJACKED_START, ACHI_START);
 
                 m_pInstance->SetData(DATA_LUMBERJACKED_COUNT, ACHI_INCREASE);
+
+                if (m_pInstance->GetData(DATA_CONSPEEDATORY) == ACHI_IS_NOT_STARTED)
+                    m_pInstance->SetData(DATA_CONSPEEDATORY, ACHI_START);
             }
         }
 

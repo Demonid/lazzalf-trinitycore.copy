@@ -18,7 +18,6 @@
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
-// #include "GameObjectAI.h"
 
 const DoorData doorData[] =
 {
@@ -688,158 +687,161 @@ class go_call_tram : public GameObjectScript
 };
 
 // Archivum Console
-//enum ConsoleActions
-//{
-//    VALANYR,
-//    FREYA,
-//    HODIR,
-//    MIMIRON,
-//    THORIM,
-//};
-//
-//#define QUEST_ANCIENT_HISTORY 13622
-//
-//class go_archivum_console : public GameObjectScript
-//{
-//    public:
-//        go_archivum_console() : GameObjectScript("go_archivum_console") { }
-//
-//    class go_archivum_consoleAI : public GameObjectAI
-//    {
-//        go_archivum_consoleAI(GameObject* g) : GameObjectAI(g)
-//        {
-//            valanyrAnalysisTimer = 0;
-//            valanyrAnalysisPhase = 0;
-//            pInstance = go->GetInstanceScript();
-//        }
-//
-//        uint32 valanyrAnalysisTimer;
-//        uint8 valanyrAnalysisPhase;
-//        InstanceScript* pInstance;
-//
-//        bool GossipHello(Player* pPlayer)
-//        {
-//            if (!pInstance)
-//                return false;
-//
-//            if (pPlayer->GetQuestStatus(QUEST_ANCIENT_HISTORY) == QUEST_STATUS_COMPLETE)
-//                pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about the Fragments", GOSSIP_SENDER_MAIN, VALANYR);
-//
-//            return true;
-//        };
-//
-//        bool GossipSelect(Player *pPlayer, uint32 sender, uint32 action)
-//        {
-//            if(sender != GOSSIP_SENDER_MAIN) return true;
-//
-//            switch(action)
-//            {
-//                case VALANYR:
-//                    valanyrAnalysisTimer = 2000;
-//                    valanyrAnalysisPhase = 1;
-//                    pPlayer->CLOSE_GOSSIP_MENU();
-//                    go->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-//                    break;                
-//            }
-//
-//            return true;
-//        }
-//
-//        void UpdateAI(const uint32 diff)
-//        {
-//            if (valanyrAnalysisPhase == 1)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Fragment analysis underway.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 2000;
-//                    valanyrAnalysisPhase = 2;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 2)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Object identified: Val'anyr, Hammer of Ancient Kings.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 6000;
-//                    valanyrAnalysisPhase = 3;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 3)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Created by the titans themselves, Val'anyr was given to the first Earthen king, Urel Stoneheart. With the hammer he was to create and give life to the rest of his brethren.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 2500;
-//                    valanyrAnalysisPhase = 4;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 4)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Val'anyr was shattered during the first war between the Earthen and the Iron Dwarves.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 2000;
-//                    valanyrAnalysisPhase = 5;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 5)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("The Weapon's remnants were believed lost in the conflict.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 2500;
-//                    valanyrAnalysisPhase = 6;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 6)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Probability of successful repair by ordinary means available in this world is close to nil.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 2000;
-//                    valanyrAnalysisPhase = 7;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 7)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Please hold while theoretical means are analyzed.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 6000;
-//                    valanyrAnalysisPhase = 8;
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//            else if (valanyrAnalysisPhase == 8)
-//            {
-//                if (valanyrAnalysisTimer <= diff)
-//                {
-//                    go->MonsterSay("Powerful acidic content theoretically found inside the being Yogg-Saron would count for the liquefaction of Saronite. Submersion in this substance might be sufficient to rebind an alloy of titan origin.", LANG_UNIVERSAL, 0);
-//                    valanyrAnalysisTimer = 0;
-//                    valanyrAnalysisPhase = 0;
-//                    go->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-//                }
-//                else valanyrAnalysisTimer -= diff;
-//            }
-//        }
-//    };    
-//
-//    GameObjectAI* GetAI(GameObject *g) const
-//    {
-//        return new go_archivum_consoleAI (g);
-//    };
-//};
+/*enum ConsoleActions
+{
+    VALANYR,
+    FREYA,
+    HODIR,
+    MIMIRON,
+    THORIM,
+};
+
+enum ConsoleQuests
+{
+    QUEST_ANCIENT_HISTORY = 13622,
+    QUEST_CELESTIAL_PLANETARIUM_10 = 13607,
+    QUEST_CELESTIAL_PLANETARIUM_25 = 13816,
+};
+
+class go_archivum_console : public GameObjectScript
+{
+    public:
+        go_archivum_console() : GameObjectScript("go_archivum_console") { }
+
+    bool OnGossipHello(Player *pPlayer, GameObject *pGO)
+    {
+        InstanceScript* pInstance = pGO->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        if (pPlayer->GetQuestStatus(QUEST_ANCIENT_HISTORY) == QUEST_STATUS_COMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about the Fragments", GOSSIP_SENDER_MAIN, VALANYR);
+
+        if (pPlayer->GetQuestStatus(QUEST_CELESTIAL_PLANETARIUM_10) == QUEST_STATUS_COMPLETE || 
+            pPlayer->GetQuestStatus(QUEST_CELESTIAL_PLANETARIUM_25) == QUEST_STATUS_COMPLETE)
+        {
+            pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about Freya and her sigil", GOSSIP_SENDER_MAIN, FREYA);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about Hodir and his sigil", GOSSIP_SENDER_MAIN, HODIR);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about Mimiron and his sigil", GOSSIP_SENDER_MAIN, MIMIRON);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Tell me about Thorim and his sigil", GOSSIP_SENDER_MAIN, THORIM);
+        }
+
+        pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pGO->GetGUID());
+
+        return true;
+    };
+
+    bool OnGossipSelect(Player *pPlayer, GameObject *pGO, uint32 sender, uint32 action)
+    {
+        if(sender != GOSSIP_SENDER_MAIN) return true;
+
+        switch(action)
+        {
+            case VALANYR:
+            case FREYA:
+            case HODIR:
+            case MIMIRON:
+            case THORIM:
+                pGO->MonsterSay("Entry denied. Access level insufficient.", LANG_UNIVERSAL, 0);
+                pPlayer->CLOSE_GOSSIP_MENU();
+                //go->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                break;
+        }
+
+        return true;
+    }
+        
+        //void UpdateAI(const uint32 diff)
+        //{
+        //    if (valanyrAnalysisPhase == 1)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Fragment analysis underway.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 2000;
+        //            valanyrAnalysisPhase = 2;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 2)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Object identified: Val'anyr, Hammer of Ancient Kings.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 6000;
+        //            valanyrAnalysisPhase = 3;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 3)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Created by the titans themselves, Val'anyr was given to the first Earthen king, Urel Stoneheart. With the hammer he was to create and give life to the rest of his brethren.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 2500;
+        //            valanyrAnalysisPhase = 4;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 4)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Val'anyr was shattered during the first war between the Earthen and the Iron Dwarves.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 2000;
+        //            valanyrAnalysisPhase = 5;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 5)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("The Weapon's remnants were believed lost in the conflict.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 2500;
+        //            valanyrAnalysisPhase = 6;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 6)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Probability of successful repair by ordinary means available in this world is close to nil.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 2000;
+        //            valanyrAnalysisPhase = 7;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 7)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Please hold while theoretical means are analyzed.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 6000;
+        //            valanyrAnalysisPhase = 8;
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //    else if (valanyrAnalysisPhase == 8)
+        //    {
+        //        if (valanyrAnalysisTimer <= diff)
+        //        {
+        //            go->MonsterSay("Powerful acidic content theoretically found inside the being Yogg-Saron would count for the liquefaction of Saronite. Submersion in this substance might be sufficient to rebind an alloy of titan origin.", LANG_UNIVERSAL, 0);
+        //            valanyrAnalysisTimer = 0;
+        //            valanyrAnalysisPhase = 0;
+        //            go->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        //        }
+        //        else valanyrAnalysisTimer -= diff;
+        //    }
+        //}
+
+};*/
 
 void AddSC_instance_ulduar()
 {
     new instance_ulduar();
     new go_call_tram();
-    // new go_archivum_console();
+    //new go_archivum_console();
 }
