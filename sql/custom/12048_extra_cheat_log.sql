@@ -3,6 +3,7 @@ CREATE TABLE `cheat_log` (
   `cheat_type` varchar(45) NOT NULL,
   `guid` int(10) unsigned NOT NULL,
   `name` varchar(45) NOT NULL,
+  `level` int(10) unsigned NOT NULL default 0,
   `map` int(10) unsigned NOT NULL,
   `area` int(10) unsigned NOT NULL,
   `pos_x` float NOT NULL,

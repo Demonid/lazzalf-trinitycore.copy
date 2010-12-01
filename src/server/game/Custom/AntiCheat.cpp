@@ -434,8 +434,8 @@ void AntiCheat::LogCheat(eCheat m_cheat, Player* plMover, MovementInfo& movement
     if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
         if (difftime_log_db > sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_DB))
         {		                    
-            ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
-                cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, level, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%f', '%f', '%f', NOW())", 
+                cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->getLevel(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             plMover->ac_local.m_logdb_time = cServerTime;
         }
 }
