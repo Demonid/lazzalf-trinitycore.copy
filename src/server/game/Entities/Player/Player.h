@@ -985,15 +985,12 @@ class TradeData
 class Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
+    friend class AntiCheat;
     friend void Item::AddToUpdateQueueOf(Player *player);
     friend void Item::RemoveFromUpdateQueueOf(Player *player);
     public:
         explicit Player (WorldSession *session);
         ~Player ();
-
-        // movement anticheat
-        AntiCheat_Local ac_local; // AntiCheat
-        // end movement anticheat
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -2618,6 +2615,10 @@ class Player : public Unit, public GridObject<Player>
         float m_rest_bonus;
         RestType rest_type;
         ////////////////////Rest System/////////////////////
+
+        // movement anticheat
+        AntiCheat_Local ac_local; // AntiCheat
+        // end movement anticheat
         
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
