@@ -32,9 +32,8 @@ class AntiCheat_Local
 {
 	private:
 		bool ac_block;
-		uint32 ac_block_diff;
+		int32 ac_delta;
 
-		int32 ac_delta;   
 	public:
 		AntiCheat_Local();
 
@@ -65,9 +64,7 @@ class AntiCheat_Local
 		
 		void SetBlock(bool /*block*/);
 		bool GetBlock();
-        void AddBlockDiff(uint32 /*diff*/);
-		bool GetAndUpdateBlockDiff(uint32 /*diff*/);
-		bool GetAndUpdateDelta(uint32 /*diff*/);
+		bool GetAndUpdateDelta(int32 /*diff*/);
 		void SetDelta(int32 /*delta*/);
         void ResetCheatList(uint32 /*diff*/);
 };

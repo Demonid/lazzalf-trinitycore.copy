@@ -19,7 +19,6 @@
 AntiCheat_Local::AntiCheat_Local()
 {
 	ac_block = false;
-	ac_block_diff = 0;
 
 	ac_delta = 0;
     ac_goactivate = false;
@@ -60,28 +59,7 @@ bool AntiCheat_Local::GetBlock()
 	return ac_block;
 }
 
-void AntiCheat_Local::AddBlockDiff(uint32 diff)
-{
-	ac_block_diff += diff;
-}
-
-bool AntiCheat_Local::GetAndUpdateBlockDiff(uint32 diff)
-{
-    if (ac_block_diff == 0)
-        return true;
-
-	if (ac_block_diff > diff)
-		ac_block_diff -= diff;
-	else
-    {
-		ac_block_diff = 0;
-        ac_goactivate = true;
-    }        
-	
-	return ac_block_diff == 0;
-}
-
-bool AntiCheat_Local::GetAndUpdateDelta(uint32 diff)
+bool AntiCheat_Local::GetAndUpdateDelta(int32 diff)
 {
     if (ac_goactivate)
     {
@@ -89,12 +67,28 @@ bool AntiCheat_Local::GetAndUpdateDelta(uint32 diff)
         return true;
     }
 
-    ac_delta += diff;
+    if (ac_delta == 0)
+        ac_delta = int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
 
-	if (ac_delta >= int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)))
+    if (ac_delta > 0)
     {
-		ac_delta = 0;
-        ac_goactivate = true;
+        if (ac_delta > diff)
+            ac_delta -= diff;
+        else
+        {
+            ac_delta = 0;
+            ac_goactivate = true;
+        }
+    }
+    else if (ac_delta < 0)
+    {
+        if (ac_delta < diff)
+            ac_delta += diff;
+        else
+        {
+            ac_delta = 0;
+            ac_goactivate = true;
+        }
     }
 		
 	return ac_delta <= 0;
@@ -135,16 +129,12 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	
 	// Calc Delthas for AntiCheat
 	CalcDeltas(plMover, movementInfo);
-	
-    // Not used for now
-	//if (!plMover->ac_local.GetAndUpdateBlockDiff(cServerTimeDelta))
-	//	return true;
 
     // Clean player cheatlist
     plMover->ac_local.ResetCheatList(cServerTimeDelta);
 	
     // Diff for AntiCheat sleep
-	if (!plMover->ac_local.GetAndUpdateDelta(cServerTimeDelta))
+	if (!plMover->ac_local.GetAndUpdateDelta(int32(cServerTimeDelta)))
         return true;
   
     // AntiCheat Block (not used for now)
