@@ -16,7 +16,7 @@
 
 enum eCheat
 {
-	CHEAT_MISTIMING,
+	CHEAT_MISTIMING = 0,
 	CHEAT_GRAVITY,
 	CHEAT_MULTIJUMP,
 	CHEAT_SPEED,
@@ -50,7 +50,7 @@ class AntiCheat_Local
 		AntiCheat_Local();
 
         bool ac_find_cheat;
-        bool ac_goactivate;
+        int32 ac_goactivate;
 
         uint32 m_CheatList[MAX_CHEAT];
         uint32 m_CheatList_reset_diff;
@@ -129,6 +129,7 @@ class AntiCheat
 		bool CheckAntiTeleToPlane(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*movementInfo*/);
         void LogCheat(eCheat /*m_cheat*/, Player* /*plMover*/, MovementInfo& /*movementInfo*/);
         bool AntiCheatPunisher(Player* /*plMover*/, MovementInfo& /*movementInfo*/);
+        inline bool ControllPunisher(Player* /*plMover*/);
 	
     public:
         AntiCheat();
