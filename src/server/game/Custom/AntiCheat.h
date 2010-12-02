@@ -30,7 +30,8 @@ enum eCheat
 
 enum ePuniType
 {
-    PUNI_NONE,
+    PUNI_NONE = 0,
+    PUNI_BLOCK,
 	PUNI_KILL,
 	PUNI_KICK,
 	PUNI_BAN_CHAR,

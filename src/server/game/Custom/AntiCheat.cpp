@@ -108,7 +108,7 @@ void AntiCheat_Local::SetDelta(int32 delta)
 
 void AntiCheat_Local::ResetCheatList(uint32 diff)
 {
-    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
+    if (!sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA))
         return;
 
     if (m_CheatList_reset_diff >= diff)
@@ -117,11 +117,13 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
 		m_CheatList_reset_diff = 0;
 
 	if (!m_CheatList_reset_diff)
+    {
 		for (int i = 0; i < MAX_CHEAT; i++)
             m_CheatList[i] = 0;
 
-    m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
-    ac_find_cheat = false;
+        m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
+        ac_find_cheat = false;
+    }
 }
 
 bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, MovementInfo& movementInfo, Unit *mover)
@@ -244,10 +246,14 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
 
     // Yes, We Can!
     std::string announce = "";
-    switch (CONFIG_AC_PUNI_TYPE)
+    switch (sWorld.getBoolConfig(CONFIG_AC_PUNI_TYPE))
     {
         case PUNI_NONE:
             return true;
+        case PUNI_BLOCK:
+            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BLOCK",
+                    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+            return false;
         case PUNI_KILL:
             plMover->DealDamage(plMover, plMover->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KILL",

@@ -2662,11 +2662,12 @@ Anticheat.LogAlarmDelta = 5000
 #
 #    Anticheat.Punisher.TypeBan
 #        Default: 0 - off
-#                 1 - kill
-#                 2 - kick
-#                 3 - ban character (use Punisher.BanTime for time, -1 permaban)
-#                 2 - ban account   (use Punisher.BanTime for time, -1 permaban)
-#                 2 - ban ip        (use Punisher.BanTime for time, -1 permaban)
+#                 1 - block
+#                 2 - kill
+#                 3 - kick
+#                 4 - ban character (use Punisher.BanTime for time, -1 permaban)
+#                 5 - ban account   (use Punisher.BanTime for time, -1 permaban)
+#                 6 - ban ip        (use Punisher.BanTime for time, -1 permaban)
 Anticheat.Punisher.TypeBan = 0
 Anticheat.Punisher.CountCheat = 1
 Anticheat.Punisher.LevelMax = 80

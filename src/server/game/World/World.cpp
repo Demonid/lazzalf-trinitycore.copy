@@ -657,10 +657,10 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.Punisher.TypeBan (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
         m_int_configs[CONFIG_AC_PUNI_TYPE] = 0;
     }
-    if (m_int_configs[CONFIG_AC_PUNI_TYPE] > 5)
+    if (m_int_configs[CONFIG_AC_PUNI_TYPE] > 6)
     {
-        sLog.outError("Anticheat.Punisher.TypeBan (%d) must be <= 5. Using 5 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
-        m_int_configs[CONFIG_AC_PUNI_TYPE] = 5;
+        sLog.outError("Anticheat.Punisher.TypeBan (%d) must be <= 6. Using 6 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
+        m_int_configs[CONFIG_AC_PUNI_TYPE] = 6;
     }
     m_int_configs[CONFIG_AC_PUNI_COUNT] = sConfig.GetIntDefault("Anticheat.Punisher.CountCheat", 0);
     if (m_int_configs[CONFIG_AC_PUNI_COUNT] < 0)
