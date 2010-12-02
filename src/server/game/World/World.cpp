@@ -631,6 +631,12 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
         m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 60000;    
+    }
+    m_int_configs[CONFIG_AC_BLOCK_COUNT_ENABLE] = sConfig.GetIntDefault("Anticheat.BlockCountEnable", 1);
+    if (m_int_configs[CONFIG_AC_BLOCK_COUNT_ENABLE] < 1)
+    {
+        sLog.outError("Anticheat.BlockCountEnable (%d) must be >= 1. Using 1 instead.", m_int_configs[CONFIG_AC_BLOCK_COUNT_ENABLE]);
+        m_int_configs[CONFIG_AC_BLOCK_COUNT_ENABLE] = 1;
     }    
     m_int_configs[CONFIG_AC_SLEEP_DELTA] = sConfig.GetIntDefault("Anticheat.LogSleepDelta", 500);
     if (m_int_configs[CONFIG_AC_SLEEP_DELTA] < 0)
