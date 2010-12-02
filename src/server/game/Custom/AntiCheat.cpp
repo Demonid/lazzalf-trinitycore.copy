@@ -337,7 +337,7 @@ void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
 
     if (!plMover->ac_local.m_logfile_time)
 	    difftime_log_file = cServerTime - plMover->ac_local.m_logfile_time;
-    if (!plMover->plMover->ac_local.m_logdb_time)
+    if (!plMover->ac_local.m_logdb_time)
         difftime_log_db = cServerTime - plMover->ac_local.m_logdb_time;
 
 	cServerTimeDelta = 1500;
