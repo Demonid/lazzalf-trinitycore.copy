@@ -629,8 +629,8 @@ void World::LoadConfigSettings(bool reload)
     }
     if (m_int_configs[CONFIG_AC_DELTA_LOG_DB] > 60000)
     {
-        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
-        m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 0;    
+        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
+        m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 60000;    
     }    
     m_int_configs[CONFIG_AC_SLEEP_DELTA] = sConfig.GetIntDefault("Anticheat.LogSleepDelta", 500);
     if (m_int_configs[CONFIG_AC_SLEEP_DELTA] < 0)
