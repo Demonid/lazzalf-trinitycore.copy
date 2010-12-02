@@ -167,7 +167,7 @@ class ChatHandler
         bool HandleCharacterTitlesCommand(const char* args);
 		bool HandleCharacterJailpinfoCommand(const char* args);
 
-        bool HandleChannelSetPublic(const char *args);
+        bool HandleChannelSetOwnership(const char *args);
 
         bool HandlePossessCommand(const char* args);
         bool HandleUnPossessCommand(const char* args);
