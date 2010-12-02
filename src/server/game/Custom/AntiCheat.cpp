@@ -107,7 +107,7 @@ void AntiCheat_Local::SetDelta(int32 delta)
 
 void AntiCheat_Local::ResetCheatList(uint32 diff)
 {
-    if (!sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA))
+    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
         return;
 
     if (m_CheatList_reset_diff >= diff)
@@ -294,11 +294,11 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
         case PUNI_BAN_CHAR:
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_CHARACTER",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());            
-            sWorld.BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             announce = "AntiCheatPunisher ha bannato il player ";
             announce += plMover->GetName();
-            announce += "per uso di Hack";
+            announce += " per uso di Hack";
             sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+            sWorld.BanCharacter(plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             return false;
         case PUNI_BAN_ACC:
             {
@@ -306,20 +306,9 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
                         plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
                 announce = "AntiCheatPunisher ha bannato l'account del player ";
                 announce += plMover->GetName();
-                announce += "per uso di Hack";
+                announce += " per uso di Hack";
                 sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-                QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id=%u", plMover->GetSession()->GetAccountId());
-                if (result)
-                {
-
-                    Field *fields = result->Fetch();
-                    std::string Username = fields[0].GetString();
-                    if(!Username.empty())
-                    {
-                        sWorld.BanAccount(BAN_ACCOUNT, Username,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
-                    }
-                }
-                return false;
+                sWorld.BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             }
         case PUNI_BAN_IP:
             {
@@ -327,7 +316,7 @@ bool AntiCheat::AntiCheatPunisher(Player* plMover, MovementInfo& movementInfo)
                         plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
                 announce = "AntiCheatPunisher ha bannato l'ip del player ";
                 announce += plMover->GetName();
-                announce += "per uso di Hack";
+                announce += " per uso di Hack";
                 sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
                 QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", plMover->GetSession()->GetAccountId());
                 if (result)
