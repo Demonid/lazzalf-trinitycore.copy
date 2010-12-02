@@ -2595,6 +2595,12 @@ ArenaMod.ControllIp = 0
 
 Anticheat.Movement.Enable = 0
 
+#    Anticheat.BlockCountEnable
+#        Active block after Anticheat.BlockCountEnable rilevations
+#        Default: 1
+
+Anticheat.BlockCountEnable = 1
+
 #
 #    Anticheat.Movement.MistimingDelta
 #        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
