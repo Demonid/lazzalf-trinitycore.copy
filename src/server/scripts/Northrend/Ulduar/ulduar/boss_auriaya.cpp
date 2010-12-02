@@ -390,7 +390,15 @@ class mob_feral_defender : public CreatureScript
         void UpdateAI(const uint32 uiDiff)
         {
             if (!UpdateVictim())
-                me->ForcedDespawn();
+            {
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true))
+                {
+                    me->AddThreat(pTarget, 100.0f);
+                    me->AI()->AttackStart(pTarget);
+                }
+                else
+                    me->ForcedDespawn();
+            }
                 
             if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
                 me->ForcedDespawn();

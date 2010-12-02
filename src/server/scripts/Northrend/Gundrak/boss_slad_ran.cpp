@@ -177,10 +177,10 @@ public:
                     me->SummonCreature(CREATURE_SNAKE, SpawnLoc[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
 
                 DoScriptText(SAY_SUMMON_CONSTRICTORS,me);
-                for (uint8 i = 0; i < DUNGEON_MODE(3, 5); ++i)
+                for (uint8 i = 0; i < DUNGEON_MODE(2, 3); ++i)
                     me->SummonCreature(CREATURE_CONSTRICTORS, SpawnLoc[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
                 
-                uiSpawnTimer = 15*IN_MILLISECONDS;
+                uiSpawnTimer = 20*IN_MILLISECONDS;
             } else uiSpawnTimer -= diff;
 
             DoMeleeAttackIfReady();
