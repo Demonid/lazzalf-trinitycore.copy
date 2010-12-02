@@ -2595,44 +2595,48 @@ ArenaMod.ControllIp = 0
 
 Anticheat.Movement.Enable = 0
 
-#    Anticheat.BlockCountEnable
-#        Active block after Anticheat.BlockCountEnable rilevations
-#        Default: 1
-
-Anticheat.BlockCountEnable = 1
-
 #
 #    Anticheat.Movement.MistimingDelta
 #        mistiming intelval between client and serverside (default 15000 ms, allowed 5000 - 50000 ms)
 
-Anticheat.Movement.Mistiming.Enable             = 1
-Anticheat.Movement.MistimingBlock.Enable        = 1
-Anticheat.Movement.MistimingDelta = 15000
+Anticheat.Mistiming.Enable               = 1
+Anticheat.MistimingBlock.Count           = 0
+Anticheat.MistimingPunisher.Count        = 0
+Anticheat.MistimingDelta = 15000
 
-Anticheat.Movement.AntiGravity.Enable           = 1
-Anticheat.Movement.AntiGravityBlock.Enable      = 1
+Anticheat.AntiGravity.Enable             = 1
+Anticheat.AntiGravityBlock.Count         = 0
+Anticheat.AntiGravityPunisher.Count      = 0
 
-Anticheat.Movement.AntiMultiJump.Enable         = 1
-Anticheat.Movement.AntiMultiJumpBlock.Enable    = 1
+Anticheat.AntiMultiJump.Enable           = 1
+Anticheat.AntiMultiJumpBlock.Count       = 0
+Anticheat.AntiMultiJumpPunisher.Count    = 0
 
-Anticheat.Movement.AntiSpeedTele.Enable         = 1
-Anticheat.Movement.AntiSpeedTeleBlock.Enable    = 1
+Anticheat.AntiSpeedTele.Enable           = 1
+Anticheat.AntiSpeedBlock.Count           = 0
+Anticheat.AntiSpeedPunisher.Count        = 0
+Anticheat.AntiTeleBlock.Count            = 0
+Anticheat.AntiTelePunisher.Count         = 0
 
-Anticheat.Movement.AntiMountainHack.Enable      = 1
-Anticheat.Movement.AntiMountainHackBlock.Enable = 1
+Anticheat.AntiMountain.Enable            = 1
+Anticheat.AntiMountainBlock.Count        = 0
+Anticheat.AntiMountainPunisher.Count     = 0
 
-Anticheat.Movement.AntiFlyHack.Enable           = 1
-Anticheat.Movement.AntiFlyHackBlock.Enable      = 1
+Anticheat.AntiFlyHack.Enable             = 1
+Anticheat.AntiFlyHackBlock.Count         = 0
+Anticheat.AntiFlyHackPunisher.Count      = 0
 
-Anticheat.Movement.AntiWaterwalk.Enable         = 1
-Anticheat.Movement.AntiWaterwalkBlock.Enable    = 1
+Anticheat.AntiWaterwalk.Enable           = 1
+Anticheat.AntiWaterwalkBlock.Count       = 0
+Anticheat.AntiWaterwalkPunisher.Count    = 0
 
 #
 #    Anticheat.Movement.TeleportToPlaneAlarms
 #        maximum alarms before log TeleToPlane cheat (default 50, allowed 20 - 100)
 
-Anticheat.Movement.TeleportToPlane.Enable       = 1
-Anticheat.Movement.TeleportToPlaneBlock.Enable  = 1
+Anticheat.Movement.TeleportToPlane.Enable         = 1
+Anticheat.Movement.TeleportToPlaneBlock.Count     = 0
+Anticheat.Movement.TeleportToPlanePunisher.Count  = 0
 Anticheat.Movement.TeleportToPlaneAlarms = 50
 
 #
@@ -2657,13 +2661,16 @@ Anticheat.LogFileDelta = 0
 Anticheat.LogDBDelta = 0
 
 #
-#    Anticheat.LogSleepDelta
+#    Anticheat.SleepDelta
 #        Sleep delta time for AntiCheat controll on every character (default 500)
-#    Anticheat.LogAlarmDelta
+#    Anticheat.AliveCount
+#        Movement Packet controlled when we come from sleep before we going again to sleep (default 1)
+#    Anticheat.AlarmDelta
 #        Don't go to sleep for LogAlarmDeltaSleep after found a cheat (default 5000)
 
-Anticheat.LogSleepDelta = 500
-Anticheat.LogAlarmDelta = 5000
+Anticheat.SleepDelta = 500
+Anticheat.AliveCount = 1
+Anticheat.AlarmDelta = 5000
 
 #
 #    Anticheat.Punisher.TypeBan
@@ -2675,12 +2682,18 @@ Anticheat.LogAlarmDelta = 5000
 #                 5 - ban account   (use Punisher.BanTime for time, -1 permaban)
 #                 6 - ban ip        (use Punisher.BanTime for time, -1 permaban)
 Anticheat.Punisher.TypeBan = 0
-Anticheat.Punisher.CountCheat = 1
 Anticheat.Punisher.LevelMax = 80
 Anticheat.Punisher.BanTime = -1
 Anticheat.Punisher.MapSmall = 0
 
-Anticheat.CheatResetListDelta = 5000
+#
+#    Anticheat.CheatResetListDelta
+#        When we found a cheat it reset internal cheat list after CheatResetListDelta
+#    Anticheat.CheatResetListDeltaFound
+#        When we found a cheat it increase internal cheat list time reset to CheatResetListDeltaFound if left time is under CheatResetListDeltaFound
+
+Anticheat.CheatResetListDelta = 30000
+Anticheat.CheatResetListDeltaFound = 5000
 
 #
 ###################################################################################################################
