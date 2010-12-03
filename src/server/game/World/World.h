@@ -904,6 +904,18 @@ class World
 
         uint32 m_BGannouncetimer;
 
+        // AntiCheat
+    public:
+        UNORDERED_MAP<unsigned int , bool> iIgnoreMapIds_AC;
+        UNORDERED_MAP<unsigned int , bool> iIgnoreMapIds_ACCount;
+        UNORDERED_MAP<unsigned int , bool> iIgnoreMapIds_ACBlock;
+        UNORDERED_MAP<unsigned int , bool> iIgnoreMapIds_ACPuni;
+        void ACpreventMapsFromBeingUsed(const char* pMapIdString);
+        void ACpreventMapsFromBeingUsedCount(const char* pMapIdString);
+        void ACpreventMapsFromBeingUsedBlock(const char* pMapIdString);
+        void ACpreventMapsFromBeingUsedPuni(const char* pMapIdString);
+    private:
+
         //Player Queue
         Queue m_QueuedPlayer;
 

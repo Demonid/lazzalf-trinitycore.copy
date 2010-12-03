@@ -2695,6 +2695,11 @@ Anticheat.Punisher.MapSmall = 0
 Anticheat.CheatResetListDelta = 30000
 Anticheat.CheatResetListDeltaFound = 5000
 
+Anticheat.ignoreMapIds = ""
+Anticheat.ignoreMapIdsCount = ""
+Anticheat.ignoreMapIdsBlock = ""
+Anticheat.ignoreMapIdsPuni = ""
+
 #
 ###################################################################################################################
 

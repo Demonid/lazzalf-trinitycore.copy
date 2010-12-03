@@ -789,6 +789,15 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.Punisher.LevelMax (%d) must be > 0. Using 1 instead.", m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX]);
         m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX] = 1;
     }
+    std::string ignoreMapIds = sConfig.GetStringDefault("Anticheat.ignoreMapIds", "");
+    ACpreventMapsFromBeingUsed(ignoreMapIds.c_str());
+    std::string ignoreMapIdsCount = sConfig.GetStringDefault("Anticheat.ignoreMapIdsCount", "");
+    ACpreventMapsFromBeingUsedCount(ignoreMapIdsCount.c_str());
+    std::string ignoreMapIdsBlock = sConfig.GetStringDefault("Anticheat.ignoreMapIdsBlock", "");
+    ACpreventMapsFromBeingUsedBlock(ignoreMapIdsBlock.c_str());
+    std::string ignoreMapIdsPuni = sConfig.GetStringDefault("Anticheat.ignoreMapIdsPunisher", "");
+    ACpreventMapsFromBeingPuni(ignoreMapIdsPuni.c_str());
+
     ///- Read other configuration items from the config file
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig.GetBoolDefault("DurabilityLoss.InPvP", false);
@@ -3071,6 +3080,94 @@ void World::LoadWorldStates()
 
     sLog.outString();
     sLog.outString(">> Loaded %u world states.", counter);
+}
+
+void World::ACpreventMapsFromBeingUsed(const char* pMapIdString)
+{
+	iIgnoreMapIds_AC.clear(); 
+	if (pMapIdString != NULL)
+	{
+		std::string map_str; 
+		std::stringstream map_ss; 
+		map_ss.str(std::string(pMapIdString)); 
+		while (std::getline(map_ss, map_str, ','))
+		{
+			std::stringstream ss2(map_str);
+			int map_num = -1;
+			ss2 >> map_num; 
+			if (map_num >= 0)
+			{ 
+				sLog.outDebug("Ignoring Map %i for AC", map_num); 
+				iIgnoreMapIds_AC[map_num] = true;
+			}
+		}
+	} 
+}
+
+void World::ACpreventMapsFromBeingUsedCount(const char* pMapIdString)
+{
+	iIgnoreMapIds_ACCount.clear(); 
+	if (pMapIdString != NULL)
+	{
+		std::string map_str; 
+		std::stringstream map_ss; 
+		map_ss.str(std::string(pMapIdString)); 
+		while (std::getline(map_ss, map_str, ','))
+		{
+			std::stringstream ss2(map_str);
+			int map_num = -1;
+			ss2 >> map_num; 
+			if (map_num >= 0)
+			{ 
+				sLog.outDebug("Ignoring Map %i for ACCount", map_num); 
+				iIgnoreMapIds_ACCount[map_num] = true;
+			}
+		}
+	} 
+}
+
+void World::ACpreventMapsFromBeingUsedBlock(const char* pMapIdString)
+{
+	iIgnoreMapIds_ACBlock.clear(); 
+	if (pMapIdString != NULL)
+	{
+		std::string map_str; 
+		std::stringstream map_ss; 
+		map_ss.str(std::string(pMapIdString)); 
+		while (std::getline(map_ss, map_str, ','))
+		{
+			std::stringstream ss2(map_str);
+			int map_num = -1;
+			ss2 >> map_num; 
+			if (map_num >= 0)
+			{ 
+				sLog.outDebug("Ignoring Map %i for ACBlock", map_num); 
+				iIgnoreMapIds_ACBlock[map_num] = true;
+			}
+		}
+	} 
+}
+
+void World::ACpreventMapsFromBeingUsedPuni(const char* pMapIdString)
+{
+	iIgnoreMapIds_ACPuni.clear(); 
+	if (pMapIdString != NULL)
+	{
+		std::string map_str; 
+		std::stringstream map_ss; 
+		map_ss.str(std::string(pMapIdString)); 
+		while (std::getline(map_ss, map_str, ','))
+		{
+			std::stringstream ss2(map_str);
+			int map_num = -1;
+			ss2 >> map_num; 
+			if (map_num >= 0)
+			{ 
+				sLog.outDebug("Ignoring Map %i for ACPuni", map_num); 
+				iIgnoreMapIds_ACPuni[map_num] = true;
+			}
+		}
+	} 
 }
 
 // Setting a worldstate will save it to DB

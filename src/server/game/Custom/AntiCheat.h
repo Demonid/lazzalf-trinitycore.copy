@@ -87,6 +87,10 @@ class AntiCheat
 	private: 
         bool cheat_find;
 
+        bool map_count;
+        bool map_block;
+        bool map_puni;
+
 		// Delthas
 		int32 cClientTimeDelta;
 		uint64 cServerTime;		
