@@ -2634,10 +2634,10 @@ Anticheat.AntiWaterwalkPunisher.Count    = 0
 #    Anticheat.Movement.TeleportToPlaneAlarms
 #        maximum alarms before log TeleToPlane cheat (default 50, allowed 20 - 100)
 
-Anticheat.Movement.TeleportToPlane.Enable         = 1
-Anticheat.Movement.TeleportToPlaneBlock.Count     = 0
-Anticheat.Movement.TeleportToPlanePunisher.Count  = 0
-Anticheat.Movement.TeleportToPlaneAlarms = 50
+Anticheat.TeleportToPlane.Enable         = 1
+Anticheat.TeleportToPlaneBlock.Count     = 0
+Anticheat.TeleportToPlanePunisher.Count  = 0
+Anticheat.TeleportToPlaneAlarms = 50
 
 #
 #    Anticheat.IgnoreGMLevel

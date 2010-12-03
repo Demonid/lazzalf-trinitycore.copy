@@ -118,11 +118,10 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
 	else 
 		m_CheatList_reset_diff = 0;
 
-	if (!m_CheatList_reset_diff)
+	if (m_CheatList_reset_diff == 0)
     {
 		for (int i = 0; i < MAX_CHEAT; i++)
             m_CheatList[i] = 0;
-
         number_cheat_find = 0;
 
         m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
