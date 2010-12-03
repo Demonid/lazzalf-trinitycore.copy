@@ -213,17 +213,20 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
         if (cheat_find)
         {
             // Yes, we found a cheater
-            ++(plMover->ac_local.number_cheat_find);
-
-            if (sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING) &&
-                plMover->ac_local.number_cheat_find > sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING)) 
+            if (map_count)
             {
-                // display warning at the center of the screen, hacky way.
-                std::string str = "";
-                str = "|cFFFFFC00[AC]|cFF00FFFF[|cFF60FF00" + std::string(plMover->GetName()) + "|cFF00FFFF] Possible cheater!";
-                WorldPacket data(SMSG_NOTIFICATION, (str.size()+1));
-                data << str;
-                sWorld.SendGlobalGMMessage(&data);
+                ++(plMover->ac_local.number_cheat_find);
+
+                if (sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING) &&
+                    plMover->ac_local.number_cheat_find > sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING)) 
+                {
+                    // display warning at the center of the screen, hacky way.
+                    std::string str = "";
+                    str = "|cFFFFFC00[AC]|cFF00FFFF[|cFF60FF00" + std::string(plMover->GetName()) + "|cFF00FFFF] Possible cheater!";
+                    WorldPacket data(SMSG_NOTIFICATION, (str.size()+1));
+                    data << str;
+                    sWorld.SendGlobalGMMessage(&data);
+                }
             }
             // We are are not going to sleep
             plMover->ac_local.SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
