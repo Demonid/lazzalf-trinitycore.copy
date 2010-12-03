@@ -2644,6 +2644,7 @@ Anticheat.Movement.TeleportToPlaneAlarms = 50
 #        ignore GMLevel min in anticheat controll (default 3)
 
 Anticheat.IgnoreGMLevel = 3
+Anticheat.ReportsForGMWarnings = 0
 
 #
 #    Anticheat.EnableDBLog
