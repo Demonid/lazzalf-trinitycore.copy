@@ -113,8 +113,7 @@ class AntiCheat
 		float delta_y;
 		float delta_z;
 		float real_delta;
-		bool no_fly_auras;
-		bool no_fly_flags;
+		bool fly_auras;
 		bool no_swim_flags;
 		bool no_swim_in_water;
 		bool no_swim_above_water;
