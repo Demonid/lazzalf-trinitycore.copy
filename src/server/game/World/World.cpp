@@ -789,11 +789,11 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("Anticheat.Punisher.LevelMax (%d) must be > 0. Using 1 instead.", m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX]);
         m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX] = 1;
     }
-    m_int_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = sConfig.GetIntDefault("Anticheat.MaxMaxAllowedDistance", 100);
-    if (m_int_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] < 0)
+    m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = sConfig.GetFloatDefault("Anticheat.MaxMaxAllowedDistance", 100.0f);
+    if (m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] < 0)
     {
-        sLog.outError("Anticheat.MaxMaxAllowedDistance (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED]);
-        m_int_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = 0;
+        sLog.outError("Anticheat.MaxMaxAllowedDistance (%d) must be >= 0. Using 0 instead.", m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED]);
+        m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = 0;
     }    
     std::string ignoreMapIds = sConfig.GetStringDefault("Anticheat.ignoreMapIds", "");
     ACpreventMapsFromBeingUsed(ignoreMapIds.c_str());

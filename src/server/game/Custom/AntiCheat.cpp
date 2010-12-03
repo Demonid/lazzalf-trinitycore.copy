@@ -410,7 +410,7 @@ void AntiCheat::CalcVariablesSmall(Player* plMover, MovementInfo& pNewPacket, Un
 	// end current speed
 
     if (fSpeedRate < plMover->ac_local.m_anti_Last_HSpeed && plMover->ac_local.m_anti_LastSpeedChangeTime == 0)
-		plMover->ac_local.m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / fSpeedRate) * 1500)) + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED); // 100ms above for random fluctuation
+		plMover->ac_local.m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / fSpeedRate) * 1500)) + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)); // 100ms above for random fluctuation
 
 	if (pNewPacket.time > plMover->ac_local.m_anti_LastSpeedChangeTime)
 	{
@@ -446,9 +446,7 @@ void AntiCheat::CalcVariables(Player* plMover, MovementInfo& pNewPacket, Unit *m
 	// end movement distance
 
     // Check if he have fly auras
-	no_fly_auras = !CanFly(plMover, pNewPacket);
-
-	no_fly_flags = (pNewPacket.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)) == 0;
+	fly_auras = CanFly(plMover, pNewPacket);
 
 	no_swim_flags = (pNewPacket.flags & MOVEMENTFLAG_SWIMMING) == 0;
 	no_swim_in_water = !mover->IsInWater();
@@ -459,7 +457,7 @@ void AntiCheat::CalcVariables(Player* plMover, MovementInfo& pNewPacket, Unit *m
 		cClientTimeDelta = 0;
 	time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
 
-	tg_z = (real_delta != 0 && no_fly_auras && no_swim_flags) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
+	tg_z = (real_delta != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
 
 	if (fSpeedRate < plMover->ac_local.m_anti_Last_HSpeed && plMover->ac_local.m_anti_LastSpeedChangeTime == 0)
 		plMover->ac_local.m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((plMover->ac_local.m_anti_Last_HSpeed / fSpeedRate) * 1500)) + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED));
@@ -656,7 +654,7 @@ bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo&
 
 bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInfo& pMovementInfo)
 {
-    if (no_fly_auras && no_swim_in_water && plMover->ac_local.m_anti_JumpBaseZ != 0 && JumpHeight < plMover->ac_local.m_anti_Last_VSpeed)
+    if (!fly_auras && no_swim_in_water && plMover->ac_local.m_anti_JumpBaseZ != 0 && JumpHeight < plMover->ac_local.m_anti_Last_VSpeed)
 	{
         if (map_count)
             ++(plMover->ac_local.m_CheatList[CHEAT_GRAVITY]);
@@ -693,7 +691,7 @@ bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementI
     if (uiOpcode != MSG_MOVE_JUMP)
         return true;
 
-    if (no_fly_auras && no_swim_water && plMover->ac_local.GetLastOpcode() == MSG_MOVE_JUMP)
+    if (!fly_auras && no_swim_water && plMover->ac_local.GetLastOpcode() == MSG_MOVE_JUMP)
 	{
 		if (plMover->ac_local.m_anti_JumpCount >= 1)
         {
@@ -749,11 +747,11 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
         return true;
 
     // the best way is checking the ip of the target, if it is the same this check should return.
-    if (GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+    if (plMover->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
         return true;
 
     // it will make false reports
-    if (IsFalling() && CanFlyAnticheat(pNewPacket))
+    if (plMover->IsFalling() && fly_auras)
         return true;
 
 	if (real_delta > allowed_delta)
@@ -763,7 +761,7 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
         {
             if (map_count)
                 ++(plMover->ac_local.m_CheatList[CHEAT_SPEED]);
-            LogCheat(CHEAT_SPEED, plMover, pMovementInfo);
+            LogCheat(CHEAT_SPEED, plMover, pNewPacket);
             if (map_block && plMover->ac_local.m_CheatList[CHEAT_SPEED] &&
                 plMover->ac_local.m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
             {
@@ -777,7 +775,7 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
         {
             if (map_count)
                 ++(plMover->ac_local.m_CheatList[CHEAT_TELEPORT]);
-			LogCheat(CHEAT_TELEPORT, plMover, pMovementInfo);
+			LogCheat(CHEAT_TELEPORT, plMover, pNewPacket);
             if (map_block && plMover->ac_local.m_CheatList[CHEAT_TELEPORT] &&
                 plMover->ac_local.m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
             {
@@ -821,7 +819,7 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& p
         pNewPacket.GetMovementFlags() != pOldPacket.GetMovementFlags())
         return true;
 
-	if (no_fly_auras && !no_fly_flags)
+	if (!fly_auras && (pNewPacket.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)))
 	{
         if (map_count)
             ++(plMover->ac_local.m_CheatList[CHEAT_FLY]);
@@ -883,7 +881,7 @@ bool AntiCheat::CheckAntiWaterwalk(Player* plMover, Vehicle *vehMover, MovementI
         return true;
 
 	if (plMover->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING) &&
-        no_fly_auras && !plMover->IsFlying())
+        !fly_auras && !plMover->IsFlying())
 	{
         if (map_count)
             ++(plMover->ac_local.m_CheatList[CHEAT_WATERWALK]);
