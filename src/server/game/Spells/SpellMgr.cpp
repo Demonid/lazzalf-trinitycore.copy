@@ -4140,6 +4140,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectBasePoints[0] = 1;
             count++;
             break;
+        case 26272: // PX-238 Winter Wondervolt
+            spellInfo->DurationIndex = 1800;
+            count++;
+            break;
         case 71708: // Empowered Flare
         case 72785: // Empowered Flare
         case 72786: // Empowered Flare
