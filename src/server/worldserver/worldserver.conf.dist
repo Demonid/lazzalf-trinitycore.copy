@@ -2641,7 +2641,10 @@ Anticheat.Movement.TeleportToPlaneAlarms = 50
 
 #
 #    Anticheat.IgnoreGMLevel
-#        ignore GMLevel min in anticheat controll (default 3)
+#       Ignore GMLevel min in AntiCheat controll (default 3)
+#    Anticheat.ReportsForGMWarnings
+#	    Enable and set warnings (at which amount will allow the report) for ingame-report, 0 for disables it
+#	    Default: 0
 
 Anticheat.IgnoreGMLevel = 3
 Anticheat.ReportsForGMWarnings = 0
