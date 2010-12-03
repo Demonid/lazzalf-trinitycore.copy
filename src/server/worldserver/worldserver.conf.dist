@@ -2700,6 +2700,8 @@ Anticheat.ignoreMapIdsCount = ""
 Anticheat.ignoreMapIdsBlock = ""
 Anticheat.ignoreMapIdsPunisher = ""
 
+Anticheat.MaxMaxAllowedDistance = 100
+
 #
 ###################################################################################################################
 
