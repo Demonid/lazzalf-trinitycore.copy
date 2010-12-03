@@ -796,7 +796,7 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreMapIdsBlock = sConfig.GetStringDefault("Anticheat.ignoreMapIdsBlock", "");
     ACpreventMapsFromBeingUsedBlock(ignoreMapIdsBlock.c_str());
     std::string ignoreMapIdsPuni = sConfig.GetStringDefault("Anticheat.ignoreMapIdsPunisher", "");
-    ACpreventMapsFromBeingPuni(ignoreMapIdsPuni.c_str());
+    ACpreventMapsFromBeingUsedPuni(ignoreMapIdsPuni.c_str());
 
     ///- Read other configuration items from the config file
 
