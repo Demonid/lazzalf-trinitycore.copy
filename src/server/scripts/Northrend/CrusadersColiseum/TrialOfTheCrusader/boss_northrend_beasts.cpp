@@ -171,31 +171,26 @@ public:
             m_pInstance->SetData(TYPE_NORTHREND_BEASTS,GORMOK_IN_PROGRESS);
         }
 
-        void JustSummoned(Creature* pSummoned)
+        void JustSummoned(Creature* summon)
         {
-            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
             {
-                switch(pSummoned->GetEntry())
+                if (summon->GetEntry() == NPC_SNOBOLD_VASSAL)
                 {
-                    case NPC_SNOBOLD_VASSAL:
-                        pSummoned->GetMotionMaster()->MoveJump(pTarget->GetPositionX(),pTarget->GetPositionY(),pTarget->GetPositionZ(),10.0f,20.0f);
-                        DoCast(me, SPELL_RISING_ANGER);
-                        --m_uiSummonCount;
-                        break;
+                    summon->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 10.0f, 20.0f);
+                    DoCast(me, SPELL_RISING_ANGER);
+                    --m_uiSummonCount;
                 }
-                pSummoned->AI()->AttackStart(pTarget);
+                summon->AI()->AttackStart(target);
             }
-            Summons.Summon(pSummoned);
+            Summons.Summon(summon);
         }
 
-        void SummonedCreatureDespawn(Creature* pSummoned)
+        void SummonedCreatureDespawn(Creature* summon)
         {
-            switch(pSummoned->GetEntry())
-            {
-                case NPC_SNOBOLD_VASSAL:
-                    if (pSummoned->isAlive()) ++m_uiSummonCount;
-                    break;
-            }
+            if (summon->GetEntry() == NPC_SNOBOLD_VASSAL)
+                if (summon->isAlive())
+                    ++m_uiSummonCount;
         }
 
         void UpdateAI(const uint32 uiDiff)
