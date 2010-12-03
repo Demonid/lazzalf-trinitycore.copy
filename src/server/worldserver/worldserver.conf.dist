@@ -2698,7 +2698,7 @@ Anticheat.CheatResetListDeltaFound = 5000
 Anticheat.ignoreMapIds = ""
 Anticheat.ignoreMapIdsCount = ""
 Anticheat.ignoreMapIdsBlock = ""
-Anticheat.ignoreMapIdsPuni = ""
+Anticheat.ignoreMapIdsPunisher = ""
 
 #
 ###################################################################################################################
