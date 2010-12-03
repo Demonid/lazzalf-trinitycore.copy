@@ -20,6 +20,9 @@
 AntiCheat::AntiCheat()
 {
 	cheat_find = false;
+    map_count = true;
+    map_block = true;
+    map_puni = true;
 }
 
 AntiCheat_Local::AntiCheat_Local()
@@ -149,7 +152,10 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
   
     // AntiCheat Block (not used for now)
 	//if (plMover->ac_local.GetBlock())
-	//	return true;	
+	//	return true;
+
+    if (sWorld.iIgnoreMapIds_AC.count(plMover->GetMapId()))
+        return true;
 
 	// Set to false if find a Cheat
 	bool check_passed = true;
@@ -164,7 +170,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	if (!curDest)
 	{
         // If we come from sleep
-        if (plMover->ac_local.ac_goactivate == 2)
+        if (plMover->ac_local.ac_goactivate == sWorld.getIntConfig(CONFIG_AC_ALIVE_COUNT))
         {
             // Calc Variables for next run of AntiCheat
             CalcVariablesSmall(plMover, movementInfo, mover);
@@ -217,7 +223,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
         // Increase reset cheat list time
         if (plMover->ac_local.m_CheatList_reset_diff < sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND))
             plMover->ac_local.m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND);
-        if (!check_passed) // PunisherCount >= BlockCount
+        if (!check_passed && map_puni) // PunisherCount >= BlockCount
             AntiCheatPunisher(plMover, movementInfo); // Try Punish him
     }
 	return check_passed;
@@ -373,6 +379,10 @@ void AntiCheat::CalcDeltas(Player* plMover, MovementInfo& movementInfo)
 		plMover->ac_local.m_anti_DeltaClientTime = plMover->ac_local.m_anti_DeltaServerTime;
 
 	sync_time = plMover->ac_local.m_anti_DeltaClientTime - plMover->ac_local.m_anti_DeltaServerTime;
+
+    map_count = !sWorld.iIgnoreMapIds_ACCount.count(plMover->GetMapId());
+    map_block = !sWorld.iIgnoreMapIds_ACBlock.count(plMover->GetMapId());
+    map_puni = !sWorld.iIgnoreMapIds_ACPuni.count(plMover->GetMapId());
 }
 
 // Calc variables for next AntiCheat activation
@@ -588,17 +598,19 @@ bool AntiCheat::CheckMistiming(Player* plMover, Vehicle *vehMover, MovementInfo&
 	if (sync_time > GetMistimingDelta)
 	{
 		cClientTimeDelta = cServerTimeDelta;
-		++(plMover->ac_local.m_anti_MistimingCount);
+        if (map_count)
+		    ++(plMover->ac_local.m_anti_MistimingCount);
 
 		const bool bMistimingModulo = plMover->ac_local.m_anti_MistimingCount % 50 == 0;
 
 		if (bMistimingModulo)
 		{
-            (plMover->ac_local.m_CheatList[CHEAT_MISTIMING])++;		
+            ++(plMover->ac_local.m_CheatList[CHEAT_MISTIMING]);		
             cheat_find = true;
 			LogCheat(CHEAT_MISTIMING, plMover, movementInfo);
 		}
-        if (plMover->ac_local.m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT))     
+        if (map_block && plMover->ac_local.m_CheatList[CHEAT_MISTIMING] &&
+            plMover->ac_local.m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT))     
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -627,10 +639,12 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
 {
     if (no_fly_auras && no_swim_in_water && plMover->ac_local.m_anti_JumpBaseZ != 0 && JumpHeight < plMover->ac_local.m_anti_Last_VSpeed)
 	{
-        (plMover->ac_local.m_CheatList[CHEAT_GRAVITY])++;
+        if (map_count)
+            ++(plMover->ac_local.m_CheatList[CHEAT_GRAVITY]);
         cheat_find = true;
 		LogCheat(CHEAT_GRAVITY, plMover, movementInfo);
-        if (plMover->ac_local.m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT))
+        if (map_block && plMover->ac_local.m_CheatList[CHEAT_GRAVITY] &&
+            plMover->ac_local.m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -661,10 +675,12 @@ bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementI
 	{
 		if (plMover->ac_local.m_anti_JumpCount >= 1)
 		{
-            (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP])++;
+            if (map_count)
+                ++(plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP]);
             cheat_find = true;
 			LogCheat(CHEAT_MULTIJUMP, plMover, movementInfo);
-			if (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
+			if (map_block && plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] &&
+                plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
 		    {
 			    // don't process new jump packet
 			    if (vehMover)
@@ -709,9 +725,11 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
             cheat_find = true;
 			if (real_delta < 4900.0f)
             {
-                (plMover->ac_local.m_CheatList[CHEAT_SPEED])++;
+                if (map_count)
+                    ++(plMover->ac_local.m_CheatList[CHEAT_SPEED]);
                 LogCheat(CHEAT_SPEED, plMover, movementInfo);
-                if (plMover->ac_local.m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
+                if (map_block && plMover->ac_local.m_CheatList[CHEAT_SPEED] &&
+                    plMover->ac_local.m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
  	            {
 		            if (vehMover)
 			            vehMover->Die();
@@ -721,9 +739,11 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
             }
             else
             {
-                (plMover->ac_local.m_CheatList[CHEAT_TELEPORT])++;
+                if (map_count)
+                    ++(plMover->ac_local.m_CheatList[CHEAT_TELEPORT]);
 				LogCheat(CHEAT_TELEPORT, plMover, movementInfo);
-                if (plMover->ac_local.m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
+                if (map_block && plMover->ac_local.m_CheatList[CHEAT_TELEPORT] &&
+                    plMover->ac_local.m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
  	            {
 		            if (vehMover)
 			            vehMover->Die();
@@ -741,10 +761,12 @@ bool AntiCheat::CheckAntiMountain(Player* plMover, Vehicle *vehMover, MovementIn
 {
 	if (delta_z < plMover->ac_local.m_anti_Last_VSpeed && plMover->ac_local.m_anti_JumpCount == 0 && tg_z > 2.37f)
 	{
-        (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN])++;
+        if (map_count)
+            ++(plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN]);
         cheat_find = true;
 		LogCheat(CHEAT_MOUNTAIN, plMover, movementInfo);
-        if (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT))
+        if (map_block && plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN] &&
+            plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -760,10 +782,12 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& m
 	{
 		if (no_fly_auras && !no_fly_flags)
 		{
-            (plMover->ac_local.m_CheatList[CHEAT_FLY])++;
+            if (map_count)
+                ++(plMover->ac_local.m_CheatList[CHEAT_FLY]);
             cheat_find = true;
 			LogCheat(CHEAT_FLY, plMover, movementInfo);
-            if (plMover->ac_local.m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT))
+            if (map_block && plMover->ac_local.m_CheatList[CHEAT_FLY] &&
+                plMover->ac_local.m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT))
 		    {
 			    if (vehMover)
 				    vehMover->Die();
@@ -793,10 +817,12 @@ bool AntiCheat::CheckAntiWaterwalk(Player* plMover, Vehicle *vehMover, MovementI
 {
 	if (no_waterwalk_auras && !no_waterwalk_flags)
 	{
-        (plMover->ac_local.m_CheatList[CHEAT_WATERWALK])++;
+        if (map_count)
+            ++(plMover->ac_local.m_CheatList[CHEAT_WATERWALK]);
         cheat_find = true;
 		LogCheat(CHEAT_WATERWALK, plMover, movementInfo);
-		if (plMover->ac_local.m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT))
+		if (map_block && plMover->ac_local.m_CheatList[CHEAT_WATERWALK] && 
+            plMover->ac_local.m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -834,10 +860,12 @@ bool AntiCheat::CheckAntiTeleToPlane(Player* plMover, Vehicle *vehMover, Movemen
 				++(plMover->ac_local.m_anti_TeleToPlane_Count);
 				if (plMover->ac_local.m_anti_TeleToPlane_Count > sWorld.getIntConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS))
 				{
-                    (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE])++;
+                    if (map_count)
+                        ++(plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE]);
                     cheat_find = true;
 					LogCheat(CHEAT_TELETOPLANE, plMover, movementInfo);
-					if (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT))
+					if (map_block && plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE] &&
+                        plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT))
 	        	    {						
 					    if (vehMover)
 						    vehMover->Die();
