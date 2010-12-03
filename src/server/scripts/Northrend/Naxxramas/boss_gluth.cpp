@@ -61,7 +61,26 @@ public:
         {
             // Do not let Gluth be affected by zombies' debuff
             me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_INFECTED_WOUND, true);
+
+            pMap = NULL;
+            if(me)
+                pMap = me->GetMap();        
+            // valuta il team in instance 
+            if(pMap)
+            {
+                Map::PlayerList const& players = pMap->GetPlayers();
+                if (!players.isEmpty())
+                {
+                    if (Player* pPlayer = players.begin()->getSource())
+                    {
+                        TeamInInstance = pPlayer->GetTeam();
+                    }
+                }
+            }	
         }
+
+        Map* pMap;
+        uint32 TeamInInstance;
 
         void MoveInLineOfSight(Unit *who)
         {
@@ -92,6 +111,15 @@ public:
             summons.Summon(summon);
         }
 
+        void KilledUnit(Unit* Victim)
+        {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+        }
+
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictimWithGaze() || !CheckInRoom())
@@ -113,17 +141,37 @@ public:
                         events.ScheduleEvent(EVENT_ENRAGE, 15000);
                         break;
                     case EVENT_DECIMATE:
+                    {
                         // TODO : Add missing text
                         DoCastAOE(SPELL_DECIMATE);
                         events.ScheduleEvent(EVENT_DECIMATE, 105000);
-                        break;
+                        std::list<Creature*> ZombieList;
+                        me->GetCreatureListWithEntryInGrid(ZombieList, MOB_ZOMBIE, 100.0f);
+                        if (!ZombieList.empty())
+                            for (std::list<Creature*>::iterator iter = ZombieList.begin(); iter != ZombieList.end(); iter++)
+                            {  
+                                Creature* zombie = (*iter);
+                                if (zombie)
+                                    zombie->SetHealth(zombie->GetMaxHealth() * 5 /100);     
+                            }
+                    }
+                    break; 
                     case EVENT_BERSERK:
                         DoCast(me, SPELL_BERSERK);
                         events.ScheduleEvent(EVENT_BERSERK, 5*60000);
                         break;
                     case EVENT_SUMMON:
                         for (int32 i = 0; i < RAID_MODE(1, 2); ++i)
-                            DoSummon(MOB_ZOMBIE, PosSummon[rand() % 3]);
+                        {
+                            Creature* current = DoSummon(MOB_ZOMBIE, PosSummon[rand()%3]);
+                            if(current)
+                            {
+                                if (TeamInInstance == ALLIANCE)
+                                    current->setFaction(2);
+                                else
+                                    current->setFaction(1);
+                            }			    
+                        }
                         events.ScheduleEvent(EVENT_SUMMON, 10000);
                         break;
                 }
