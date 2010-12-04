@@ -106,6 +106,7 @@ class AntiCheat
 		int32 sync_time;
         uint32 difftime_log_file;
         uint32 difftime_log_db;
+        uint32 uiDiffTime_packets;
 
 		// Variables
 		float fSpeedRate;	
@@ -114,16 +115,18 @@ class AntiCheat
 		float delta_z;
 		float real_delta;
 		bool fly_auras;
-		bool no_swim_flags;
 		bool no_swim_in_water;
-		bool no_swim_above_water;
 		bool no_swim_water;
 		float time_delta;
 		float tg_z;
 		float allowed_delta;
 		float JumpHeight;
+
+        float fClientRate;
+        float fServerRate;
+        float fDistance2d;
 		
-		void CalcDeltas(Player* /*plMover*/, MovementInfo& /*pMovementInfo*/);
+		void CalcDeltas(Player* plMover, MovementInfo& pNewPacket, MovementInfo& pOldPacket);
 		void CalcVariables(Player* plMover, MovementInfo& pNewPacket, Unit* mover);
         void CalcVariablesSmall(Player* plMover, MovementInfo& pNewPacket, Unit* mover);
         bool CanFly(Player* plMover, MovementInfo& pMovementInfo);
@@ -132,6 +135,8 @@ class AntiCheat
 		bool CheckAntiGravity(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
 		bool CheckAntiMultiJump(Player* plMover, Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
 		bool CheckAntiSpeedTeleport(Player* plMover, Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+        bool CheckAntiSpeed(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+        bool CheckAntiTele(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
 		bool CheckAntiMountain(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
 		bool CheckAntiFly(Player* plMover, Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
 		bool CheckAntiWaterwalk(Player* plMover, Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
