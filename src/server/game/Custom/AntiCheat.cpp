@@ -184,20 +184,20 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 			    if (!CheckAntiMultiJump(plMover, vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
-            // Speed and Tele Cheat
+            /*// Speed and Tele Cheat
 		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
 			    if (!CheckAntiSpeedTeleport(plMover, vehMover, pMovementInfo, opcode))
-				    check_passed = false;
+				    check_passed = false;*/
 
             // Speed Cheat
-            /*if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
+            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
 			    if (!CheckAntiSpeed(plMover, vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
             // Tele Cheat
             if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
 			    if (!CheckAntiTele(plMover, vehMover, pMovementInfo, opcode))
-				    check_passed = false;*/
+				    check_passed = false;
 
             // Mountain Cheat
 		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN))
@@ -532,7 +532,6 @@ void AntiCheat::CalcVariables(Player* plMover, MovementInfo& pNewPacket, Unit *m
 	}
 	// end calculating section
 
-	// AntiGravity (thanks to Meekro)
 	JumpHeight = plMover->ac_local.m_anti_JumpBaseZ - pNewPacket.pos.GetPositionZ();
 }
 
@@ -744,6 +743,44 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
 	}
 	return true; 
 }
+
+/*void Player::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
+{
+    // if we receive 2 jump packets consecutively... it is wrong! The player is cheating.
+    if (uiOpcode != MSG_MOVE_JUMP || plMover->ac_local.GetLastOpcode() != MSG_MOVE_JUMP)
+        return true;
+
+    if (map_count)
+        ++(plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP]);
+    cheat_find = true;
+	LogCheat(CHEAT_MULTIJUMP, plMover,  pNewPacket);
+	if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT) &&
+        plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
+    {
+	    // don't process new jump packet
+	    if (vehMover)
+		    vehMover->Die();
+	    // Tell the player "Sure, you can fly!"
+	    {
+		    WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
+		    data.append(plMover->GetPackGUID());
+		    data << uint32(0);
+		    plMover->GetSession()->SendPacket(&data);
+	    }
+	    // Then tell the player "Wait, no, you can't."
+	    {
+		    WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
+		    data.append(plMover->GetPackGUID());
+		    data << uint32(0);
+		    plMover->GetSession()->SendPacket(&data);
+	    }
+	    plMover->FallGround(2);
+	    plMover->ac_local.m_anti_JumpCount = 0;
+	    return false;
+    }
+
+    return true;
+}*/
 
 bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
 {
