@@ -24,6 +24,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "molten_core.h"
 
 #define EMOTE_SERVICE               -1409000
 
@@ -42,9 +43,14 @@ public:
         return new boss_baron_geddonAI (pCreature);
     }
 
-    struct boss_baron_geddonAI : public ScriptedAI
+    struct boss_baron_geddonAI : public BossAI
     {
-        boss_baron_geddonAI(Creature *c) : ScriptedAI(c) {}
+        boss_baron_geddonAI(Creature *pCreature) : BossAI(pCreature, BOSS_GEDDON)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
 
         uint32 Inferno_Timer;
         uint32 IgniteMana_Timer;
@@ -52,13 +58,22 @@ public:
 
         void Reset()
         {
+            _Reset();
             Inferno_Timer = 45000;                              //These times are probably wrong
             IgniteMana_Timer = 30000;
             LivingBomb_Timer = 35000;
         }
 
+        void JustDied(Unit* /*pKiller*/)
+        {
+            _JustDied();
+            if (m_pInstance)
+                m_pInstance->SetData(DATA_GEDDON, 0);
+        }
+
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)
