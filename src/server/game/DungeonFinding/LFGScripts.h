@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,32 +15,31 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AUTH_HMAC_H
-#define _AUTH_HMAC_H
+/*
+ * Interaction between core and LFGScripts
+ */
 
 #include "Common.h"
-#include <openssl/hmac.h>
-#include <openssl/sha.h>
+#include "SharedDefines.h"
+#include "ScriptPCH.h"
 
-class BigNumber;
+class Player;
+class Group;
 
-#define SEED_KEY_SIZE 16
-
-class HmacHash
+class LFGScripts: public GroupScript, PlayerScript
 {
-    public:
-        HmacHash(uint32 len, uint8 *seed);
-        ~HmacHash();
-        void UpdateBigNumber(BigNumber *bn);
-        void UpdateData(const uint8 *data, int length);
-        void UpdateData(const std::string &str);
-        void Finalize();
-        uint8 *ComputeHash(BigNumber *bn);
-        uint8 *GetDigest() { return (uint8*)m_digest; }
-        int GetLength() const { return SHA_DIGEST_LENGTH; }
-    private:
-        HMAC_CTX m_ctx;
-        uint8 m_digest[SHA_DIGEST_LENGTH];
-};
-#endif
+	public:
+		LFGScripts();
 
+        // Group Hooks
+        void OnAddMember(Group* group, uint64 guid);
+        void OnRemoveMember(Group* group, uint64 guid, RemoveMethod& method, uint64 kicker, const char* reason);
+        void OnDisband(Group* group);
+        void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnInviteMember(Group* group, uint64 guid);
+		
+		// Player Hooks
+        void OnLevelChanged(Player* player, uint8 newLevel);
+        void OnLogout(Player* player);
+        void OnLogin(Player* player);
+};

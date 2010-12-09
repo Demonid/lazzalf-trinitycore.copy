@@ -2890,7 +2890,6 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             else if (spellproto->SpellFamilyFlags[1] & 0x8)
                 return DIMINISHING_FEAR_BLIND;
             // Seduction
-            //else if (spellproto->SpellFamilyFlags[0] & 0x40000000)
             else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
                 return DIMINISHING_FEAR_BLIND;
             break;
@@ -3221,6 +3220,9 @@ bool SpellMgr::CanAurasStack(SpellEntry const *spellInfo_1, SpellEntry const *sp
                 case SPELL_AURA_OBS_MOD_POWER:
                 case SPELL_AURA_OBS_MOD_HEALTH:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    // periodic auras which target areas are not allowed to stack this way (replenishment for example)
+                    if (IsAreaOfEffectSpellEffect(spellInfo_1, i) || IsAreaOfEffectSpellEffect(spellInfo_2, i))
+                        break;
                     return true;
                 default:
                     break;
@@ -4036,6 +4038,11 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             count++;
             break;    
+        // Strength of the Pack
+        case 64381:
+            spellInfo->StackAmount = 4;
+            count++;
+            break;
         // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
         // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
         // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)
@@ -4047,11 +4054,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 70860: // Frozen Throne Teleport
         case 70861: // Sindragosa's Lair Teleport
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_DB;
-            count++;
-            break;
-        // Deathbringer Saurfang achievement (must be cast on players, cannot do that with ENTRY target)
-        case 72928:
-            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_SRC;
             count++;
             break;
         case 63675: // Improved Devouring Plague
@@ -4129,6 +4131,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 72855: // Unbound Plague
         case 72856: // Unbound Plague
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
+            count++;
+            break;
+        case 71518: // Unholy Infusion Quest Credit
+        case 72934: // Blood Infusion Quest Credit
+        case 72289: // Frost Infusion Quest Credit
+            spellInfo->EffectRadiusIndex[0] = 28;   // another missing radius
             count++;
             break;
         case 50294: // Druid - Starfall AOE rank

@@ -402,7 +402,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateCombatState())
+            if (!UpdateVictim())
                 return;
 
             events.Update(diff);

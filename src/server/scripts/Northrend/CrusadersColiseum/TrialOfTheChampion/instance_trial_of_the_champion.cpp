@@ -130,7 +130,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
              * 2)con uno switch sceglie in base all'entry creatura non so precisamente cosa va ad aggiornare da capire...
              *
              */
-        void OnCreatureCreate(Creature* pCreature, bool bAdd)
+        void OnCreatureCreate(Creature* pCreature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             uint32 TeamInInstance = 0;

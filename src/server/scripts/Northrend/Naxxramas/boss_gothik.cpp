@@ -354,7 +354,7 @@ class boss_gothik : public CreatureScript
 
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateCombatState() || !CheckInRoom())
+            if (!UpdateVictim() || !CheckInRoom())
                 return;
 
             events.Update(diff);

@@ -815,34 +815,39 @@ void Battleground::EndBattleground(uint32 winner)
 
         winner_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = sObjectMgr.GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
-        if (controll_ip && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team && !(winner == WINNER_NONE))
+        if (controll_ip && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
-            if (enabled)
+       	    if (enabled)
             {
                 winner_arena_team->SaveToDBArenaModTeam(winner_arena_team->GetId(), loser_arena_team->GetId());
             }
-
-            loser_team_rating = loser_arena_team->GetRating();
-            loser_matchmaker_rating = GetArenaMatchmakerRating(GetOtherTeam(winner));
-            winner_team_rating = winner_arena_team->GetRating();
-            winner_matchmaker_rating = GetArenaMatchmakerRating(winner);
-            winner_change = winner_arena_team->WonAgainst(loser_matchmaker_rating);
-            loser_change = loser_arena_team->LostAgainst(winner_matchmaker_rating);
-            sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner MMR: %u, Loser MMR: %u, Winner change: %u, Losser change: %u ---", winner_team_rating, loser_team_rating,
-                winner_matchmaker_rating, loser_matchmaker_rating, winner_change, loser_change);
-            SetArenaTeamRatingChangeForTeam(winner, winner_change);
-            SetArenaTeamRatingChangeForTeam(GetOtherTeam(winner), loser_change);
-            sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: +%d, Loser rating: %d", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change, loser_change);
-            if (sWorld.getBoolConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
-                for (Battleground::BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin(); itr != GetPlayerScoresEnd(); itr++)
-                    if (Player* player = sObjectMgr.GetPlayer(itr->first))
-                        sLog.outArena("Statistics for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
-        }
-        // Deduct 16 points from each teams arena-rating if there are no winners after 45+2 minutes
-        else if(winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team && (winner == WINNER_NONE))
-        {
-            SetArenaTeamRatingChangeForTeam(ALLIANCE, -16);
-             SetArenaTeamRatingChangeForTeam(HORDE, -16);
+            
+            if (winner != WINNER_NONE)
+            {
+                loser_team_rating = loser_arena_team->GetRating();
+                loser_matchmaker_rating = GetArenaMatchmakerRating(GetOtherTeam(winner));
+                winner_team_rating = winner_arena_team->GetRating();
+                winner_matchmaker_rating = GetArenaMatchmakerRating(winner);
+                winner_change = winner_arena_team->WonAgainst(loser_matchmaker_rating);
+                loser_change = loser_arena_team->LostAgainst(winner_matchmaker_rating);
+                sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner MMR: %u, Loser MMR: %u, Winner change: %u, Losser change: %u ---", winner_team_rating, loser_team_rating,
+                    winner_matchmaker_rating, loser_matchmaker_rating, winner_change, loser_change);
+                SetArenaTeamRatingChangeForTeam(winner, winner_change);
+                SetArenaTeamRatingChangeForTeam(GetOtherTeam(winner), loser_change);
+                sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: +%d, Loser rating: %d", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change, loser_change);
+                if (sWorld.getBoolConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
+                    for (Battleground::BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin(); itr != GetPlayerScoresEnd(); itr++)
+                        if (Player* player = sObjectMgr.GetPlayer(itr->first))
+                            sLog.outArena("Statistics for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+            }
+            // Deduct 16 points from each teams arena-rating if there are no winners after 45+2 minutes
+            else
+            {
+                SetArenaTeamRatingChangeForTeam(ALLIANCE, ARENA_TIMELIMIT_POINTS_LOSS);
+                SetArenaTeamRatingChangeForTeam(HORDE, ARENA_TIMELIMIT_POINTS_LOSS);
+                winner_arena_team->FinishGame(ARENA_TIMELIMIT_POINTS_LOSS);
+                loser_arena_team->FinishGame(ARENA_TIMELIMIT_POINTS_LOSS);
+            }
         }
         else
         {
@@ -2036,7 +2041,7 @@ void Battleground::HandleKillPlayer(Player *player, Player *killer)
 
 // return the player's team based on battlegroundplayer info
 // used in same faction arena matches mainly
-uint32 Battleground::GetPlayerTeam(uint64 guid)
+uint32 Battleground::GetPlayerTeam(uint64 guid) const
 {
     BattlegroundPlayerMap::const_iterator itr = m_Players.find(guid);
     if (itr != m_Players.end())
@@ -2044,12 +2049,12 @@ uint32 Battleground::GetPlayerTeam(uint64 guid)
     return 0;
 }
 
-uint32 Battleground::GetOtherTeam(uint32 teamId)
+uint32 Battleground::GetOtherTeam(uint32 teamId) const
 {
     return (teamId) ? ((teamId == ALLIANCE) ? HORDE : ALLIANCE) : 0;
 }
 
-bool Battleground::IsPlayerInBattleground(uint64 guid)
+bool Battleground::IsPlayerInBattleground(uint64 guid) const
 {
     BattlegroundPlayerMap::const_iterator itr = m_Players.find(guid);
     if (itr != m_Players.end())
@@ -2168,13 +2173,13 @@ void Battleground::RewardXPAtKill(Player* plr, Player* victim)
         return;
 
     uint32 xp = 0;
-    uint32 count = 0;
-    uint32 sum_level = 0;
     Player* member_with_max_level = NULL;
     Player* not_gray_member_with_max_level = NULL;
 
     if (Group *pGroup = plr->GetGroup())//should be always in a raid group while in any bg
     {
+        uint32 count = 0;
+        uint32 sum_level = 0;
         for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             Player* member = itr->getSource();

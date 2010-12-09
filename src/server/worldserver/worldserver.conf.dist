@@ -97,8 +97,7 @@ ExtraDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;extra"
 #    CharacterDatabase.WorkerThreads
 #    ExtraDatabase.WorkerThreads
 #        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
-#                     statements. Each worker thread is mirrored with its own connection to the
-#                     MySQL server and their own thread on the MySQL server.
+#                     statements.
 #        Default:     1 - (LoginDatabase.WorkerThreads)
 #                     1 - (WorldDatabase.WorkerThreads)
 #                     1 - (CharacterDatabase.WorkerThreads)
@@ -109,26 +108,26 @@ CharacterDatabase.WorkerThreads = 1
 ExtraDatabase.WorkerThreads     = 1
 
 #
-#    LoginDatabase.SynchThreads
-#    WorldDatabase.SynchThreads
-#    CharacterDatabase.SynchThreads
-#    ExtraDatabase.SynchThreads
-#        Description: The amount of MySQL connections spawned to handle.
-#        Default:     1 - (LoginDatabase.WorkerThreads)
-#                     1 - (WorldDatabase.WorkerThreads)
+#    LoginDatabase.Connections
+#    WorldDatabase.Connections
+#    CharacterDatabase.Connections
+#    ExtraDatabase.Connections
+#        Description: The amount of MySQL connections spawned.
+#        Default:     1 - (LoginDatabase.Connections)
+#                     1 - (WorldDatabase.Connections)
 #                     2 - (CharacterDatabase.WorkerThreads)
 
-LoginDatabase.SynchThreads     = 1
-WorldDatabase.SynchThreads     = 1
-CharacterDatabase.SynchThreads = 2
-ExtraDatabase.SynchThreads     = 1
+LoginDatabase.Connections     = 2
+WorldDatabase.Connections     = 2
+CharacterDatabase.Connections = 2
+ExtraDatabase.Connections     = 1
 
 #
 #    MaxPingTime
-#        Description: Time (in seconds) between database pings.
-#        Default:     1800 - (30 minutes)
+#        Description: Time (in minutes) between database pings.
+#        Default:     30
 
-MaxPingTime = 1800
+MaxPingTime = 30
 
 #
 #    WorldServerPort
@@ -406,16 +405,6 @@ CrashRecover.CountResetTime = 300000
 
 ###################################################################################################
 # SERVER LOGGING
-#
-#    LogSQL
-#        Description: Enable logging of SQL queries triggered by in game commands from in game
-#                     All commands are written to a file: YYYY-MM-DD_logSQL.sql
-#                     A new file will be created every day at 00:00:00.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-LogSQL = 1
-
 #
 #    PidFile
 #        Description: World daemon PID file
@@ -1416,7 +1405,7 @@ DungeonFinder.Enable = 0
 
 #
 #   DBC.EnforceItemAttributes
-#        Description: Disallow overriding item attributes stored in DBC files with values from the 
+#        Description: Disallow overriding item attributes stored in DBC files with values from the
 #                     database.
 #        Default:     1 - (Enabled, Enforce DBC values)
 #                     0 - (Disabled, Use database values)
@@ -1686,6 +1675,7 @@ ListenRange.TextEmote = 40
 #        Default:     300
 
 ListenRange.Yell = 300
+
 #
 ###################################################################################################
 
@@ -1793,7 +1783,7 @@ AllowPlayerCommands = 1
 #
 #    PreserveCustomChannels
 #        Description: Store custom chat channel settings like password, automatic ownership handout
-#                     or ban list in the database. Needs to be enabled to save custom 
+#                     or ban list in the database. Needs to be enabled to save custom
 #                     world/trade/etc. channels that have automatic ownership handout disabled.
 #                     (.channel set ownership $channel off)
 #        Default:     0 - (Disabled, Blizzlike, Channel settings are lost if last person left)
@@ -1972,7 +1962,7 @@ Visibility.Distance.BGArenas = 180
 
 Visibility.Notify.Period.OnContinents = 1000
 Visibility.Notify.Period.InInstances  = 1000
-Visibility.Notify.Period.InBGArenas = 1000
+Visibility.Notify.Period.InBGArenas   = 1000
 
 #
 ###################################################################################################
@@ -2129,7 +2119,7 @@ Rate.Mining.Amount = 1
 #        Description: Mining rates.
 #        Default:     Chance to to mine a deposit again.
 
-Rate.Mining.Next   = 1
+Rate.Mining.Next = 1
 
 #
 #    Rate.Talent

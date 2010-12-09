@@ -125,7 +125,7 @@ void GameObject::AddToWorld()
     if (!IsInWorld())
     {
         if (m_zoneScript)
-            m_zoneScript->OnGameObjectCreate(this, true);
+            m_zoneScript->OnGameObjectCreate(this);
 
         sObjectAccessor.AddObject(this);
         WorldObject::AddToWorld();
@@ -138,7 +138,7 @@ void GameObject::RemoveFromWorld()
     if (IsInWorld())
     {
         if (m_zoneScript)
-            m_zoneScript->OnGameObjectCreate(this, false);
+            m_zoneScript->OnGameObjectRemove(this);
 
         // Possible crash at access to deleted GO in Unit::m_gameobj
         if (uint64 owner_guid = GetOwnerGUID())
@@ -246,8 +246,8 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
             SetGoAnimProgress(animprogress);
             break;
     }
-
     LastUsedScriptID = GetGOInfo()->ScriptId;
+    AIM_Initialize();
 
     return true;
 }

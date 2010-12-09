@@ -315,7 +315,7 @@ public:
                     } else WaterboltTimer -= diff;
                 }
 
-                if (!UpdateCombatState())
+                if (!UpdateVictim())
                     return;
 
                 DoMeleeAttackIfReady();

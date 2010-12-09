@@ -192,7 +192,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModHealingDone,                            //135 SPELL_AURA_MOD_HEALING_DONE
     &AuraEffect::HandleNoImmediateEffect,                         //136 SPELL_AURA_MOD_HEALING_DONE_PERCENT   implemented in Unit::SpellHealingBonus
     &AuraEffect::HandleModTotalPercentStat,                       //137 SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE
-    &AuraEffect::HandleHaste,                                     //138 SPELL_AURA_MOD_HASTE
+    &AuraEffect::HandleModMeleeSpeedPct,                          //138 SPELL_AURA_MOD_MELEE_HASTE
     &AuraEffect::HandleForceReaction,                             //139 SPELL_AURA_FORCE_REACTION
     &AuraEffect::HandleAuraModRangedHaste,                        //140 SPELL_AURA_MOD_RANGED_HASTE
     &AuraEffect::HandleRangedAmmoHaste,                           //141 SPELL_AURA_MOD_RANGED_AMMO_HASTE
@@ -246,7 +246,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModRating,                                 //189 SPELL_AURA_MOD_RATING
     &AuraEffect::HandleNoImmediateEffect,                         //190 SPELL_AURA_MOD_FACTION_REPUTATION_GAIN     implemented in Player::CalculateReputationGain
     &AuraEffect::HandleAuraModUseNormalSpeed,                     //191 SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED
-    &AuraEffect::HandleModMeleeRangedSpeedPct,                    //192 SPELL_AURA_HASTE_MELEE
+    &AuraEffect::HandleModMeleeRangedSpeedPct,                    //192 SPELL_AURA_MOD_MELEE_RANGED_HASTE
     &AuraEffect::HandleModCombatSpeedPct,                         //193 SPELL_AURA_MELEE_SLOW (in fact combat (any type attack) speed pct)
     &AuraEffect::HandleNoImmediateEffect,                         //194 SPELL_AURA_MOD_TARGET_ABSORB_SCHOOL implemented in Unit::CalcAbsorbResist
     &AuraEffect::HandleNoImmediateEffect,                         //195 SPELL_AURA_MOD_TARGET_ABILITY_ABSORB_SCHOOL implemented in Unit::CalcAbsorbResist
@@ -399,6 +399,17 @@ void AuraEffect::GetTargetList(std::list<Unit *> & targetList) const
     {
         if (appIter->second->HasEffect(GetEffIndex()))
             targetList.push_back(appIter->second->GetTarget());
+    }
+}
+
+void AuraEffect::GetApplicationList(std::list<AuraApplication *> & applicationList) const
+{
+    Aura::ApplicationMap const & targetMap = GetBase()->GetApplicationMap();
+    // remove all targets which were not added to new list - they no longer deserve area aura
+    for (Aura::ApplicationMap::const_iterator appIter = targetMap.begin(); appIter != targetMap.end(); ++appIter)
+    {
+        if (appIter->second->HasEffect(GetEffIndex()))
+            applicationList.push_back(appIter->second);
     }
 }
 
@@ -746,7 +757,7 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
         case SPELL_AURA_MOD_INCREASE_SPEED:
             // Dash - do not set speed if not in cat form
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && GetSpellProto()->SpellFamilyFlags[2] & 0x00000008)
-                amount = GetBase()->GetUnitOwner()->m_form == FORM_CAT ? amount : 0;
+                amount = GetBase()->GetUnitOwner()->GetShapeshiftForm() == FORM_CAT ? amount : 0;
             break;
         default:
             break;
@@ -1069,13 +1080,13 @@ void AuraEffect::Update(uint32 diff, Unit * caster)
             m_periodicTimer += m_amplitude - diff;
             UpdatePeriodic(caster);
 
-            UnitList effectTargets;
-            GetTargetList(effectTargets);
+            std::list<AuraApplication*> effectApplications;
+            GetApplicationList(effectApplications);
             // tick on targets of effects
             if (!caster || !caster->hasUnitState(UNIT_STAT_ISOLATED))
             {
-                for (UnitList::iterator targetItr = effectTargets.begin(); targetItr != effectTargets.end(); ++targetItr)
-                    PeriodicTick(*targetItr, caster);
+                for (std::list<AuraApplication*>::iterator apptItr = effectApplications.begin(); apptItr != effectApplications.end(); ++apptItr)
+                    PeriodicTick(*apptItr, caster);
             }
         }
     }
@@ -1252,11 +1263,13 @@ void AuraEffect::SendTickImmune(Unit * target, Unit *caster) const
         caster->SendSpellDamageImmune(target, m_spellProto->Id);
 }
 
-void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
+void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 {
-    bool prevented = GetBase()->CallScriptEffectPeriodicHandlers(const_cast<AuraEffect const *>(this), GetBase()->GetApplicationOfTarget(target->GetGUID()));
+    bool prevented = GetBase()->CallScriptEffectPeriodicHandlers(const_cast<AuraEffect const *>(this), aurApp);
     if (prevented)
         return;
+
+    Unit * target = aurApp->GetTarget();
 
     switch(GetAuraType())
     {
@@ -2895,7 +2908,7 @@ void AuraEffect::HandleModInvisibility(AuraApplication const * aurApp, uint8 mod
 
         // apply glow vision
         if (target->GetTypeId() == TYPEID_PLAYER)
-            target->SetFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+            target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
         target->m_invisibility.AddFlag(type);
         target->m_invisibility.AddValue(type, GetAmount());
@@ -2907,7 +2920,7 @@ void AuraEffect::HandleModInvisibility(AuraApplication const * aurApp, uint8 mod
             // if not have different invisibility auras.
             // remove glow vision
             if (target->GetTypeId() == TYPEID_PLAYER)
-                target->RemoveFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+                target->RemoveByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
             target->m_invisibility.DelFlag(type);
         }
@@ -2963,7 +2976,7 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
 
         target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
         if (target->GetTypeId() == TYPEID_PLAYER)
-            target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000);
+            target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_STEALTH);
     }
     else
     {
@@ -2975,7 +2988,7 @@ void AuraEffect::HandleModStealth(AuraApplication const * aurApp, uint8 mode, bo
 
             target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
             if (target->GetTypeId() == TYPEID_PLAYER)
-                target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000);
+                target->RemoveByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_STEALTH);
         }
     }
 
@@ -3185,10 +3198,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
     if (apply)
     {
         // remove other shapeshift before applying a new one
-        if (target->m_ShapeShiftFormSpellId)
-            target->RemoveAurasDueToSpell(target->m_ShapeShiftFormSpellId);
-
-        target->SetByteValue(UNIT_FIELD_BYTES_2, 3, form);
+        target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT, 0, GetBase());
 
         if (modelid > 0)
             target->SetDisplayId(modelid);
@@ -3237,8 +3247,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
             }
         }
 
-        target->m_ShapeShiftFormSpellId = GetId();
-        target->m_form = form;
+        target->SetShapeshiftForm(form);
     }
     else
     {
@@ -3247,8 +3256,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const * aurApp, uint8 m
         target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
         if (target->getClass() == CLASS_DRUID)
             target->setPowerType(POWER_MANA);
-        target->m_ShapeShiftFormSpellId = 0;
-        target->m_form = FORM_NONE;
+        target->SetShapeshiftForm(FORM_NONE);
 
         switch(form)
         {
@@ -5365,7 +5373,7 @@ void AuraEffect::HandleModAttackSpeed(AuraApplication const * aurApp, uint8 mode
     target->UpdateDamagePhysical(BASE_ATTACK);
 }
 
-void AuraEffect::HandleHaste(AuraApplication const * aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const * aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
@@ -5374,7 +5382,6 @@ void AuraEffect::HandleHaste(AuraApplication const * aurApp, uint8 mode, bool ap
 
     target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)GetAmount(), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const * aurApp, uint8 mode, bool apply) const
@@ -6323,7 +6330,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                     uint32 spellId = 62071;
                     if (apply)
                     {
-                        if (target->m_form != FORM_CAT)
+                        if (target->GetShapeshiftForm() != FORM_CAT)
                             break;
 
                         target->CastSpell(target, spellId, true, NULL, NULL, GetCasterGUID());
@@ -6694,7 +6701,7 @@ void AuraEffect::HandleAuraOverrideSpells(AuraApplication const * aurApp, uint8 
 
     if (apply)
     {
-        target->SetUInt32Value(PLAYER_FIELD_BYTES2, overrideId);
+        target->SetUInt16Value(PLAYER_FIELD_BYTES2, 0, overrideId);
         if (OverrideSpellDataEntry const* overrideSpells = sOverrideSpellDataStore.LookupEntry(overrideId))
             for (uint8 i = 0; i < MAX_OVERRIDE_SPELL; ++i)
                 if (uint32 spellId = overrideSpells->spellId[i])
@@ -6702,7 +6709,7 @@ void AuraEffect::HandleAuraOverrideSpells(AuraApplication const * aurApp, uint8 
     }
     else
     {
-        target->SetUInt32Value(PLAYER_FIELD_BYTES2, 0);
+        target->SetUInt16Value(PLAYER_FIELD_BYTES2, 0, 0);
         if (OverrideSpellDataEntry const* overrideSpells = sOverrideSpellDataStore.LookupEntry(overrideId))
             for (uint8 i = 0; i < MAX_OVERRIDE_SPELL; ++i)
                 if (uint32 spellId = overrideSpells->spellId[i])

@@ -153,7 +153,7 @@ public:
 
         bool somebodyDied;
 
-        void OnCreatureCreate(Creature* pCreature, bool add)
+        void OnCreatureCreate(Creature* pCreature)
         {
             switch(pCreature->GetEntry())
             {
@@ -173,36 +173,17 @@ public:
             AddMinion(pCreature, add);
         }
 
-        void OnGameObjectCreate(GameObject* pGo, bool add)
+        void OnGameObjectCreate(GameObject* pGo)
         {
-        /*if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
-            {
-                uint32 section = GetEruptionSection(pGo->GetPositionX(), pGo->GetPositionY());
-                if (add)
-                    HeiganEruptionGUID[section].insert(pGo->GetGUID());
-                else
-                    HeiganEruptionGUID[section].erase(pGo->GetGUID());
-                return;
-        }*/
         if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
         {
             uint32 section = GetEruptionSection(pGo->GetPositionX(), pGo->GetPositionY());
-            if (add)
-                HeiganEruption[section].insert(pGo);
-            else
-                HeiganEruption[section].erase(pGo);
+            HeiganEruption[section].insert(pGo);
             return;
             }
 
             switch(pGo->GetEntry())
             {
-                case GO_BIRTH:
-                if (!add && SapphironGUID)
-                {
-                    if (Creature *pSapphiron = instance->GetCreature(SapphironGUID))
-                        pSapphiron->AI()->DoAction(DATA_SAPPHIRON_BIRTH);
-                    return;
-                }
                 case GO_GOTHIK_GATE:
                     GothikGateGUID = add ? pGo->GetGUID() : 0;
                     pGo->SetGoState(gothikDoorState);
@@ -217,6 +198,33 @@ public:
             }
 
             AddDoor(pGo, add);
+        }
+        
+        void OnGameObjectRemove(GameObject* go)
+        {
+            if (go->GetGOInfo()->displayId == 6785 || go->GetGOInfo()->displayId == 1287)
+            {
+                uint32 section = GetEruptionSection(go->GetPositionX(), go->GetPositionY());
+
+                HeiganEruption[section].erase(pGo);
+                return;
+            }
+
+            switch (go->GetEntry())
+            {
+                case GO_BIRTH:
+                    if (SapphironGUID)
+                    {
+                        if (Creature* pSapphiron = instance->GetCreature(SapphironGUID))
+                            pSapphiron->AI()->DoAction(DATA_SAPPHIRON_BIRTH);
+                        return;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            AddDoor(go, false);
         }
 
         void SetData(uint32 id, uint32 value)

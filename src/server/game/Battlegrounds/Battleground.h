@@ -310,6 +310,7 @@ enum BGHonorMode
 };
 
 #define BG_AWARD_ARENA_POINTS_MIN_LEVEL 71
+#define ARENA_TIMELIMIT_POINTS_LOSS    -16
 
 /*
 This class is used to:
@@ -372,7 +373,7 @@ class Battleground
         uint32 GetScriptId() const          { return ScriptId; }
         uint32 GetBattlemasterEntry() const;
         uint32 GetBonusHonorFromKill(uint32 kills) const;
-        bool IsRandom() { return m_IsRandom; }
+        bool IsRandom() const { return m_IsRandom; }
 
         // Set methods:
         void SetName(char const* Name)      { m_Name = Name; }
@@ -573,9 +574,9 @@ class Battleground
         virtual bool HandlePlayerUnderMap(Player * /*plr*/) { return false; }
 
         // since arenas can be AvA or Hvh, we have to get the "temporary" team of a player
-        uint32 GetPlayerTeam(uint64 guid);
-        uint32 GetOtherTeam(uint32 teamId);
-        bool IsPlayerInBattleground(uint64 guid);
+        uint32 GetPlayerTeam(uint64 guid) const;
+        uint32 GetOtherTeam(uint32 teamId) const;
+        bool IsPlayerInBattleground(uint64 guid) const;
 
         void SetDeleteThis() {m_SetDeleteThis = true;}
 
