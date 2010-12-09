@@ -49,12 +49,12 @@ class instance_eye_of_eternity : public InstanceMapScript
             m_bVortex = false;
         }
        
-        void OnCreatureCreate(Creature* pCreature)
+        void OnCreatureCreate(Creature* creature)
         {
-            switch(pCreature->GetEntry())
+            switch(creature->GetEntry())
             {
                 case NPC_MALYGOS:
-                    m_uiMalygosGUID = pCreature->GetGUID();
+                    m_uiMalygosGUID = creature->GetGUID();
                     break;
                 default:
                     break;

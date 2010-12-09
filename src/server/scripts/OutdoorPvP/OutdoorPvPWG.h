@@ -609,8 +609,10 @@ class OutdoorPvPWG : public OutdoorPvP
 
         std::string GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleConstant loc);
 
-        void OnCreatureCreate(Creature *creature, bool add);
-        void OnGameObjectCreate(GameObject *go, bool add);
+        void OnCreatureCreate(Creature *creature);
+        void OnGameObjectCreate(GameObject *go);
+        void OnCreatureRemove(Creature *creature);
+        void OnGameObjectRemove(GameObject *go);
 
         void ProcessEvent(GameObject *obj, uint32 eventId, Player* = NULL);
 

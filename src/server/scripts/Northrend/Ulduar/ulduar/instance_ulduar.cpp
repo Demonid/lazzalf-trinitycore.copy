@@ -199,7 +199,7 @@ class instance_ulduar : public InstanceMapScript
             }
         }
 
-        void OnCreatureCreate(Creature* pCreature, bool add)
+        void OnCreatureCreate(Creature* pCreature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             uint32 TeamInInstance = 0;

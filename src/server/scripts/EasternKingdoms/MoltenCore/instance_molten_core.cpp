@@ -147,52 +147,52 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* pCreature, bool /*add*/)
+        void OnCreatureCreate(Creature* creature)
         {
-            switch (pCreature->GetEntry())
+            switch (creature->GetEntry())
             {
                 case ID_LUCIFRON:
-                    Lucifron = pCreature->GetGUID();
+                    Lucifron = creature->GetGUID();
                     break;
 
                 case ID_MAGMADAR:
-                    Magmadar = pCreature->GetGUID();
+                    Magmadar = creature->GetGUID();
                     break;
 
                 case ID_GEHENNAS:
-                    Gehennas = pCreature->GetGUID();
+                    Gehennas = creature->GetGUID();
                     break;
 
                 case ID_GARR:
-                    Garr = pCreature->GetGUID();
+                    Garr = creature->GetGUID();
                     break;
 
                 case ID_GEDDON:
-                    Geddon = pCreature->GetGUID();
+                    Geddon = creature->GetGUID();
                     break;
 
                 case ID_SHAZZRAH:
-                    Shazzrah = pCreature->GetGUID();
+                    Shazzrah = creature->GetGUID();
                     break;
 
                 case ID_SULFURON:
-                    Sulfuron = pCreature->GetGUID();
+                    Sulfuron = creature->GetGUID();
                    break;
 
                 case ID_GOLEMAGG:
-                    Golemagg = pCreature->GetGUID();
+                    Golemagg = creature->GetGUID();
                     break;
 
                 case ID_DOMO:
-                    Domo = pCreature->GetGUID();
+                    Domo = creature->GetGUID();
                     break;
 
                 case ID_RAGNAROS:
-                    Ragnaros = pCreature->GetGUID();
+                    Ragnaros = creature->GetGUID();
                     break;
 
                 case ID_FLAMEWAKERPRIEST:
-                    FlamewakerPriest = pCreature->GetGUID();
+                    FlamewakerPriest = creature->GetGUID();
                     break;
             }
         }
