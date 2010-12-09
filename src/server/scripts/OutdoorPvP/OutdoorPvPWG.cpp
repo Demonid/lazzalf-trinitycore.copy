@@ -905,7 +905,82 @@ OutdoorPvPWGCreType OutdoorPvPWG::GetCreatureType(uint32 entry) const
     }
 }
 
-void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
+void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
+{
+    uint64 guid = creature->GetGUID();
+    TeamId team = TEAM_NEUTRAL;
+
+    if (creature->getFaction() == WintergraspFaction[TEAM_ALLIANCE])
+        team = TEAM_ALLIANCE;
+    else if (creature->getFaction() == WintergraspFaction[TEAM_HORDE])
+        team = TEAM_HORDE;
+
+    switch (GetCreatureType(creature->GetEntry()))
+    {
+        case WG_CREATURE_TRIGGER:
+            break;
+        case CREATURE_SIEGE_VEHICLE:
+            {
+                if (!creature->isSummon())
+                    break;
+
+                if (creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_A || creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_H)
+                {
+                    // For some reason the horde siege turrets have wrong faction (1732)!
+                    if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                        if (creature->getFaction() != WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()])
+                        {
+                            creature->setFaction(WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()]);
+                            m_turrets[((Player*)creature->GetOwner())->GetTeamId()].insert(creature);
+                        }
+                }
+                // the faction may be changed in uncharm
+                // TODO: now you have to wait until the corpse of vehicle disappear to build a new one
+                if (m_vehicles[TEAM_ALLIANCE].erase(creature))
+                    team = TEAM_ALLIANCE;
+                else if (m_vehicles[TEAM_HORDE].erase(creature))
+                    team = TEAM_HORDE;
+                else
+                    break;
+
+                SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
+            } break;
+        case CREATURE_QUESTGIVER:
+            m_questgivers.erase(creature->GetDBTableGUIDLow());
+            break;
+        case CREATURE_ENGINEER:
+            for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
+            {
+                if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
+                    if (workshop->m_engGuid == creature->GetDBTableGUIDLow())
+                    {
+                        workshop->m_engineer = NULL;
+                        break;
+                    }
+            }
+            break;
+        case CREATURE_SPIRIT_GUIDE:
+            for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
+            {
+                if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
+                    if (workshop->m_spiGuid == creature->GetDBTableGUIDLow())
+                    {
+                        workshop->m_spiritguide = NULL;
+                        break;
+                    }
+            }
+            creature->CastSpell(creature, SPELL_SPIRITUAL_IMMUNITY, true);
+        case CREATURE_SPIRIT_HEALER:
+        case CREATURE_TURRET:
+        case CREATURE_OTHER:
+        default:
+            m_creatures.insert(creature);
+            break;
+    }
+
+}
+
+void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
 {
     uint64 guid = creature->GetGUID();
     TeamId team = TEAM_NEUTRAL;
@@ -934,50 +1009,35 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
                         m_turrets[((Player*)creature->GetOwner())->GetTeamId()].insert(creature);
                     }
             }
+            
+            if (team == TEAM_NEUTRAL)
+                break;
 
-            if (add)
+            if (uint32 engLowguid = GUID_LOPART(creature->ToTempSummon()->GetSummonerGUID()))
             {
-                if (team == TEAM_NEUTRAL)
-                    break;
-
-                if (uint32 engLowguid = GUID_LOPART(creature->ToTempSummon()->GetSummonerGUID()))
+                if (OPvPCapturePointWG *workshop = GetWorkshopByEngGuid(engLowguid))
                 {
-                    if (OPvPCapturePointWG *workshop = GetWorkshopByEngGuid(engLowguid))
+                    if (CanBuildVehicle(workshop))
+                        m_vehicles[team].insert(creature);
+                    else
                     {
-                        if (CanBuildVehicle(workshop))
-                            m_vehicles[team].insert(creature);
-                        else
-                        {
-                            creature->SetRespawnTime(DAY);
-                            creature->ForcedDespawn();
-                            break;
-                        }
+                        creature->SetRespawnTime(DAY);
+                        creature->ForcedDespawn();
+                        break;
                     }
                 }
+            }
 
-                if (m_tenacityStack > 0 && team == TEAM_ALLIANCE)
-                    creature->SetAuraStack(SPELL_TENACITY_VEHICLE, creature, m_tenacityStack);
-                else if (m_tenacityStack < 0 && team == TEAM_HORDE)
-                    creature->SetAuraStack(SPELL_TENACITY_VEHICLE, creature, -m_tenacityStack);
-            }
-            else // the faction may be changed in uncharm
-            {
-                // TODO: now you have to wait until the corpse of vehicle disappear to build a new one
-                if (m_vehicles[TEAM_ALLIANCE].erase(creature))
-                    team = TEAM_ALLIANCE;
-                else if (m_vehicles[TEAM_HORDE].erase(creature))
-                    team = TEAM_HORDE;
-                else
-                    break;
-            }
+            if (m_tenacityStack > 0 && team == TEAM_ALLIANCE)
+                creature->SetAuraStack(SPELL_TENACITY_VEHICLE, creature, m_tenacityStack);
+            else if (m_tenacityStack < 0 && team == TEAM_HORDE)
+                creature->SetAuraStack(SPELL_TENACITY_VEHICLE, creature, -m_tenacityStack);
+            
             SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
             break;
 
         case CREATURE_QUESTGIVER:
-            if (add)
-                m_questgivers[creature->GetDBTableGUIDLow()] = creature;
-            else
-                m_questgivers.erase(creature->GetDBTableGUIDLow());
+            m_questgivers[creature->GetDBTableGUIDLow()] = creature;
             break;
         case CREATURE_ENGINEER:
             for (OutdoorPvP::OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
@@ -985,7 +1045,7 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
                     if (workshop->m_engGuid == creature->GetDBTableGUIDLow())
                     {
-                        workshop->m_engineer = add ? creature : NULL;
+                        workshop->m_engineer = creature;
                         break;
                     }
             }
@@ -996,7 +1056,7 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
                 if (OPvPCapturePointWG *workshop = dynamic_cast<OPvPCapturePointWG*>(itr->second))
                     if (workshop->m_spiGuid == creature->GetDBTableGUIDLow())
                     {
-                        workshop->m_spiritguide = add ? creature : NULL;
+                        workshop->m_spiritguide = creature;
                         break;
                     }
             }
@@ -1004,20 +1064,16 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature, bool add)
         case CREATURE_SPIRIT_HEALER:
         case CREATURE_TURRET:
         case CREATURE_OTHER:
-            if (add)
-                UpdateCreatureInfo(creature);
+            UpdateCreatureInfo(creature);
         default:
-            if (add)
-                m_creatures.insert(creature);
-            else
-                m_creatures.erase(creature);
+            m_creatures.insert(creature);
             break;
     }
 }
 
-void OutdoorPvPWG::OnGameObjectCreate(GameObject *go, bool add)
+void OutdoorPvPWG::OnGameObjectRemove(GameObject *go)
 {
-    OutdoorPvP::OnGameObjectCreate(go, add);
+    OutdoorPvP::OnGameObjectRemove(go);
 
     switch(go->GetEntry())
     {
@@ -1031,10 +1087,7 @@ void OutdoorPvPWG::OnGameObjectCreate(GameObject *go, bool add)
 
     if (UpdateGameObjectInfo(go))
     {
-        if (add)
-            m_gobjects.insert(go);
-        else
-            m_gobjects.erase(go);
+        m_gobjects.erase(go);
     }
     //do we need to store building?
     else if (go->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
@@ -1042,12 +1095,46 @@ void OutdoorPvPWG::OnGameObjectCreate(GameObject *go, bool add)
         BuildingStateMap::const_iterator itr = m_buildingStates.find(go->GetDBTableGUIDLow());
         if (itr != m_buildingStates.end())
         {
-            itr->second->building = add ? go : NULL;
+            itr->second->building = NULL;
+
+            if (go->GetGOInfo()->displayId == WG_GO_DISPLAY_KEEP_TOWER || go->GetGOInfo()->displayId == WG_GO_DISPLAY_TOWER)
+                itr->second->type = BUILDING_TOWER;
+            
+            itr->second->health = go->GetGOValue()->building.health;
+        }
+    }
+}
+
+void OutdoorPvPWG::OnGameObjectCreate(GameObject *go)
+{
+    OutdoorPvP::OnGameObjectCreate(go);
+
+    switch(go->GetEntry())
+    {
+        case WG_GO_KEEP_DOOR01_COLLISION:
+            m_gate_collision1 = const_cast<GameObject*>(go);
+            break;
+        case WG_GO_KEEP_COLLISION_WALL:
+            m_gate_collision2 = const_cast<GameObject*>(go);
+            break;
+    }
+
+    if (UpdateGameObjectInfo(go))
+    {
+        m_gobjects.insert(go);
+    }
+    //do we need to store building?
+    else if (go->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
+    {
+        BuildingStateMap::const_iterator itr = m_buildingStates.find(go->GetDBTableGUIDLow());
+        if (itr != m_buildingStates.end())
+        {
+            itr->second->building = go;
 
             if (go->GetGOInfo()->displayId == WG_GO_DISPLAY_KEEP_TOWER || go->GetGOInfo()->displayId == WG_GO_DISPLAY_TOWER)
                 itr->second->type = BUILDING_TOWER;
 
-            if (!add || itr->second->damageState == DAMAGE_INTACT && !itr->second->health)
+            if (itr->second->damageState == DAMAGE_INTACT && !itr->second->health)
                 itr->second->health = go->GetGOValue()->building.health;
             else
             {

@@ -130,7 +130,7 @@ class instance_trial_of_the_champion : public InstanceMapScript
              * 2)con uno switch sceglie in base all'entry creatura non so precisamente cosa va ad aggiornare da capire...
              *
              */
-        void OnCreatureCreate(Creature* pCreature)
+        void OnCreatureCreate(Creature* creature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             uint32 TeamInInstance = 0;
@@ -141,87 +141,86 @@ class instance_trial_of_the_champion : public InstanceMapScript
                     TeamInInstance = pPlayer->GetTeam();
             }
 
-            switch(pCreature->GetEntry())
+            switch(creature->GetEntry())
             {
                 // Champions
                 case VEHICLE_MOKRA_SKILLCRUSHER_MOUNT:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_MARSHAL_JACOB_ALERIUS_MOUNT, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_MARSHAL_JACOB_ALERIUS_MOUNT, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
                 case VEHICLE_ERESSEA_DAWNSINGER_MOUNT:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_AMBROSE_BOLTSPARK_MOUNT, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
-
+                        creature->UpdateEntry(VEHICLE_AMBROSE_BOLTSPARK_MOUNT, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
                 case VEHICLE_RUNOK_WILDMANE_MOUNT:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_COLOSOS_MOUNT, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_COLOSOS_MOUNT, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
                 case VEHICLE_ZUL_TORE_MOUNT:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_EVENSONG_MOUNT, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_EVENSONG_MOUNT, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
                 case VEHICLE_DEATHSTALKER_VESCERI_MOUNT:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_LANA_STOUTHAMMER_MOUNT, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_LANA_STOUTHAMMER_MOUNT, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
-                            case VEHICLE_ORGRIMMAR_WOLF:
+                case VEHICLE_ORGRIMMAR_WOLF:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_STORMWIND_STEED, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_STORMWIND_STEED, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
-                            case VEHICLE_SILVERMOON_HAWKSTRIDER:
+                case VEHICLE_SILVERMOON_HAWKSTRIDER:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_GNOMEREGAN_MECHANOSTRIDER, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_GNOMEREGAN_MECHANOSTRIDER, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
-                            case VEHICLE_THUNDER_BLUFF_KODO:
+                case VEHICLE_THUNDER_BLUFF_KODO:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_EXODAR_ELEKK, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_EXODAR_ELEKK, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;
-                            case VEHICLE_DARKSPEAR_RAPTOR:
+                case VEHICLE_DARKSPEAR_RAPTOR:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_DARNASSIA_NIGHTSABER, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_DARNASSIA_NIGHTSABER, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;  
-                            case VEHICLE_FORSAKE_WARHORSE:
+                case VEHICLE_FORSAKE_WARHORSE:
                     if (TeamInInstance == HORDE)
-                        pCreature->UpdateEntry(VEHICLE_IRONFORGE_RAM, ALLIANCE);
-                                    VehicleListChampion.push_back(pCreature->GetGUID());
+                        creature->UpdateEntry(VEHICLE_IRONFORGE_RAM, ALLIANCE);
+                    VehicleListChampion.push_back(creature->GetGUID());
                     break;  
-                            case NPC_RISEN_JAEREN:
+                case NPC_RISEN_JAEREN:
                     if (TeamInInstance == ALLIANCE)
-                        pCreature->UpdateEntry(NPC_RISEN_ARELAS, HORDE);
+                        creature->UpdateEntry(NPC_RISEN_ARELAS, HORDE);
                     break;  
                 // Coliseum Announcer || Just NPC_JAEREN must be spawned.
                 case NPC_JAEREN:
-                    uiAnnouncerGUID = pCreature->GetGUID();
+                    uiAnnouncerGUID = creature->GetGUID();
                     if (TeamInInstance == ALLIANCE)
-                        pCreature->UpdateEntry(NPC_ARELAS,ALLIANCE);
+                        creature->UpdateEntry(NPC_ARELAS,ALLIANCE);
                     break;
                 case NPC_JAEREN_AN:
                     if (TeamInInstance == ALLIANCE)
-                        pCreature->UpdateEntry(NPC_ARELAS_AN,ALLIANCE);
+                        creature->UpdateEntry(NPC_ARELAS_AN,ALLIANCE);
                     break;                          
                 case VEHICLE_ARGENT_WARHORSE:
                 case VEHICLE_ARGENT_BATTLEWORG:
-                    VehicleList.push_back(pCreature->GetGUID());
+                    VehicleList.push_back(creature->GetGUID());
                     break;
                 case NPC_EADRIC:
                 case NPC_PALETRESS:
-                    uiArgentChampionGUID = pCreature->GetGUID();
+                    uiArgentChampionGUID = creature->GetGUID();
                     break;
             }
         }
 
 
-        void OnGameObjectCreate(GameObject* pGO, bool bAdd)
+        void OnGameObjectCreate(GameObject* pGO)
         {
             switch(pGO->GetEntry())
             {

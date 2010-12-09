@@ -153,51 +153,59 @@ public:
 
         bool somebodyDied;
 
-        void OnCreatureCreate(Creature* pCreature)
+        void Inizialize()
         {
-            switch(pCreature->GetEntry())
-            {
-                case 15989: SapphironGUID = add ? pCreature->GetGUID() : 0; return;
-                case 15953: uiFaerlina = pCreature->GetGUID(); return;
-                case 16064: uiThane = pCreature->GetGUID(); return;
-                case 16065: uiLady = pCreature->GetGUID(); return;
-                case 30549: uiBaron = pCreature->GetGUID(); return;
-                case 16063: uiSir = pCreature->GetGUID(); return;
-                case 15928: uiThaddius = pCreature->GetGUID(); return;
-                case 15930: uiFeugen = pCreature->GetGUID(); return;
-                case 15929: uiStalagg = pCreature->GetGUID(); return;
-                case 15990: uiKelthuzad = pCreature->GetGUID(); return;
-                case 60201: uiKelthuzad_2 = pCreature->GetGUID(); return;
-            }
-
-            AddMinion(pCreature, add);
+            GothikGateGUID = 0;
+            HorsemenChestGUID = 0;
+            SapphironGUID = 0;
+            somebodyDied = false;
         }
 
-        void OnGameObjectCreate(GameObject* pGo)
+        void OnCreatureCreate(Creature* creature)
         {
-        if (pGo->GetGOInfo()->displayId == 6785 || pGo->GetGOInfo()->displayId == 1287)
-        {
-            uint32 section = GetEruptionSection(pGo->GetPositionX(), pGo->GetPositionY());
-            HeiganEruption[section].insert(pGo);
-            return;
+            switch(creature->GetEntry())
+            {
+                case 15989: SapphironGUID = creature->GetGUID(); return;
+                case 15953: uiFaerlina = creature->GetGUID(); return;
+                case 16064: uiThane = creature->GetGUID(); return;
+                case 16065: uiLady = creature->GetGUID(); return;
+                case 30549: uiBaron = creature->GetGUID(); return;
+                case 16063: uiSir = creature->GetGUID(); return;
+                case 15928: uiThaddius = creature->GetGUID(); return;
+                case 15930: uiFeugen = creature->GetGUID(); return;
+                case 15929: uiStalagg = creature->GetGUID(); return;
+                case 15990: uiKelthuzad = creature->GetGUID(); return;
+                case 60201: uiKelthuzad_2 = creature->GetGUID(); return;
             }
 
-            switch(pGo->GetEntry())
+            AddMinion(creature, true);
+        }
+
+        void OnGameObjectCreate(GameObject* go)
+        {
+            if (go->GetGOInfo()->displayId == 6785 || go->GetGOInfo()->displayId == 1287)
+            {
+                uint32 section = GetEruptionSection(go->GetPositionX(), go->GetPositionY());
+                HeiganEruption[section].insert(go);
+                return;
+            }
+
+            switch(go->GetEntry())
             {
                 case GO_GOTHIK_GATE:
-                    GothikGateGUID = add ? pGo->GetGUID() : 0;
-                    pGo->SetGoState(gothikDoorState);
+                    GothikGateGUID = go->GetGUID();
+                    go->SetGoState(gothikDoorState);
                     break;
-                case GO_HORSEMEN_CHEST: HorsemenChestGUID = add ? pGo->GetGUID() : 0; break;
-                case GO_HORSEMEN_CHEST_HERO: HorsemenChestGUID = add ? pGo->GetGUID() : 0; break;
-                case GO_KELTHUZAD_PORTAL01: uiPortals[0] = pGo->GetGUID(); break;
-                case GO_KELTHUZAD_PORTAL02: uiPortals[1] = pGo->GetGUID(); break;
-                case GO_KELTHUZAD_PORTAL03: uiPortals[2] = pGo->GetGUID(); break;
-                case GO_KELTHUZAD_PORTAL04: uiPortals[3] = pGo->GetGUID(); break;
-                case GO_KELTHUZAD_TRIGGER: uiKelthuzadTrigger = pGo->GetGUID(); break;
+                case GO_HORSEMEN_CHEST: HorsemenChestGUID = go->GetGUID(); break;
+                case GO_HORSEMEN_CHEST_HERO: HorsemenChestGUID = go->GetGUID(); break;
+                case GO_KELTHUZAD_PORTAL01: uiPortals[0] = go->GetGUID(); break;
+                case GO_KELTHUZAD_PORTAL02: uiPortals[1] = go->GetGUID(); break;
+                case GO_KELTHUZAD_PORTAL03: uiPortals[2] = go->GetGUID(); break;
+                case GO_KELTHUZAD_PORTAL04: uiPortals[3] = go->GetGUID(); break;
+                case GO_KELTHUZAD_TRIGGER: uiKelthuzadTrigger = go->GetGUID(); break;
             }
 
-            AddDoor(pGo, add);
+            AddDoor(go, true);
         }
         
         void OnGameObjectRemove(GameObject* go)
@@ -206,7 +214,7 @@ public:
             {
                 uint32 section = GetEruptionSection(go->GetPositionX(), go->GetPositionY());
 
-                HeiganEruption[section].erase(pGo);
+                HeiganEruption[section].erase(go);
                 return;
             }
 
@@ -235,8 +243,8 @@ public:
                     HeiganErupt(value);
                     break;
                 case DATA_GOTHIK_GATE:
-                    if (GameObject *pGothikGate = instance->GetGameObject(GothikGateGUID))
-                        pGothikGate->SetGoState(GOState(value));
+                    if (GameObject *gothikGate = instance->GetGameObject(GothikGateGUID))
+                        gothikGate->SetGoState(GOState(value));
                     gothikDoorState = GOState(value);
                     break;
 
@@ -456,9 +464,9 @@ class mr_bigglesworth_npc : public CreatureScript
     public:
         mr_bigglesworth_npc(): CreatureScript("mr_bigglesworth_npc") {}
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mr_bigglesworth_npcAI (pCreature);
+        return new mr_bigglesworth_npcAI (creature);
     }
 
     struct mr_bigglesworth_npcAI : public ScriptedAI

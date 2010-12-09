@@ -100,22 +100,22 @@ public:
                     break;
                 case CREATURE_EREGOS:
                     uiEregos = creature->GetGUID();
-				    pCreature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
+				    creature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
 				    break;
 			    case CREATURE_AZURE_GUARDIAN:
-				    pCreature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
+				    creature->SetUnitMovementFlags(MOVEMENTFLAG_CAN_FLY);
                     break;
 			    case NPC_BELGARISTRASZ:
-				    uiBera = pCreature->GetGUID();
-				    pCreature->SetReactState(REACT_PASSIVE);
+				    uiBera = creature->GetGUID();
+				    creature->SetReactState(REACT_PASSIVE);
 				    break;
 			    case NPC_VERDISA:
-				    uiVerdisa = pCreature->GetGUID();
-				    pCreature->SetReactState(REACT_PASSIVE);
+				    uiVerdisa = creature->GetGUID();
+				    creature->SetReactState(REACT_PASSIVE);
 				    break;
 			    case NPC_ETERNOS :
-				    uiEternos = pCreature->GetGUID();
-				    pCreature->SetReactState(REACT_PASSIVE);
+				    uiEternos = creature->GetGUID();
+				    creature->SetReactState(REACT_PASSIVE);
 				    break;
 			    break;	
             }

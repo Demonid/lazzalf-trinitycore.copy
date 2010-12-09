@@ -253,19 +253,19 @@ public:
                     m_uiTributeChestGUID = go->GetGUID(); break;
                 case GO_TWIN_CHEST_10:
                     if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_NORMAL)
-                        m_uiTwinChestGUID = pGO->GetGUID();
+                        m_uiTwinChestGUID = go->GetGUID();
                     break;
                 case GO_TWIN_CHEST_25:
                     if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_NORMAL)
-                        m_uiTwinChestGUID = pGO->GetGUID();
+                        m_uiTwinChestGUID = go->GetGUID();
                     break;
                 case GO_TWIN_CHEST_10_H:
                     if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
-                        m_uiTwinChestGUID = pGO->GetGUID();
+                        m_uiTwinChestGUID = go->GetGUID();
                     break;
                 case GO_TWIN_CHEST_25_H:
                     if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
-                        m_uiTwinChestGUID = pGO->GetGUID();
+                        m_uiTwinChestGUID = go->GetGUID();
                     break;
             }
         }
