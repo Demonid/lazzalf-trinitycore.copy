@@ -167,6 +167,33 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
     SetNeedClientUpdate();
 }
 
+void AuraApplication::HandleEffect(uint8 effIndex, bool apply)
+{
+    if (GetRemoveMode() || GetBase()->IsRemoved())
+        return;
+
+    if (!GetBase()->HasEffect(effIndex))
+    {
+        sLog.outError("AuraApplication::HandleEffect: tried to %s nonexisting aura effect - id: %u effIndex: %u", (apply ? "APPLY" : "UNNAPLY"), GetBase()->GetSpellProto()->Id, effIndex);
+        return;
+    }
+
+    if (!GetTarget())
+    {
+        sLog.outError("AuraApplication::HandleEffect: target is NULL at %s - id: %u effIndex: %u", (apply ? "APPLY" : "UNNAPLY"), GetBase()->GetSpellProto()->Id, effIndex);
+        return;
+    }
+    else if (!GetTarget()->isAlive())
+        return;
+
+    if (apply ? HasEffect(effIndex) : !HasEffect(effIndex))
+        return;
+
+    m_effectsToApply |= (1 << effIndex);
+
+    _HandleEffect(effIndex, apply);
+}
+
 void AuraApplication::ClientUpdate(bool remove)
 {
     m_needClientUpdate = false;
@@ -360,6 +387,23 @@ m_isRemoved(false), m_isSingleTarget(false)
         else
             m_effects[i] = NULL;
     }
+    
+    if (caster && caster->GetTypeId() == TYPEID_PLAYER && m_spellProto->SpellFamilyName == SPELLFAMILY_POTION && caster->HasAura(53042))
+    {
+        if (sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_BATTLE) ||
+           sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_GUARDIAN))
+        {
+            if (caster->HasSpell(m_spellProto->EffectTriggerSpell[0]))
+            {
+                for (uint8 i=0 ; i<MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (effMask & (uint8(1) << i))
+                        m_effects[i]->SetAmount((int32)(m_effects[i]->GetAmount() * 1.3f));
+                }
+            }
+        }
+    }
+
 }
 
 Aura::~Aura()
@@ -475,6 +519,7 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
     FillTargetMap(targets, caster);
 
     UnitList targetsToRemove;
+    std::map<Unit *, std::pair<AuraApplication *, uint8> > targetsToReapply;
 
     // mark all auras as ready to remove
     for (ApplicationMap::iterator appIter = m_applications.begin(); appIter != m_applications.end();++appIter)
@@ -485,10 +530,25 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
             targetsToRemove.push_back(appIter->second->GetTarget());
         else
         {
+            if (!CanBeAppliedOn(existing->first))
+                targetsToRemove.push_back(appIter->second->GetTarget());
+            else
+            {
+                // Reapply disabled auraeffects
+                uint8 effReapply = 0;
+                for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+                    if (existing->second & (1 << effIndex))
+                        if ((GetSpellProto()->Effect[effIndex] != SPELL_EFFECT_APPLY_AURA) &&
+                            (GetSpellProto()->EffectMechanic[effIndex]) &&
+                            (!appIter->second->GetTarget()->IsImmunedToSpellEffect(GetSpellProto(), effIndex)))
+                            effReapply |= (1 << effIndex);
+                if (effReapply)
+                    targetsToReapply[appIter->second->GetTarget()] = std::make_pair<AuraApplication *, uint8>(appIter->second, effReapply);
+            }
             // needs readding - remove now, will be applied in next update cycle
             // (dbcs do not have auras which apply on same type of targets but have different radius, so this is not really needed)
-            if (appIter->second->GetEffectMask() != existing->second || !CanBeAppliedOn(existing->first))
-                targetsToRemove.push_back(appIter->second->GetTarget());
+            //if (appIter->second->GetEffectMask() != existing->second || !CanBeAppliedOn(existing->first))
+            //    targetsToRemove.push_back(appIter->second->GetTarget());
             // nothing todo - aura already applied
             // remove from auras to register list
             targets.erase(existing);
@@ -500,9 +560,19 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
     {
         bool addUnit = true;
         // check target immunities
-        if (itr->first->IsImmunedToSpell(GetSpellProto())
-            || !CanBeAppliedOn(itr->first))
-            addUnit = false;
+        if (itr->first->IsImmunedToSpell(GetSpellProto()) || !CanBeAppliedOn(itr->first))
+             addUnit = false;
+        else
+        {
+            for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+                if (itr->second & (1 << effIndex))
+                    if ((GetSpellProto()->EffectMechanic[effIndex]) &&
+                        (itr->first->IsImmunedToSpellEffect(GetSpellProto(), effIndex)))
+                        itr->second &= ~(1 << effIndex);
+
+            if (!itr->second)
+                addUnit = false;
+        }
 
         if (addUnit)
         {
@@ -563,6 +633,22 @@ void Aura::UpdateTargetMap(Unit * caster, bool apply)
             itr->first->_ApplyAura(aurApp, itr->second);
         }
     }
+
+    // reapply aura effects for units
+    for (std::map<Unit *, std::pair<AuraApplication *, uint8> >::iterator itr = targetsToReapply.begin(); itr != targetsToReapply.end(); ++itr)
+    {
+        if (AuraApplication * aurApp = GetApplicationOfTarget(itr->first->GetGUID()))
+        {
+            if (itr->second.first != aurApp)
+                continue;
+
+            // owner has to be in world, or effect has to be applied to self
+            ASSERT((!GetOwner()->IsInWorld() && GetOwner() == itr->first) || GetOwner()->IsInMap(itr->first));
+            for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+                if (itr->second.second & (1 << effIndex))
+                    aurApp->HandleEffect(effIndex, true);
+         }
+     }
 }
 
 // targets have to be registered and not have effect applied yet to use this function
@@ -689,7 +775,7 @@ void Aura::RefreshDuration()
 {
     SetDuration(GetMaxDuration());
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (m_effects[i])
+        if(m_effects[i])
             m_effects[i]->ResetPeriodic();
 
     if (m_spellProto->manaPerSecond || m_spellProto->manaPerSecondPerLevel)
@@ -1124,6 +1210,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (target->HasAura(61988) && !target->HasAura(25771))
                             target->RemoveAura(61988);
                         break;
+                    case 61990: // Hodir Flash Freeze immunity remove
+                    case 61969:
+               	        if (removeMode == AURA_REMOVE_BY_DEATH)
+                            target->RemoveAura(7940);
+                        break;
                     case 72368: // Shared Suffering
                     case 72369:
                         if (caster)
@@ -1135,6 +1226,29 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                                     caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
                             }
                         }
+                        break;
+                    // Malady of the Mind will attempt to jump to a nearby friend when removed
+                    case 63830:
+                    case 63881:                
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        {
+                            std::list<Unit*> unitList;
+                            target->GetRaidMember(unitList, 10);
+                            for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                            {
+                                Unit* pUnit = *itr;
+                                if (pUnit == target)
+                                    continue;
+                                    
+                                pUnit->CastSpell(pUnit, 63881, true, 0, 0);
+                                return;
+                            }
+                        }
+                        break;
+                    // Shadow Beacon
+                    case 64465:
+                        if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                            target->CastSpell(target, 64468, true, 0, 0, GetCasterGUID());
                         break;
                 }
                 break;
@@ -1232,7 +1346,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         if (removeMode != AURA_REMOVE_BY_STACK)
                             target->RemoveGameObject(GetId(), true);
                         target->RemoveAura(62388);
-                    break;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -1334,9 +1450,24 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     target->RemoveAurasWithFamily(SPELLFAMILY_ROGUE, 0x0000800, 0, 0, target->GetGUID());
                 break;
             case SPELLFAMILY_PALADIN:
-                // Remove the immunity shield marker on Forbearance removal if AW marker is not present
-                if (GetId() == 25771 && target->HasAura(61988) && !target->HasAura(61987))
-                    target->RemoveAura(61988);
+                switch (GetId())
+                {                   
+                    case 25771: // Remove the immunity shield marker on Forbearance removal if AW marker is not present
+                        if (target->HasAura(61988) && !target->HasAura(61987))
+                            target->RemoveAura(61988);
+                        break;
+                    case 199997: // Divine Storm Helper (SERVERSIDE)
+                    {
+                        int32 damage = aurApp->GetBase()->GetEffect(EFFECT_0)->GetAmount();
+                        if (!damage)
+                            break;
+
+                        caster->CastCustomSpell(target, 54171, &damage, NULL, NULL, true);
+                        break;
+                    }
+                    default:
+                        break;
+                }
                 break;
             case SPELLFAMILY_DEATHKNIGHT:
                 // Blood of the North
@@ -1428,7 +1559,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
         case SPELLFAMILY_PALADIN:
             switch(GetId())
             {
-                case 19746:
+                case 19746:                    
+                    // Improved concentration aura - linked aura
+                    if (caster->HasAura(20254) || caster->HasAura(20255) || caster->HasAura(20256))
+                        if (apply)
+                            target->CastSpell(target, 63510, true);
+                        else target->RemoveAura(63510);
                 case 31821:
                     // Aura Mastery Triggered Spell Handler
                     // If apply Concentration Aura -> trigger -> apply Aura Mastery Immunity
@@ -1445,6 +1581,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     else
                         target->RemoveAurasDueToSpell(64364, GetCasterGUID());
                     break;
+            }
+            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
+	        {
+                // Improved devotion aura
+                if (caster->HasAura(20140) || caster->HasAura(20138) || caster->HasAura(20139))
+                    if (apply)
+                        caster->CastSpell(target, 63514, true);
+                    else target->RemoveAura(63514);
+                // 63531 - linked aura for both Sanctified Retribution and Swift Retribution talents
+                // Not allow for Retribution Aura (prevent stacking)
+                if ((GetSpellProto()->SpellIconID != 555) && (caster->HasAura(53648) || caster->HasAura(53484) || caster->HasAura(53379) || caster->HasAura(31869)))
+                    if (apply)
+                        caster->CastSpell(target, 63531, true);
+                    else target->RemoveAura(63531);
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:

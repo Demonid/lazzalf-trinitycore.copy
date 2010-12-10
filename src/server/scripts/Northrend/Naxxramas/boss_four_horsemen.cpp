@@ -283,8 +283,14 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             if (!(rand()%5))
             {
                 if (id == HORSEMEN_BARON)
@@ -311,6 +317,8 @@ public:
                 // There is thus no way it can be given by casting the spell on the players.
                 instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 59450);
             }
+
+            me->SummonCreature(CREATURE_TELEPORTER, TeleporterPositions[0]);
 
             DoScriptText(SAY_DEATH[id], me);
         }
