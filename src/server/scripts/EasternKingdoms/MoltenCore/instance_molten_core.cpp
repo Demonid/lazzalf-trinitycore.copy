@@ -330,7 +330,7 @@ public:
                         pFirelordCache->SetRespawnTime(pFirelordCache->GetRespawnDelay());
             }
         }
-        /*
+
         std::string GetSaveData()
         {
             std::ostringstream saveStream;
@@ -341,10 +341,7 @@ public:
         void Load(const char * data)
         {
             std::istringstream loadStream(LoadBossState(data));
-            uint32 buff;
-            loadStream >> buff;
-            m_summoned = GOState(buff);
-        }*/
+        }
     };
 };
 
