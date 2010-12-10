@@ -1688,11 +1688,11 @@ void OutdoorPvPWG::UpdateTenacityStack()
     int32 newStack = 0;
 
     for (PlayerSet::iterator itr = m_players[TEAM_ALLIANCE].begin(); itr != m_players[TEAM_ALLIANCE].end(); ++itr)
-        if ((*itr)->getLevel() > 69)
+        if ((*itr)->getLevel() > 69 && !(*itr)->isGameMaster())
             ++allianceNum;
 
     for (PlayerSet::iterator itr = m_players[TEAM_HORDE].begin(); itr != m_players[TEAM_HORDE].end(); ++itr)
-        if ((*itr)->getLevel() > 69)
+        if ((*itr)->getLevel() > 69 && !(*itr)->isGameMaster())
             ++hordeNum;
 
     if (allianceNum && hordeNum)
