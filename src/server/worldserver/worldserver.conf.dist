@@ -2602,9 +2602,11 @@ Anticheat.AntiMultiJump.Enable           = 1
 Anticheat.AntiMultiJumpBlock.Count       = 0
 Anticheat.AntiMultiJumpPunisher.Count    = 0
 
-Anticheat.AntiSpeedTele.Enable           = 1
+Anticheat.AntiSpeed.Enable               = 1
 Anticheat.AntiSpeedBlock.Count           = 0
 Anticheat.AntiSpeedPunisher.Count        = 0
+
+Anticheat.AntiTele.Enable                = 1
 Anticheat.AntiTeleBlock.Count            = 0
 Anticheat.AntiTelePunisher.Count         = 0
 
