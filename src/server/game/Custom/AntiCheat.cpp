@@ -152,7 +152,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
     {
         // Go to sleep
         plMover->ac_local.ac_goactivate = 0;
-        plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
+        plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
         return true;
     }
 
