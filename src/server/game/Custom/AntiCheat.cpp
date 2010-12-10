@@ -257,23 +257,32 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 
 bool AntiCheat::ControllPunisher(Player* plMover)
 {
-    if (plMover->ac_local.m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT))
+    if (sWorld.getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT) &&
+        plMover->ac_local.m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT) &&
+        plMover->ac_local.m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT))
         return true;
-    else if (plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT))
+    else if (sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT) && 
+        plMover->ac_local.m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT))
         return true;
 
     return false;
