@@ -787,7 +787,9 @@ struct dummy_dragonAI : public ScriptedAI
         if (uiPointId == POINT_ID_LAND)
         {
             me->GetMotionMaster()->Clear();
-            m_bCanMoveFree = false;
+            m_bCanMoveFree = false;            
+            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                me->AI()->AttackStart(pTarget);
             return;
         }
 
