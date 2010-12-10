@@ -36,17 +36,11 @@
 #include "CliRunnable.h"
 #include "Log.h"
 #include "Master.h"
-#include "RASocket.h"
+#include "RARunnable.h"
 #include "TCSoap.h"
 #include "Timer.h"
 #include "Util.h"
 
-#include "TcpSocket.h"
-#include "Utility.h"
-#include "Parse.h"
-#include "Socket.h"
-#include "SocketHandler.h"
-#include "ListenSocket.h"
 #include "BigNumber.h"
 
 #ifdef _WIN32
@@ -111,53 +105,6 @@ public:
             }
         }
         sLog.outString("Anti-freeze thread exiting without problems.");
-    }
-};
-
-class RARunnable : public ACE_Based::Runnable
-{
-public:
-    RARunnable () {}
-
-    void run ()
-    {
-        SocketHandler h;
-
-        // Launch the RA listener socket
-        ListenSocket<RASocket> RAListenSocket (h);
-        bool usera = sConfig.GetBoolDefault ("Ra.Enable", false);
-
-        if (usera)
-        {
-            port_t raport = sConfig.GetIntDefault ("Ra.Port", 3443);
-            std::string stringip = sConfig.GetStringDefault ("Ra.IP", "0.0.0.0");
-            ipaddr_t raip;
-            if (!Utility::u2ip (stringip, raip))
-                sLog.outError ("Trinity RA can not bind to ip %s", stringip.c_str ());
-            else if (RAListenSocket.Bind (raip, raport))
-                sLog.outError ("Trinity RA can not bind to port %d on %s", raport, stringip.c_str ());
-            else
-            {
-                h.Add (&RAListenSocket);
-
-                sLog.outString ("Starting Remote access listner on port %d on %s", raport, stringip.c_str ());
-            }
-        }
-
-        // Socket Selet time is in microseconds , not miliseconds!!
-        uint32 socketSelecttime = sWorld.getIntConfig(CONFIG_SOCKET_SELECTTIME);
-
-        // if use ra spend time waiting for io, if not use ra ,just sleep
-        if (usera)
-        {
-            while (!World::IsStopped())
-                h.Select (0, socketSelecttime);
-        }
-        else
-        {
-            while (!World::IsStopped())
-                ACE_Based::Thread::Sleep(static_cast<unsigned long> (socketSelecttime / 1000));
-        }
     }
 };
 
@@ -319,7 +266,7 @@ int Master::Run()
     }
 
     ///- Launch the world listener socket
-    port_t wsport = sWorld.getIntConfig(CONFIG_PORT_WORLD);
+    uint16 wsport = sWorld.getIntConfig(CONFIG_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
 
     if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
