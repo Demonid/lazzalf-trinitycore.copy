@@ -156,7 +156,7 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
         return true;
     }
 
-	// Set to false if find a Cheat
+	// Set to false if block a Cheat
 	bool check_passed = true;
 
     // Only if we are not coming from sleep

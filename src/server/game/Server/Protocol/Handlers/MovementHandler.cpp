@@ -384,7 +384,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         Being Teleported
         Can't free move
     */
-    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE)))
+    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE))
     {
         if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
         {
@@ -395,7 +395,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         {
             // Go to sleep
             plMover->ac_local.ac_goactivate = 0;
-            plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
+            plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
         }
     }
 
