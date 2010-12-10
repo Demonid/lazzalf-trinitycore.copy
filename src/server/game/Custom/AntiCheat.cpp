@@ -136,20 +136,25 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 	// Calc Delthas for AntiCheat
 	CalcDeltas(plMover, pMovementInfo, plMover->ac_local.GetLastPacket());
 
-    // Clean player cheatlist only if we founded a cheat
-    if (plMover->ac_local.number_cheat_find)
-        plMover->ac_local.ResetCheatList(cServerTimeDelta);
-	
     // Diff for AntiCheat sleep
 	if (!plMover->ac_local.GetAndUpdateDelta(int32(cServerTimeDelta)))
         return true;
+
+    // Clean player cheatlist only if we founded a cheat
+    if (plMover->ac_local.number_cheat_find)
+        plMover->ac_local.ResetCheatList(cServerTimeDelta);
   
     // AntiCheat Block (not used for now)
 	//if (plMover->ac_local.GetBlock())
 	//	return true;
 
     if (sWorld.iIgnoreMapIds_AC.count(plMover->GetMapId()))
+    {
+        // Go to sleep
+        plMover->ac_local.ac_goactivate = 0;
+        plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
         return true;
+    }
 
 	// Set to false if find a Cheat
 	bool check_passed = true;
