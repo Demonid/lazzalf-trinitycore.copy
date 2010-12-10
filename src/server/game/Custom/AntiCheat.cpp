@@ -129,13 +129,7 @@ void AntiCheat_Local::ResetCheatList(uint32 diff)
 }
 
 bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, MovementInfo& pMovementInfo, Unit *mover)
-{
-	if (!plMover)
-		return true;
-	
-	if (!sWorld.getBoolConfig(CONFIG_AC_ENABLE))
-		return true;
-		
+{	
 	if (plMover->GetSession() && plMover->GetSession()->GetSecurity() >= int32(sWorld.getIntConfig(CONFIG_AC_DISABLE_GM_LEVEL)))
 		return true;
 	

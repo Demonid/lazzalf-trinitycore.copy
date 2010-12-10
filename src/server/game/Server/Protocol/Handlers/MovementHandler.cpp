@@ -384,11 +384,37 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         Being Teleported
         Can't free move
     */
-    if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
+    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE)))
     {
-        AntiCheat m_anticheat;
-        check_passed = m_anticheat.Check(plMover, vehMover, opcode, movementInfo, mover);
+        if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
+        {
+            AntiCheat m_anticheat;
+            check_passed = m_anticheat.Check(plMover, vehMover, opcode, movementInfo, mover);
+        }
+        else if (plMover)
+        {
+            // Go to sleep
+            plMover->ac_local.ac_goactivate = 0;
+            plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
+        }
     }
+
+    // save packet time for next control.
+    /*if (plMover)
+    {
+        uint8 uiMoveType = 0;
+
+        if (plMover->IsFlying())
+            uiMoveType = MOVE_FLIGHT;
+        else if (plMover->IsUnderWater())
+            uiMoveType = MOVE_SWIM;
+        else 
+            uiMoveType = MOVE_RUN;
+
+        plMover->ac_local.SaveLastPacket(movementInfo);
+        plMover->ac_local.SetLastOpcode(opcode);
+        plMover->ac_local.SetLastSpeedRate(plMover->GetSpeedRate(UnitMoveType(uiMoveType)));
+    }*/
 
     if (check_passed)
     {
