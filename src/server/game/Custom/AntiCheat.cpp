@@ -858,6 +858,10 @@ bool AntiCheat::CheckAntiSpeedTeleport(Player* plMover, Vehicle *vehMover, Movem
     if (plMover->IsFalling() && fly_auras)
         return true;
 
+    // the same reason for IsFalling, just in case...
+    if (plMover->HasAuraType(SPELL_AURA_FEATHER_FALL) || plMover->HasAuraType(SPELL_AURA_SAFE_FALL))
+        return true;
+
 	if (real_delta > allowed_delta)
 	{          
         cheat_find = true;
@@ -909,6 +913,10 @@ bool AntiCheat::CheckAntiSpeed(Player* plMover, Vehicle *vehMover, MovementInfo&
 
     // it will make false reports
     if (plMover->IsFalling() && fly_auras)
+        return true;
+
+    // the same reason for IsFalling, just in case...
+    if (plMover->HasAuraType(SPELL_AURA_FEATHER_FALL) || plMover->HasAuraType(SPELL_AURA_SAFE_FALL))
         return true;
 
     // in my opinion this var must be constant in each check to avoid false reports
@@ -976,7 +984,10 @@ bool AntiCheat::CheckAntiMountain(Player* plMover, Vehicle *vehMover, MovementIn
 }
 
 bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket)
-{	
+{
+    if (plMover->HasAuraType(SPELL_AURA_FEATHER_FALL) || plMover->HasAuraType(SPELL_AURA_SAFE_FALL))
+        return true;
+
     if (plMover->IsFalling())
         return true;
 
@@ -985,7 +996,7 @@ bool AntiCheat::CheckAntiFly(Player* plMover, Vehicle *vehMover, MovementInfo& p
         pNewPacket.GetMovementFlags() != pOldPacket.GetMovementFlags())
         return true;
 
-	if (!fly_auras && (pNewPacket.flags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING)))
+	if (!fly_auras && plMover->IsFlying())
 	{
         if (map_count)
             ++(plMover->ac_local.m_CheatList[CHEAT_FLY]);
