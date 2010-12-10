@@ -609,7 +609,9 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT] = 0;
     }
     
-    m_bool_configs[CONFIG_AC_ENABLE_ANTISPEEDTELE]         = sConfig.GetBoolDefault("Anticheat.AntiSpeedTele.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTISPEED]         = sConfig.GetBoolDefault("Anticheat.AntiTele.Enable", true);
+    m_bool_configs[CONFIG_AC_ENABLE_ANTITELE]          = sConfig.GetBoolDefault("Anticheat.AntiSpeed.Enable", true);
+
     m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiSpeedBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT] < 0)
     {

@@ -190,12 +190,12 @@ bool AntiCheat::Check(Player* plMover, Vehicle *vehMover, uint16 opcode, Movemen
 				    check_passed = false;*/
 
             // Speed Cheat
-            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
+            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEED))
 			    if (!CheckAntiSpeed(plMover, vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
             // Tele Cheat
-            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
+            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELE))
 			    if (!CheckAntiTele(plMover, vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
