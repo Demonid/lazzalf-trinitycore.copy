@@ -920,31 +920,30 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
         case WG_CREATURE_TRIGGER:
             break;
         case CREATURE_SIEGE_VEHICLE:
+            if (!creature->isSummon())
+                break;
+
+            if (creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_A || creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_H)
             {
-                if (!creature->isSummon())
-                    break;
+                // For some reason the horde siege turrets have wrong faction (1732)!
+                if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    if (creature->getFaction() != WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()])
+                    {
+                        creature->setFaction(WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()]);
+                        m_turrets[((Player*)creature->GetOwner())->GetTeamId()].insert(creature);
+                    }
+            }
+            // the faction may be changed in uncharm
+            // TODO: now you have to wait until the corpse of vehicle disappear to build a new one
+            if (m_vehicles[TEAM_ALLIANCE].erase(creature))
+                team = TEAM_ALLIANCE;
+            else if (m_vehicles[TEAM_HORDE].erase(creature))
+                team = TEAM_HORDE;
+            else
+                break;
 
-                if (creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_A || creature->GetEntry() == WG_CREATURE_SIEGE_TURRET_H)
-                {
-                    // For some reason the horde siege turrets have wrong faction (1732)!
-                    if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                        if (creature->getFaction() != WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()])
-                        {
-                            creature->setFaction(WintergraspFaction[((Player*)creature->GetOwner())->GetTeamId()]);
-                            m_turrets[((Player*)creature->GetOwner())->GetTeamId()].insert(creature);
-                        }
-                }
-                // the faction may be changed in uncharm
-                // TODO: now you have to wait until the corpse of vehicle disappear to build a new one
-                if (m_vehicles[TEAM_ALLIANCE].erase(creature))
-                    team = TEAM_ALLIANCE;
-                else if (m_vehicles[TEAM_HORDE].erase(creature))
-                    team = TEAM_HORDE;
-                else
-                    break;
-
-                SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
-            } break;
+            SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
+            break;
         case CREATURE_QUESTGIVER:
             m_questgivers.erase(creature->GetDBTableGUIDLow());
             break;
@@ -974,7 +973,7 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
         case CREATURE_TURRET:
         case CREATURE_OTHER:
         default:
-            m_creatures.insert(creature);
+            m_creatures.erase(creature);
             break;
     }
 
@@ -994,7 +993,6 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
     {
         case WG_CREATURE_TRIGGER:
             break;
-
         case CREATURE_SIEGE_VEHICLE:
             if (!creature->isSummon())
                 break;
@@ -1035,7 +1033,6 @@ void OutdoorPvPWG::OnCreatureCreate(Creature *creature)
             
             SendUpdateWorldState(VehNumWorldState[team], m_vehicles[team].size());
             break;
-
         case CREATURE_QUESTGIVER:
             m_questgivers[creature->GetDBTableGUIDLow()] = creature;
             break;
