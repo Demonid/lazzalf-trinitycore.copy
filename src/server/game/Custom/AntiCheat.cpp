@@ -752,7 +752,7 @@ bool AntiCheat::CheckAntiGravity(Player* plMover, Vehicle *vehMover, MovementInf
 	return true; 
 }
 
-void Player::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
+bool AntiCheat::CheckAntiMultiJump(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
 {
     // if we receive 2 jump packets consecutively... it is wrong! The player is cheating.
     if (uiOpcode != MSG_MOVE_JUMP || plMover->ac_local.GetLastOpcode() != MSG_MOVE_JUMP)
