@@ -153,6 +153,9 @@ public:
 
             m_uiPhase = PHASE_START;
 
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+
             m_uiFlameBreathTimer = urand(10000, 20000);
             m_uiTailSweepTimer = urand(15000, 20000);
             m_uiCleaveTimer = urand(2000, 5000);
@@ -359,6 +362,8 @@ public:
                         SetCombatMovement(false);
                         m_uiPhase = PHASE_BREATH;
                         me->GetMotionMaster()->MovePoint(10, Phase2Location);
+                        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                        me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
                         return;
                     }
                 }
@@ -425,6 +430,8 @@ public:
                 {
                     m_uiPhase = PHASE_END;
                     m_uiStopTime = 15000;
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                    me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
                     if (m_pInstance)
                         m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
                     DoScriptText(SAY_PHASE_3_TRANS, me);
