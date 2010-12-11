@@ -12142,6 +12142,9 @@ void Unit::Unmount()
         // Remove vehicle class from player
         RemoveVehicleKit();
     }
+
+    if (GetTypeId() == TYPEID_PLAYER) //AntiCheat Sleep
+        this->ToPlayer()->GetAntiCheat()->SetSleep(2000);
 }
 
 void Unit::SetInCombatWith(Unit* enemy)
