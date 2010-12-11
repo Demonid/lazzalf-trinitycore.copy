@@ -67,20 +67,20 @@ class AntiCheat
 
 		// Variables
 		float fSpeedRate;	
-		float delta_x;
-		float delta_y;
+		//float delta_x;
+		//float delta_y;
 		float delta_z;
 		float real_delta;
 		bool fly_auras;
 		bool no_swim_in_water;
 		bool no_swim_water;
-		float time_delta;
+		float client_time_delta;
 		float tg_z;
 		float allowed_delta;
 		float JumpHeight;
 
-        float fClientRate;
-        float fServerRate;
+        //float fClientRate;
+        //float fServerRate;
         float fDistance2d;
 		
 		void CalcDeltas(MovementInfo& pNewPacket, MovementInfo& pOldPacket);

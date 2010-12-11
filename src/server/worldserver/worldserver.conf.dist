@@ -2605,6 +2605,8 @@ Anticheat.AntiMultiJumpPunisher.Count    = 0
 Anticheat.AntiSpeed.Enable               = 1
 Anticheat.AntiSpeedBlock.Count           = 0
 Anticheat.AntiSpeedPunisher.Count        = 0
+Anticheat.MaxAllowedDistance          	 = 100
+Anticheat.MinDiffPacketTime              = 1500
 
 Anticheat.AntiTele.Enable                = 1
 Anticheat.AntiTeleBlock.Count            = 0
@@ -2695,8 +2697,6 @@ Anticheat.ignoreMapIds = ""
 Anticheat.ignoreMapIdsCount = ""
 Anticheat.ignoreMapIdsBlock = ""
 Anticheat.ignoreMapIdsPunisher = ""
-
-Anticheat.MaxMaxAllowedDistance = 100
 
 #
 ###################################################################################################################

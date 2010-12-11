@@ -417,7 +417,9 @@ void AntiCheat::CalcDeltas(MovementInfo& pNewPacket,  MovementInfo& pOldPacket)
 	sync_time = m_anti_DeltaClientTime - m_anti_DeltaServerTime;
 
     // time between packets
-    uiDiffTime_packets =  getMSTimeDiff(pOldPacket.time, pNewPacket.time);
+    if (pNewPacket.time > pOldPacket.time)
+        uiDiffTime_packets =  getMSTimeDiff(pOldPacket.time, pNewPacket.time);
+    else uiDiffTime_packets = 0;
     
     if (!m_logfile_time)
 	    difftime_log_file = cServerTime - m_logfile_time;
@@ -457,7 +459,7 @@ void AntiCheat::CalcVariablesSmall(MovementInfo& pNewPacket, Unit *mover)
 	// end current speed
 
     if (fSpeedRate < m_anti_Last_HSpeed && m_anti_LastSpeedChangeTime == 0)
-		m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((m_anti_Last_HSpeed / fSpeedRate) * 1500)) + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)); // 100ms above for random fluctuation
+		m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((m_anti_Last_HSpeed / fSpeedRate) * 1500)) + 100); // 100ms above for random fluctuation
 
 	if (pNewPacket.time > m_anti_LastSpeedChangeTime)
 	{
@@ -494,22 +496,22 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 	fSpeedRate = plMover->GetSpeed(uiMoveType);
 	// end current speed
 
-    // Calculate Distance2D
-    fDistance2d = pNewPacket.pos.GetExactDist2dSq(plMover->GetPositionX(), plMover->GetPositionY());
+    // movement distance
+	//delta_x = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionX() - pNewPacket.pos.GetPositionX();
+	//delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - pNewPacket.pos.GetPositionY();
+	delta_z = (plMover->m_transport || plMover->m_temp_transport) ? 0 : plMover->GetPositionZ() - pNewPacket.pos.GetPositionZ();
+	fDistance2d = (plMover->m_transport || plMover->m_temp_transport) ? 0 : pNewPacket.pos.GetExactDist2dSq(plMover->GetPositionX(), plMover->GetPositionY());
+	// end movement distance    
+
+    // normalize time - 1.5 second allowed for heavy loaded server
+	client_time_delta = uiDiffTime_packets < sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME) ? float(uiDiffTime_packets)/1000.0f : sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME)/1000.0f; 
 
     // fClientRate = it is the player's rate calculated using the distance done by the player
-    fClientRate = (fDistance2d * 1000 / uiDiffTime_packets) /  plMover->GetSpeed(uiMoveType);
+    /*fClientRate = (fDistance2d * 1000 / uiDiffTime_packets) /  plMover->GetSpeed(uiMoveType);
 
     // fServerRate = it is the player's rate using the distance per second (core information)
     fServerRate = plMover->GetSpeed(uiMoveType) * uiDiffTime_packets / 1000 + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED);
-
-	// movement distance
-	delta_x = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionX() - pNewPacket.pos.GetPositionX();
-	delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - pNewPacket.pos.GetPositionY();
-	delta_z = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionZ() - pNewPacket.pos.GetPositionZ();
-	real_delta = plMover->m_transport || plMover->m_temp_transport ? 0 : pow(delta_x, 2) + pow(delta_y, 2);
-	// end movement distance
-
+     */
     // Check if he have fly auras
 	fly_auras = CanFly(pNewPacket);
 
@@ -522,19 +524,19 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 
     no_swim_water = no_swim_in_water && no_swim_above_water;
 
-	if (cClientTimeDelta < 0)
-		cClientTimeDelta = 0;
-	time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
+	//if (cClientTimeDelta < 0)
+	//	cClientTimeDelta = 0;
+	//client_time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
 
-	tg_z = (real_delta != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : -99999; // movement distance tangents
+    tg_z = (fDistance2d != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : 0; // movement distance tangents
 
 	if (fSpeedRate < m_anti_Last_HSpeed && m_anti_LastSpeedChangeTime == 0)
-		m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((m_anti_Last_HSpeed / fSpeedRate) * 1500)) + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED));
+		m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((m_anti_Last_HSpeed / fSpeedRate) * 1500)) + 100);
 
-	allowed_delta = plMover->m_transport || plMover->m_temp_transport ? 2 : // movement distance allowed delta
-		pow(std::max(fSpeedRate, m_anti_Last_HSpeed) * time_delta, 2)
-	    + 2                                                                             // minimum allowed delta
-		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                     // mountain fall allowed delta
+	allowed_delta = (plMover->m_transport || plMover->m_temp_transport) ? 2 :   // movement distance allowed delta
+		pow(std::max(fSpeedRate, m_anti_Last_HSpeed) * client_time_delta, 2)
+	    + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)            // minimum allowed delta
+		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f /* fall speed */ : 0);            // mountain fall allowed delta
 
 	if (pNewPacket.time > m_anti_LastSpeedChangeTime)
 	{
@@ -613,7 +615,7 @@ void AntiCheat::LogCheat(eCheat m_cheat, MovementInfo& pMovementInfo)
 			{
 				m_logfile_time = cServerTime;  
 			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
-				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, time_delta);
+				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), fDistance2d, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, client_time_delta);
             }	
             cheat_type = "Speed";
             break;
@@ -622,7 +624,7 @@ void AntiCheat::LogCheat(eCheat m_cheat, MovementInfo& pMovementInfo)
 			{
 				m_logfile_time = cServerTime;  
 			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
-				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), real_delta, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, time_delta);
+				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), fDistance2d, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, client_time_delta);
             }
             cheat_type = "Teleport";
             break;
@@ -866,10 +868,10 @@ bool AntiCheat::CheckAntiSpeedTeleport(Vehicle *vehMover, MovementInfo& pNewPack
     if (plMover->HasAuraType(SPELL_AURA_FEATHER_FALL) || plMover->HasAuraType(SPELL_AURA_SAFE_FALL))
         return true;
 
-	if (real_delta > allowed_delta)
-	{          
+	if (fDistance2d > allowed_delta)
+	{        
         cheat_find = true;
-		if (real_delta < 4900.0f)
+		if (fDistance2d < 4900.0f)
         {
             if (map_count)
                 ++(m_CheatList[CHEAT_SPEED]);
@@ -927,7 +929,8 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint
     if (GetLastSpeedRate() != fSpeedRate)
         return true;
 
-	if (fDistance2d > 0.0f && fClientRate > fServerRate)
+	//if (fDistance2d > 0.0f && fClientRate > fServerRate)
+    if (fDistance2d > 0.0f && fDistance2d > allowed_delta)
 	{          
         cheat_find = true;
         if (map_count)
@@ -949,7 +952,7 @@ bool AntiCheat::CheckAntiTele(Vehicle *vehMover, MovementInfo& pNewPacket, uint3
 {
 	if (uiOpcode == 183 && 
         GetLastOpcode() == 181 &&
-        fClientRate > fServerRate)
+        fDistance2d > allowed_delta)
     {      
         cheat_find = true;
 	    if (map_count)
