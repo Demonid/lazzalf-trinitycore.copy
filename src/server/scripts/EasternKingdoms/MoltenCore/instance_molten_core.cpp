@@ -116,7 +116,7 @@ public:
             return false;
         }
 
-        void OnGameObjectCreate(GameObject* pGo, bool /*add*/)
+        void OnGameObjectCreate(GameObject* pGo)
         {
             switch(pGo->GetEntry())
             {
