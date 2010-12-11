@@ -4154,7 +4154,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 26157:
         case 26273:
         case 26274:
-            spellInfo->DurationIndex = 1800;
+            spellInfo->DurationIndex = 30;
             count++;
             break;
         case 71708: // Empowered Flare
