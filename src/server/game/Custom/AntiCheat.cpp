@@ -245,8 +245,11 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
             // Increase reset cheat list time
             if (m_CheatList_reset_diff < sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND))
                 m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND);
-            if (!check_passed && map_puni) // PunisherCount >= BlockCount
-                AntiCheatPunisher(pMovementInfo); // Try Punish him
+            if (map_puni)
+            {
+                if (!AntiCheatPunisher(pMovementInfo)) // Try Punish him
+                    check_passed = false;                
+            }
         }
     }
     else
@@ -528,7 +531,7 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 	//	cClientTimeDelta = 0;
 	//client_time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
 
-    tg_z = (fDistance2d != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : 0; // movement distance tangents
+    tg_z = (fDistance2d != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : -99999; // movement distance tangents
 
 	if (fSpeedRate < m_anti_Last_HSpeed && m_anti_LastSpeedChangeTime == 0)
 		m_anti_LastSpeedChangeTime = pNewPacket.time + uint32(floor(((m_anti_Last_HSpeed / fSpeedRate) * 1500)) + 100);
@@ -536,7 +539,7 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 	allowed_delta = (plMover->m_transport || plMover->m_temp_transport) ? 2 :   // movement distance allowed delta
 		pow(std::max(fSpeedRate, m_anti_Last_HSpeed) * client_time_delta, 2)
 	    + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)            // minimum allowed delta
-		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f /* fall speed */ : 0);            // mountain fall allowed delta
+		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                             // mountain fall allowed delta
 
 	if (pNewPacket.time > m_anti_LastSpeedChangeTime)
 	{
@@ -997,6 +1000,16 @@ bool AntiCheat::CheckAntiFly(Vehicle *vehMover, MovementInfo& pOldPacket, Moveme
 
     if (plMover->IsFalling())
         return true;
+
+    if (const Map *map = plMover->GetMap())
+    {
+        float ground_z = map->GetHeight(plMover->GetPositionX(), plMover->GetPositionY(), MAX_HEIGHT);
+        float floor_z  = map->GetHeight(plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+        float map_z    = ((floor_z <= (INVALID_HEIGHT+5.0f)) ? ground_z : floor_z);
+        if (map_z + 10.0f > plMover->GetPositionZ() && 
+            map_z > (INVALID_HEIGHT + 10.0f + 5.0f))
+            return true;
+    }
 
     // we like check heartbeat movements
     if (pNewPacket.GetMovementFlags() != plMover->GetUnitMovementFlags() || 
