@@ -230,25 +230,25 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
 
         // calc time deltas
         int32 cClientTimeDelta = 0;
-        if (GetPlayer()->ac_local.m_anti_LastClientTime != 0)
+        if (GetPlayer()->GetAntiCheat()->m_anti_LastClientTime != 0)
         {
-            cClientTimeDelta = movementInfo.time - GetPlayer()->ac_local.m_anti_LastClientTime;
-            GetPlayer()->ac_local.m_anti_DeltaClientTime += cClientTimeDelta;
-            GetPlayer()->ac_local.m_anti_LastClientTime = movementInfo.time;
+            cClientTimeDelta = movementInfo.time - GetPlayer()->GetAntiCheat()->m_anti_LastClientTime;
+            GetPlayer()->GetAntiCheat()->m_anti_DeltaClientTime += cClientTimeDelta;
+            GetPlayer()->GetAntiCheat()->m_anti_LastClientTime = movementInfo.time;
         }
         else
-            GetPlayer()->ac_local.m_anti_LastClientTime = movementInfo.time;
+            GetPlayer()->GetAntiCheat()->m_anti_LastClientTime = movementInfo.time;
 
         const uint64 cServerTime = getMSTime();
         uint32 cServerTimeDelta = 0;
-        if (GetPlayer()->ac_local.m_anti_LastServerTime != 0)
+        if (GetPlayer()->GetAntiCheat()->m_anti_LastServerTime != 0)
         {
-            cServerTimeDelta = cServerTime - GetPlayer()->ac_local.m_anti_LastServerTime;
-            GetPlayer()->ac_local.m_anti_DeltaServerTime += cServerTimeDelta;
-            GetPlayer()->ac_local.m_anti_LastServerTime = cServerTime;
+            cServerTimeDelta = cServerTime - GetPlayer()->GetAntiCheat()->m_anti_LastServerTime;
+            GetPlayer()->GetAntiCheat()->m_anti_DeltaServerTime += cServerTimeDelta;
+            GetPlayer()->GetAntiCheat()->m_anti_LastServerTime = cServerTime;
         }
         else
-            GetPlayer()->ac_local.m_anti_LastServerTime = cServerTime;
+            GetPlayer()->GetAntiCheat()->m_anti_LastServerTime = cServerTime;
         // end movement anticheat
         return;
 	}
@@ -271,25 +271,25 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     GetPlayer()->SetUnitMovementFlags(movementInfo.flags);
     // calc time deltas
     int32 cClientTimeDelta = 0;
-    if (GetPlayer()->ac_local.m_anti_LastClientTime != 0)
+    if (GetPlayer()->GetAntiCheat()->m_anti_LastClientTime != 0)
     {
-        cClientTimeDelta = movementInfo.time - GetPlayer()->ac_local.m_anti_LastClientTime;
-        GetPlayer()->ac_local.m_anti_DeltaClientTime += cClientTimeDelta;
-        GetPlayer()->ac_local.m_anti_LastClientTime = movementInfo.time;
+        cClientTimeDelta = movementInfo.time - GetPlayer()->GetAntiCheat()->m_anti_LastClientTime;
+        GetPlayer()->GetAntiCheat()->m_anti_DeltaClientTime += cClientTimeDelta;
+        GetPlayer()->GetAntiCheat()->m_anti_LastClientTime = movementInfo.time;
     }
     else
-        GetPlayer()->ac_local.m_anti_LastClientTime = movementInfo.time;
+        GetPlayer()->GetAntiCheat()->m_anti_LastClientTime = movementInfo.time;
  
     const uint64 cServerTime = getMSTime();
     uint32 cServerTimeDelta = 0;
-    if (GetPlayer()->ac_local.m_anti_LastServerTime != 0)
+    if (GetPlayer()->GetAntiCheat()->m_anti_LastServerTime != 0)
     {
-        cServerTimeDelta = cServerTime - GetPlayer()->ac_local.m_anti_LastServerTime;
-        GetPlayer()->ac_local.m_anti_DeltaServerTime += cServerTimeDelta;
-        GetPlayer()->ac_local.m_anti_LastServerTime = cServerTime;
+        cServerTimeDelta = cServerTime - GetPlayer()->GetAntiCheat()->m_anti_LastServerTime;
+        GetPlayer()->GetAntiCheat()->m_anti_DeltaServerTime += cServerTimeDelta;
+        GetPlayer()->GetAntiCheat()->m_anti_LastServerTime = cServerTime;
     }
     else
-        GetPlayer()->ac_local.m_anti_LastServerTime = cServerTime;
+        GetPlayer()->GetAntiCheat()->m_anti_LastServerTime = cServerTime;
         // end movement anticheat
 
     //TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);

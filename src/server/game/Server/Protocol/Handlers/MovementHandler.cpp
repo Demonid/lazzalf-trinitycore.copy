@@ -361,8 +361,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (opcode == MSG_MOVE_FALL_LAND && plMover && !plMover->isInFlight())
     {
         // movement anticheat
-        plMover->ac_local.m_anti_JumpCount = 0;
-        plMover->ac_local.m_anti_JumpBaseZ = 0;
+        plMover->GetAntiCheat()->m_anti_JumpCount = 0;
+        plMover->GetAntiCheat()->m_anti_JumpBaseZ = 0;
         if (!vehMover)
             plMover->HandleFall(movementInfo);
     }
@@ -388,14 +388,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     {
         if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
         {
-            AntiCheat m_anticheat;
-            check_passed = m_anticheat.Check(plMover, vehMover, opcode, movementInfo, mover);
+            check_passed = plMover->GetAntiCheat()->DoAntiCheatCheck(vehMover, opcode, movementInfo, mover);
         }
         else if (plMover)
         {
             // Go to sleep
-            plMover->ac_local.ac_goactivate = 0;
-            plMover->ac_local.SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
+            plMover->GetAntiCheat()->ac_goactivate = 0;
+            plMover->GetAntiCheat()->SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
         }
     }
 
@@ -411,9 +410,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         else 
             uiMoveType = MOVE_RUN;
 
-        plMover->ac_local.SaveLastPacket(movementInfo);
-        plMover->ac_local.SetLastOpcode(opcode);
-        plMover->ac_local.SetLastSpeedRate(plMover->GetSpeedRate(UnitMoveType(uiMoveType)));
+        plMover->GetAntiCheat()->SaveLastPacket(movementInfo);
+        plMover->GetAntiCheat()->SetLastOpcode(opcode);
+        plMover->GetAntiCheat()->SetLastSpeedRate(plMover->GetSpeedRate(UnitMoveType(uiMoveType)));
     }*/
 
     if (check_passed)
@@ -468,10 +467,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             }
         }
         // movement anticheat
-        if (plMover->ac_local.m_anti_AlarmCount > 0)
+        if (plMover->GetAntiCheat()->m_anti_AlarmCount > 0)
         {
-            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->ac_local.m_anti_AlarmCount);
-            plMover->ac_local.m_anti_AlarmCount = 0;
+            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->GetAntiCheat()->m_anti_AlarmCount);
+            plMover->GetAntiCheat()->m_anti_AlarmCount = 0;
         }
         // end movement anticheat
     }
@@ -496,7 +495,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             plMover->m_transport = NULL;
         }
         plMover->m_temp_transport = NULL;
-        ++(plMover->ac_local.m_anti_AlarmCount);
+        ++(plMover->GetAntiCheat()->m_anti_AlarmCount);
         WorldPacket data;
         plMover->SetUnitMovementFlags(0);
         plMover->SendTeleportAckPacket();
@@ -785,11 +784,11 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
     #endif
 
     _player->m_movementInfo = movementInfo;
-    _player->ac_local.m_anti_Last_HSpeed = movementInfo.j_xyspeed;
-    _player->ac_local.m_anti_Last_VSpeed = movementInfo.j_zspeed < 3.2f ? movementInfo.j_zspeed - 1.0f : 3.2f;
+    _player->GetAntiCheat()->m_anti_Last_HSpeed = movementInfo.j_xyspeed;
+    _player->GetAntiCheat()->m_anti_Last_VSpeed = movementInfo.j_zspeed < 3.2f ? movementInfo.j_zspeed - 1.0f : 3.2f;
 
-    const uint32 dt = (_player->ac_local.m_anti_Last_VSpeed < 0) ? int(ceil(_player->ac_local.m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->ac_local.m_anti_Last_VSpeed/25)*1000);
-    _player->ac_local.m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
+    const uint32 dt = (_player->GetAntiCheat()->m_anti_Last_VSpeed < 0) ? int(ceil(_player->GetAntiCheat()->m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->GetAntiCheat()->m_anti_Last_VSpeed/25)*1000);
+    _player->GetAntiCheat()->m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)

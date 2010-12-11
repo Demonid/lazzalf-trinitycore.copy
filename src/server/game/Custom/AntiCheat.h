@@ -38,9 +38,11 @@ enum ePuniType
     MAX_PUNI
 };
 
-class AntiCheat_Local
+class AntiCheat
 {
-	private:
+    private:
+        Player* plMover;
+
 		bool ac_block;        
 		int32 ac_delta;
 
@@ -48,9 +50,63 @@ class AntiCheat_Local
         uint32 uiLastOpcode;
         float fLastSpeedRate;
 
-	public:
-		AntiCheat_Local();
+        bool cheat_find;
 
+        bool map_count;
+        bool map_block;
+        bool map_puni;
+
+		// Delthas
+		int32 cClientTimeDelta;
+		uint64 cServerTime;		
+		uint32 cServerTimeDelta;
+		int32 sync_time;
+        uint32 difftime_log_file;
+        uint32 difftime_log_db;
+        uint32 uiDiffTime_packets;
+
+		// Variables
+		float fSpeedRate;	
+		float delta_x;
+		float delta_y;
+		float delta_z;
+		float real_delta;
+		bool fly_auras;
+		bool no_swim_in_water;
+		bool no_swim_water;
+		float time_delta;
+		float tg_z;
+		float allowed_delta;
+		float JumpHeight;
+
+        float fClientRate;
+        float fServerRate;
+        float fDistance2d;
+		
+		void CalcDeltas(MovementInfo& pNewPacket, MovementInfo& pOldPacket);
+		void CalcVariables(MovementInfo& pNewPacket, Unit* mover);
+        void CalcVariablesSmall(MovementInfo& pNewPacket, Unit* mover);
+        bool CanFly(MovementInfo& pMovementInfo);
+		
+		bool CheckMistiming(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
+		bool CheckAntiGravity(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
+		bool CheckAntiMultiJump(Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+		bool CheckAntiSpeedTeleport(Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+        bool CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+        bool CheckAntiTele(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+		bool CheckAntiMountain(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
+		bool CheckAntiFly(Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
+		bool CheckAntiWaterwalk(Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
+		bool CheckAntiTeleToPlane(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
+        void LogCheat(eCheat /*m_cheat*/, MovementInfo& /*pMovementInfo*/);
+        bool AntiCheatPunisher(MovementInfo& /*pMovementInfo*/);
+        inline bool ControllPunisher();
+	
+    public:
+        AntiCheat(Player* new_plMover);
+		bool DoAntiCheatCheck(Vehicle* /*vehMover*/, uint16 /*opcode*/, MovementInfo& /*pMovementInfo*/, Unit* /*mover*/);
+
+    public:
         uint32 number_cheat_find;
         int32 ac_goactivate;
 
@@ -88,66 +144,6 @@ class AntiCheat_Local
         uint32 GetLastOpcode() { return uiLastOpcode; }
         void SetLastSpeedRate(float fSpeedRateRate) { fLastSpeedRate = fSpeedRateRate; }
         float GetLastSpeedRate() { return fLastSpeedRate; }
-};
-
-class AntiCheat
-{        
-	private: 
-        bool cheat_find;
-
-        bool map_count;
-        bool map_block;
-        bool map_puni;
-
-		// Delthas
-		int32 cClientTimeDelta;
-		uint64 cServerTime;		
-		uint32 cServerTimeDelta;
-		int32 sync_time;
-        uint32 difftime_log_file;
-        uint32 difftime_log_db;
-        uint32 uiDiffTime_packets;
-
-		// Variables
-		float fSpeedRate;	
-		float delta_x;
-		float delta_y;
-		float delta_z;
-		float real_delta;
-		bool fly_auras;
-		bool no_swim_in_water;
-		bool no_swim_water;
-		float time_delta;
-		float tg_z;
-		float allowed_delta;
-		float JumpHeight;
-
-        float fClientRate;
-        float fServerRate;
-        float fDistance2d;
-		
-		void CalcDeltas(Player* plMover, MovementInfo& pNewPacket, MovementInfo& pOldPacket);
-		void CalcVariables(Player* plMover, MovementInfo& pNewPacket, Unit* mover);
-        void CalcVariablesSmall(Player* plMover, MovementInfo& pNewPacket, Unit* mover);
-        bool CanFly(Player* plMover, MovementInfo& pMovementInfo);
-		
-		bool CheckMistiming(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
-		bool CheckAntiGravity(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
-		bool CheckAntiMultiJump(Player* plMover, Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-		bool CheckAntiSpeedTeleport(Player* plMover, Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-        bool CheckAntiSpeed(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-        bool CheckAntiTele(Player* plMover, Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-		bool CheckAntiMountain(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
-		bool CheckAntiFly(Player* plMover, Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
-		bool CheckAntiWaterwalk(Player* plMover, Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
-		bool CheckAntiTeleToPlane(Player* /*plMover*/, Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
-        void LogCheat(eCheat /*m_cheat*/, Player* /*plMover*/, MovementInfo& /*pMovementInfo*/);
-        bool AntiCheatPunisher(Player* /*plMover*/, MovementInfo& /*pMovementInfo*/);
-        inline bool ControllPunisher(Player* /*plMover*/);
-	
-    public:
-        AntiCheat();
-		bool Check(Player* /*plMover*/, Vehicle* /*vehMover*/, uint16 /*opcode*/, MovementInfo& /*pMovementInfo*/, Unit* /*mover*/);		
 };
 
 #endif
