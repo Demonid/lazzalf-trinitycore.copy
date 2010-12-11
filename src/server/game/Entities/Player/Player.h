@@ -2636,9 +2636,13 @@ class Player : public Unit, public GridObject<Player>
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
-        // movement anticheat
-        AntiCheat_Local ac_local; // AntiCheat
-        // end movement anticheat
+        // AntiCheat
+        private:
+            AntiCheat* m_anticheat; // AntiCheat
+        
+        public:
+            AntiCheat* GetAntiCheat() { return m_anticheat; }
+        // End AntiCheat
         
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;

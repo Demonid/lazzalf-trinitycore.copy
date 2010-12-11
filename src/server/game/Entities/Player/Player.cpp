@@ -393,7 +393,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 #pragma warning(default:4355)
 #endif
 
-        // Jail
+    // Jail
 	m_jail_guid     = 0;
 	m_jail_char     = "";
 	m_jail_amnestie = false;
@@ -406,8 +406,12 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 	m_jail_gmacc    = 0;
 	m_jail_gmchar   = "";
 	m_jail_lasttime = "";
-        m_jail_duration = 0;
+    m_jail_duration = 0;
 	// Jail end
+
+    // AntiCheat
+    m_anticheat = new AntiCheat(this); // AntiCheat
+    // End AntiCheat
 
     m_speakTime = 0;
     m_speakCount = 0;
@@ -665,6 +669,7 @@ Player::~Player ()
 
     delete m_declinedname;
     delete m_runes;
+    delete m_anticheat;
 
     sWorld.DecreasePlayerCount();
 }
@@ -1974,7 +1979,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if (GetMapId() == mapid && !m_transport)
     {
-        ac_local.m_anti_JumpBaseZ = 0;
+        GetAntiCheat()->m_anti_JumpBaseZ = 0;
         //lets reset far teleport flag if it wasn't reset during chained teleports
         SetSemaphoreTeleportFar(false);
         //setup delayed teleport flag
@@ -2151,7 +2156,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             m_teleport_dest = WorldLocation(mapid, final_x, final_y, final_z, final_o);
             SetFallInformation(0, final_z);
-            ac_local.m_anti_JumpBaseZ = 0;
+            GetAntiCheat()->m_anti_JumpBaseZ = 0;
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
