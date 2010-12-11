@@ -164,28 +164,29 @@ class instance_ulduar : public InstanceMapScript
         GameObject* pLeviathanDoor, /* *KologarnChest,*/ *HodirChest, *HodirRareChest, *ThorimChest, *ThorimRareChest, *pRunicDoor, *pStoneDoor, *pThorimLever,
             *MimironTram, *MimironElevator;
 
-        void OnGameObjectCreate(GameObject* pGo, bool add)
+        void OnGameObjectCreate(GameObject* pGo)
         {
-            AddDoor(pGo, add);
+            AddDoor(pGo, true);
+
             switch(pGo->GetEntry())
             {
-                case GO_Leviathan_DOOR: pLeviathanDoor = add ? pGo : NULL; break;
+                case GO_Leviathan_DOOR: pLeviathanDoor = pGo; break;
                 //case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
                 //case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
                 case GO_Kologarn_BRIDGE: uiKologarnBridge = pGo->GetGUID(); HandleGameObject(NULL, true, pGo); break;
-                case GO_Hodir_CHEST_HERO: HodirChest = add ? pGo : NULL; break;
-                case GO_Hodir_CHEST: HodirChest = add ? pGo : NULL; break;                
-                case GO_Hodir_Rare_CHEST_HERO: HodirRareChest = add ? pGo : NULL; break;
-                case GO_Hodir_Rare_CHEST: HodirRareChest = add ? pGo : NULL; break;
-                case GO_Thorim_CHEST_HERO: ThorimChest = add ? pGo : NULL; break;
-                case GO_Thorim_CHEST: ThorimChest = add ? pGo : NULL; break;
-                case GO_Thorim_Rare_CHEST_HERO: ThorimRareChest = add ? pGo : NULL; break;                    
-                case GO_Thorim_Rare_CHEST: ThorimRareChest = add ? pGo : NULL; break;
-                case GO_Runic_DOOR: pRunicDoor = add ? pGo : NULL; break;
-                case GO_Stone_DOOR: pStoneDoor = add ? pGo : NULL; break;
-                case GO_Thorim_LEVER: pThorimLever = add ? pGo : NULL; break;
-                case GO_Mimiron_TRAM: MimironTram = add ? pGo : NULL; break;
-                case GO_Mimiron_ELEVATOR: MimironElevator = add ? pGo : NULL; break;
+                case GO_Hodir_CHEST_HERO: HodirChest = pGo; break;
+                case GO_Hodir_CHEST: HodirChest = pGo; break;                
+                case GO_Hodir_Rare_CHEST_HERO: HodirRareChest = pGo; break;
+                case GO_Hodir_Rare_CHEST: HodirRareChest = pGo; break;
+                case GO_Thorim_CHEST_HERO: ThorimChest = pGo; break;
+                case GO_Thorim_CHEST: ThorimChest = pGo; break;
+                case GO_Thorim_Rare_CHEST_HERO: ThorimRareChest = pGo; break;                    
+                case GO_Thorim_Rare_CHEST: ThorimRareChest = pGo; break;
+                case GO_Runic_DOOR: pRunicDoor = pGo; break;
+                case GO_Stone_DOOR: pStoneDoor = pGo; break;
+                case GO_Thorim_LEVER: pThorimLever = pGo; break;
+                case GO_Mimiron_TRAM: MimironTram = pGo; break;
+                case GO_Mimiron_ELEVATOR: MimironElevator = pGo; break;
                 case GO_Keepers_DOOR: KeepersGateGUID = pGo->GetGUID();
                 {
                     InstanceScript *data = pGo->GetInstanceScript();
@@ -196,6 +197,31 @@ class instance_ulduar : public InstanceMapScript
                                 pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_LOCKED);
                     break;
                 }
+            }
+        }
+
+        void OnGameObjectRemove(GameObject* pGo)
+        {
+            AddDoor(pGo, false);
+
+            switch(pGo->GetEntry())
+            {
+                case GO_Leviathan_DOOR: pLeviathanDoor = NULL; break;
+                //case GO_Kologarn_CHEST_HERO: KologarnChest = add ? pGo : NULL; break;
+                //case GO_Kologarn_CHEST: KologarnChest = add ? pGo : NULL; break;
+                case GO_Hodir_CHEST_HERO: HodirChest = NULL; break;
+                case GO_Hodir_CHEST: HodirChest = NULL; break;                
+                case GO_Hodir_Rare_CHEST_HERO: HodirRareChest = NULL; break;
+                case GO_Hodir_Rare_CHEST: HodirRareChest = NULL; break;
+                case GO_Thorim_CHEST_HERO: ThorimChest = NULL; break;
+                case GO_Thorim_CHEST: ThorimChest = NULL; break;
+                case GO_Thorim_Rare_CHEST_HERO: ThorimRareChest = NULL; break;                    
+                case GO_Thorim_Rare_CHEST: ThorimRareChest = NULL; break;
+                case GO_Runic_DOOR: pRunicDoor = NULL; break;
+                case GO_Stone_DOOR: pStoneDoor = NULL; break;
+                case GO_Thorim_LEVER: pThorimLever = NULL; break;
+                case GO_Mimiron_TRAM: MimironTram = NULL; break;
+                case GO_Mimiron_ELEVATOR: MimironElevator = NULL; break;
             }
         }
 
