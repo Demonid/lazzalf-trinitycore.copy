@@ -102,9 +102,26 @@ bool AntiCheat::GetAndUpdateDelta(int32 diff)
 	return ac_delta <= 0;
 }
 
+void AntiCheat::GetDelta()
+{
+    return ac_delta;
+}
+
 void AntiCheat::SetDelta(int32 delta)
 {
     ac_delta = delta;
+}
+
+void AntiCheat::SetSleep(int32 delta)
+{
+    // AntiCheat is in Alarm
+    if (ac_delta < 0)
+        return;
+
+    if (ac_delta < delta)
+        ac_delta = delta;
+
+    ac_goactivate = 0;
 }
 
 void AntiCheat::ResetCheatList(uint32 diff)

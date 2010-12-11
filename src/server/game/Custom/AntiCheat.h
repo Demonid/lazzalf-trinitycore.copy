@@ -137,6 +137,8 @@ class AntiCheat
 		bool GetBlock();
 		bool GetAndUpdateDelta(int32 /*diff*/);
 		void SetDelta(int32 /*delta*/);
+        int32 GetDelta();
+        void  SetSleep(int32 delta);
         void ResetCheatList(uint32 /*diff*/);
         void SaveLastPacket(MovementInfo& pMovementInfo) { lastpMovementInfo = pMovementInfo; }
         MovementInfo& GetLastPacket() { return lastpMovementInfo; }
