@@ -102,7 +102,7 @@ bool AntiCheat::GetAndUpdateDelta(int32 diff)
 	return ac_delta <= 0;
 }
 
-void AntiCheat::GetDelta()
+int AntiCheat::GetDelta()
 {
     return ac_delta;
 }
