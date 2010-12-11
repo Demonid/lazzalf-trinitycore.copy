@@ -81,15 +81,27 @@ public:
                 pInstance->SetData(DATA_CYANIGOSA_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+    void DeleteFromThreatList(uint64 TargetGUID)
+    {
+        for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
         {
-            DoScriptText(SAY_AGGRO, me);
-
-            if (pInstance)
-                pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
+            if ((*itr)->getUnitGuid() == TargetGUID)
+            {
+                (*itr)->removeReference();
+                break;
+            }
         }
+    }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+    void EnterCombat(Unit* who)
+    {
+        DoScriptText(SAY_AGGRO, me);
+
+        if (pInstance)
+            pInstance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
+    }
+
+    void MoveInLineOfSight(Unit* who) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -106,7 +118,18 @@ public:
             if (uiArcaneVacuumTimer <= diff)
             {
                 DoCast(SPELL_ARCANE_VACUUM);
-                uiArcaneVacuumTimer = 10000;
+                Map* pMap = me->GetMap();
+            if (pMap && pMap->IsDungeon())
+            {
+                Map::PlayerList const &PlayerList = pMap->GetPlayers();
+
+                if (!PlayerList.isEmpty())
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        if (i->getSource()->isAlive())
+                            DoTeleportPlayer(i->getSource(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), i->getSource()->GetOrientation());
+            }
+            CAST_AI(boss_cyanigosaAI, me->AI())->DeleteFromThreatList(me->GetGUID());
+            uiArcaneVacuumTimer = 30000;
             } else uiArcaneVacuumTimer -= diff;
 
             if (uiBlizzardTimer <= diff)
@@ -141,7 +164,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* killer)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -149,7 +172,7 @@ public:
                 pInstance->SetData(DATA_CYANIGOSA_EVENT, DONE);
         }
 
-        void KilledUnit(Unit * victim)
+        void KilledUnit(Unit *victim)
         {
             if (victim == me)
                 return;

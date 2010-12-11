@@ -753,7 +753,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void TakenDamage(uint32 damage, Unit* who = NULL);
         void Rebuild();
 
-        void EventInform(uint32 eventId);
+        void EventInform(uint32 eventId, Player* = NULL);
 
         uint64 GetRotation() const { return m_rotation; }
         virtual uint32 GetScriptId() const { return GetGOInfo()->ScriptId; }

@@ -112,6 +112,8 @@ struct boss_twin_baseAI : public ScriptedAI
     boss_twin_baseAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
     {
         m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     InstanceScript* m_pInstance;

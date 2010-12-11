@@ -38,7 +38,8 @@ enum Events
 enum Spells
 {
     // Spells Koralon
-    SPELL_BURNING_BREATH                        = 66665,
+    //SPELL_BURNING_BREATH                        = 66665,
+    SPELL_BURNING_BREATH                        = 63677, //Hack    
     SPELL_BURNING_BREATH_H                      = 67328,
     SPELL_BURNING_FURY                          = 66721,
     SPELL_FLAME_CINDER_A                        = 66684,
@@ -60,13 +61,8 @@ enum Spells
 
 class boss_koralon : public CreatureScript
 {
-public:
-    boss_koralon() : CreatureScript("boss_koralon") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_koralonAI (pCreature);
-    }
+    public:
+        boss_koralon(): CreatureScript("boss_koralon") {}
 
     struct boss_koralonAI : public ScriptedAI
     {
@@ -77,33 +73,69 @@ public:
 
         InstanceScript *pInstance;
         EventMap events;
+        uint32 checktimer;
+        uint8 WatchersCount;
 
         void Reset()
         {
             events.Reset();
 
+            CheckForVoA();
+
+            checktimer = 10000;
+            WatchersCount = 0;
+
             if (pInstance)
                 pInstance->SetData(DATA_KORALON_EVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*Victim*/) {}
+        void CheckForVoA()
+        {
+            if (!sOutdoorPvPMgr.CanBeAttacked(me))
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+            else
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+        }
+
+        void KilledUnit(Unit* Victim) {}
 
         void JustDied(Unit* /*Killer*/)
         {
+            if (Creature* Emalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
+                if (Emalon->isAlive()) 
+                    WatchersCount++;
+                
+            if (Creature* Archavon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ARCHAVON) : 0))
+                if (Archavon->isAlive())
+                    WatchersCount++;
+
             if (pInstance)
+            {
+                if (WatchersCount == 2)
+                    pInstance->SetData(DATA_EWF_START, ACHI_START);                
+
+                pInstance->SetData(DATA_EWF_COUNT, ACHI_INCREASE);
                 pInstance->SetData(DATA_KORALON_EVENT, DONE);
+                pInstance->SaveToDB();
+            }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
 
             DoCast(me, SPELL_BURNING_FURY);
 
-            events.ScheduleEvent(EVENT_BURNING_FURY, 20000);    // TODO check timer
+            events.ScheduleEvent(EVENT_BURNING_FURY, 20000);    // timer ok
             events.ScheduleEvent(EVENT_BURNING_BREATH, 15000);  // 1st after 15sec, then every 45sec
-            events.ScheduleEvent(EVENT_METEOR_FISTS_A, 75000);  // 1st after 75sec, then every 45sec
-            events.ScheduleEvent(EVENT_FLAME_CINDER_A, 30000);  // TODO check timer
+            events.ScheduleEvent(EVENT_METEOR_FISTS_A, 30000);  // 1st after 30sec, then every 45sec
+            events.ScheduleEvent(EVENT_FLAME_CINDER_A, 5000);  // timer ok - TODO: check for RANDOM target
 
             if (pInstance)
                 pInstance->SetData(DATA_KORALON_EVENT, IN_PROGRESS);
@@ -112,7 +144,15 @@ public:
         void UpdateAI(const uint32 diff)
         {
             if (!UpdateVictim())
+            {
+                if (checktimer <= diff)
+                {
+                    CheckForVoA();
+                    checktimer = 10000;
+                } else checktimer -= diff;
+
                 return;
+            }
 
             events.Update(diff);
 
@@ -140,8 +180,9 @@ public:
                         events.ScheduleEvent(EVENT_METEOR_FISTS_A, 45000);
                         return;
                     case EVENT_FLAME_CINDER_A:
-                        DoCast(me, RAID_MODE(SPELL_FLAME_CINDER_A,SPELL_FLAME_CINDER_A_H));
-                        events.ScheduleEvent(EVENT_FLAME_CINDER_A, 30000);
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(pTarget, RAID_MODE(SPELL_FLAME_CINDER_A,SPELL_FLAME_CINDER_A_H));
+                        events.ScheduleEvent(EVENT_FLAME_CINDER_A, 5000);
                         return;
                 }
             }
@@ -149,20 +190,20 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_koralonAI (pCreature);
+    };
 };
 
 /*######
 ##  Mob Flame Warder
 ######*/
+
 class mob_flame_warder : public CreatureScript
 {
-public:
-    mob_flame_warder() : CreatureScript("mob_flame_warder") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new mob_flame_warderAI (pCreature);
-    }
+    public:
+        mob_flame_warder(): CreatureScript("mob_flame_warder") {}
 
     struct mob_flame_warderAI : public ScriptedAI
     {
@@ -175,7 +216,7 @@ public:
             events.Reset();
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             DoZoneInCombat();
 
@@ -212,9 +253,11 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_flame_warderAI (pCreature);
+    };
 };
-
-
 
 void AddSC_boss_koralon()
 {

@@ -135,23 +135,20 @@ const float PosGroundDeadSide[4] = {2693.5f, -3334.6f, 267.68f, 4.67f};
 const float PosPlatform[4] = {2640.5f, -3360.6f, 285.26f, 0.0f};
 
 // Predicate function to check that the r   efzr unit is NOT on the same side as the source.
-struct NotOnSameSide : public std::unary_function<Unit *, bool> {
+struct NotOnSameSide : public std::unary_function<Unit *, bool> 
+{
     bool m_inLiveSide;
     NotOnSameSide(Unit *pSource) : m_inLiveSide(IN_LIVE_SIDE(pSource)) {}
-    bool operator() (const Unit *pTarget) {
-      return (m_inLiveSide != IN_LIVE_SIDE(pTarget));
+    bool operator() (const Unit *pTarget) 
+    {
+        return (m_inLiveSide != IN_LIVE_SIDE(pTarget));
     }
 };
 
 class boss_gothik : public CreatureScript
 {
-public:
-    boss_gothik() : CreatureScript("boss_gothik") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_gothikAI (pCreature);
-    }
+    public:
+    boss_gothik(): CreatureScript("boss_gothik") {}
 
     struct boss_gothikAI : public BossAI
     {
@@ -172,7 +169,7 @@ public:
             LiveTriggerGUID.clear();
             DeadTriggerGUID.clear();
 
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_PASSIVE);
             if (instance)
                 instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
@@ -182,7 +179,7 @@ public:
             thirtyPercentReached = false;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit *who)
         {
             for (uint32 i = 0; i < POS_LIVE; ++i)
                 if (Creature *trigger = DoSummon(WORLD_TRIGGER, PosSummonLive[i]))
@@ -199,7 +196,7 @@ public:
             }
 
             _EnterCombat();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
             waveCount = 0;
             events.ScheduleEvent(EVENT_SUMMON, 30000);
             DoTeleportTo(PosPlatform);
@@ -230,13 +227,19 @@ public:
             summons.Despawn(summon);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             if (!(rand()%5))
                 DoScriptText(SAY_KILL, me);
         }
 
-        void JustDied(Unit* /*Killer*/)
+        void JustDied(Unit* Killer)
         {
             LiveTriggerGUID.clear();
             DeadTriggerGUID.clear();
@@ -248,60 +251,27 @@ public:
 
         void DoGothikSummon(uint32 entry)
         {
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            switch(entry)
             {
-                switch(entry)
+                case MOB_LIVE_TRAINEE:
                 {
-                    case MOB_LIVE_TRAINEE:
-                    {
-                        if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[0]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                        if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[1]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                        if (Creature *LiveTrigger2 = Unit::GetCreature(*me, LiveTriggerGUID[2]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger2, 1);
-                        break;
-                    }
-                    case MOB_LIVE_KNIGHT:
-                    {
-                        if (Creature *LiveTrigger3 = Unit::GetCreature(*me, LiveTriggerGUID[3]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger3, 1);
-                        if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[5]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                        break;
-                    }
-                    case MOB_LIVE_RIDER:
-                    {
-                        if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                        break;
-                    }
+                    if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
+                    if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
+                    break;
                 }
-            }
-            else
-            {
-                switch(entry)
+                case MOB_LIVE_KNIGHT:
                 {
-                    case MOB_LIVE_TRAINEE:
-                    {
-                        if (Creature *LiveTrigger0 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger0, 1);
-                        if (Creature *LiveTrigger1 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_TRAINEE, LiveTrigger1, 1);
-                        break;
-                    }
-                    case MOB_LIVE_KNIGHT:
-                    {
-                        if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
-                        break;
-                    }
-                    case MOB_LIVE_RIDER:
-                    {
-                        if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
-                            DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
-                        break;
-                    }
+                    if (Creature *LiveTrigger5 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_KNIGHT, LiveTrigger5, 1);
+                    break;
+                }
+                case MOB_LIVE_RIDER:
+                {
+                    if (Creature *LiveTrigger4 = Unit::GetCreature(*me, LiveTriggerGUID[4]))
+                        DoSummon(MOB_LIVE_RIDER, LiveTrigger4, 1);
+                    break;
                 }
             }
         }
@@ -345,7 +315,7 @@ public:
             return false;
         }
 
-        void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+        void SpellHit(Unit *caster, const SpellEntry *spell)
         {
             uint32 spellId = 0;
             switch(spell->Id)
@@ -443,7 +413,7 @@ public:
                             DoScriptText(SAY_TELEPORT, me);
                             DoTeleportTo(PosGroundLiveSide);
                             me->SetReactState(REACT_AGGRESSIVE);
-                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             summons.DoAction(0, 0);
                             summons.DoZoneInCombat();
                             events.ScheduleEvent(EVENT_BOLT, 1000);
@@ -489,17 +459,16 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_gothikAI (pCreature);
+    };
 };
 
 class mob_gothik_minion : public CreatureScript
 {
-public:
-    mob_gothik_minion() : CreatureScript("mob_gothik_minion") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new mob_gothik_minionAI (pCreature);
-    }
+    public:
+        mob_gothik_minion(): CreatureScript("mob_gothik_minion") {}
 
     struct mob_gothik_minionAI : public CombatAI
     {
@@ -527,7 +496,7 @@ public:
                 damage = 0;
         }
 
-        void JustDied(Unit * /*killer*/)
+        void JustDied(Unit *killer)
         {
             if (me->isSummon())
             {
@@ -580,9 +549,11 @@ public:
         }
     };
 
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_gothik_minionAI (pCreature);
+    };
 };
-
-
 
 void AddSC_boss_gothik()
 {

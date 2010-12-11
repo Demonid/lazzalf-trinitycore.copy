@@ -101,10 +101,6 @@ public:
             {
                 case GO_BJARNGRIM_DOOR:
                     m_uiBjarngrimDoorGUID = go->GetGUID();
-                    if (m_auiEncounter[0] == DONE)
-                        go->SetGoState(GO_STATE_ACTIVE);
-                    else
-                        go->SetGoState(GO_STATE_READY);
                     break;
                 case GO_VOLKHAN_DOOR:
                     m_uiVolkhanDoorGUID = go->GetGUID();
@@ -138,8 +134,8 @@ public:
             switch(uiType)
             {
                 case TYPE_BJARNGRIM:
-                    if (uiData == DONE)
-                        DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
+                    //if (uiData == DONE)
+                    //    DoUseDoorOrButton(m_uiBjarngrimDoorGUID);
                     m_auiEncounter[0] = uiData;
                     break;
                 case TYPE_VOLKHAN:

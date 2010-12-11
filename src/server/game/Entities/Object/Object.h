@@ -570,6 +570,7 @@ class FlaggedValuesArray32
 
 class WorldObject : public Object, public WorldLocation
 {
+    friend class AntiCheat;
     protected:
         explicit WorldObject();
     public:

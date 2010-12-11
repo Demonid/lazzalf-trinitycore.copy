@@ -47,6 +47,8 @@ enum Yells
     SAY_WHISPER                                 = -1608044
 };
 
+#define ACHIEVEMENT_VOID_DANCE 2153
+
 class boss_zuramat : public CreatureScript
 {
 public:
@@ -70,6 +72,8 @@ public:
         uint32 SpellSummonVoidTimer;
         uint32 SpellShroudOfDarknessTimer;
 
+        bool KilledVoidSentry;
+
         void Reset()
         {
             if (pInstance)
@@ -83,6 +87,8 @@ public:
             SpellShroudOfDarknessTimer = 22000;
             SpellVoidShiftTimer = 15000;
             SpellSummonVoidTimer = 12000;
+
+            KilledVoidSentry = false;
         }
 
         void AttackStart(Unit* pWho)
@@ -153,6 +159,9 @@ public:
 
             if (pInstance)
             {
+                if(IsHeroic() && !KilledVoidSentry)
+                pInstance->DoCompleteAchievement(ACHIEVEMENT_VOID_DANCE);					
+        
                 if (pInstance->GetData(DATA_WAVE_COUNT) == 6)
                 {
                     pInstance->SetData(DATA_1ST_BOSS_EVENT, DONE);
@@ -184,8 +193,33 @@ public:
 
 };
 
+class mob_void_sentry : public CreatureScript
+{
+public:
+    mob_void_sentry() : CreatureScript("mob_void_sentry") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_void_sentryAI (pCreature);
+    }
+
+    struct mob_void_sentryAI : public ScriptedAI
+    {
+        mob_void_sentryAI(Creature *c) : ScriptedAI(c) {}
+
+        void JustDied(Unit* killer)
+        {
+            if (IsHeroic())
+                if (Creature* pZuramat = me->FindNearestCreature(CREATURE_ZURAMAT,60,true))
+                    CAST_AI(boss_zuramat::boss_zuramatAI,pZuramat->AI())->KilledVoidSentry = true;
+        }
+    };
+
+};
+
 
 void AddSC_boss_zuramat()
 {
     new boss_zuramat();
+    new mob_void_sentry();
 }
