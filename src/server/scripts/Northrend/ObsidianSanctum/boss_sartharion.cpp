@@ -530,15 +530,18 @@ class boss_sartharion : public CreatureScript
                         {
                             case NPC_TENEBRON:
                                 iTextId = SAY_SARTHARION_CALL_TENEBRON;
-                                pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aTene[1]);                            
+                                pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aTene[1]);
+                                pTemp->AI()->DoZoneInCombat();
                                 break;
                             case NPC_SHADRON:
                                 iTextId = SAY_SARTHARION_CALL_SHADRON;
-                                pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aShad[1]);                            
+                                pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aShad[1]);
+                                pTemp->AI()->DoZoneInCombat();
                                 break;
                             case NPC_VESPERON:
                                 iTextId = SAY_SARTHARION_CALL_VESPERON;
                                 pTemp->GetMotionMaster()->MovePoint(POINT_ID_LAND, m_aVesp[1]);
+                                pTemp->AI()->DoZoneInCombat();
                                 break;
                         }
 

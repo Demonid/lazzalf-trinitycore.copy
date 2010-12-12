@@ -730,7 +730,8 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
 
         if (Creature* vehicle = pPlayer->GetVehicleCreatureBase())
         {
-            if (!vehicle->HasAura(SPELL_AUTO_REPAIR) && (vehicle->GetHealth() != vehicle->GetMaxHealth()))
+            if (!vehicle->HasAura(SPELL_AUTO_REPAIR) && 
+                !pPlayer->isInCombat())
             {
                 pPlayer->MonsterTextEmote(EMOTE_REPAIR, pPlayer->GetGUID(), true);
                 vehicle->SetHealth(vehicle->GetMaxHealth()); // Correct spell not works
