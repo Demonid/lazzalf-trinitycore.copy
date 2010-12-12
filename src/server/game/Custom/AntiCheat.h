@@ -79,8 +79,8 @@ class AntiCheat
 		float allowed_delta;
 		float JumpHeight;
 
-        //float fClientRate;
-        //float fServerRate;
+        float fClientRate;
+        float fServerRate;
         float fDistance2d;
 		
 		void CalcDeltas(MovementInfo& pNewPacket, MovementInfo& pOldPacket);
@@ -91,8 +91,7 @@ class AntiCheat
 		bool CheckMistiming(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
 		bool CheckAntiGravity(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
 		bool CheckAntiMultiJump(Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-		bool CheckAntiSpeedTeleport(Vehicle* vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
-        bool CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
+        bool CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket, uint32 uiOpcode);
         bool CheckAntiTele(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode);
 		bool CheckAntiMountain(Vehicle* /*vehMover*/, MovementInfo& /*pMovementInfo*/);
 		bool CheckAntiFly(Vehicle* vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket);
