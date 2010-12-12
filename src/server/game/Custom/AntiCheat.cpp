@@ -183,7 +183,7 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
     // Only if we are not coming from sleep
     if (ac_goactivate < int32(sWorld.getIntConfig(CONFIG_AC_ALIVE_COUNT)))
     {
-        CalcVariables(pMovementInfo, mover);
+        CalcVariables(GetLastPacket(), pMovementInfo, mover);
 
         // Check taxi flight
         const uint32 curDest = plMover->m_taxi.GetTaxiDestination();	
@@ -484,7 +484,7 @@ void AntiCheat::CalcVariablesSmall(MovementInfo& pNewPacket, Unit *mover)
 	}
 }
 
-void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
+void AntiCheat::CalcVariables(MovementInfo& pOldPacket, MovementInfo& pNewPacket, Unit *mover)
 {
 	// calculating section
     // current speed
@@ -827,6 +827,7 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, Move
         pNewPacket.GetMovementFlags() != pOldPacket.GetMovementFlags())
         return true;
 
+    // False segnalation
     if (plMover->HasAura(30174) || // 30174 -> Riding Turtle
         plMover->HasAura(64731))   // 64731 -> Sea Turtle
         return true;
