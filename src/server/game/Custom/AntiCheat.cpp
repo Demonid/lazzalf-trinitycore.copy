@@ -341,12 +341,12 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
         case PUNI_BLOCK:
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BLOCK",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-            return false;
+            break;
         case PUNI_KILL:
             plMover->DealDamage(plMover, plMover->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KILL",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-            return false;
+            break;
         case PUNI_KICK:
             plMover->GetSession()->KickPlayer();
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KICK",
@@ -355,7 +355,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
             announce += plMover->GetName();
             announce += "per uso di Hack";
             sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-            return false;
+            break;
         case PUNI_BAN_CHAR:
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_CHARACTER",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());            
@@ -364,7 +364,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
             announce += " per uso di Hack";
             sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
             sWorld.BanCharacter(plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
-            return false;
+            break;
         case PUNI_BAN_ACC:
             {
                 sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_ACCOUNT",
@@ -375,6 +375,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
                 sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
                 sWorld.BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             }
+            break;
         case PUNI_BAN_IP:
             {
                 sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_IP",
@@ -393,14 +394,18 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
                     {
                         sWorld.BanAccount(BAN_IP,LastIP,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
                     }
-                }
-                return false;
-            }
+                }                
+            } break;
         default:
             sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER TYPE NOT VALID",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
-            return false;
+            break;
     }
+
+    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
+        ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, level, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%u', '%f', '%f', '%f', NOW())", 
+                "AntiCheatPunisher", plMover->GetGUIDLow(), plMover->GetName(), plMover->getLevel(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
+    return false;
 }
 
 void AntiCheat::CalcDeltas(MovementInfo& pNewPacket,  MovementInfo& pOldPacket)
@@ -1018,6 +1023,7 @@ bool AntiCheat::CheckAntiFly(Vehicle *vehMover, MovementInfo& pOldPacket, Moveme
     if (plMover->IsFalling())
         return true;
 
+    /*
     if (const Map *map = plMover->GetMap())
     {
         float ground_z = map->GetHeight(plMover->GetPositionX(), plMover->GetPositionY(), MAX_HEIGHT);
@@ -1027,6 +1033,7 @@ bool AntiCheat::CheckAntiFly(Vehicle *vehMover, MovementInfo& pOldPacket, Moveme
             map_z > (INVALID_HEIGHT + 10.0f + 5.0f))
             return true;
     }
+    */
 
     // we like check heartbeat movements
     if (pNewPacket.GetMovementFlags() != plMover->GetUnitMovementFlags() || 
