@@ -84,7 +84,7 @@ class AntiCheat
         float fDistance2d;
 		
 		void CalcDeltas(MovementInfo& pNewPacket, MovementInfo& pOldPacket);
-		void CalcVariables(MovementInfo& pNewPacket, Unit* mover);
+		void CalcVariables(MovementInfo& pOldPacket, MovementInfo& pNewPacket, Unit* mover);
         void CalcVariablesSmall(MovementInfo& pNewPacket, Unit* mover);
         bool CanFly(MovementInfo& pMovementInfo);
 		
