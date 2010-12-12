@@ -827,6 +827,10 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, Move
         pNewPacket.GetMovementFlags() != pOldPacket.GetMovementFlags())
         return true;
 
+    if (plMover->HasAura(30174) || // 30174 -> Riding Turtle
+        plMover->HasAura(64731))   // 64731 -> Sea Turtle
+        return true;
+
     // just to prevent false reports
     if (plMover->GetVehicle())
         return true;
@@ -972,11 +976,8 @@ bool AntiCheat::CheckAntiWaterwalk(Vehicle *vehMover, MovementInfo& pOldPacket, 
 {
     if (!plMover->isAlive())
         return true;
-
     
-    if (plMover->HasAura(1066) ||  // 1066 -> Aquatic Form
-        plMover->HasAura(30174) || // 30174 -> Riding Turtle
-        plMover->HasAura(64731))   // 64731 -> Sea Turtle
+    if (plMover->HasAura(1066))
         return true;
 
     if (plMover->IsUnderWater())
