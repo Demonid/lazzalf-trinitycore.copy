@@ -571,10 +571,10 @@ class npc_argent_soldier : public CreatureScript
             me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
 		    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
-                        pInstance->HandleGameObject(pGO->GetGUID(),true);
-    					
+                pInstance->HandleGameObject(pGO->GetGUID(),true);    					
             SetDespawnAtEnd(false);
             uiWaypoint = 0;
+            bStarted = false;
         }
 
         InstanceScript* pInstance;
@@ -593,6 +593,8 @@ class npc_argent_soldier : public CreatureScript
         uint32 uiFinalTimer;
         uint32 uiDivineTimer;
 
+        bool bStarted;
+
         void Reset()
         {
       	    uiStrikeTimer = 5000;	
@@ -605,7 +607,13 @@ class npc_argent_soldier : public CreatureScript
             uiLightTimer = 3000;
    	        uiFlurryTimer = 6000;
             uiFinalTimer = 30000;
-            uiDivineTimer = 70000;	
+            uiDivineTimer = 70000;
+            
+            if (bStarted)
+            {
+                me->SetReactState(REACT_AGGRESSIVE);					
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+            }
         }
     	
         void WaypointReached(uint32 uiPoint)
@@ -618,6 +626,7 @@ class npc_argent_soldier : public CreatureScript
                         me->SetOrientation(4.60f);
 			            me->SetReactState(REACT_AGGRESSIVE);					
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        bStarted = true;
                         break;
                 }
 		    }	
@@ -629,13 +638,15 @@ class npc_argent_soldier : public CreatureScript
                         me->SetOrientation(5.81f);
 			            me->SetReactState(REACT_AGGRESSIVE);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        bStarted = true;
                         break;
                     case 2:
                         me->SetOrientation(3.39f);
 			            me->SetReactState(REACT_AGGRESSIVE);					
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
-                    if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
-                        pInstance->HandleGameObject(pGO->GetGUID(),false);					
+                        bStarted = true;
+                        if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
+                            pInstance->HandleGameObject(pGO->GetGUID(),false);					
                         break;
     			
                 }

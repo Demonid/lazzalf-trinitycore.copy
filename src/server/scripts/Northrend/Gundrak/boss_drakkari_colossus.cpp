@@ -89,7 +89,8 @@ public:
                 pWho->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 if (pWho == me)
                     me->RemoveAura(SPELL_FREEZE_ANIM);
-            }else
+            }
+            else
             {
                 pWho->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pWho->addUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
@@ -288,6 +289,7 @@ public:
                         EnterEvadeMode();
                     }
                 }
+                me->getThreatManager().getThreatList().clear();
             }
         }
 
