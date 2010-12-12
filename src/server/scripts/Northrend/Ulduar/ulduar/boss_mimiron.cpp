@@ -358,8 +358,11 @@ class boss_mimiron : public CreatureScript
                                         {
                                             if (Unit* pTarget = me->SelectNearestTarget())
                                             {
-                                                pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(pLeviathan);
-                                                pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(me);
+                                                if (pTarget->ToPlayer())
+                                                {
+                                                    pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(pLeviathan);
+                                                    pTarget->ToPlayer()->RewardPlayerAndGroupAtKill(me);
+                                                }
                                             }
                                             pLeviathan->DisappearAndDie();
                                             pVX_001->DisappearAndDie();
