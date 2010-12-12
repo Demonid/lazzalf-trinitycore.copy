@@ -204,14 +204,9 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
 			    if (!CheckAntiMultiJump(vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
-            /*// Speed and Tele Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEEDTELE))
-			    if (!CheckAntiSpeedTeleport(plMover, vehMover, pMovementInfo, opcode))
-				    check_passed = false;*/
-
             // Speed Cheat
             if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEED))
-			    if (!CheckAntiSpeed(vehMover, pMovementInfo, opcode))
+			    if (!CheckAntiSpeed(vehMover, GetLastPacket(), pMovementInfo, opcode))
 				    check_passed = false;
 
             // Tele Cheat
@@ -440,11 +435,6 @@ void AntiCheat::CalcDeltas(MovementInfo& pNewPacket,  MovementInfo& pOldPacket)
 		m_anti_DeltaClientTime = m_anti_DeltaServerTime;
 
 	sync_time = m_anti_DeltaClientTime - m_anti_DeltaServerTime;
-
-    // time between packets
-    if (pNewPacket.time > pOldPacket.time)
-        uiDiffTime_packets =  getMSTimeDiff(pOldPacket.time, pNewPacket.time);
-    else uiDiffTime_packets = 0;
     
     if (!m_logfile_time)
 	    difftime_log_file = cServerTime - m_logfile_time;
@@ -526,17 +516,19 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 	//delta_y = plMover->m_transport || plMover->m_temp_transport ? 0 : plMover->GetPositionY() - pNewPacket.pos.GetPositionY();
 	delta_z = (plMover->m_transport || plMover->m_temp_transport) ? 0 : plMover->GetPositionZ() - pNewPacket.pos.GetPositionZ();
 	fDistance2d = (plMover->m_transport || plMover->m_temp_transport) ? 0 : pNewPacket.pos.GetExactDist2dSq(plMover->GetPositionX(), plMover->GetPositionY());
-	// end movement distance    
-
-    // normalize time - 1.5 second allowed for heavy loaded server
-	client_time_delta = uiDiffTime_packets < sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME) ? float(uiDiffTime_packets)/1000.0f : sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME)/1000.0f; 
+	// end movement distance
+    
+    // time between packets
+    uiDiffTime_packets =  getMSTimeDiff(pOldPacket.time, pNewPacket.time);
+    if (uiDiffTime_packets <= 0)
+        uiDiffTime_packets = 1;
 
     // fClientRate = it is the player's rate calculated using the distance done by the player
-    /*fClientRate = (fDistance2d * 1000 / uiDiffTime_packets) /  plMover->GetSpeed(uiMoveType);
+    fClientRate = (fDistance2d * 1000 / uiDiffTime_packets) /  plMover->GetSpeed(uiMoveType);
 
     // fServerRate = it is the player's rate using the distance per second (core information)
     fServerRate = plMover->GetSpeed(uiMoveType) * uiDiffTime_packets / 1000 + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED);
-     */
+
     // Check if he have fly auras
 	fly_auras = CanFly(pNewPacket);
 
@@ -552,6 +544,9 @@ void AntiCheat::CalcVariables(MovementInfo& pNewPacket, Unit *mover)
 	//if (cClientTimeDelta < 0)
 	//	cClientTimeDelta = 0;
 	//client_time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
+   
+    // normalize time - 1.5 second allowed for heavy loaded server
+	client_time_delta = uiDiffTime_packets < sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME) ? float(uiDiffTime_packets)/1000.0f : sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME)/1000.0f; 
 
     tg_z = (fDistance2d != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : -99999; // movement distance tangents
 
@@ -821,117 +816,15 @@ bool AntiCheat::CheckAntiMultiJump(Vehicle *vehMover, MovementInfo& pNewPacket, 
     return true;
 }
 
-/*bool AntiCheat::CheckAntiMultiJump(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
-{
-    if (uiOpcode != MSG_MOVE_JUMP)
-        return true;
-
-    if (!fly_auras && no_swim_water && GetLastOpcode() == MSG_MOVE_JUMP)
-	{
-		if (m_anti_JumpCount >= 1)
-        {
-            if (map_count)
-                ++(m_CheatList[CHEAT_MULTIJUMP]);
-            cheat_find = true;
-			LogCheat(CHEAT_MULTIJUMP, plMover,  pNewPacket);
-			if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT) &&
-                m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
-		    {
-			    // don't process new jump packet
-			    if (vehMover)
-				    vehMover->Die();
-			    // Tell the player "Sure, you can fly!"
-			    {
-				    WorldPacket data(SMSG_MOVE_SET_CAN_FLY, 12);
-				    data.append(plMover->GetPackGUID());
-				    data << uint32(0);
-				    plMover->GetSession()->SendPacket(&data);
-			    }
-			    // Then tell the player "Wait, no, you can't."
-			    {
-				    WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
-				    data.append(plMover->GetPackGUID());
-				    data << uint32(0);
-				    plMover->GetSession()->SendPacket(&data);
-			    }
-			    plMover->FallGround(2);
-			    m_anti_JumpCount = 0;
-			    return false;
-		    }
-		}
-		else
-		{
-			m_anti_JumpCount += 1;
-			m_anti_JumpBaseZ =  pNewPacket.pos.GetPositionZ();
-		}
-	}
-	else
-		m_anti_JumpCount = 0;
-		
-	return true; 
-}*/
-
-bool AntiCheat::CheckAntiSpeedTeleport(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
+bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, MovementInfo& pNewPacket, uint32 uiOpcode)
 {
     // strange packet
     if (uiOpcode == MSG_MOVE_SET_FACING)        
         return true;
 
-    // just to prevent false reports
-    if (plMover->GetVehicle())
-        return true;
-
-    // the best way is checking the ip of the target, if it is the same this check should return.
-    if (plMover->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
-        return true;
-
-    // it will make false reports
-    if (plMover->IsFalling() && fly_auras)
-        return true;
-
-    // the same reason for IsFalling, just in case...
-    if (plMover->HasAuraType(SPELL_AURA_FEATHER_FALL) || plMover->HasAuraType(SPELL_AURA_SAFE_FALL))
-        return true;
-
-	if (fDistance2d > allowed_delta)
-	{        
-        cheat_find = true;
-		if (fDistance2d < 4900.0f)
-        {
-            if (map_count)
-                ++(m_CheatList[CHEAT_SPEED]);
-            LogCheat(CHEAT_SPEED, pNewPacket);
-            if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT) &&
-                m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
-            {
-	            if (vehMover)
-		            vehMover->Die();
-	            plMover->FallGround(2);
-	            return false;
-            }
-        }
-        else
-        {
-            if (map_count)
-                ++(m_CheatList[CHEAT_TELEPORT]);
-			LogCheat(CHEAT_TELEPORT, pNewPacket);
-            if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT) &&
-                m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
-            {
-	            if (vehMover)
-		            vehMover->Die();
-	            plMover->FallGround(2);
-	            return false;
-            }
-        }
-	}    
-	return true;
-}
-
-bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
-{
-    // strange packet
-    if (uiOpcode == MSG_MOVE_SET_FACING)        
+    // we like check heartbeat movements
+    if (pNewPacket.GetMovementFlags() != plMover->GetUnitMovementFlags() || 
+        pNewPacket.GetMovementFlags() != pOldPacket.GetMovementFlags())
         return true;
 
     // just to prevent false reports
@@ -954,8 +847,8 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint
     if (GetLastSpeedRate() != fSpeedRate)
         return true;
 
-	//if (fDistance2d > 0.0f && fClientRate > fServerRate)
-    if (fDistance2d > 0.0f && fDistance2d > allowed_delta)
+    //if (fDistance2d > 0.0f && fDistance2d > allowed_delta)
+	if (fDistance2d > 0.0f && fClientRate > fServerRate)    
 	{          
         cheat_find = true;
         if (map_count)
@@ -975,9 +868,12 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pNewPacket, uint
 
 bool AntiCheat::CheckAntiTele(Vehicle *vehMover, MovementInfo& pNewPacket, uint32 uiOpcode)
 {
-	if (uiOpcode == 183 && 
+    /*if (uiOpcode == 183 && 
         GetLastOpcode() == 181 &&
-        fDistance2d > allowed_delta)
+        fDistance2d > allowed_delta)*/
+    if (uiOpcode == 183 && 
+        GetLastOpcode() == 181 && 
+        fClientRate > fServerRate)
     {      
         cheat_find = true;
 	    if (map_count)
@@ -1077,8 +973,10 @@ bool AntiCheat::CheckAntiWaterwalk(Vehicle *vehMover, MovementInfo& pOldPacket, 
     if (!plMover->isAlive())
         return true;
 
-    // 1066 -> Aquatic Form
-    if (plMover->HasAura(1066))
+    
+    if (plMover->HasAura(1066) ||  // 1066 -> Aquatic Form
+        plMover->HasAura(30174) || // 30174 -> Riding Turtle
+        plMover->HasAura(64731))   // 64731 -> Sea Turtle
         return true;
 
     if (plMover->IsUnderWater())
