@@ -102,7 +102,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature *creature, bool /*add*/)
+        void OnCreatureCreate(Creature *creature)
         {
             switch(creature->GetEntry())
             {

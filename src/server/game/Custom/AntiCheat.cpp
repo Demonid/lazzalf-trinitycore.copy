@@ -145,9 +145,12 @@ void AntiCheat::ResetCheatList(uint32 diff)
 }
 
 bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo& pMovementInfo, Unit *mover)
-{	
+{
 	if (plMover->GetSession() && plMover->GetSession()->GetSecurity() >= int32(sWorld.getIntConfig(CONFIG_AC_DISABLE_GM_LEVEL)))
 		return true;
+    	
+    if (!plMover->IsInWorld())
+        return true;
 
 	// Calc Delthas for AntiCheat
 	CalcDeltas(pMovementInfo, GetLastPacket());
