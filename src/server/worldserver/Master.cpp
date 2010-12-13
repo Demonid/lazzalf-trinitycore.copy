@@ -432,10 +432,10 @@ bool Master::_StartDB()
         return false;
     }
 
-    connections = sConfig.GetIntDefault("ExtraDatabase.Connections", 2);
+    synch_threads = sConfig.GetIntDefault("ExtraDatabase.SynchThreads", 1);
 
     ///- Initialise the Extra database
-    if (!ExtraDatabase.Open(dbstring, async_threads, connections))
+    if (!ExtraDatabase.Open(dbstring, async_threads, synch_threads))
     {
         sLog.outError("Cannot connect to extra database %s", dbstring.c_str());
         return false;
