@@ -113,6 +113,7 @@ enum LfgJoinResult
 /// Role check states
 enum LfgRoleCheckState
 {
+    LFG_ROLECHECK_DEFAULT                        = 0,      // Internal use = Not initialized.
     LFG_ROLECHECK_FINISHED                       = 1,      // Role check finished
     LFG_ROLECHECK_INITIALITING                   = 2,      // Role check begins
     LFG_ROLECHECK_MISSING_ROLE                   = 3,      // Someone didn't selected a role after 2 mins
@@ -163,6 +164,26 @@ struct LfgLockStatus
 {
     uint32 dungeon;                                        ///< Dungeon Id
     LfgLockStatusType lockstatus;                          ///< Lock type
+};
+
+// Data needed by SMSG_LFG_JOIN_RESULT
+struct LfgJoinResultData
+{
+    LfgJoinResultData(): result(LFG_JOIN_OK), state(LFG_ROLECHECK_DEFAULT), lockmap(NULL) {}
+    LfgJoinResult result;
+    LfgRoleCheckState state;
+    LfgLockStatusMap* lockmap;
+};
+
+// Data needed by SMSG_LFG_UPDATE_PARTY and SMSG_LFG_UPDATE_PLAYER
+struct LfgUpdateData
+{
+    LfgUpdateData(LfgUpdateType _type = LFG_UPDATETYPE_DEFAULT, LfgDungeonSet* _dungeons = NULL, std::string _comment = ""):
+        updateType(_type), dungeons(_dungeons), comment(_comment) {}
+
+    LfgUpdateType updateType;
+    LfgDungeonSet* dungeons;
+    std::string comment;
 };
 
 /// Reward info
@@ -303,7 +324,7 @@ class LFGMgr
         LfgProposal* FindNewGroups(LfgGuidList& check, LfgGuidList& all);
         bool CheckGroupRoles(LfgRolesMap &groles, bool removeLeaderFlag = true);
         bool CheckCompatibility(LfgGuidList check, LfgProposal*& pProposal);
-        LfgLockStatusMap* CheckCompatibleDungeons(LfgDungeonSet& dungeons, PlayerSet& players, bool returnLockMap = true);
+        LfgLockStatusMap* GetCompatibleDungeons(LfgDungeonSet& dungeons, PlayerSet& players, bool returnLockMap = true);
         void SetCompatibles(std::string concatenatedGuids, bool compatibles);
         LfgAnswer GetCompatibles(std::string concatenatedGuids);
         void RemoveFromCompatibles(uint64 guid);
@@ -313,7 +334,7 @@ class LFGMgr
         LfgLockStatusSet* GetPlayerLockStatusDungeons(Player* plr, LfgDungeonSet& dungeons, bool useEntry);
 
         // Generic
-        void GetDungeonsByRandom(uint32 randomdungeon, LfgDungeonSet& dungeons);
+        LfgDungeonSet GetDungeonsByRandom(uint32 randomdungeon);
         LfgType GetDungeonType(uint32 dungeon);
         std::string ConcatenateGuids(LfgGuidList check);
 
