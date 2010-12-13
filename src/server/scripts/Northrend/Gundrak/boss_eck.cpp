@@ -91,7 +91,7 @@ public:
             if (spell->Id == SPELL_ECK_SPIT)
             {
                 if (pTarget->GetTypeId() == TYPEID_PLAYER && !pTarget->HasAura(SPELL_ECK_RESIDUE))
-                    pTarget->CastSpell(pTarget,SPELL_ECK_RESIDUE,true);
+                    pTarget->CastSpell(pTarget, SPELL_ECK_RESIDUE, true);
             }
         }
 

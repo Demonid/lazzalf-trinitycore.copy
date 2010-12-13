@@ -177,34 +177,34 @@ class boss_emalon : public CreatureScript
             {
                 switch(eventId)
                 {
-                case EVENT_CHAIN_LIGHTNING:
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 25000);
-                    break;
-                case EVENT_LIGHTNING_NOVA:
-                    DoCastAOE(SPELL_LIGHTNING_NOVA, false);
-                    events.ScheduleEvent(EVENT_LIGHTNING_NOVA, 40000);
-                    break;
-                case EVENT_OVERCHARGE:
-                    if (!summons.empty())
-                    {
-                        std::list<uint64>::const_iterator itr = summons.begin();
-                        std::advance(itr, urand(0, summons.size()-1));
-                        Creature *minion = Unit::GetCreature(*me, *itr);
-                        if (minion && minion->isAlive())
+                    case EVENT_CHAIN_LIGHTNING:
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
+                        events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 25000);
+                        break;
+                    case EVENT_LIGHTNING_NOVA:
+                        DoCastAOE(SPELL_LIGHTNING_NOVA, false);
+                        events.ScheduleEvent(EVENT_LIGHTNING_NOVA, 40000);
+                        break;
+                    case EVENT_OVERCHARGE:
+                        if (!summons.empty())
                         {
-                            minion->CastSpell(me, SPELL_OVERCHARGED, true);
-                            minion->SetFullHealth();
-                            DoScriptText(EMOTE_OVERCHARGE, me);
-                            events.ScheduleEvent(EVENT_OVERCHARGE, 45000);
+                            std::list<uint64>::const_iterator itr = summons.begin();
+                            std::advance(itr, urand(0, summons.size()-1));
+                            Creature *minion = Unit::GetCreature(*me, *itr);
+                            if (minion && minion->isAlive())
+                            {
+                                minion->CastSpell(me, SPELL_OVERCHARGED, true);
+                                minion->SetFullHealth();
+                                DoScriptText(EMOTE_OVERCHARGE, me);
+                                events.ScheduleEvent(EVENT_OVERCHARGE, 45000);
+                            }
                         }
-                    }
-                    break;
-                case EVENT_BERSERK:
-                    DoCast(me, SPELL_BERSERK);
-                    DoScriptText(EMOTE_BERSERK, me);
-                    break;
+                        break;
+                    case EVENT_BERSERK:
+                        DoCast(me, SPELL_BERSERK);
+                        DoScriptText(EMOTE_BERSERK, me);
+                        break;
                 }
             }
 
@@ -315,10 +315,10 @@ class mob_tempest_minion : public CreatureScript
             {
                 switch(eventId)
                 {
-                case EVENT_SHOCK:
-                    DoCast(me->getVictim(), SPELL_SHOCK);
-                    events.ScheduleEvent(EVENT_SHOCK, 20000);
-                    return;
+                    case EVENT_SHOCK:
+                        DoCast(me->getVictim(), SPELL_SHOCK);
+                        events.ScheduleEvent(EVENT_SHOCK, 20000);
+                        return;
                 }
             }
 
