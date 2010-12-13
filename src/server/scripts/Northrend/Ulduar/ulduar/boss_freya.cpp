@@ -180,7 +180,8 @@ enum FreyaNpcs
     OBJECT_NATURE_BOMB                          = 194902,
     NPC_EONARS_GIFT                             = 33228,
     NPC_HEALTHY_SPORE                           = 33215,
-    NPC_UNSTABLE_SUN_BEAM                       = 33050
+    NPC_UNSTABLE_SUN_BEAM                       = 33050,
+    NPC_STRENGHTENED_IRON_ROOTS                 = 33168
 };
 
 enum Events
@@ -274,6 +275,9 @@ class boss_freya : public CreatureScript
             deforestationTimer = 0;
             deforestationCount = 0;
             randomizeSpawnOrder();
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_STRENGHTENED_IRON_ROOTS,50.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void KilledUnit(Unit *victim)
@@ -321,6 +325,9 @@ class boss_freya : public CreatureScript
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_CONSPEEDATORY);
                     pInstance->SetData(DATA_CONSPEEDATORY, ACHI_COMPLETED);
                 }
+
+                while (Unit* pTarget = me->FindNearestCreature(NPC_STRENGHTENED_IRON_ROOTS,50.0f))
+                    pTarget->RemoveFromWorld();
             }
             
             // Hard mode chest

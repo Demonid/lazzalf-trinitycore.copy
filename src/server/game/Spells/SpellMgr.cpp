@@ -3993,6 +3993,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 55098:     // Transformation
         case 65875:     // Twin Pact (Dark)
         case 65876:     // Twin Pact (Light)
+        case 66532:     // Fel Fireball 10
+        case 66963:     // Fel Fireball 25
             spellInfo->InterruptFlags = 47;
             count++;
             break;

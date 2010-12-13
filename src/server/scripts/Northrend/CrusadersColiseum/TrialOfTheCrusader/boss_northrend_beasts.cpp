@@ -289,7 +289,11 @@ public:
             {
                 case 0: // JUMP!? Fuck! THAT'S BEEZARR! Would someone PLEASE make MotionMaster->Move* work better?
                     if (m_bTargetDied)
+                    {
                         me->ForcedDespawn();
+                        if (m_pInstance)
+                            m_pInstance->SetData(DATA_SNOBOLD_COUNT, DECREASE);
+                    }
                     break;
             }
         }

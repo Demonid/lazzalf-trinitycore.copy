@@ -217,7 +217,7 @@ class boss_hodir : public CreatureScript
             pInstance = pCreature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true);  // Death Grip
-            me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
+            //me->ApplySpellImmune(0, IMMUNITY_ID, 65280, true);  // Singed
             //me->ApplySpellImmune(0, IMMUNITY_ID, 61990, true);  // Flash Freeze  
             //me->ApplySpellImmune(0, IMMUNITY_ID, 61968, true);  // Flash Freeze
         }

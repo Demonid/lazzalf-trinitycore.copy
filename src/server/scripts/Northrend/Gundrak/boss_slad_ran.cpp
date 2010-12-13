@@ -110,6 +110,12 @@ public:
 
             if (pInstance)
                 pInstance->SetData(DATA_SLAD_RAN_EVENT, NOT_STARTED);
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_SNAKE, 100.0f))
+                pTarget->RemoveFromWorld();
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_CONSTRICTORS, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -208,6 +214,12 @@ public:
 
             if (pInstance)
                 pInstance->SetData(DATA_SLAD_RAN_EVENT, DONE);
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_SNAKE, 100.0f))
+                pTarget->RemoveFromWorld();
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_CONSTRICTORS, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void KilledUnit(Unit * /*victim*/)

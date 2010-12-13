@@ -1488,6 +1488,11 @@ class mob_junk_bot : public CreatureScript
             if (MimironHardMode)
                 DoCast(me, SPELL_EMERGENCY_MODE);
         }
+
+        void JustDied(Unit *victim)
+        {
+            me->DisappearAndDie();
+        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const

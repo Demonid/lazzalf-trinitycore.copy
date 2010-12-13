@@ -190,7 +190,7 @@ class boss_xt002 : public CreatureScript
             me->SetReactState(REACT_AGGRESSIVE);
             me->ResetLootMode();
 
-            while (Unit* pTarget = me->FindNearestCreature(NPC_LIFE_SPARK,100.0f))
+            while (Unit* pTarget = me->FindNearestCreature(NPC_LIFE_SPARK, 100.0f))
                 pTarget->RemoveFromWorld();
 
             //Makes XT-002 to cast a light bomb 10 seconds after aggro.
@@ -280,6 +280,9 @@ class boss_xt002 : public CreatureScript
                 if (achievement_nerf)
                     pInstance->DoCompleteAchievement(ACHIEVEMENT_NERF_ENG);
             }
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_LIFE_SPARK, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void UpdateAI(const uint32 diff)
