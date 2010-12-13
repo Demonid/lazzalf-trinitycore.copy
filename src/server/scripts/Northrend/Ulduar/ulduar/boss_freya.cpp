@@ -181,7 +181,8 @@ enum FreyaNpcs
     NPC_EONARS_GIFT                             = 33228,
     NPC_HEALTHY_SPORE                           = 33215,
     NPC_UNSTABLE_SUN_BEAM                       = 33050,
-    NPC_STRENGHTENED_IRON_ROOTS                 = 33168
+    NPC_IRON_ROOTS                              = 33088,
+    NPC_STRENGHTENED_IRON_ROOTS                 = 33168,
 };
 
 enum Events
@@ -278,6 +279,11 @@ class boss_freya : public CreatureScript
 
             while (Unit* pTarget = me->FindNearestCreature(NPC_STRENGHTENED_IRON_ROOTS,50.0f))
                 pTarget->RemoveFromWorld();
+
+            Map::PlayerList const &players = pInstance->instance->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                if (itr->getSource()->HasAura(RAID_MODE(RAID_10_SPELL_FREYA_IRON_ROOTS, RAID_25_SPELL_FREYA_IRON_ROOTS)))
+                        itr->getSource()->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_FREYA_IRON_ROOTS, RAID_25_SPELL_FREYA_IRON_ROOTS));
         }
 
         void KilledUnit(Unit *victim)
@@ -328,6 +334,11 @@ class boss_freya : public CreatureScript
 
                 while (Unit* pTarget = me->FindNearestCreature(NPC_STRENGHTENED_IRON_ROOTS,50.0f))
                     pTarget->RemoveFromWorld();
+
+                Map::PlayerList const &players = pInstance->instance->GetPlayers();
+                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    if (itr->getSource()->HasAura(RAID_MODE(RAID_10_SPELL_FREYA_IRON_ROOTS, RAID_25_SPELL_FREYA_IRON_ROOTS)))
+                        itr->getSource()->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_FREYA_IRON_ROOTS, RAID_25_SPELL_FREYA_IRON_ROOTS));
             }
             
             // Hard mode chest
@@ -527,7 +538,7 @@ class boss_freya : public CreatureScript
                         if (Unit* pRootTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         {
                             pRootTargetGUID = pRootTarget->GetGUID();
-                            pRootTarget->CastSpell(pRootTarget,RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS),true);
+                            pRootTarget->CastSpell(pRootTarget,RAID_MODE(RAID_10_SPELL_FREYA_IRON_ROOTS, RAID_25_SPELL_FREYA_IRON_ROOTS),true);
                         }
                         events.ScheduleEvent(EVENT_IRONBRANCH, urand(45000, 60000));
                         break;
@@ -846,6 +857,14 @@ class boss_elder_ironbranch : public CreatureScript
             uiImpaleTimer = 15000;
             uiThornSwarmTimer = 20000;
             uiIronRootTimer = 8000;
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_IRON_ROOTS,50.0f))
+                pTarget->RemoveFromWorld();
+
+            Map::PlayerList const &players = m_pInstance->instance->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                if (itr->getSource()->HasAura(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS)))
+                    itr->getSource()->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
         }
 
         void EnterCombat(Unit* pWho)
@@ -863,6 +882,14 @@ class boss_elder_ironbranch : public CreatureScript
         void JustDied(Unit *victim)
         {
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_IRON_ROOTS,50.0f))
+                pTarget->RemoveFromWorld();
+
+            Map::PlayerList const &players = m_pInstance->instance->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                if (itr->getSource()->HasAura(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS)))
+                    itr->getSource()->RemoveAurasDueToSpell(RAID_MODE(RAID_10_SPELL_IRON_ROOTS, RAID_25_SPELL_IRON_ROOTS));
 
             if (Creature* Brightleaf = Unit::GetCreature(*me, m_pInstance ? m_pInstance->GetData64(DATA_BRIGHTLEAF) : 0))
                 if (Brightleaf->isAlive())
