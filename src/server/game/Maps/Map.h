@@ -255,6 +255,9 @@ class Map : public GridRefManager<NGridType>
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
+        
+        ACE_thread_t m_updater;
+        void Wipe();
 
         // currently unused for normal maps
         bool CanUnload(uint32 diff)

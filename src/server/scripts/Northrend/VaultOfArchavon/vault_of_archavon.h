@@ -18,12 +18,14 @@
 #ifndef DEF_ARCHAVON_H
 #define DEF_ARCHAVON_H
 
-enum Creatures
+#include "OutdoorPvPMgr.h"
+
+enum Creatures 
 {
-    CREATURE_ARCHAVON                           = 31125,
-    CREATURE_EMALON                             = 33993,
-    CREATURE_KORALON                            = 35013,
-    CREATURE_TORAVON                            = 38433,
+    CREATURE_ARCHAVON   = 31125,
+    CREATURE_EMALON     = 33993,
+    CREATURE_KORALON    = 35013,
+    CREATURE_TORAVON    = 38433,
 };
 
 enum Data
@@ -32,6 +34,8 @@ enum Data
     DATA_EMALON_EVENT,
     DATA_KORALON_EVENT,
     DATA_TORAVON_EVENT,
+    DATA_EWF_START,
+    DATA_EWF_COUNT,
 };
 
 enum Data64
@@ -40,6 +44,17 @@ enum Data64
     DATA_EMALON,
     DATA_KORALON,
     DATA_TORAVON,
+};
+
+enum AchievementControl
+{
+    ACHI_IS_NOT_STARTED,
+    ACHI_START,
+    ACHI_IS_IN_PROGRESS,
+    ACHI_COMPLETED,
+    ACHI_FAILED,
+    ACHI_RESET,
+    ACHI_INCREASE,
 };
 
 #endif
