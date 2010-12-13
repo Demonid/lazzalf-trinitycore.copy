@@ -67,6 +67,7 @@ class AuraApplication
         bool HasEffect(uint8 effect) const { ASSERT(effect < MAX_SPELL_EFFECTS);  return m_flags & (1<<effect); }
         bool IsPositive() const { return m_flags & AFLAG_POSITIVE; }
         uint8 GetEffectsToApply() const { return m_effectsToApply; }
+        void HandleEffect(uint8 effIndex, bool apply);
 
         void SetRemoveMode(AuraRemoveMode mode) { m_removeMode = mode; }
         AuraRemoveMode GetRemoveMode() const {return m_removeMode;}

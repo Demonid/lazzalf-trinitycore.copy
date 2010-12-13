@@ -24,6 +24,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "molten_core.h"
 
 #define EMOTE_FRENZY                -1409001
 
@@ -43,9 +44,14 @@ public:
         return new boss_magmadarAI (pCreature);
     }
 
-    struct boss_magmadarAI : public ScriptedAI
+    struct boss_magmadarAI : public BossAI
     {
-        boss_magmadarAI(Creature *c) : ScriptedAI(c) {}
+        boss_magmadarAI(Creature *pCreature) : BossAI(pCreature, BOSS_MAGMADAR)
+        {
+            m_pInstance = pCreature->GetInstanceScript(); 
+        }
+
+        InstanceScript* m_pInstance;
 
         uint32 Frenzy_Timer;
         uint32 Panic_Timer;
@@ -53,6 +59,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             Frenzy_Timer = 30000;
             Panic_Timer = 20000;
             Lavabomb_Timer = 12000;
@@ -60,8 +67,16 @@ public:
             DoCast(me, SPELL_MAGMASPIT, true);
         }
 
+        void JustDied(Unit* /*pKiller*/)
+        {
+            _JustDied();
+            if (m_pInstance)
+                m_pInstance->SetData(DATA_MAGMADAR, 0);
+        }
+
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)

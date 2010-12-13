@@ -102,6 +102,8 @@ enum Actions
     ACTION_PACT
 };
 
+#define ACHIEVEMENT_SALT_AND_PEPPER RAID_MODE(3799, 3815)
+#define SALT_AND_PEPPER_MAX_TIMER 3 * MINUTE * IN_MILLISECONDS
 
 /*######
 ## boss_twin_base
@@ -112,6 +114,8 @@ struct boss_twin_baseAI : public ScriptedAI
     boss_twin_baseAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
     {
         m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+        me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
     }
 
     InstanceScript* m_pInstance;
@@ -437,6 +441,8 @@ public:
     {
         boss_fjolaAI(Creature* pCreature) : boss_twin_baseAI(pCreature) {}
 
+        uint32 saltAndPepperTimer;
+
         void Reset() {
             boss_twin_baseAI::Reset();
             SetEquipmentSlots(false, EQUIP_MAIN_1, EQUIP_OFFHAND_1, EQUIP_RANGED_1);
@@ -460,19 +466,36 @@ public:
             EssenceLocation[0] = TwinValkyrsLoc[2];
             EssenceLocation[1] = TwinValkyrsLoc[3];
 
-            if (m_pInstance)
+            saltAndPepperTimer = 0;
+
+            /*if (m_pInstance)
             {
                 m_pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT,  EVENT_START_TWINS_FIGHT);
-            }
+            }*/
         }
 
         void EnterCombat(Unit* pWho)
         {
+            saltAndPepperTimer = 0;
             boss_twin_baseAI::EnterCombat(pWho);
-            if (m_pInstance)
+            /*if (m_pInstance)
             {
                 m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT,  EVENT_START_TWINS_FIGHT);
-            }
+            }*/
+        }
+
+        void JustDied(Unit* pKiller)
+        {
+            if (saltAndPepperTimer <= SALT_AND_PEPPER_MAX_TIMER)
+                m_pInstance->DoCompleteAchievement(ACHIEVEMENT_SALT_AND_PEPPER);
+            
+            boss_twin_baseAI::JustDied(pKiller);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            saltAndPepperTimer += uiDiff;
+            boss_twin_baseAI::UpdateAI(uiDiff);
         }
     };
 

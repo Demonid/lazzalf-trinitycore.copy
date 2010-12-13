@@ -114,7 +114,9 @@ public:
     {
         boss_onyxiaAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
-            m_pInstance = pCreature->GetInstanceScript();
+            m_pInstance = pCreature->GetInstanceScript();            
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); // Death Grip jump effect
             Reset();
         }
 
@@ -139,6 +141,8 @@ public:
 
         uint32 m_uiBellowingRoarTimer;
 
+        uint32 m_uiStopTime;
+
         uint8 m_uiSummonWhelpCount;
         bool m_bIsMoving;
 
@@ -148,6 +152,9 @@ public:
                 SetCombatMovement(true);
 
             m_uiPhase = PHASE_START;
+
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
 
             m_uiFlameBreathTimer = urand(10000, 20000);
             m_uiTailSweepTimer = urand(15000, 20000);
@@ -165,8 +172,12 @@ public:
 
             m_uiBellowingRoarTimer = 30000;
 
-            Summons.DespawnAll();
+            m_uiStopTime = 0;
+
+            Summons.DespawnAll();            
             m_uiSummonWhelpCount = 0;
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
             m_bIsMoving = false;
 
             if (m_pInstance)
@@ -195,6 +206,8 @@ public:
                 m_pInstance->SetData(DATA_ONYXIA, DONE);
 
             Summons.DespawnAll();
+            while (Unit* pTarget = me->FindNearestCreature(NPC_WHELP,100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void JustSummoned(Creature *pSummoned)
@@ -344,11 +357,13 @@ public:
                 //Specific to PHASE_START || PHASE_END
                 if (m_uiPhase == PHASE_START)
                 {
-                    if (HealthBelowPct(60))
+                    if (HealthBelowPct(65))
                     {
                         SetCombatMovement(false);
                         m_uiPhase = PHASE_BREATH;
                         me->GetMotionMaster()->MovePoint(10, Phase2Location);
+                        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                        me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
                         return;
                     }
                 }
@@ -370,37 +385,42 @@ public:
                         m_uiBellowingRoarTimer -= uiDiff;
                 }
 
-                if (m_uiFlameBreathTimer <= uiDiff)
+                if (m_uiStopTime <= uiDiff)
                 {
-                    DoCastVictim(SPELL_FLAME_BREATH);
-                    m_uiFlameBreathTimer = urand(10000, 20000);
-                }
-                else
-                    m_uiFlameBreathTimer -= uiDiff;
+                    if (m_uiFlameBreathTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_FLAME_BREATH);
+                        m_uiFlameBreathTimer = urand(10000, 20000);
+                    }
+                    else
+                        m_uiFlameBreathTimer -= uiDiff;
 
-                if (m_uiTailSweepTimer <= uiDiff)
-                {
-                    DoCastAOE(SPELL_TAIL_SWEEP);
-                    m_uiTailSweepTimer = urand(15000, 20000);
-                }
-                else
-                    m_uiTailSweepTimer -= uiDiff;
+                    if (m_uiTailSweepTimer <= uiDiff)
+                    {
+                        DoCastAOE(SPELL_TAIL_SWEEP);
+                        m_uiTailSweepTimer = urand(15000, 20000);
+                    }
+                    else
+                        m_uiTailSweepTimer -= uiDiff;
 
-                if (m_uiCleaveTimer <= uiDiff)
-                {
-                    DoCastVictim(SPELL_CLEAVE);
-                    m_uiCleaveTimer = urand(2000, 5000);
-                }
-                else
-                    m_uiCleaveTimer -= uiDiff;
+                    if (m_uiCleaveTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_CLEAVE);
+                        m_uiCleaveTimer = urand(2000, 5000);
+                    }
+                    else
+                        m_uiCleaveTimer -= uiDiff;
 
-                if (m_uiWingBuffetTimer <= uiDiff)
-                {
-                    DoCastVictim(SPELL_WING_BUFFET);
-                    m_uiWingBuffetTimer = urand(15000, 30000);
+                    if (m_uiWingBuffetTimer <= uiDiff)
+                    {
+                        DoCastVictim(SPELL_WING_BUFFET);
+                        m_uiWingBuffetTimer = urand(15000, 30000);
+                    }
+                    else
+                        m_uiWingBuffetTimer -= uiDiff;
                 }
-                else
-                    m_uiWingBuffetTimer -= uiDiff;
+                else 
+                    m_uiStopTime -= uiDiff;
 
                 DoMeleeAttackIfReady();
             }
@@ -409,6 +429,9 @@ public:
                 if (HealthBelowPct(40))
                 {
                     m_uiPhase = PHASE_END;
+                    m_uiStopTime = 15000;
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                    me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
                     if (m_pInstance)
                         m_pInstance->SetData(DATA_ONYXIA_PHASE, m_uiPhase);
                     DoScriptText(SAY_PHASE_3_TRANS, me);
