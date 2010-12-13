@@ -276,6 +276,9 @@ class boss_sartharion : public CreatureScript
             Acolytes = 2;
 
             lLavaStriked.clear();
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_LAVA_BLAZE, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void EnterCombat(Unit* pWho)
@@ -363,6 +366,9 @@ class boss_sartharion : public CreatureScript
                             itr->getSource()->CompletedAchievement(achievGonnaGo);
                     }
                 }*/
+
+                while (Unit* pTarget = me->FindNearestCreature(NPC_LAVA_BLAZE, 100.0f))
+                    pTarget->RemoveFromWorld();
             }
         }
 
