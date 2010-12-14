@@ -1054,8 +1054,8 @@ valid examples:
 
                     int32 propertyId = 0;
                     bool negativeNumber = false;
-                    char c;
-                    for (uint8 i=0; i<randomPropertyPosition; ++i)
+                    char c = '\0';
+                    for (uint8 i = 0; i < randomPropertyPosition; ++i)
                     {
                         propertyId = 0;
                         negativeNumber = false;
@@ -1071,6 +1071,7 @@ valid examples:
                                 return false;
                         }
                     }
+
                     if (negativeNumber)
                         propertyId *= -1;
 
@@ -1088,7 +1089,7 @@ valid examples:
                     }
 
                     // ignore other integers
-                    while ((c >='0' && c <= '9') || c == ':')
+                    while ((c >= '0' && c <= '9') || c == ':')
                     {
                         reader.ignore(1);
                         c = reader.peek();
