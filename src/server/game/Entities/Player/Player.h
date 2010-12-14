@@ -38,10 +38,10 @@
 #include "Util.h"                                           // for Tokens typedef
 #include "WorldSession.h"
 #include "../../Custom/AntiCheat.h"
- 
+
 #include<string>
 #include<vector>
- 
+
 struct Mail;
 class Channel;
 class Creature;
@@ -2286,7 +2286,7 @@ class Player : public Unit, public GridObject<Player>
         LfgState GetLfgState() const { return m_LookingForGroup.state; }
         void SetLfgState(LfgState state)
         {
-            
+
             switch(state)
             {
                 case LFG_STATE_NONE:
@@ -2676,7 +2676,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool canSeeAlways(WorldObject const* obj) const;
 
-        bool isAlwaysDetectableFor(WorldObject const* seer) const;      
+        bool isAlwaysDetectableFor(WorldObject const* seer) const;
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem) const;
