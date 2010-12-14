@@ -24,6 +24,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "ScriptPCH.h"
+#include "molten_core.h"
 
 #define SPELL_ARCANEEXPLOSION           19712
 #define SPELL_SHAZZRAHCURSE             19713
@@ -40,9 +41,14 @@ public:
         return new boss_shazzrahAI (pCreature);
     }
 
-    struct boss_shazzrahAI : public ScriptedAI
+    struct boss_shazzrahAI : public BossAI
     {
-        boss_shazzrahAI(Creature *c) : ScriptedAI(c) {}
+        boss_shazzrahAI(Creature *pCreature) : BossAI(pCreature, BOSS_SHAZZRAH)
+        {
+            m_pInstance = pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* m_pInstance;
 
         uint32 ArcaneExplosion_Timer;
         uint32 ShazzrahCurse_Timer;
@@ -52,6 +58,7 @@ public:
 
         void Reset()
         {
+            _Reset();
             ArcaneExplosion_Timer = 6000;                       //These times are probably wrong
             ShazzrahCurse_Timer = 10000;
             DeadenMagic_Timer = 24000;
@@ -59,8 +66,16 @@ public:
             Blink_Timer = 30000;
         }
 
+        void JustDied(Unit* /*pKiller*/)
+        {
+            _JustDied();
+            if (m_pInstance)
+                m_pInstance->SetData(DATA_SHAZZRAH, 0);
+        }
+
         void EnterCombat(Unit * /*who*/)
         {
+            _EnterCombat();
         }
 
         void UpdateAI(const uint32 diff)
