@@ -1467,7 +1467,13 @@ class mob_acolyte_of_vesperon : public CreatureScript
     {
         mob_acolyte_of_vesperonAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceScript();        
+            pInstance = pCreature->GetInstanceScript();
+
+            if (pInstance)
+                me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);
+
+            ToInterrupt = true;
+            CheckForInterrupt = 2000;
         }
 
         InstanceScript* pInstance; 
@@ -1475,15 +1481,9 @@ class mob_acolyte_of_vesperon : public CreatureScript
         uint32 CheckForInterrupt;
 
         void Reset()
-        {         
-            if (pInstance)
-            {
-                if (me->IsInWorld())
-                    me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);            
-            }
-
+        {
             ToInterrupt = true;
-            CheckForInterrupt = 2000;
+            CheckForInterrupt = 2000;            
         }
 
         void EnterCombat(Unit* who){}
