@@ -6511,7 +6511,7 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         case HIGHGUID_UNIT:
             if (m_hiCreatureGuid >= 0x00FFFFFE)
             {
-                sLog.outError("Creature guid overflow!! Can't continue, shutting down server. GUID: %d", m_hiCreatureGuid);
+                sLog.outError("Creature guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCreatureGuid++;
