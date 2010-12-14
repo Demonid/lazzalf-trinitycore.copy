@@ -158,7 +158,7 @@ struct boss_twin_baseAI : public ScriptedAI
 
         m_uiWaveCount = 1;
         m_uiColorballsTimer = 15*IN_MILLISECONDS;
-        m_uiSpecialAbilityTimer = MINUTE*IN_MILLISECONDS;
+        m_uiSpecialAbilityTimer = urand(45,50)*IN_MILLISECONDS;
         m_uiSpikeTimer = 20*IN_MILLISECONDS;
         m_uiTouchTimer = urand(10,15)*IN_MILLISECONDS;
         m_uiBerserkTimer = IsHeroic() ? 6*MINUTE*IN_MILLISECONDS : 10*MINUTE*IN_MILLISECONDS;
@@ -364,7 +364,7 @@ struct boss_twin_baseAI : public ScriptedAI
                     DoScriptText(m_uiVortexSay,me);
                     DoCastAOE(m_uiVortexSpellId);
                     m_uiStage = 0;
-                    m_uiSpecialAbilityTimer = MINUTE*IN_MILLISECONDS;
+                    m_uiSpecialAbilityTimer = urand(45,50)*IN_MILLISECONDS;
                 } else m_uiSpecialAbilityTimer -= uiDiff;
                 break;
             case 2: // Shield+Pact
@@ -377,7 +377,7 @@ struct boss_twin_baseAI : public ScriptedAI
                     DoCast(me,m_uiShieldSpellId);
                     DoCast(me,m_uiTwinPactSpellId);
                     m_uiStage = 0;
-                    m_uiSpecialAbilityTimer = MINUTE*IN_MILLISECONDS;
+                    m_uiSpecialAbilityTimer = urand(45,50)*IN_MILLISECONDS;
                 } m_uiSpecialAbilityTimer -= uiDiff;
                 break;
             default:
