@@ -286,7 +286,7 @@ int WorldSocket::open (void *a)
     return 0;
 }
 
-int WorldSocket::close (int)
+int WorldSocket::close (u_long)
 {
     shutdown();
 
@@ -626,7 +626,7 @@ int WorldSocket::handle_input_missing_data (void)
         }
     }
 
-    return n == recv_size ? 1 : 2;
+    return size_t(n) == recv_size ? 1 : 2;
 }
 
 int WorldSocket::cancel_wakeup_output (GuardType& g)

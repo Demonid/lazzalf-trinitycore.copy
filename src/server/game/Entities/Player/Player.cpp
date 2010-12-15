@@ -2498,6 +2498,8 @@ void Player::ResetAllPowers()
         case POWER_RUNIC_POWER:
             SetPower(POWER_RUNIC_POWER, 0);
             break;
+        default:
+            break;
     }
 }
 
@@ -4691,18 +4693,30 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             }
 
             // Unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
-            // Get guids of character's pets, will deleted in transaction
-            QueryResult resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'",guid);
-
             // NOW we can finally clear other DB data related to character
-            if (resultPets)
+            if (QueryResult resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'", guid))
             {
                 do
                 {
-                    Field *fields3 = resultPets->Fetch();
-                    uint32 petguidlow = fields3[0].GetUInt32();
+                    uint32 petguidlow = (*resultPets)[0].GetUInt32();
                     Pet::DeleteFromDB(petguidlow);
                 } while (resultPets->NextRow());
+            }
+
+            // Delete char from social list of online chars
+            if (QueryResult resultFriends = CharacterDatabase.PQuery("SELECT DISTINCT guid FROM character_social WHERE friend = '%u'", guid))
+            {
+                do
+                {
+                    if (Player* pFriend = sObjectAccessor.FindPlayer(MAKE_NEW_GUID((*resultFriends)[0].GetUInt32(), 0, HIGHGUID_PLAYER)))
+                    {
+                        if (pFriend->IsInWorld())
+                        {
+                            pFriend->GetSocial()->RemoveFromSocialList(guid, false);
+                            sSocialMgr.SendFriendStatus(pFriend, FRIEND_REMOVED, guid, false);
+                        }
+                    }
+                } while (resultFriends->NextRow());
             }
 
             trans->PAppend("DELETE FROM characters WHERE guid = '%u'",guid);
@@ -5488,8 +5502,6 @@ void Player::HandleBaseModValue(BaseModGroup modGroup, BaseModType modType, floa
         sLog.outError("ERROR in HandleBaseModValue(): non existed BaseModGroup of wrong BaseModType!");
         return;
     }
-
-    float val = 1.0f;
 
     switch (modType)
     {
@@ -18437,18 +18449,22 @@ void Player::_SaveInventory(SQLTransaction& trans)
             }
         }
 
+        PreparedStatement* stmt = NULL;
         switch (item->GetState())
         {
             case ITEM_NEW:
-                trans->PAppend("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
-                break;
             case ITEM_CHANGED:
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
-                trans->PAppend("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
+                stmt = CharacterDatabase.GetPreparedStatement(item->GetState() == ITEM_NEW ? CHAR_ADD_INVENTORY_ITEM : CHAR_UPDATE_INVENTORY_ITEM);
+                stmt->setUInt32(0, lowGuid);
+                stmt->setUInt32(1, bag_guid);
+                stmt->setUInt8 (2, item->GetSlot());
+                stmt->setUInt32(3, item->GetGUIDLow());
+                trans->Append(stmt);
                 break;
             case ITEM_REMOVED:
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
-                break;
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVENTORY_ITEM);
+                stmt->setUInt32(0, item->GetGUIDLow());
+                trans->Append(stmt);
             case ITEM_UNCHANGED:
                 break;
         }
@@ -18483,7 +18499,7 @@ void Player::_SaveMail(SQLTransaction& trans)
             if (m->HasItems())
             {
                 PreparedStatement* stmt = NULL;
-                for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
+                for (MailItemInfoVec::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
                 {
                     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
                     stmt->setUInt32(0, itr2->item_guid);
