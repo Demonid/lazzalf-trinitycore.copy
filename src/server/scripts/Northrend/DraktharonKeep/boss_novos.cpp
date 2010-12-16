@@ -77,6 +77,7 @@ public:
 
         uint32 uiTimer;
         uint32 uiCrystalHandlerTimer;
+        uint8 crystalHandlerAmount;
 
         bool bAchiev;
 
@@ -95,6 +96,7 @@ public:
             bAchiev = true;
             me->CastStop();
             lSummons.DespawnAll();
+            crystalHandlerAmount = 0;
 
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE))
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
@@ -155,13 +157,16 @@ public:
                         //DoCast(me, SPELL_SUMMON_MINIONS);
                         uiTimer = 3*IN_MILLISECONDS;
                     } else uiTimer -= diff;
-                    if (uiCrystalHandlerTimer <= diff)
+                    if (crystalHandlerAmount < 4)
                     {
-                        DoScriptText(SAY_NECRO_ADD, me);
-                        Creature *pCrystalHandler = me->SummonCreature(CREATURE_CRYSTAL_HANDLER, CrystalHandlerSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
-                        pCrystalHandler->GetMotionMaster()->MovePoint(0, AddDestinyPoint);
-                        uiCrystalHandlerTimer = urand(20*IN_MILLISECONDS,30*IN_MILLISECONDS);
-                    } else uiCrystalHandlerTimer -= diff;
+                        if (uiCrystalHandlerTimer <= diff)
+                        {
+                            DoScriptText(SAY_NECRO_ADD, me);
+                            Creature *pCrystalHandler = me->SummonCreature(CREATURE_CRYSTAL_HANDLER, CrystalHandlerSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
+                            pCrystalHandler->GetMotionMaster()->MovePoint(0, AddDestinyPoint);
+                            uiCrystalHandlerTimer = urand(20*IN_MILLISECONDS,30*IN_MILLISECONDS);
+                        } else uiCrystalHandlerTimer -= diff;
+                    }
                     break;
                 case PHASE_2:
                     if (uiTimer <= diff)
@@ -198,6 +203,9 @@ public:
 
         void JustSummoned(Creature *summon)
         {
+            if (summon->GetEntry() == CREATURE_CRYSTAL_HANDLER)
+                crystalHandlerAmount++;
+
             lSummons.Summon(summon);
         }
 

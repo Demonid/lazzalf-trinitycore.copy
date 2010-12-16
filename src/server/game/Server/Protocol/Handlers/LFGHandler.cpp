@@ -91,7 +91,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket &recv_data)
     std::string comment;
     recv_data >> comment;
     sLog.outDebug("CMSG_LFG_JOIN [" UI64FMTD "] roles: %u, Dungeons: %u, Comment: %s", GetPlayer()->GetGUID(), roles, uint8(newDungeons.size()), comment.c_str());
-    sLFGMgr.Join(GetPlayer(), uint8(roles), newDungeons, comment);
+    sLFGMgr.Join(GetPlayer(), LfgRoles(roles), newDungeons, comment);
 }
 
 void WorldSession::HandleLfgLeaveOpcode(WorldPacket & /*recv_data*/)
@@ -113,32 +113,32 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket &recv_data)
     recv_data >> accept;
 
     sLog.outDebug("CMSG_LFG_PROPOSAL_RESULT [" UI64FMTD "] proposal: %u accept: %u", GetPlayer()->GetGUID(), lfgGroupID, accept ? 1 : 0);
-    sLFGMgr.UpdateProposal(lfgGroupID, GetPlayer()->GetGUIDLow(), accept);
+    sLFGMgr.UpdateProposal(lfgGroupID, GetPlayer()->GetGUID(), accept);
 }
 
 void WorldSession::HandleLfgSetRolesOpcode(WorldPacket &recv_data)
 {
     uint8 roles;
     recv_data >> roles;                                     // Player Group Roles
-
+    uint64 guid = GetPlayer()->GetGUID();
     Group* grp = GetPlayer()->GetGroup();
     if (!grp)
     {
-        sLog.outDebug("CMSG_LFG_SET_ROLES [" UI64FMTD "] Not in group", GetPlayer()->GetGUID());
+        sLog.outDebug("CMSG_LFG_SET_ROLES [" UI64FMTD "] Not in group", guid);
         return;
     }
-    sLog.outDebug("CMSG_LFG_SET_ROLES [" UI64FMTD "] Roles: %u", GetPlayer()->GetGUID(), roles);
-    GetPlayer()->SetLfgRoles(roles);
-    sLFGMgr.UpdateRoleCheck(grp, GetPlayer());
+    sLog.outDebug("CMSG_LFG_SET_ROLES [" UI64FMTD "] Roles: %u", guid, roles);
+    sLFGMgr.UpdateRoleCheck(grp, GetPlayer(), LfgRoles(roles));
 }
 
 void WorldSession::HandleLfgSetCommentOpcode(WorldPacket & recv_data)
 {
     std::string comment;
     recv_data >> comment;
-
-    sLog.outDebug("CMSG_SET_LFG_COMMENT [" UI64FMTD "] comment: %s", GetPlayer()->GetGUID(), comment.c_str());
-    GetPlayer()->SetLfgComment(comment);
+    uint64 guid = GetPlayer()->GetGUID();
+    sLog.outDebug("CMSG_SET_LFG_COMMENT [" UI64FMTD "] comment: %s", guid, comment.c_str());
+    
+    sLFGMgr.SetComment(guid, comment);
 }
 
 void WorldSession::HandleLfgSetBootVoteOpcode(WorldPacket &recv_data)
@@ -276,7 +276,7 @@ void WorldSession::HandleLfrLeaveOpcode(WorldPacket &recv_data)
     //sLFGMgr.LeaveLfr(GetPlayer(), dungeonId);
 }
 
-void WorldSession::SendLfgUpdatePlayer(LfgUpdateData& updateData)
+void WorldSession::SendLfgUpdatePlayer(LfgUpdateData updateData)
 {
     bool queued = false;
     bool extrainfo = false;
@@ -318,7 +318,7 @@ void WorldSession::SendLfgUpdatePlayer(LfgUpdateData& updateData)
     SendPacket(&data);
 }
 
-void WorldSession::SendLfgUpdateParty(LfgUpdateData& updateData)
+void WorldSession::SendLfgUpdateParty(LfgUpdateData updateData)
 {
     bool join = false;
     bool extrainfo = false;
@@ -397,8 +397,8 @@ void WorldSession::SendLfgRoleCheckUpdate(LfgRoleCheck* pRoleCheck)
     Player* plr;
     uint8 roles;
 
-    data << uint32(pRoleCheck->result);                     // Check result
-    data << uint8(pRoleCheck->result == LFG_ROLECHECK_INITIALITING);
+    data << uint32(pRoleCheck->state);                      // Check result
+    data << uint8(pRoleCheck->state == LFG_ROLECHECK_INITIALITING);
     data << uint8(dungeons.size());                         // Number of dungeons
     if (dungeons.size())
     {
@@ -525,15 +525,13 @@ void WorldSession::SendLfgBootPlayer(LfgPlayerBoot* pBoot)
                 ++agreeNum;
         }
     }
-    uint64 victimguid = MAKE_NEW_GUID(pBoot->victimLowGuid, 0, HIGHGUID_PLAYER);
-
     sLog.outDebug("SMSG_LFG_BOOT_PLAYER [" UI64FMTD "] inProgress: %u - didVote: %u - agree: %u - victim: [" UI64FMTD "] votes: %u - agrees: %u - left: %u - needed: %u - reason %s",
-        GetPlayer()->GetGUID(), uint8(pBoot->inProgress), uint8(playerVote != LFG_ANSWER_PENDING), uint8(playerVote == LFG_ANSWER_AGREE), victimguid, votesNum, agreeNum, secsleft, pBoot->votedNeeded, pBoot->reason.c_str());
+        GetPlayer()->GetGUID(), uint8(pBoot->inProgress), uint8(playerVote != LFG_ANSWER_PENDING), uint8(playerVote == LFG_ANSWER_AGREE), pBoot->victim, votesNum, agreeNum, secsleft, pBoot->votedNeeded, pBoot->reason.c_str());
     WorldPacket data(SMSG_LFG_BOOT_PLAYER, 1 + 1 + 1 + 8 + 4 + 4 + 4 + 4 + pBoot->reason.length());
     data << uint8(pBoot->inProgress);                       // Vote in progress
     data << uint8(playerVote != LFG_ANSWER_PENDING);        // Did Vote
     data << uint8(playerVote == LFG_ANSWER_AGREE);          // Agree
-    data << uint64(victimguid);                             // Victim GUID
+    data << uint64(pBoot->victim);                          // Victim GUID
     data << uint32(votesNum);                               // Total Votes
     data << uint32(agreeNum);                               // Agree Count
     data << uint32(secsleft);                               // Time Left
@@ -548,6 +546,8 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal* pProp)
         return;
 
     uint32 pLogGuid = GetPlayer()->GetGUIDLow();
+    uint64 guid = GetPlayer()->GetGUID();
+
     LfgProposalPlayerMap::const_iterator itPlayer = pProp->players.find(pLogGuid);
     if (itPlayer == pProp->players.end())                   // Player MUST be in the proposal
         return;
@@ -561,7 +561,8 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal* pProp)
     Group* grp = dLowGuid ? sObjectMgr.GetGroupByGUID(dLowGuid) : NULL;
     if (grp)
     {
-        isContinue = grp->isLFGGroup() && grp->GetLfgState() != LFG_STATE_FINISHED_DUNGEON;
+        uint64 gguid = grp->GetGUID();
+        isContinue = grp->isLFGGroup() && sLFGMgr.GetState(gguid) != LFG_STATE_FINISHED_DUNGEON;
         isSameDungeon = GetPlayer()->GetGroup() == grp && isContinue;
     }
 
@@ -569,7 +570,11 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, LfgProposal* pProp)
     WorldPacket data(SMSG_LFG_PROPOSAL_UPDATE, 4 + 1 + 4 + 4 + 1 + 1 + pProp->players.size() * (4 + 1 + 1 + 1 + 1 +1));
 
     if (!isContinue)                                        // Only show proposal dungeon if it's continue
-        dungeonId = (*GetPlayer()->GetLfgDungeons()->begin());
+    {
+        LfgDungeonSet playerDungeons = sLFGMgr.GetSelectedDungeons(guid);
+        if (playerDungeons.size())
+            dungeonId = (*playerDungeons.begin());
+    }
     if (LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(dungeonId))
         dungeonId = dungeon->Entry();
     data << uint32(dungeonId);                              // Dungeon
