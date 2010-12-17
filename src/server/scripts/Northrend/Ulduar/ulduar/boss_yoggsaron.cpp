@@ -560,7 +560,7 @@ class boss_sara : public CreatureScript
 
             encounterTimer += diff;
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (phase == PHASE_1)
@@ -849,7 +849,7 @@ class boss_yoggsaron : public CreatureScript
             }
             else insaneTimer -= diff;
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (phase == PHASE_2)
@@ -1510,7 +1510,7 @@ class npc_crusher_tentacle : public CreatureScript
         
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_CASTING))
                 return;
             
             if (DiminishTimer <= 0)
@@ -1525,7 +1525,7 @@ class npc_crusher_tentacle : public CreatureScript
         
         void DamageTaken(Unit *attacker, uint32 &damage)
         {
-            if (attacker->IsWithinMeleeRange(me) && me->hasUnitState(UNIT_STAT_CASTING))
+            if (attacker->IsWithinMeleeRange(me) && me->HasUnitState(UNIT_STAT_CASTING))
                 me->InterruptNonMeleeSpells(true, SPELL_DIMINISH_POWER);
         }
     };
@@ -1596,7 +1596,7 @@ class npc_corruptor_tentacle : public CreatureScript
         
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_CASTING))
                 return;
             
             if (ApathyTimer <= 0)
@@ -1935,7 +1935,7 @@ class npc_ys_thorim : public CreatureScript
         
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (!me->HasAura(SPELL_FURY_OF_THE_STORMS))

@@ -496,7 +496,7 @@ class boss_freya : public CreatureScript
             if (events.GetTimer() > 360000)
                 events.CancelEvent(EVENT_SUMMON_ALLIES);
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             while(uint32 eventId = events.ExecuteEvent())
@@ -1048,7 +1048,7 @@ class boss_elder_stonebark : public CreatureScript
 
         void UpdateAI(const uint32 diff)
         {
-            if(!UpdateVictim() || me->hasUnitState(UNIT_STAT_CASTING))
+            if(!UpdateVictim() || me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             if(uiGroundTremorTimer <= 0)
@@ -1271,7 +1271,7 @@ class creature_ancient_conservator : public CreatureScript
 
         void UpdateAI(const uint32 diff)
         {
-            if(!UpdateVictim() || (me->hasUnitState(UNIT_STAT_CASTING)))
+            if(!UpdateVictim() || (me->HasUnitState(UNIT_STAT_CASTING)))
                 return;
 
             if(uiNaturesFuryTimer <= 0)
@@ -1374,7 +1374,7 @@ class creature_storm_lasher : public CreatureScript
 
         void UpdateAI(const uint32 diff)
         {
-            if(!UpdateVictim() || (me->hasUnitState(UNIT_STAT_CASTING)))
+            if(!UpdateVictim() || (me->HasUnitState(UNIT_STAT_CASTING)))
                 return;
                 
             if(uiLightningLashTimer <= 0)

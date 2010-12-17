@@ -561,7 +561,7 @@ CanCastResult BossSpellWorker::_CanCastSpell(Unit* pTarget, const SpellEntry *pS
     if (!isTriggered)
     {
         // State does not allow
-        if (boss->hasUnitState(UNIT_STAT_CAN_NOT_REACT))
+        if (boss->HasUnitState(UNIT_STAT_CAN_NOT_REACT))
             return CAST_FAIL_STATE;
 
         if (pSpell->PreventionType == SPELL_PREVENTION_TYPE_SILENCE && boss->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))

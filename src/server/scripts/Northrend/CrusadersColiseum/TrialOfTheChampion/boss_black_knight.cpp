@@ -148,7 +148,7 @@ class boss_black_knight : public CreatureScript
             _Reset();
             RemoveSummons();
             me->SetDisplayId(me->GetNativeDisplayId());
-            me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+            me->ClearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
             
             Map* pMap = me->GetMap();
             if (pMap && pMap->IsDungeon() && !bStartCombat)
@@ -230,7 +230,7 @@ class boss_black_knight : public CreatureScript
                     uiPhase++;
                     uiResurrectTimer = 3000;
                     bEventInProgress = false;
-                    me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+                    me->ClearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
                 } else uiResurrectTimer -= uiDiff;
 
             switch(uiPhase)
@@ -260,8 +260,8 @@ class boss_black_knight : public CreatureScript
                     if (!bSummonArmy)
                     {
                         bSummonArmy = true;
-                        me->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-                                            me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                        me->AddUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+                        me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                         DoCast(me, SPELL_ARMY_DEAD);
                     }
 
@@ -269,8 +269,8 @@ class boss_black_knight : public CreatureScript
                     {
                         if (uiDeathArmyCheckTimer <= uiDiff)
                         {
-                            me->clearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
-                                                me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                            me->ClearUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                             uiDeathArmyCheckTimer = 0;
                             bDeathArmyDone = true;
                         } else uiDeathArmyCheckTimer -= uiDiff;
@@ -340,7 +340,7 @@ class boss_black_knight : public CreatureScript
                 } break;
             }
 
-            if (!me->hasUnitState(UNIT_STAT_ROOT) && !me->HealthBelowPct(1))
+            if (!me->HasUnitState(UNIT_STAT_ROOT) && !me->HealthBelowPct(1))
                 DoMeleeAttackIfReady();
         }
 
@@ -374,7 +374,7 @@ class boss_black_knight : public CreatureScript
             {
                 uiDamage = 0;
                 me->SetHealth(0);
-                me->addUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
+                me->AddUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED);
                 RemoveSummons();
                 switch(uiPhase)
                 {

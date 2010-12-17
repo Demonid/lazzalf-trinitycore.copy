@@ -812,7 +812,7 @@ class boss_leviathan_mk : public CreatureScript
 
             events.Update(diff);
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             if (phase == PHASE_LEVIATHAN_SOLO || phase == PHASE_LEVIATHAN_ASSEMBLED)
@@ -1104,7 +1104,7 @@ class boss_vx_001 : public CreatureScript
 
             events.Update(diff);
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             if (phase == PHASE_VX001_SOLO || phase == PHASE_VX001_ASSEMBLED)
@@ -1293,7 +1293,7 @@ class boss_aerial_unit : public CreatureScript
 
             events.Update(diff);
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             if (phase == PHASE_AERIAL_SOLO || phase == PHASE_AERIAL_ASSEMBLED)
