@@ -30,21 +30,15 @@ enum Creatures
 
 enum Data
 {
-    DATA_ARCHAVON_EVENT,
-    DATA_EMALON_EVENT,
-    DATA_KORALON_EVENT,
-    DATA_TORAVON_EVENT,
+    DATA_ARCHAVON   = 0,
+    DATA_EMALON     = 1,
+    DATA_KORALON    = 2,
+    DATA_TORAVON    = 3,
     DATA_EWF_START,
     DATA_EWF_COUNT,
 };
 
-enum Data64
-{
-    DATA_ARCHAVON,
-    DATA_EMALON,
-    DATA_KORALON,
-    DATA_TORAVON,
-};
+#define MAX_ENCOUNTER 4
 
 enum AchievementControl
 {
