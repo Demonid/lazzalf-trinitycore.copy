@@ -330,7 +330,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
             case 380: // Kologarn's Right Arm
                 break;
             default: 
-                unit->addUnitState(UNIT_STAT_ONVEHICLE); 
+                unit->AddUnitState(UNIT_STAT_ONVEHICLE);
                 break; 
         }
     }
@@ -414,7 +414,7 @@ void Vehicle::RemovePassenger(Unit *unit)
         ++m_usableSeatNum;
     }
 
-    unit->clearUnitState(UNIT_STAT_ONVEHICLE);
+    unit->ClearUnitState(UNIT_STAT_ONVEHICLE);
 
     if (me->GetTypeId() == TYPEID_UNIT
         && unit->GetTypeId() == TYPEID_PLAYER

@@ -65,7 +65,7 @@ public:
                 pInstance->SetData(DATA_DRAKKARI_COLOSSUS_EVENT, NOT_STARTED);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            me->clearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
+            me->ClearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
             me->SetReactState(REACT_AGGRESSIVE);
             MightyBlowTimer = 10*IN_MILLISECONDS;
             bHealth = false;
@@ -85,7 +85,7 @@ public:
 
             if (bRestore)
             {
-                pWho->clearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
+                pWho->ClearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
                 pWho->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 if (pWho == me)
                     me->RemoveAura(SPELL_FREEZE_ANIM);
@@ -93,7 +93,7 @@ public:
             else
             {
                 pWho->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                pWho->addUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
+                pWho->AddUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
                 if (pWho == me)
                     DoCast(me,SPELL_FREEZE_ANIM);
             }
@@ -127,7 +127,7 @@ public:
                 MightyBlowTimer = 10*IN_MILLISECONDS;
             } else MightyBlowTimer -= diff;
 
-            if (!me->hasUnitState(UNIT_STAT_STUNNED))
+            if (!me->HasUnitState(UNIT_STAT_STUNNED))
                 DoMeleeAttackIfReady();
         }
 
