@@ -1680,10 +1680,7 @@ class npc_twilight_fissure : public CreatureScript
         
     struct npc_twilight_fissureAI : public Scripted_NoMovementAI
     {
-        npc_twilight_fissureAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
-        {
-            Reset();
-        }
+        npc_twilight_fissureAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature) {}
 
         uint32 VoidBlast_Timer;
 
@@ -1721,10 +1718,7 @@ class mob_twilight_whelp : public CreatureScript
 
     struct mob_twilight_whelpAI : public ScriptedAI
     {
-        mob_twilight_whelpAI(Creature* pCreature) : ScriptedAI(pCreature) 
-        {
-            Reset();
-        }
+        mob_twilight_whelpAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
         uint32 m_uiFadeArmorTimer;
 
