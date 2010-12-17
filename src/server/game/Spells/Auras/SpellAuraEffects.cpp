@@ -2567,7 +2567,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
         triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, NULL, this);
         sLog.outDebug("AuraEffect::TriggerSpell: Spell %u Trigger %u",GetId(), triggeredSpellInfo->Id);
     }
-    else if (target->GetTypeId() != TYPEID_UNIT || !sScriptMgr.OnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex()), triggerTarget->ToCreature()))
+    else if (target->GetTypeId() != TYPEID_UNIT || (triggerTarget->ToCreature() && !sScriptMgr.OnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex()), triggerTarget->ToCreature())))
     {
         if (Creature* c = triggerTarget->ToCreature())
         {
