@@ -214,7 +214,7 @@ class boss_ignis : public CreatureScript
             EncounterTime += diff;
             ConstructTimer += diff;
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             while(uint32 eventId = events.ExecuteEvent())

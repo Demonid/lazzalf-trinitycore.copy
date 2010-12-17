@@ -359,7 +359,7 @@ class boss_thorim : public CreatureScript
             events.Update(diff);
             EncounterTime += diff;
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (phase == PHASE_1)
@@ -532,7 +532,7 @@ class mob_pre_phase : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (PrimaryTimer <= int32(uiDiff))
@@ -652,7 +652,7 @@ class mob_arena_phase : public CreatureScript
                 return;
             }
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (PrimaryTimer <= int32(uiDiff))
@@ -738,7 +738,7 @@ class mob_runic_colossus : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (BarrierTimer <= int32(uiDiff))
@@ -835,7 +835,7 @@ class mob_rune_giant : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                 
             if (StompTimer <= int32(uiDiff))
@@ -989,7 +989,7 @@ class npc_sif : public CreatureScript
             if (!UpdateVictim())
                 return;
                 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
 
             if (FrostTimer <= int32(uiDiff))

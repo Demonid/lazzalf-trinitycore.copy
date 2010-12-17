@@ -326,7 +326,7 @@ class boss_hodir : public CreatureScript
 
             events.Update(diff);
             
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                         
             if (uiCheckIntenseColdTimer < diff && !bMoreThanTwoIntenseCold)
@@ -602,7 +602,7 @@ class mob_hodir_priest : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                 return;
                 
             if (HealthBelowPct(35))
@@ -684,7 +684,7 @@ class mob_hodir_shaman : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                 return;
                 
             if (StormTimer <= int32(uiDiff))
@@ -749,7 +749,7 @@ class mob_hodir_druid : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                 return;
                 
             if (StarlightTimer <= int32(uiDiff))
@@ -808,7 +808,7 @@ class mob_hodir_mage : public CreatureScript
 
         void UpdateAI(const uint32 uiDiff)
         {
-            if (!UpdateVictim() || me->hasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STAT_STUNNED) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED))
                 return;
                 
             if (FireTimer <= int32(uiDiff))

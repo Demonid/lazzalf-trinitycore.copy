@@ -223,7 +223,7 @@ class boss_flame_leviathan : public CreatureScript
 
             events.Update(diff);
 
-            if (me->hasUnitState(UNIT_STAT_CASTING) || me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
+            if (me->HasUnitState(UNIT_STAT_CASTING) || me->HasAura(SPELL_SYSTEMS_SHUTDOWN))
                 return;
 
             while(uint32 eventId = events.ExecuteEvent())
