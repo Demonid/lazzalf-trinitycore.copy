@@ -1374,7 +1374,8 @@ class mob_acolyte_of_shadron : public CreatureScript
     {
         mob_acolyte_of_shadronAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = pCreature->GetInstanceScript();
+            pInstance = pCreature->GetInstanceScript();            
+            me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);
         }
 
         InstanceScript* pInstance;
@@ -1386,8 +1387,7 @@ class mob_acolyte_of_shadron : public CreatureScript
         {
             uiShieldTimer = 1000;
             uiShiftEffectTimer = 1000;
-            shield = false;
-            me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER,me);        
+            shield = false;        
         }
 
         void JustDied(Unit* killer)
@@ -1469,9 +1469,7 @@ class mob_acolyte_of_vesperon : public CreatureScript
         {
             pInstance = pCreature->GetInstanceScript();
 
-            if (pInstance)
-                me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);
-
+            me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);
             ToInterrupt = true;
             CheckForInterrupt = 2000;
         }
