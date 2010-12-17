@@ -298,7 +298,11 @@ struct boss_twin_baseAI : public ScriptedAI
                     m_pInstance->SetData(TYPE_VALKIRIES, DONE);
                     Summons.DespawnAll();
                 }
-                else m_pInstance->SetData(TYPE_VALKIRIES, SPECIAL);
+                else 
+                {
+                    m_pInstance->SetData(TYPE_VALKIRIES, SPECIAL);
+                    me->Kill(pSister);
+                }                    
             }
         }
         Summons.DespawnAll();
