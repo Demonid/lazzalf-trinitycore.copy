@@ -913,17 +913,15 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
 
     float range;
     SpellRangeEntry const * srentry = sSpellRangeStore.LookupEntry(trapSpell->rangeIndex);
-    //get owner to check hostility of GameObject
-    if (GetSpellMaxRangeForHostile(srentry) == GetSpellMaxRangeForHostile(srentry))
+    if (GetSpellMaxRangeForHostile(srentry) == GetSpellMaxRangeForFriend(srentry))
         range = GetSpellMaxRangeForHostile(srentry);
     else
-    {
+        // get owner to check hostility of GameObject
         if (Unit *owner = GetOwner())
             range = (float)owner->GetSpellMaxRangeForTarget(target, srentry);
         else
-            //if no owner assume that object is hostile to target
+            // if no owner assume that object is hostile to target
             range = GetSpellMaxRangeForHostile(srentry);
-    }
 
     // search nearest linked GO
     GameObject* trapGO = NULL;
@@ -1509,15 +1507,15 @@ void GameObject::Use(Unit* user)
                     {
                         case 179785:                        // Silverwing Flag
                             // check if it's correct bg
-                            if (bg->GetTypeID(true) == BATTLEGROUND_WS)
+                            if (bg->IsRandom() ? bg->GetTypeID(true) : bg->GetTypeID(false) == BATTLEGROUND_WS)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                         case 179786:                        // Warsong Flag
-                            if (bg->GetTypeID(true) == BATTLEGROUND_WS)
+                            if (bg->IsRandom() ? bg->GetTypeID(true) : bg->GetTypeID(false) == BATTLEGROUND_WS)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                         case 184142:                        // Netherstorm Flag
-                            if (bg->GetTypeID(true) == BATTLEGROUND_EY)
+                            if (bg->IsRandom() ? bg->GetTypeID(true) : bg->GetTypeID(false) == BATTLEGROUND_EY)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                     }
