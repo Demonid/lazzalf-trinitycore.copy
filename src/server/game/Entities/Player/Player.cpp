@@ -1423,7 +1423,7 @@ void Player::Update(uint32 p_time)
 
     GetAchievementMgr().UpdateTimedAchievements(p_time);
 
-    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CASTING))
+    if (HasUnitState(UNIT_STAT_MELEE_ATTACKING) && !HasUnitState(UNIT_STAT_CASTING))
     {
         if (Unit *pVictim = getVictim())
         {
@@ -11189,7 +11189,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
             {
                 // May be here should be more stronger checks; STUNNED checked
                 // ROOT, CONFUSED, DISTRACTED, FLEEING this needs to be checked.
-                if (hasUnitState(UNIT_STAT_STUNNED))
+                if (HasUnitState(UNIT_STAT_STUNNED))
                     return EQUIP_ERR_YOU_ARE_STUNNED;
 
                 // do not allow equipping gear except weapons, offhands, projectiles, relics in
@@ -19665,7 +19665,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
         return false;
 
     // not let cheating with start flight in time of logout process || while in combat || has type state: stunned || has type state: root
-    if (GetSession()->isLogingOut() || isInCombat() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_ROOT))
+    if (GetSession()->isLogingOut() || isInCombat() || HasUnitState(UNIT_STAT_STUNNED) || HasUnitState(UNIT_STAT_ROOT))
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIPLAYERBUSY);
@@ -20958,7 +20958,7 @@ void Player::SendInitialVisiblePackets(Unit* target)
     {
         if (target->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
             target->SendMonsterMoveWithSpeedToCurrentDestination(this);
-        if (target->hasUnitState(UNIT_STAT_MELEE_ATTACKING) && target->getVictim())
+        if (target->HasUnitState(UNIT_STAT_MELEE_ATTACKING) && target->getVictim())
             target->SendMeleeAttackStart(target->getVictim());
     }
 }
@@ -23981,31 +23981,43 @@ void Player::_SaveEquipmentSets(SQLTransaction& trans)
     {
         uint32 index = itr->first;
         EquipmentSet& eqset = itr->second;
-        switch(eqset.state)
+        PreparedStatement* stmt = NULL;
+        uint8 j = 0;
+        switch (eqset.state)
         {
             case EQUIPMENT_SET_UNCHANGED:
                 ++itr;
                 break;                                      // nothing do
             case EQUIPMENT_SET_CHANGED:
-                CharacterDatabase.escape_string(eqset.Name);
-                CharacterDatabase.escape_string(eqset.IconName);
-                trans->PAppend("UPDATE character_equipmentsets SET name='%s', iconname='%s', item0='%u', item1='%u', item2='%u', item3='%u', item4='%u', item5='%u', item6='%u', item7='%u', item8='%u', item9='%u', item10='%u', item11='%u', item12='%u', item13='%u', item14='%u', item15='%u', item16='%u', item17='%u', item18='%u' WHERE guid='%u' AND setguid='"UI64FMTD"' AND setindex='%u'",
-                    eqset.Name.c_str(), eqset.IconName.c_str(), eqset.Items[0], eqset.Items[1], eqset.Items[2], eqset.Items[3], eqset.Items[4], eqset.Items[5], eqset.Items[6], eqset.Items[7],
-                    eqset.Items[8], eqset.Items[9], eqset.Items[10], eqset.Items[11], eqset.Items[12], eqset.Items[13], eqset.Items[14], eqset.Items[15], eqset.Items[16], eqset.Items[17], eqset.Items[18], GetGUIDLow(), eqset.Guid, index);
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_SET_EQUIP_SET);
+                stmt->setString(j++, eqset.Name.c_str());
+                stmt->setString(j++, eqset.IconName.c_str());
+                for (uint8 i=0; i<EQUIPMENT_SLOT_END; ++i)
+                    stmt->setUInt32(j++, eqset.Items[i]);
+                stmt->setUInt32(j++, GetGUIDLow());
+                stmt->setUInt64(j++, eqset.Guid);
+                stmt->setUInt32(j, index);
+                trans->Append(stmt);
                 eqset.state = EQUIPMENT_SET_UNCHANGED;
                 ++itr;
                 break;
             case EQUIPMENT_SET_NEW:
-                CharacterDatabase.escape_string(eqset.Name);
-                CharacterDatabase.escape_string(eqset.IconName);
-                trans->PAppend("INSERT INTO character_equipmentsets VALUES ('%u', '"UI64FMTD"', '%u', '%s', '%s', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), eqset.Guid, index, eqset.Name.c_str(), eqset.IconName.c_str(), eqset.Items[0], eqset.Items[1], eqset.Items[2], eqset.Items[3], eqset.Items[4], eqset.Items[5], eqset.Items[6], eqset.Items[7],
-                    eqset.Items[8], eqset.Items[9], eqset.Items[10], eqset.Items[11], eqset.Items[12], eqset.Items[13], eqset.Items[14], eqset.Items[15], eqset.Items[16], eqset.Items[17], eqset.Items[18]);
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_EQUIP_SET);
+                stmt->setUInt32(j++, GetGUIDLow());
+                stmt->setUInt64(j++, eqset.Guid);
+                stmt->setUInt32(j++, index);                
+                stmt->setString(j++, eqset.Name.c_str());
+                stmt->setString(j++, eqset.IconName.c_str());
+                for (uint8 i=0; i<EQUIPMENT_SLOT_END; ++i)
+                    stmt->setUInt32(j++, eqset.Items[i]);
+                trans->Append(stmt);
                 eqset.state = EQUIPMENT_SET_UNCHANGED;
                 ++itr;
                 break;
             case EQUIPMENT_SET_DELETED:
-                trans->PAppend("DELETE FROM character_equipmentsets WHERE setguid="UI64FMTD, eqset.Guid);
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EQUIP_SET);
+                stmt->setUInt64(0, eqset.Guid);
+                trans->Append(stmt);
                 m_EquipmentSets.erase(itr++);
                 break;
         }

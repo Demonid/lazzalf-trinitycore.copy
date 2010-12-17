@@ -258,7 +258,7 @@ class boss_kologarn : public CreatureScript
 
             events.Update(diff);
 
-            if (me->hasUnitState(UNIT_STAT_CASTING))
+            if (me->HasUnitState(UNIT_STAT_CASTING))
                 return;
                             
             if (events.GetTimer() > 15000 && !IsInRange())
