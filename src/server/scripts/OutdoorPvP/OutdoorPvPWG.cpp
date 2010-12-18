@@ -37,7 +37,8 @@ void OutdoorPvPWG::ResetCreatureEntry(Creature *cr, uint32 entry)
 {
     if (cr)
     {
-        cr->SetOriginalEntry(entry);
+        // cr->SetOriginalEntry(entry);
+        cr->UpdateEntry(entry); // SetOriginalEntry as used before may lead to crash
         if (entry != cr->GetEntry() || !cr->isAlive())
             cr->Respawn(true);
         cr->SetVisible(true);
@@ -968,7 +969,6 @@ void OutdoorPvPWG::OnCreatureRemove(Creature *creature)
                         break;
                     }
             }
-            creature->CastSpell(creature, SPELL_SPIRITUAL_IMMUNITY, true);
         case CREATURE_SPIRIT_HEALER:
         case CREATURE_TURRET:
         case CREATURE_OTHER:
