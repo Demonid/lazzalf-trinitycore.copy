@@ -1946,7 +1946,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         sLog.outDebug("Player %s using client without required expansion tried teleport to non accessible map %u", GetName(), mapid);
 
         if (GetTransport())
+        {
+            m_transport->RemovePassenger(this);
+            m_transport = NULL;
+            m_movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
+            m_movementInfo.t_time = 0;
+            m_movementInfo.t_seat = -1;
             RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
+        }
 
         SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL, mEntry->Expansion());
 
@@ -13359,6 +13366,17 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
     if (pEnchant->requiredSkill > 0 && pEnchant->requiredSkillValue > GetSkillValue(pEnchant->requiredSkill))
         return;
 
+    // If we're dealing with a gem inside a prismatic socket we need to check the prismatic socket requirements
+    // rather than the gem requirements itself. If the socket has no color it is a prismatic socket.
+    if((slot == SOCK_ENCHANTMENT_SLOT || slot == SOCK_ENCHANTMENT_SLOT_2 || slot == SOCK_ENCHANTMENT_SLOT_3)
+        && !item->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color)
+    {
+        // Check if the requirements for the prismatic socket are met before applying the gem stats
+         SpellItemEnchantmentEntry const *pPrismaticEnchant = sSpellItemEnchantmentStore.LookupEntry(item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT));
+         if(pPrismaticEnchant->requiredSkill > 0 && pPrismaticEnchant->requiredSkillValue > GetSkillValue(pPrismaticEnchant->requiredSkill))
+             return;        
+    }
+
     if (!item->IsBroken())
     {
         for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
@@ -13718,6 +13736,22 @@ void Player::UpdateSkillEnchantments(uint16 skill_id, uint16 curr_value, uint16 
                         ApplyEnchantment(m_items[i], EnchantmentSlot(slot), true);
                     else if (new_value < Enchant->requiredSkillValue && curr_value >= Enchant->requiredSkillValue)
                         ApplyEnchantment(m_items[i], EnchantmentSlot(slot), false);
+                }
+
+                // If we're dealing with a gem inside a prismatic socket we need to check the prismatic socket requirements
+                // rather than the gem requirements itself. If the socket has no color it is a prismatic socket.
+                if ((slot == SOCK_ENCHANTMENT_SLOT || slot == SOCK_ENCHANTMENT_SLOT_2 || slot == SOCK_ENCHANTMENT_SLOT_3) 
+                    && !m_items[i]->GetProto()->Socket[slot-SOCK_ENCHANTMENT_SLOT].Color)
+                {
+                    SpellItemEnchantmentEntry const *pPrismaticEnchant = sSpellItemEnchantmentStore.LookupEntry(m_items[i]->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT));
+
+                    if (pPrismaticEnchant->requiredSkill == skill_id)
+                    {
+                        if (curr_value < pPrismaticEnchant->requiredSkillValue && new_value >= pPrismaticEnchant->requiredSkillValue)
+                            ApplyEnchantment(m_items[i], EnchantmentSlot(slot), true);
+                        else if (new_value < pPrismaticEnchant->requiredSkillValue && curr_value >= pPrismaticEnchant->requiredSkillValue)
+                            ApplyEnchantment(m_items[i], EnchantmentSlot(slot), false);
+                    }
                 }
             }
         }
@@ -18326,7 +18360,9 @@ void Player::_SaveActions(SQLTransaction& trans)
 
 void Player::_SaveAuras(SQLTransaction& trans)
 {
-    trans->PAppend("DELETE FROM character_aura WHERE guid = '%u'",GetGUIDLow());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_AURA);
+    stmt->setUInt32(0, GetGUIDLow());
+    trans->Append(stmt);
 
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end() ; ++itr)
     {
@@ -18356,11 +18392,24 @@ void Player::_SaveAuras(SQLTransaction& trans)
             }
         }
 
-        trans->PAppend("INSERT INTO character_aura (guid,caster_guid,spell,effect_mask,recalculate_mask,stackcount,amount0,amount1,amount2,base_amount0,base_amount1,base_amount2,maxduration,remaintime,remaincharges) "
-            "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%u', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u')",
-            GetGUIDLow(), itr->second->GetCasterGUID(), itr->second->GetId(), effMask, recalculateMask,
-            itr->second->GetStackAmount(), damage[0], damage[1], damage[2], baseDamage[0], baseDamage[1], baseDamage[2],
-            itr->second->GetMaxDuration(), itr->second->GetDuration(),itr->second->GetCharges());
+        uint8 index = 0;
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_AURA);
+        stmt->setUInt32(index++, GetGUIDLow());
+        stmt->setUInt64(index++, itr->second->GetCasterGUID());
+        stmt->setUInt32(index++, itr->second->GetId());
+        stmt->setUInt8(index++, effMask);
+        stmt->setUInt8(index++, recalculateMask);       
+        stmt->setUInt8(index++, itr->second->GetStackAmount());
+        stmt->setInt32(index++, damage[0]);
+        stmt->setInt32(index++, damage[1]);
+        stmt->setInt32(index++, damage[2]);
+        stmt->setInt32(index++, baseDamage[0]);
+        stmt->setInt32(index++, baseDamage[1]);
+        stmt->setInt32(index++, baseDamage[2]);
+        stmt->setInt32(index++, itr->second->GetMaxDuration());
+        stmt->setInt32(index++, itr->second->GetDuration());
+        stmt->setUInt8(index, itr->second->GetCharges());
+        trans->Append(stmt);
     }
 }
 
@@ -19469,7 +19518,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 }
 
 // Restore spellmods in case of failed cast
-void Player::RestoreSpellMods(Spell * spell)
+void Player::RestoreSpellMods(Spell *spell, uint32 ownerAuraId)
 {
     if (!spell || spell->m_appliedMods.empty())
         return;
@@ -19482,6 +19531,10 @@ void Player::RestoreSpellMods(Spell * spell)
 
             // spellmods without aura set cannot be charged
             if (!mod->ownerAura || !mod->ownerAura->GetCharges())
+                continue;
+
+            // Restore only specific owner aura mods
+            if (ownerAuraId && (ownerAuraId != mod->ownerAura->GetSpellProto()->Id))
                 continue;
 
             // check if mod affected this spell
