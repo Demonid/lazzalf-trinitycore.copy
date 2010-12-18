@@ -153,6 +153,7 @@ bool CharacterDatabaseConnection::Open()
     PrepareStatement(CHAR_ADD_GUILD_EVENTLOG, "INSERT INTO guild_eventlog (guildid, LogGuid, EventType, PlayerGuid1, PlayerGuid2, NewRank, TimeStamp) VALUES (?, ?, ?, ?, ?, ?, ?)", true);
     PrepareStatement(CHAR_DEL_GUILD_EVENTLOG, "DELETE FROM guild_eventlog WHERE guildid = ? AND LogGuid = ?", true); // 0: uint32, 1: uint32
     PrepareStatement(CHAR_DEL_GUILD_EVENTLOGS, "DELETE FROM guild_eventlog WHERE guildid = ?", true); // 0: uint32
+    PrepareStatement(CHAR_DEL_GUILD_GUILDHOUSE, "DELETE FROM gh_guildadd WHERE guildId = ?"); // 0: uint32
     PrepareStatement(CHAR_SET_GUILD_MEMBER_PNOTE, "UPDATE guild_member SET pnote = ? WHERE guid = ?", true); // 0: string, 1: uint32
     PrepareStatement(CHAR_SET_GUILD_MEMBER_OFFNOTE, "UPDATE guild_member SET offnote = ? WHERE guid = ?", true); // 0: string, 1: uint32
     PrepareStatement(CHAR_SET_GUILD_MEMBER_RANK, "UPDATE guild_member SET rank = ? WHERE guid = ?", true); // 0: uint8, 1: uint32

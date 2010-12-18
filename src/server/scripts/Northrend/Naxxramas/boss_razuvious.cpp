@@ -66,8 +66,14 @@ public:
     {
         boss_razuviousAI(Creature *c) : BossAI(c, BOSS_RAZUVIOUS) {}
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             if (!(rand()%3))
                 DoPlaySoundToSet(me, SOUND_SLAY);
         }

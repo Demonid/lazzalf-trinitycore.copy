@@ -34,6 +34,32 @@ EndContentData */
 #include "ScriptPCH.h"
 #include "Spell.h"
 
+
+/*#####
+# item_marry_tele
+#####*/
+
+class item_marry_tele : public ItemScript
+{
+public:
+    item_marry_tele() : ItemScript("item_marry_tele") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& /*targets*/)
+    {
+        if (!pPlayer)
+            return true;
+
+        if (pPlayer->isInCombat())
+        {
+            pPlayer->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,pItem,NULL);
+            return true;
+        }
+        
+        pPlayer->TeleportTo(0, -8323.68f, -349.26f, 145.8f,  0.57f);
+        return true;
+    }
+};
+
 /*#####
 # item_only_for_flight
 #####*/
@@ -512,6 +538,7 @@ public:
 
 void AddSC_item_scripts()
 {
+    new item_marry_tele;
     new item_only_for_flight;
     new item_draenei_fishing_net;
     new item_nether_wraith_beacon;

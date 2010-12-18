@@ -59,6 +59,8 @@ const Position RiftLocation[6] =
     {651.72f, -297.44f, -9.37f, 0.0f}
 };
 
+#define BOSS_ANOMALUS 26763
+
 class boss_anomalus : public CreatureScript
 {
 public:
@@ -216,8 +218,11 @@ public:
 
         void JustDied(Unit * /*killer*/)
         {
-            if (Creature* pAnomalus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ANOMALUS) : 0))
-                CAST_AI(boss_anomalus::boss_anomalusAI,pAnomalus->AI())->bDeadChaoticRift = true;
+            if (IsHeroic() && (pInstance->GetData(DATA_ANOMALUS_EVENT) == IN_PROGRESS))//fix'd
+            {
+                if (Creature* pAnomalus = me->FindNearestCreature(BOSS_ANOMALUS,60,true))
+                    CAST_AI(boss_anomalus::boss_anomalusAI,pAnomalus->AI())->bDeadChaoticRift = true;
+            }
         }
 
         void UpdateAI(const uint32 diff)
