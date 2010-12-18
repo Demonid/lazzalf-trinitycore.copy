@@ -1501,7 +1501,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
     switch (GetSpellProto()->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
-            switch(GetId())
+            switch (GetId())
             {
                 case 50720: // Vigilance
                     if (apply)
