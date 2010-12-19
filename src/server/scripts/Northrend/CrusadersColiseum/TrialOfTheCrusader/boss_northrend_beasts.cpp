@@ -109,6 +109,9 @@ enum BossSpells
     SPELL_STAGGERED_DAZE    = 66758,
 };
 
+#define SNOBOLD_COUNT RAID_MODE(2,4)
+#define ACHI_UPPER_BACK_PAIN RAID_MODE(3797,3813)
+
 class boss_gormok : public CreatureScript
 {
 public:
@@ -286,7 +289,11 @@ public:
             {
                 case 0: // JUMP!? Fuck! THAT'S BEEZARR! Would someone PLEASE make MotionMaster->Move* work better?
                     if (m_bTargetDied)
+                    {
                         me->ForcedDespawn();
+                        if (m_pInstance)
+                            m_pInstance->SetData(DATA_SNOBOLD_COUNT, DECREASE);
+                    }
                     break;
             }
         }
@@ -397,7 +404,7 @@ struct boss_jormungarAI : public ScriptedAI
         m_uiSweepTimer = urand(15*IN_MILLISECONDS,30*IN_MILLISECONDS);
     }
 
-    void JustDied(Unit* /*pKiller*/)
+    /*void JustDied(Unit* pKiller)
     {
         if (m_pInstance)
         {
@@ -408,6 +415,21 @@ struct boss_jormungarAI : public ScriptedAI
                 else
                     m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
             }
+        }
+    }*/
+
+    void JustDied(Unit* /*pKiller*/)
+    {
+        if (m_pInstance)
+        {
+            if (Creature* pSister = Unit::GetCreature((*me),m_pInstance->GetData64(m_uiSisterID)))         
+            {
+                if (pSister->isAlive())
+                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
+                else
+                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+            } else 
+                  m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
         }
     }
 
@@ -719,7 +741,15 @@ public:
         void JustDied(Unit* /*pKiller*/)
         {
             if (m_pInstance)
+            {
                 m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ICEHOWL_DONE);
+
+                if (int32(m_pInstance->GetData(DATA_SNOBOLD_COUNT)) >= SNOBOLD_COUNT)
+                    m_pInstance->DoCompleteAchievement(ACHI_UPPER_BACK_PAIN);
+            }
+
+            while (Unit* pTarget = me->FindNearestCreature(NPC_SNOBOLD_VASSAL,100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void MovementInform(uint32 uiType, uint32 uiId)
