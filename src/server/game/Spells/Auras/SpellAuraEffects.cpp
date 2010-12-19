@@ -860,14 +860,14 @@ void AuraEffect::CalculatePeriodic(Unit * caster, bool create)
     if (create)
     {
         // Start periodic on next tick or at aura apply
-        if (m_amplitude && !(m_spellProto->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY))
+        if (m_amplitude && !(m_spellProto->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY))
             m_periodicTimer += m_amplitude;
     }
     else if (m_amplitude) // load aura from character_aura
     {
         m_tickNumber = GetBase()->GetDuration() / m_amplitude;
         m_periodicTimer = GetBase()->GetDuration() % m_amplitude;
-        if (m_spellProto->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY)
+        if (m_spellProto->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY)
             ++m_tickNumber;
     }
 }
@@ -1037,7 +1037,7 @@ void AuraEffect::ApplySpellMod(Unit * target, bool apply)
                 Aura * aura = iter->second->GetBase();
                 // only passive auras-active auras should have amount set on spellcast and not be affected
                 // if aura is casted by others, it will not be affected
-                if ((aura->IsPassive() || aura->GetSpellProto()->AttributesEx2 & SPELL_ATTR_EX2_ALWAYS_APPLY_MODIFIERS) && aura->GetCasterGUID() == guid && sSpellMgr.IsAffectedByMod(aura->GetSpellProto(), m_spellmod))
+                if ((aura->IsPassive() || aura->GetSpellProto()->AttributesEx2 & SPELL_ATTR2_ALWAYS_APPLY_MODIFIERS) && aura->GetCasterGUID() == guid && sSpellMgr.IsAffectedByMod(aura->GetSpellProto(), m_spellmod))
                 {
                     if (GetMiscValue() == SPELLMOD_ALL_EFFECTS)
                     {
@@ -1581,7 +1581,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
             }
 
             // heal for caster damage (must be alive)
-            if (target != caster && GetSpellProto()->AttributesEx2 & SPELL_ATTR_EX2_HEALTH_FUNNEL && !caster->isAlive())
+            if (target != caster && GetSpellProto()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL && !caster->isAlive())
                 break;
 
             if (GetBase()->GetDuration() == -1 && target->IsFullHealth())
@@ -1655,7 +1655,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
             // Health Funnel
             // damage caster for heal amount
-            if (target != caster && GetSpellProto()->AttributesEx2 & SPELL_ATTR_EX2_HEALTH_FUNNEL)
+            if (target != caster && GetSpellProto()->AttributesEx2 & SPELL_ATTR2_HEALTH_FUNNEL)
             {
                 uint32 damage = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), 0); // damage is not affected by spell power
                 if ((int32)damage > gain)
@@ -2728,7 +2728,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit * target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled) continue;
                 if (itr->first == spellId || itr->first == spellId2) continue;
                 SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
-                if (!spellInfo || !(spellInfo->Attributes & (SPELL_ATTR_PASSIVE | SPELL_ATTR_UNK7))) continue;
+                if (!spellInfo || !(spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_UNK7))) continue;
                 if (spellInfo->Stances & (1<<(GetMiscValue()-1)))
                     target->CastSpell(target, itr->first, true, NULL, this);
             }
@@ -4107,12 +4107,11 @@ void AuraEffect::HandleModThreat(AuraApplication const * aurApp, uint8 mode, boo
         return;
 
     Unit * target = aurApp->GetTarget();
-
-    if (!target->isAlive())
+    if (!target || (apply && !target->isAlive()))
         return;
 
     Unit * caster = GetCaster();
-    if (!caster || !caster->isAlive())
+    if (!caster)
         return;
 
     if (target->GetTypeId() == TYPEID_PLAYER)
@@ -4497,7 +4496,7 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const * aurApp, uint
         target->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
     }
 
-    if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
+    if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
         for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
             target->RemoveAurasByType(*iter);
 
@@ -4543,7 +4542,7 @@ void AuraEffect::HandleModMechanicImmunity(AuraApplication const * aurApp, uint8
             break;
     }
 
-    if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
+    if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
         target->HandleAuraEffectsWithMechanic(false, mechanic, AURA_REMOVE_BY_DEFAULT, GetId());
     else
         target->HandleAuraEffectsWithMechanic(true, mechanic, AURA_REMOVE_NONE, GetId());
@@ -4582,7 +4581,7 @@ void AuraEffect::HandleAuraModStateImmunity(AuraApplication const * aurApp, uint
 
     Unit * target = aurApp->GetTarget();
 
-    if ((apply) && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
+    if ((apply) && GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
     {
         target->RemoveAurasByType(AuraType(GetMiscValue()), NULL , GetBase());
     }
@@ -4603,13 +4602,13 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const * aurApp, uin
     target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,GetMiscValue(),(apply));
 
     // remove all flag auras (they are positive, but they must be removed when you are immune)
-    if (GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY
-        && GetSpellProto()->AttributesEx2 & SPELL_ATTR_EX2_DAMAGE_REDUCED_SHIELD)
+    if (GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY
+        && GetSpellProto()->AttributesEx2 & SPELL_ATTR2_DAMAGE_REDUCED_SHIELD)
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
     // TODO: optimalize this cycle - use RemoveAurasWithInterruptFlags call or something else
     if ((apply)
-        && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY
+        && GetSpellProto()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY
         && IsPositiveSpell(GetId()))                       //Only positive immunity removes auras
     {
         uint32 school_mask = GetMiscValue();
@@ -4956,8 +4955,8 @@ void AuraEffect::HandleModTotalPercentStat(AuraApplication const * aurApp, uint8
         }
     }
 
-    //recalculate current HP/MP after applying aura modifications (only for spells with SPELL_ATTR_UNK4 0x00000010 flag)
-    if ((GetMiscValue() == STAT_STAMINA) && (maxHPValue > 0) && (m_spellProto->Attributes & SPELL_ATTR_UNK4))
+    //recalculate current HP/MP after applying aura modifications (only for spells with SPELL_ATTR0_UNK4 0x00000010 flag)
+    if ((GetMiscValue() == STAT_STAMINA) && (maxHPValue > 0) && (m_spellProto->Attributes & SPELL_ATTR0_UNK4))
     {
         uint32 newHPValue = target->CountPctFromMaxHealth(int32(100.0f * curHPValue / maxHPValue));
         target->SetHealth(newHPValue);
