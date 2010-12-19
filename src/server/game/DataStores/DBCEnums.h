@@ -401,4 +401,12 @@ enum SummonPropFlags
     SUMMON_PROP_FLAG_UNK14           = 0x2000,              // 2 spells in 3.0.3, escort?
 };
 
+// Mangos Script
+enum SpellEffectIndex
+{
+    EFFECT_INDEX_0     = 0,
+    EFFECT_INDEX_1     = 1,
+    EFFECT_INDEX_2     = 2
+};
+
 #endif

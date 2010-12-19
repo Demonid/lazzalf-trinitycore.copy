@@ -30,7 +30,9 @@ include(Commands/CMakeLists.txt)
 include(Examples/CMakeLists.txt)
 
 set(scripts_STAT_SRCS
-  ${scripts_STAT_SRCS}
+  ${scripts_STAT_SRCS}  
+   ../game/Custom/sc_bs_sp_wrkr.cpp
+   ../game/Custom/sc_bs_sp_wrkr.h
   ../game/AI/ScriptedAI/ScriptedEscortAI.cpp
   ../game/AI/ScriptedAI/ScriptedCreature.cpp
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp
@@ -91,6 +93,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
+  ${CMAKE_SOURCE_DIR}/src/server/game/Custom
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Corpse
@@ -124,6 +127,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Movement/Waypoints
   ${CMAKE_SOURCE_DIR}/src/server/game/Opcodes
   ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP
+  ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP/Zones
   ${CMAKE_SOURCE_DIR}/src/server/game/Pools
   ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders
   ${CMAKE_SOURCE_DIR}/src/server/game/Quests

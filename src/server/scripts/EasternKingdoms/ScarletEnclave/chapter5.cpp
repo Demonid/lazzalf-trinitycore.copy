@@ -1681,10 +1681,44 @@ public:
 
 };
 
+/*######
+## npc_temp_highlord_darion_mograine
+######*/
+class npc_temp_highlord_darion_mograine : public CreatureScript
+{
+public:
+    npc_temp_highlord_darion_mograine() : CreatureScript("npc_temp_highlord_darion_mograine") { }
 
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+        switch (uiAction)
+        {
+            case GOSSIP_ACTION_INFO_DEF+1:
+                pPlayer->CLOSE_GOSSIP_MENU();
+                pPlayer->CompleteQuest(12801);
+                break;
+        }
+        return true;
+    }
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+        if (pPlayer->GetQuestStatus(12801) == QUEST_STATUS_INCOMPLETE)
+            pPlayer->ADD_GOSSIP_ITEM(0, "Complete me the quest Light of Dawn.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+
+        return true;
+    }
+};
 
 void AddSC_the_scarlet_enclave_c5()
 {
     new npc_highlord_darion_mograine();
     new npc_the_lich_king_tirion_dawn();
+    new npc_temp_highlord_darion_mograine();
 }

@@ -32,7 +32,7 @@ public:
     InstanceScript* GetInstanceScript(InstanceMap* pMap) const
     {
         return new instance_obsidian_sanctum_InstanceMapScript(pMap);
-    }
+    };
 
     struct instance_obsidian_sanctum_InstanceMapScript : public InstanceScript
     {
@@ -42,11 +42,12 @@ public:
         uint64 m_uiSartharionGUID;
         uint64 m_uiTenebronGUID;
         uint64 m_uiShadronGUID;
-        uint64 m_uiVesperonGUID;
-
+        uint64 m_uiVesperonGUID;    
+       
         bool m_bTenebronKilled;
         bool m_bShadronKilled;
         bool m_bVesperonKilled;
+        bool LoadedItr;
 
         void Initialize()
         {
@@ -60,8 +61,9 @@ public:
             m_bTenebronKilled = false;
             m_bShadronKilled = false;
             m_bVesperonKilled = false;
+            LoadedItr = false;       
         }
-
+        
         bool IsEncounterInProgress() const
         {
             for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
@@ -91,22 +93,10 @@ public:
                 case NPC_VESPERON:
                     m_uiVesperonGUID = creature->GetGUID();
                     creature->setActive(true);
-                    break;
+                    break;            
             }
         }
-
-        void SetData(uint32 uiType, uint32 uiData)
-        {
-            if (uiType == TYPE_SARTHARION_EVENT)
-                m_auiEncounter[0] = uiData;
-            else if(uiType == TYPE_TENEBRON_PREKILLED)
-                m_bTenebronKilled = true;
-            else if(uiType == TYPE_SHADRON_PREKILLED)
-                m_bShadronKilled = true;
-            else if(uiType == TYPE_VESPERON_PREKILLED)
-                m_bVesperonKilled = true;
-        }
-
+        
         uint32 GetData(uint32 uiType)
         {
             if (uiType == TYPE_SARTHARION_EVENT)
@@ -117,7 +107,7 @@ public:
                 return m_bShadronKilled;
             else if(uiType == TYPE_VESPERON_PREKILLED)
                 return m_bVesperonKilled;
-
+            
             return 0;
         }
 
@@ -132,14 +122,24 @@ public:
                 case DATA_SHADRON:
                     return m_uiShadronGUID;
                 case DATA_VESPERON:
-                    return m_uiVesperonGUID;
+                    return m_uiVesperonGUID;         
             }
             return 0;
         }
+
+        void SetData(uint32 uiType, uint32 uiData)
+        {
+            if (uiType == TYPE_SARTHARION_EVENT)
+                m_auiEncounter[0] = uiData;
+            else if(uiType == TYPE_TENEBRON_PREKILLED)
+                m_bTenebronKilled = true;
+            else if(uiType == TYPE_SHADRON_PREKILLED)
+                m_bShadronKilled = true;
+            else if(uiType == TYPE_VESPERON_PREKILLED)
+                m_bVesperonKilled = true;
+        }
     };
-
 };
-
 
 void AddSC_instance_obsidian_sanctum()
 {

@@ -31,6 +31,8 @@
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
+#include "World.h"
+#include "AntiCheat.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 {
@@ -146,6 +148,16 @@ void WorldSession::HandleMoveWorldportAckOpcode()
             GetPlayer()->SpawnCorpseBones();
         }
     }
+    // Trilogy - Revive player enter in istance
+    /*Corpse *corpse = GetPlayer()->GetCorpse();
+    if (mEntry->IsDungeon() && !GetPlayer()->isAlive())
+    {
+        GetPlayer()->ResurrectPlayer(0.5f,false);
+        if (corpse)
+        {
+            GetPlayer()->SpawnCorpseBones();
+        }
+    }*/
 
     bool allowMount = !mEntry->IsDungeon() || mEntry->IsBattlegroundOrArena();
     if (mInstance)
@@ -251,6 +263,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     ASSERT(mover != NULL);                                  // there must always be a mover
 
     Player *plMover = mover->GetTypeId() == TYPEID_PLAYER ? (Player*)mover : NULL;
+    Vehicle *vehMover = mover->GetVehicleKit();
+    if (vehMover)
+        if (mover->ToPlayer() && mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
+            if (Unit *charmer = mover->GetCharmer())
+                if (charmer->GetTypeId() == TYPEID_PLAYER)
+                    plMover = (Player*)charmer;
 
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
     if (plMover && plMover->IsBeingTeleported())
@@ -299,7 +317,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
 
         // if we boarded a transport, add us to it
-        if (plMover && !plMover->GetTransport())
+        //if (plMover && !plMover->GetTransport())
+        if (plMover && !plMover->m_transport && !plMover->m_temp_transport)
         {
             // elevators also cause the client to send MOVEMENTFLAG_ONTRANSPORT - just unmount if the guid can be found in the transport list
             for (MapManager::TransportSet::const_iterator iter = sMapMgr.m_Transports.begin(); iter != sMapMgr.m_Transports.end(); ++iter)
@@ -311,19 +330,28 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                     break;
                 }
             }
+            if (!plMover->m_transport)
+                if (Map *tempMap = mover->GetMap())
+                    if (GameObject *tempTransport = tempMap->GetGameObject(movementInfo.t_guid))
+                        if (tempTransport->IsTransport())
+                            plMover->m_temp_transport = tempTransport;
         }
 
-        if (!mover->GetTransport() && !mover->GetVehicle())
+        if ((!plMover && !mover->GetTransport() && !mover->GetVehicle()) || (plMover && !plMover->m_vehicle && !plMover->m_transport && !plMover->m_temp_transport)) // Not sure if the first part is needed. Just added it for verbosity.
         {
             GameObject *go = mover->GetMap()->GetGameObject(movementInfo.t_guid);
             if (!go || go->GetGoType() != GAMEOBJECT_TYPE_TRANSPORT)
                 movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
         }
     }
-    else if (plMover && plMover->GetTransport())                // if we were on a transport, leave
+    else if (plMover && (plMover->m_transport || plMover->m_temp_transport)) // if we were on a transport, leave
     {
-        plMover->m_transport->RemovePassenger(plMover);
-        plMover->m_transport = NULL;
+        if (plMover->m_transport)
+        {
+            plMover->m_transport->RemovePassenger(plMover);
+            plMover->m_transport = NULL;
+        }
+        plMover->m_temp_transport = NULL;
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
@@ -331,7 +359,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
     if (opcode == MSG_MOVE_FALL_LAND && plMover && !plMover->isInFlight())
-        plMover->HandleFall(movementInfo);
+    {
+        // movement anticheat
+        plMover->GetAntiCheat()->m_anti_JumpCount = 0;
+        plMover->GetAntiCheat()->m_anti_JumpBaseZ = 0;
+        if (!vehMover)
+            plMover->HandleFall(movementInfo);
+    }
 
     if (plMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plMover->IsInWater())
     {
@@ -339,7 +373,50 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         plMover->SetInWater(!plMover->IsInWater() || plMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()));
     }
 
-    /*----------------------*/
+   /*----------------------*/
+
+    // begin anti cheat
+    bool check_passed = true;   
+
+    /* Exceptions:
+        In Flight
+        On Transport
+        Being Teleported
+        Can't free move
+    */
+    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE))
+    {
+        if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
+        {
+            check_passed = plMover->GetAntiCheat()->DoAntiCheatCheck(vehMover, opcode, movementInfo, mover);
+        }
+        else if (plMover)
+        {
+            // Go to sleep
+            plMover->GetAntiCheat()->ac_goactivate = 0;
+            plMover->GetAntiCheat()->SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
+        }
+    }
+
+    // save packet time for next control.
+    /*if (plMover)
+    {
+        uint8 uiMoveType = 0;
+
+        if (plMover->IsFlying())
+            uiMoveType = MOVE_FLIGHT;
+        else if (plMover->IsUnderWater())
+            uiMoveType = MOVE_SWIM;
+        else 
+            uiMoveType = MOVE_RUN;
+
+        plMover->GetAntiCheat()->SaveLastPacket(movementInfo);
+        plMover->GetAntiCheat()->SetLastOpcode(opcode);
+        plMover->GetAntiCheat()->SetLastSpeedRate(plMover->GetSpeedRate(UnitMoveType(uiMoveType)));
+    }*/
+
+    if (check_passed)
+    {
 
     /* process position-change */
     WorldPacket data(opcode, recv_data.size());
@@ -359,7 +436,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
     mover->SetPosition(movementInfo.pos);
 
-    if (plMover)                                            // nothing is charmed, or player charmed
+    if (plMover && !vehMover)                                            // nothing is charmed, or player charmed
     {
         plMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
@@ -389,6 +466,41 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 plMover->RepopAtGraveyard();
             }
         }
+        // movement anticheat
+        if (plMover->GetAntiCheat()->m_anti_AlarmCount > 0)
+        {
+            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->GetAntiCheat()->m_anti_AlarmCount);
+            plMover->GetAntiCheat()->m_anti_AlarmCount = 0;
+        }
+        // end movement anticheat
+    }
+    /*else                                                    // creature charmed
+    {
+        if (mover->canFly())
+        {
+            bool flying = mover->IsFlying();
+            if (flying != ((mover->GetByteValue(UNIT_FIELD_BYTES_1, 3) & 0x02) ? true : false))
+                mover->SetFlying(flying);
+        }
+    }*/
+
+    //sLog.outString("Receive Movement Packet %s:", opcodeTable[recv_data.GetOpcode()]);
+    //mover->OutMovementInfo();
+    }
+    else if (plMover)
+    {
+        if (plMover->m_transport)
+        {
+            plMover->m_transport->RemovePassenger(plMover);
+            plMover->m_transport = NULL;
+        }
+        plMover->m_temp_transport = NULL;
+        ++(plMover->GetAntiCheat()->m_anti_AlarmCount);
+        WorldPacket data;
+        plMover->SetUnitMovementFlags(0);
+        plMover->SendTeleportAckPacket();
+        plMover->BuildHeartBeatMsg(&data);
+        plMover->SendMessageToSet(&data, true);
     }
 }
 
@@ -663,6 +775,20 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
 
     MovementInfo movementInfo;
     ReadMovementInfo(recv_data, &movementInfo);
+
+    // Save movement flags
+    _player->SetUnitMovementFlags(movementInfo.flags);
+    #ifdef ANTICHEAT_DEBUG
+    sLog.outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK: time: %d, fall time: %d | xyzo: %f,%f,%fo(%f) flags[%X]", GetPlayer()->GetName(), movementInfo.time, movementInfo.fallTime, movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o, movementInfo.flags);
+    sLog.outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK additional: Vspeed: %f, Hspeed: %f", GetPlayer()->GetName(), movementInfo.j_unk, movementInfo.j_xyspeed);
+    #endif
+
+    _player->m_movementInfo = movementInfo;
+    _player->GetAntiCheat()->m_anti_Last_HSpeed = movementInfo.j_xyspeed;
+    _player->GetAntiCheat()->m_anti_Last_VSpeed = movementInfo.j_zspeed < 3.2f ? movementInfo.j_zspeed - 1.0f : 3.2f;
+
+    const uint32 dt = (_player->GetAntiCheat()->m_anti_Last_VSpeed < 0) ? int(ceil(_player->GetAntiCheat()->m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->GetAntiCheat()->m_anti_Last_VSpeed/25)*1000);
+    _player->GetAntiCheat()->m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)
