@@ -3633,7 +3633,7 @@ void SpellMgr::LoadSpellCustomAttr()
 		case 5171: 
         case 6774:          // Slice and Dice
 		case 52916:         // Honor Among Thieves (triggered)
-			spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+			spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
 			count++;
             break;
         // Heroism
@@ -3763,12 +3763,12 @@ void SpellMgr::LoadSpellCustomAttr()
              count++;
              break;
         case 64145:     // Diminish Power
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx |= SPELL_ATTR1_STACK_FOR_DIFF_CASTERS;
             count++;
             break;
         case 63882:     // Death Ray Warning Visual
         case 63886:     // Death Ray Damage Visual
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx |= SPELL_ATTR1_STACK_FOR_DIFF_CASTERS;
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             count++;
             break;
@@ -3991,7 +3991,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // case 53651:     // beacon of light
         case 30708:     // totem of wrath debuff
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             count++;
             break;
         case 62661:     // Searing Flames
@@ -4152,7 +4152,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 53188:
         case 53189:
         case 53190:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_EXCLUDE_SELF;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_EXCLUDE_SELF;
             count++;
             break;
         case 65783: // Ogre Pinata
