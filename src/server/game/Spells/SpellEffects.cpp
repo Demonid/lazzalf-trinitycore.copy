@@ -590,16 +590,20 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                 {
                     if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet())
                     {
-                        // Get DoTs on target by owner (15% increase by dot)
-                        damage *= uint32(1.0f + 0.15f * unitTarget->GetDoTsByCaster(m_caster->GetOwnerGUID()));
-                        if (Unit *owner = m_caster->GetOwner()) 
+                        // Get DoTs on target by owner (5% increase by dot)
+                        damage += int32(CalculatePctN(unitTarget->GetDoTsByCaster(m_caster->GetOwnerGUID()), 5));
+
+                        if (Player* owner = m_caster->GetOwner()->ToPlayer())
                         {
+                            // Improved Felhunter
+                            if (AuraEffect* aurEff = owner->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARLOCK, 214, 0))
+                            {
+                                int32 bp0 = aurEff->GetId() == 54037 ? 4 : 8;
+                                m_caster->CastCustomSpell(m_caster, 54425, &bp0, NULL, NULL, true);
+                            }
                             // Shadow Mastery
                             if (AuraEffect * aurEff = owner->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_WARLOCK, 22, 0))
-                                damage *= uint32((100.0f + aurEff->GetAmount()) / 100.0f);
-                            // Improved Felhunter
-                            if (owner->HasAura(54037) || owner->HasAura(54038))
-                                m_caster->CastSpell(m_caster, 54425, true);
+                                damage *= int32((100.0f + aurEff->GetAmount()) / 100.0f);
                         }
                     }
                 }

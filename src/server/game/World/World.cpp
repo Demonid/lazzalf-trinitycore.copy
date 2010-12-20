@@ -1482,6 +1482,9 @@ void World::LoadConfigSettings(bool reload)
 /// Initialize the World
 void World::SetInitialWorldSettings()
 {
+    ///- Server startup begin
+    uint32 startupBegin = getMSTime();
+
     ///- Initialize the random number generator
     srand((unsigned int)time(NULL));
 
@@ -1549,6 +1552,7 @@ void World::SetInitialWorldSettings()
     sInstanceSaveMgr.CleanupAndPackInstances();                // must be called before `creature_respawn`/`gameobject_respawn` tables
 
     sLog.outString("Loading Localization strings...");
+    uint32 oldMSTime = getMSTime();
     sObjectMgr.LoadCreatureLocales();
     sObjectMgr.LoadGameObjectLocales();
     sObjectMgr.LoadItemLocales();
@@ -1558,14 +1562,15 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadPageTextLocales();
     sObjectMgr.LoadGossipMenuItemsLocales();
     sObjectMgr.LoadPointOfInterestLocales();
+
     sObjectMgr.SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
-    sLog.outString(">>> Localization strings loaded");
+    sLog.outString(">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
     sLog.outString();
 
     sLog.outString("Loading Page Texts...");
     sObjectMgr.LoadPageTexts();
 
-    sLog.outString("Loading Game Object Templates...");     // must be after LoadPageTexts
+    sLog.outString("Loading Game Object Templates...");         // must be after LoadPageTexts
     sObjectMgr.LoadGameobjectInfo();
 
     sLog.outString("Loading Spell Rank Data...");
@@ -1578,7 +1583,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr.LoadSpellGroups();
 
     sLog.outString("Loading Spell Learn Skills...");
-    sSpellMgr.LoadSpellLearnSkills();                        // must be after LoadSpellRanks
+    sSpellMgr.LoadSpellLearnSkills();                           // must be after LoadSpellRanks
 
     sLog.outString("Loading Spell Learn Spells...");
     sSpellMgr.LoadSpellLearnSpells();
@@ -1605,12 +1610,12 @@ void World::SetInitialWorldSettings()
     LoadRandomEnchantmentsTable();
 
     sLog.outString("Loading Disables");
-    sDisableMgr.LoadDisables();                             // must be before loading quests and items
+    sDisableMgr.LoadDisables();                                 // must be before loading quests and items
 
-    sLog.outString("Loading Items...");                     // must be after LoadRandomEnchantmentsTable and LoadPageTexts
+    sLog.outString("Loading Items...");                         // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     sObjectMgr.LoadItemPrototypes();
 
-    sLog.outString("Loading Item set names...");            // must be after LoadItemPrototypes
+    sLog.outString("Loading Item set names...");                // must be after LoadItemPrototypes
     sObjectMgr.LoadItemSetNames();
 
     sLog.outString("Loading Creature Model Based Info Data...");
@@ -1649,7 +1654,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading pet levelup spells...");
     sSpellMgr.LoadPetLevelupSpellMap();
 
-    sLog.outString("Loading pet default spell additional to levelup spells...");
+    sLog.outString("Loading pet default spells additional to levelup spells...");
     sSpellMgr.LoadPetDefaultSpells();
 
     sLog.outString("Loading Creature Template Addon Data...");
@@ -1667,7 +1672,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Gameobject Respawn Data...");       // must be after PackInstances()
     sObjectMgr.LoadGameobjectRespawnTimes();
 
-    sLog.outString("Loading Objects Pooling Data...");
+    sLog.outString("Loading Objects Pooling Data...");          // TODOLEAK: scope
     sPoolMgr.LoadFromDB();
 
     sLog.outString("Loading Weather Data...");
@@ -1689,7 +1694,7 @@ void World::SetInitialWorldSettings()
     sPoolMgr.LoadQuestPools();
 
     sLog.outString("Loading Game Event Data...");               // must be after loading pools fully
-    sGameEventMgr.LoadFromDB();
+    sGameEventMgr.LoadFromDB();                                 // TODOLEAK: add scopes
 
     sLog.outString("Loading Dungeon boss data...");
     sLFGMgr.LoadDungeonEncounters();
@@ -1700,7 +1705,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading UNIT_NPC_FLAG_SPELLCLICK Data...");
     sObjectMgr.LoadNPCSpellClickSpells();
 
-    sLog.outString("Loading SpellArea Data...");            // must be after quest load
+    sLog.outString("Loading SpellArea Data...");                // must be after quest load
     sSpellMgr.LoadSpellAreas();
 
     sLog.outString("Loading AreaTrigger definitions...");
@@ -1760,7 +1765,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadMailLevelRewards();
 
     // Loot tables
-    LoadLootTables();
+    LoadLootTables();                                               //TODOLEAK: untangle that shit
 
     sLog.outString("Loading Skill Discovery Table...");
     LoadSkillDiscoveryTable();
@@ -1790,7 +1795,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Auctions...");
     sAuctionMgr.LoadAuctions();
 
-    sLog.outString("***** GUILDS *****");
     sObjectMgr.LoadGuilds();
 
     sLog.outString("Loading ArenaTeams...");
@@ -1873,16 +1877,12 @@ void World::SetInitialWorldSettings()
     LoadAutobroadcasts();
 
     ///- Load and initialize scripts
-    sLog.outString("Loading Scripts...");
-    sLog.outString();
     sObjectMgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
     sObjectMgr.LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
     sObjectMgr.LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr.LoadGameObjectScripts();                         // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr.LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr.LoadWaypointScripts();
-    sLog.outString(">>> Scripts loaded");
-    sLog.outString();
 
     sLog.outString("Loading Scripts text locales...");      // must be after Load*Scripts calls
     sObjectMgr.LoadDbScriptStrings();
@@ -1903,7 +1903,7 @@ void World::SetInitialWorldSettings()
     sCreatureTextMgr.LoadCreatureTexts();
 
     sLog.outString("Initializing Scripts...");
-    sScriptMgr.Initialize();
+    sScriptMgr.Initialize();                            //LEAKTODO
 
     sLog.outString("Validating spell scripts...");
     sObjectMgr.ValidateSpellScripts();
@@ -2023,7 +2023,10 @@ void World::SetInitialWorldSettings()
     else
         sLog.SetLogDB(false);
 
-    sLog.outString("WORLD: World initialized");
+    uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
+    sLog.outString();
+    sLog.outString("WORLD: World initialized in %u minutes %u seconds", (startupDuration / 60000), ((startupDuration % 60000) / 1000) );
+    sLog.outString();
 }
 
 void World::DetectDBCLang()
@@ -2098,6 +2101,8 @@ void World::RecordTimeDiff(const char *text, ...)
 
 void World::LoadAutobroadcasts()
 {
+    uint32 oldMSTime = getMSTime();
+
     m_Autobroadcasts.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT text FROM autobroadcast");
@@ -2106,14 +2111,12 @@ void World::LoadAutobroadcasts()
     {
         barGoLink bar(1);
         bar.step();
-
+        sLog.outString(">> Loaded 0 autobroadcasts definitions. DB table `autobroadcast` is empty!");
         sLog.outString();
-        sLog.outString(">> Loaded 0 autobroadcasts definitions");
         return;
     }
 
     barGoLink bar(result->GetRowCount());
-
     uint32 count = 0;
 
     do
@@ -2125,11 +2128,11 @@ void World::LoadAutobroadcasts()
 
         m_Autobroadcasts.push_back(message);
 
-        count++;
+        ++count;
     } while (result->NextRow());
 
+    sLog.outString(">> Loaded %u autobroadcasts definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog.outString();
-    sLog.outString(">> Loaded %u autobroadcasts definitions", count);
 }
 
 /// Update the World !
@@ -3078,30 +3081,33 @@ void World::UpdateAreaDependentAuras()
 
 void World::LoadWorldStates()
 {
+    uint32 oldMSTime = getMSTime();
+
     QueryResult result = CharacterDatabase.Query("SELECT entry, value FROM worldstates");
 
     if (!result)
     {
         barGoLink bar(1);
         bar.step();
+        sLog.outString(">> Loaded 0 world states. DB table `worldstates` is empty!");
         sLog.outString();
-        sLog.outString(">> Loaded 0 world states.");
         return;
     }
 
     barGoLink bar(result->GetRowCount());
-    uint32 counter = 0;
+    uint32 count = 0;
 
     do
     {
         Field *fields = result->Fetch();
         m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt64();
         bar.step();
-        ++counter;
-    } while (result->NextRow());
+        ++count;
+    }
+    while (result->NextRow());
 
+    sLog.outString(">> Loaded %u world states in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     sLog.outString();
-    sLog.outString(">> Loaded %u world states.", counter);
 }
 
 void World::ACpreventMapsFromBeingUsed(const char* pMapIdString)
