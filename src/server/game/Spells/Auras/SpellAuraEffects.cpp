@@ -4107,7 +4107,7 @@ void AuraEffect::HandleModThreat(AuraApplication const * aurApp, uint8 mode, boo
         return;
 
     Unit * target = aurApp->GetTarget();
-    if (!target || (apply && !target->isAlive()))
+    if (apply && !target->isAlive())
         return;
 
     Unit * caster = GetCaster();

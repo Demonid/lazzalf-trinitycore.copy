@@ -3447,12 +3447,11 @@ void Unit::_AddAura(UnitAura * aura, Unit * caster)
     if (!aura->IsPassive() && aura->GetId() != 44413)
     {
         // find current aura from spell and change it's stackamount
-        if (Aura * foundAura = GetOwnedAura(aura->GetId(), aura->GetCasterGUID(), 0, aura))
+        if (Aura * foundAura = GetOwnedAura(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID(), 0, aura))
         {
             if (aura->GetSpellProto()->StackAmount)
-            {
                 aura->ModStackAmount(foundAura->GetStackAmount());
-            }
+
             // Update periodic timers from the previous aura
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
@@ -3779,7 +3778,7 @@ bool Unit::_IsNoStackAuraDueToAura(Aura * appliedAura, Aura * existingAura) cons
     if (is_triggered_by_spell)
         return false;
 
-    if (sSpellMgr.CanAurasStack(spellProto, i_spellProto, sameCaster))
+    if (sSpellMgr.CanAurasStack(spellProto, i_spellProto, sameCaster) || (sameCaster && appliedAura->GetCastItemGUID() && existingAura->GetCastItemGUID() != appliedAura->GetCastItemGUID()))
         return false;
     return true;
 }
@@ -3843,10 +3842,10 @@ void Unit::RemoveOwnedAura(Aura * aura, AuraRemoveMode removeMode)
     ASSERT(false);
 }
 
-Aura * Unit::GetOwnedAura(uint32 spellId, uint64 caster, uint8 reqEffMask, Aura * except) const
+Aura * Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, Aura* except) const
 {
     for (AuraMap::const_iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId); ++itr)
-        if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!caster || itr->second->GetCasterGUID() == caster) && (!except || except != itr->second))
+        if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
             return itr->second;
     return NULL;
 }
@@ -4480,29 +4479,29 @@ AuraEffect* Unit::GetAuraEffect(AuraType type, SpellFamilyNames family, uint32 f
     return NULL;
 }
 
-AuraApplication * Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint8 reqEffMask, AuraApplication * except) const
+AuraApplication * Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, AuraApplication * except) const
 {
     for (AuraApplicationMap::const_iterator itr = m_appliedAuras.lower_bound(spellId); itr != m_appliedAuras.upper_bound(spellId); ++itr)
     {
         Aura const * aura = itr->second->GetBase();
-        if (((aura->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || aura->GetCasterGUID() == casterGUID) && (!except || except != itr->second))
+        if (((aura->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || aura->GetCasterGUID() == casterGUID) && (!itemCasterGUID || aura->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
             return itr->second;
     }
     return NULL;
 }
 
-Aura * Unit::GetAura(uint32 spellId, uint64 casterGUID, uint8 reqEffMask) const
+Aura * Unit::GetAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask) const
 {
-    AuraApplication * aurApp = GetAuraApplication(spellId, casterGUID, reqEffMask);
-    return aurApp ? aurApp->GetBase():NULL;
+    AuraApplication * aurApp = GetAuraApplication(spellId, casterGUID, itemCasterGUID, reqEffMask);
+    return aurApp ? aurApp->GetBase() : NULL;
 }
 
-AuraApplication * Unit::GetAuraApplicationOfRankedSpel(uint32 spellId, uint64 casterGUID, uint8 reqEffMask, AuraApplication * except) const
+AuraApplication * Unit::GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, AuraApplication* except) const
 {
     uint32 rankSpell = sSpellMgr.GetFirstSpellInChain(spellId);
     while (true)
     {
-        if (AuraApplication * aurApp = GetAuraApplication(rankSpell, casterGUID, reqEffMask, except))
+        if (AuraApplication * aurApp = GetAuraApplication(rankSpell, casterGUID, itemCasterGUID, reqEffMask, except))
             return aurApp;
         SpellChainNode const * chainNode = sSpellMgr.GetSpellChainNode(rankSpell);
         if (!chainNode)
@@ -4513,9 +4512,9 @@ AuraApplication * Unit::GetAuraApplicationOfRankedSpel(uint32 spellId, uint64 ca
     return NULL;
 }
 
-Aura * Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint8 reqEffMask) const
+Aura * Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask) const
 {
-    AuraApplication * aurApp = GetAuraApplicationOfRankedSpel(spellId, casterGUID, reqEffMask);
+    AuraApplication * aurApp = GetAuraApplicationOfRankedSpell(spellId, casterGUID, itemCasterGUID, reqEffMask);
     return aurApp ? aurApp->GetBase() : NULL;
 }
 
@@ -4540,9 +4539,9 @@ uint32 Unit::GetAuraCount(uint32 spellId) const
     return count;
 }
 
-bool Unit::HasAura(uint32 spellId, uint64 caster, uint8 reqEffMask) const
+bool Unit::HasAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask) const
 {
-    if (GetAuraApplication(spellId, caster, reqEffMask))
+    if (GetAuraApplication(spellId, casterGUID, itemCasterGUID, reqEffMask))
         return true;
     return false;
 }
@@ -8923,6 +8922,18 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, AuraEffect* trig
         // Deathbringer Saurfang - Blood Beast's Blood Link
         case 72176:
             basepoints0 = 3;
+            break;
+        case 15337: // Improved Spirit Tap (Rank 1)
+        case 15338: // Improved Spirit Tap (Rank 2)
+        {
+            if (procSpell->SpellFamilyFlags[0] & 0x800000)
+                if ((procSpell->Id != 58381) || !roll_chance_i(50))
+                    return false;
+
+            target = pVictim;
+            break;
+        }
+        default:
             break;
     }
 
