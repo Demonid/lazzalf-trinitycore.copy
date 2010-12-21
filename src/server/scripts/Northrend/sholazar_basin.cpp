@@ -519,6 +519,44 @@ public:
     }
 };
 
+enum eEnums_oracle_frezy
+{
+    NPC_ORACLE       = 28667,
+    NPC_FREZYNE      = 28668,
+};
+
+class npc_oracle_frezy : public CreatureScript
+{
+public:
+    npc_oracle_frezy() : CreatureScript("npc_oracle_frezy") { }
+
+    struct npc_oracle_frezyAI : public ScriptedAI
+    {
+        npc_oracle_frezyAI(Creature* pCreature) : ScriptedAI(pCreature) 
+        { 
+            entry = pCreature->GetEntry();
+            me->setFaction(14);
+        }
+
+        uint32 entry;
+
+        void JustDied(Unit* /*pKiller*/)
+        {
+            if (Unit* pTarget = me->FindNearestCreature(me->GetEntry() == NPC_ORACLE ? NPC_FREZYNE : NPC_ORACLE, 100.0f))
+            {            
+                pTarget->setFaction(35);
+                pTarget->CombatStop();
+            }
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_oracle_frezyAI(creature);
+    }
+};
+
+
 void AddSC_sholazar_basin()
 {
     new npc_injured_rainspeaker_oracle();
@@ -527,4 +565,5 @@ void AddSC_sholazar_basin()
     new npc_bushwhacker();
     new npc_engineer_helice();
     new npc_adventurous_dwarf();
+    new npc_oracle_frezy();
 }

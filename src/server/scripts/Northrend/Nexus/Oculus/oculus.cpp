@@ -28,6 +28,18 @@
 
 #define HAS_ESSENCE(a) ((a)->HasItemCount(ITEM_EMERALD_ESSENCE,1) || (a)->HasItemCount(ITEM_AMBER_ESSENCE,1) || (a)->HasItemCount(ITEM_RUBY_ESSENCE,1))
 
+static Position InsideInstanceTeleport =
+{
+    985.333740f, 1057.043457f, 359.967f
+};
+
+static Position OutsideInstanceTeleport =
+{
+    3864.169189f, 6983.767578f, 106.320381f
+};
+
+#define BOREAN_TUNDRA_MAP 571
+
 enum Drakes
 {
     GOSSIP_TEXTID_DRAKES                          = 13267,
@@ -45,17 +57,87 @@ enum Drakes
     ITEM_AMBER_ESSENCE                            = 37859,
     ITEM_RUBY_ESSENCE                             = 37860,
 
-    NPC_VERDISA                                   = 27657,
-    NPC_BELGARISTRASZ                             = 27658,
-    NPC_ETERNOS                                   = 27659
+	//spells
+	SPELL_PARACHUTE								  = 61243    
+};
+
+class mob_centrifige_construct : public CreatureScript
+{
+public:
+    mob_centrifige_construct() : CreatureScript("mob_centrifige_construct") { }
+
+    struct mob_CentrifigeConstructAI : public ScriptedAI
+    {
+        mob_CentrifigeConstructAI(Creature *c) : ScriptedAI(c)
+        {
+            pInstance = c->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+
+	    void DismountPlayers()
+	    {
+		    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+		    std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
+		    for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
+		    {
+			    Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
+			    if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) )
+			    {
+				    Vehicle* v = pUnit->GetVehicle();
+				    if(v)
+				    {
+					    pUnit->ExitVehicle();
+					    v->Dismiss();
+					    DoCast(pUnit,SPELL_PARACHUTE);					
+				    }
+			    }
+		    }
+	    }
+
+        void UpdateAI(const uint32 diff)
+        {
+            //Return since we have no target
+            if (!UpdateVictim())
+                return;
+		    DismountPlayers();
+            DoMeleeAttackIfReady();
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (pInstance)
+                pInstance->SetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT, pInstance->GetData(DATA_CENTRIFUGE_CONSTRUCT_EVENT)+1);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_CentrifigeConstructAI (pCreature);
+    };
 };
 
 class npc_oculus_drake : public CreatureScript
 {
-public:
+    public:
     npc_oculus_drake() : CreatureScript("npc_oculus_drake") { }
 
-    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        if (pCreature->isQuestGiver())
+            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+        if (pCreature->GetInstanceScript()->GetData(DATA_DRAKOS_EVENT) == DONE)
+        {
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_DRAKES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_DRAKES, pCreature->GetGUID());
+        }
+
+        return true;
+    };
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
         pPlayer->PlayerTalkClass->ClearMenus();
         switch(pCreature->GetEntry())
@@ -153,26 +235,51 @@ public:
         }
 
         return true;
-    }
+    };
+};
 
-    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+class go_orb_of_the_nexus : public GameObjectScript
+{
+public:
+    go_orb_of_the_nexus() : GameObjectScript("go_orb_of_the_nexus") { }
+
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
     {
-        if (pCreature->isQuestGiver())
-            pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+        InstanceScript* pInstance = pGo->GetInstanceScript();
 
-        if (pCreature->GetInstanceScript()->GetData(DATA_DRAKOS_EVENT) == DONE)
-        {
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_DRAKES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_DRAKES, pCreature->GetGUID());
-        }
+        if (!pInstance)
+            return false;
 
+        pPlayer->TeleportTo(BOREAN_TUNDRA_MAP,OutsideInstanceTeleport.GetPositionX(),OutsideInstanceTeleport.GetPositionY(),OutsideInstanceTeleport.GetPositionZ(),pPlayer->GetOrientation());
+        
         return true;
     }
 
 };
 
+class go_nexus_portal : public GameObjectScript
+{
+public:
+    go_nexus_portal() : GameObjectScript("go_nexus_portal") { }
+
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+    {
+        InstanceScript* pInstance = pGo->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        pPlayer->TeleportTo(pPlayer->GetMapId(),InsideInstanceTeleport.GetPositionX(),InsideInstanceTeleport.GetPositionY(),InsideInstanceTeleport.GetPositionZ(),pPlayer->GetOrientation());
+        
+        return true;
+    }
+
+};
 
 void AddSC_oculus()
 {
-    new npc_oculus_drake();
+    new npc_oculus_drake;
+    new mob_centrifige_construct;
+    new go_orb_of_the_nexus();
+    new go_nexus_portal();
 }
