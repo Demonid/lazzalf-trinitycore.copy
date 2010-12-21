@@ -69,7 +69,7 @@ public:
 
     struct boss_faerlinaAI : public BossAI
     {
-        boss_faerlinaAI(Creature *c) : BossAI(c, BOSS_FAERLINA), greet(false) {}
+        boss_faerlinaAI(Creature *c) : BossAI(c, BOSS_FAERLINA), greet(false) { }
 
         bool greet;
         bool doDelayFrenzy;
@@ -101,8 +101,14 @@ public:
             BossAI::MoveInLineOfSight(who);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             if (!(rand()%3))
                 DoScriptText(RAND(SAY_SLAY_1,SAY_SLAY_2), me);
         }
@@ -196,11 +202,9 @@ public:
         InstanceScript *pInstance;
 
         void Reset()
-        {
-            if (getDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL) {
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, SPELL_EFFECT_BIND, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            }
+        {        
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, SPELL_EFFECT_BIND, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
         }
 
         void JustDied(Unit * /*killer*/)
