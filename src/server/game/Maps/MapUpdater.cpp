@@ -84,7 +84,7 @@ class MapUpdateRequest : public ACE_Method_Request
 
   static void HandleCrash(int s)
   {
-    if (Map *map = sMapMgr.FindMapByThread(ACE_Based::Thread::currentId()))
+    if (Map *map = sMapMgr->FindMapByThread(ACE_Based::Thread::currentId()))
     {
         if (++m_crashcounter[map->GetId()].first < sWorld.getIntConfig(CONFIG_UINT32_MAX_CRASH_COUNT))
         {
@@ -100,9 +100,9 @@ class MapUpdateRequest : public ACE_Method_Request
             sLog.outError("Stack Trace:\n%s", st.c_str());
             sWorld.ShutdownServ(180, SHUTDOWN_MASK_RESTART | SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE);
             map->Wipe();
-            sMapMgr.m_updater.update_finished_wrapper();
+            sMapMgr->m_updater.update_finished_wrapper();
 
-            if (sMapMgr.m_updater.respawn() == -1)
+            if (sMapMgr->m_updater.respawn() == -1)
             {
                 sLog.outError("Impossibile ripristinare il thread. shutdown in corso...");
                 abort();

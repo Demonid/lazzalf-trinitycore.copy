@@ -98,7 +98,7 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
 
     char* spawntimeSecs = strtok(NULL, " ");
 
-    const GameObjectInfo *gInfo = sObjectMgr.GetGameObjectInfo(id);
+    const GameObjectInfo *gInfo = sObjectMgr->GetGameObjectInfo(id);
 
     if (!gInfo)
     {
@@ -124,7 +124,7 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
     Map *map = chr->GetMap();
 
     GameObject* pGameObj = new GameObject;
-    uint32 db_lowGUID = sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
     if (!pGameObj->Create(db_lowGUID, gInfo->id, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
     {
@@ -157,7 +157,7 @@ static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* ar
                               pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
 
     // TODO: is it really necessary to add both the real and DB table guid here ?
-    sObjectMgr.AddGameobjectToGrid(db_lowGUID, sObjectMgr.GetGOData(db_lowGUID));
+    sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
 
     handler->PSendSysMessage(LANG_GAMEOBJECT_ADD,id,gInfo->name,db_lowGUID,x,y,z);
     return true;

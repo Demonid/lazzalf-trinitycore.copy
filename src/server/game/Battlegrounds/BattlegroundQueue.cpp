@@ -61,8 +61,8 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
     if(TeamId1 && TeamId2 && (TeamId1 != TeamId2)) // teamId1 only != 0 if rated/arena
     {
         //get arenateams and configs
-        ArenaTeam *at1 = sObjectMgr.GetArenaTeamById(TeamId1);
-        ArenaTeam *at2 = sObjectMgr.GetArenaTeamById(TeamId2);
+        ArenaTeam *at1 = sObjectMgr->GetArenaTeamById(TeamId1);
+        ArenaTeam *at2 = sObjectMgr->GetArenaTeamById(TeamId2);
 
         bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
         uint32 mode = sWorld.getIntConfig(CONFIG_ARENAMOD_MODE);
@@ -82,7 +82,7 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                     {
                         if(itr->guid)
                         {
-                            Player *plr = sObjectMgr.GetPlayer(itr->guid);
+                            Player *plr = sObjectMgr->GetPlayer(itr->guid);
                             if(plr)
                             {
                                 //check if player is really in the group joining the arena match
@@ -125,7 +125,7 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
                     {
                         if(itr->guid)
                         {
-                            Player *plr = sObjectMgr.GetPlayer(itr->guid);
+                            Player *plr = sObjectMgr->GetPlayer(itr->guid);
                             if(plr)
                             {
                                 //check if player is really in the group joining the arena match

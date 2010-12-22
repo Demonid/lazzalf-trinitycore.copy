@@ -48,7 +48,7 @@
 
 bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
 {
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
@@ -57,7 +57,7 @@ bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
         return false;
     }
 
-    PSendSysMessage(LANG_BG_WG_STATUS, sObjectMgr.GetTrinityStringForDBCLocale(
+    PSendSysMessage(LANG_BG_WG_STATUS, sObjectMgr->GetTrinityStringForDBCLocale(
         pvpWG->getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE),
         secsToTimeString(pvpWG->GetTimer(), true).c_str(),
         pvpWG->isWarTime() ? "Yes" : "No",
@@ -68,7 +68,7 @@ bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
 
 bool ChatHandler::HandleWintergraspStartCommand(const char* args)
 {
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
@@ -83,7 +83,7 @@ bool ChatHandler::HandleWintergraspStartCommand(const char* args)
 
 bool ChatHandler::HandleWintergraspStopCommand(const char* args)
 {
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
@@ -101,7 +101,7 @@ bool ChatHandler::HandleWintergraspEnableCommand(const char* args)
     if(!*args)
         return false;
 
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
@@ -143,7 +143,7 @@ bool ChatHandler::HandleWintergraspTimerCommand(const char* args)
     if(!*args)
         return false;
 
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG)
     {
@@ -176,7 +176,7 @@ bool ChatHandler::HandleWintergraspTimerCommand(const char* args)
 
 bool ChatHandler::HandleWintergraspSwitchTeamCommand(const char* args)
 {
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
     if (!pvpWG)
     {

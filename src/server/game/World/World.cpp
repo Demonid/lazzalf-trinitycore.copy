@@ -1860,7 +1860,7 @@ void World::SetInitialWorldSettings()
 
 	// Loads the jail conf out of the database
     sLog.outString("Loading JailConfing...");    
-    sObjectMgr.LoadJailConf();
+    sObjectMgr->LoadJailConf();
 
     sLog.outString("Loading Autobroadcasts...");
     LoadAutobroadcasts();
@@ -1970,7 +1970,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting Battleground System");
     sBattlegroundMgr->CreateInitialBattlegrounds();
     sBattlegroundMgr->InitAutomaticArenaPointDistribution();
-	sBattlegroundMgr.InitAutomaticArenaModTimer();
+	sBattlegroundMgr->InitAutomaticArenaModTimer();
 
     ///- Initialize outdoor pvp
     sLog.outString("Starting Outdoor PvP System");

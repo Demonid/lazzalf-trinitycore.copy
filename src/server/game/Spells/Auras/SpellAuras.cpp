@@ -392,8 +392,8 @@ m_isRemoved(false), m_isSingleTarget(false)
     
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && m_spellProto->SpellFamilyName == SPELLFAMILY_POTION && caster->HasAura(53042))
     {
-        if (sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_BATTLE) ||
-           sSpellMgr.IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_GUARDIAN))
+        if (sSpellMgr->IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_BATTLE) ||
+           sSpellMgr->IsSpellMemberOfSpellGroup(m_spellProto->Id,SPELL_GROUP_ELIXIR_GUARDIAN))
         {
             if (caster->HasSpell(m_spellProto->EffectTriggerSpell[0]))
             {

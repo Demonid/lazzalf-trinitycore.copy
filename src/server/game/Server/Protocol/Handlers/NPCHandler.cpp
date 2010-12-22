@@ -415,8 +415,8 @@ void WorldSession::HandleSpiritHealerActivateOpcode(WorldPacket & recv_data)
 void WorldSession::SendSpiritResurrect()
 {
     if ((_player->GetZoneId() == NORTHREND_WINTERGRASP) 
-        && ((OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP)) 
-        && ((OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))->isWarTime())
+        && ((OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP)) 
+        && ((OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP))->isWarTime())
     {
         _player->ResurrectPlayer(1.0f);
     }
