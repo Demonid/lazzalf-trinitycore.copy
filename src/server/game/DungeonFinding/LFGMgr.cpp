@@ -21,7 +21,6 @@
 
 #include "DisableMgr.h"
 #include "ObjectMgr.h"
-#include "ProgressBar.h"
 #include "SocialMgr.h"
 #include "LFGMgr.h"
 #include "LFGScripts.h"
@@ -83,21 +82,17 @@ void LFGMgr::LoadDungeonEncounters()
 
     if (!result)
     {
-        barGoLink bar(1);
-        bar.step();
 
         sLog.outString();
         sLog.outErrorDb(">> Loaded 0 dungeon encounter lfg associations. DB table `lfg_dungeon_encounters` is empty!");
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
     uint32 count = 0;
 
     Field* fields = NULL;
     do
     {
-        bar.step();
         fields = result->Fetch();
         uint32 achievementId = fields[0].GetUInt32();
         uint32 dungeonId = fields[1].GetUInt32();
@@ -145,20 +140,16 @@ void LFGMgr::LoadRewards()
 
     if (!result)
     {
-        barGoLink bar(1);
-        bar.step();
         sLog.outErrorDb(">> Loaded 0 lfg dungeon rewards. DB table `lfg_dungeon_rewards` is empty!");
         sLog.outString();
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
     uint32 count = 0;
 
     Field* fields = NULL;
     do
     {
-        bar.step();
         fields = result->Fetch();
         uint32 dungeonId = fields[0].GetUInt32();
         uint32 maxLevel = fields[1].GetUInt8();
@@ -624,20 +615,16 @@ void LFGMgr::Join(Player* plr, uint8 roles, const LfgDungeonSet& selectedDungeon
 
         // if we have lockmap then there are no compatible dungeons
         GetCompatibleDungeons(dungeons, players, joinData.lockmap);
-        if (!joinData.lockmap.empty())
-        {
-            joinData.result = LFG_JOIN_PARTY_NOT_MEET_REQS;
-            sLog.outDebug("LFGMgr::Join: [" UI64FMTD "] joining with %u members. result: LFG_JOIN_PARTY_NOT_MEET_REQS", guid, uint8(players.size()));
-            plr->GetSession()->SendLfgJoinResult(joinData);
-            return;
-        }
-        joinData.lockmap.clear();
+        if (dungeons.empty())
+            joinData.result = grp ? LFG_JOIN_PARTY_NOT_MEET_REQS : LFG_JOIN_NOT_MEET_REQS;
     }
 
     // Can't join. Send result
     if (joinData.result != LFG_JOIN_OK)
     {
         sLog.outDebug("LFGMgr::Join: [" UI64FMTD "] joining with %u members. result: %u", guid, grp ? grp->GetMembersCount() : 1, joinData.result);
+        if (!dungeons.empty())                             // Only should show lockmap when have no dungeons available
+            joinData.lockmap.clear();
         plr->GetSession()->SendLfgJoinResult(joinData);
         return;
     }
@@ -1224,11 +1211,11 @@ LfgAnswer LFGMgr::GetCompatibles(std::string key)
 
    @param[in,out] dungeons Dungeons to check restrictions
    @param[in]     players Set of players to check their dungeon restrictions
-   @param[in]     returnLockMap Determines when to return a function value (Default true)
-   @param[out]    Map of players Lock status info of given dungeons
+   @param[out]    lockMap Map of players Lock status info of given dungeons (Empty if dungeons is not empty)
 */
 void LFGMgr::GetCompatibleDungeons(LfgDungeonSet& dungeons, const PlayerSet& players, LfgLockPartyMap& lockMap)
 {
+    lockMap.clear();
     for (PlayerSet::const_iterator it = players.begin(); it != players.end() && dungeons.size(); ++it)
     {
         uint64 guid = (*it)->GetGUID();
@@ -1244,6 +1231,8 @@ void LFGMgr::GetCompatibleDungeons(LfgDungeonSet& dungeons, const PlayerSet& pla
             }
         }
     }
+    if (dungeons.size())
+        lockMap.clear();
 }
 
 /**
