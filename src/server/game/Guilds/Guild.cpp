@@ -339,7 +339,7 @@ bool Guild::BankTab::LoadItemFromDB(Field* fields)
         return false;
     }
 
-    ItemPrototype const* proto = sObjectMgr.GetItemPrototype(itemEntry);
+    ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemEntry);
     if (!proto)
     {
         sLog.outError("Unknown item (GUID: %u, id: %u) in guild bank, skipped.", itemGuid, itemEntry);
@@ -782,7 +782,7 @@ void Guild::MoveItemData::LogAction(MoveItemData* pFrom) const
 {
     ASSERT(pFrom->GetItem());
 
-    sScriptMgr.OnGuildItemMove(m_pGuild, m_pPlayer, pFrom->GetItem(),
+    sScriptMgr->OnGuildItemMove(m_pGuild, m_pPlayer, pFrom->GetItem(),
         pFrom->IsBank(), pFrom->GetContainer(), pFrom->GetSlotId(),
         IsBank(), GetContainer(), GetSlotId());
 }
@@ -1092,14 +1092,14 @@ Guild::~Guild()
 bool Guild::Create(Player* pLeader, const std::string& name)
 {
     // Check if guild with such name already exists
-    if (sObjectMgr.GetGuildByName(name))
+    if (sObjectMgr->GetGuildByName(name))
         return false;
 
     WorldSession* pLeaderSession = pLeader->GetSession();
     if (!pLeaderSession)
         return false;
 
-    m_id = sObjectMgr.GenerateGuildId();
+    m_id = sObjectMgr->GenerateGuildId();
     m_leaderGuid = pLeader->GetGUID();
     m_name = name;
     m_info = "";
@@ -1141,7 +1141,7 @@ bool Guild::Create(Player* pLeader, const std::string& name)
     bool ret = AddMember(m_leaderGuid, GR_GUILDMASTER);
     if (ret)
         // Call scripts on successful create
-        sScriptMgr.OnGuildCreate(this, pLeader, name);
+        sScriptMgr->OnGuildCreate(this, pLeader, name);
 
     return ret;
 }
@@ -1150,7 +1150,7 @@ bool Guild::Create(Player* pLeader, const std::string& name)
 void Guild::Disband()
 {
     // Call scripts before guild data removed from database
-    sScriptMgr.OnGuildDisband(this);
+    sScriptMgr->OnGuildDisband(this);
 
     _BroadcastEvent(GE_DISBANDED, 0);
     // Remove all members
@@ -1200,7 +1200,7 @@ void Guild::Disband()
     CharacterDatabase.CommitTransaction(trans);
 
     GHobj.ChangeGuildHouse(m_id, 0); //Sell GuildHouse
-    sObjectMgr.RemoveGuild(m_id);
+    sObjectMgr->RemoveGuild(m_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1261,7 +1261,7 @@ void Guild::HandleSetMOTD(WorldSession* session, const std::string& motd)
     {
         m_motd = motd;
 
-        sScriptMgr.OnGuildMOTDChanged(this, motd);
+        sScriptMgr->OnGuildMOTDChanged(this, motd);
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SET_GUILD_MOTD);
         stmt->setString(0, motd);
@@ -1284,7 +1284,7 @@ void Guild::HandleSetInfo(WorldSession* session, const std::string& info)
     {
         m_info = info;
 
-        sScriptMgr.OnGuildInfoChanged(this, info);
+        sScriptMgr->OnGuildInfoChanged(this, info);
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SET_GUILD_INFO);
         stmt->setString(0, info);
@@ -1462,7 +1462,7 @@ void Guild::HandleAcceptMember(WorldSession* session)
 {
     Player* player = session->GetPlayer();
     if (!sWorld.getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) &&
-        player->GetTeam() != sObjectMgr.GetPlayerTeamByGUID(GetLeaderGUID()))
+        player->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(GetLeaderGUID()))
         return;
 
     if (AddMember(player->GetGUID()))
@@ -1626,7 +1626,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount)
     Player* player = session->GetPlayer();
 
     // Call script after validation and before money transfer.
-    sScriptMgr.OnGuildMemberDepositMoney(this, player, amount);
+    sScriptMgr->OnGuildMemberDepositMoney(this, player, amount);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // Add money to bank
@@ -1671,7 +1671,7 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool
         return false;
 
     // Call script after validation and before money transfer.
-    sScriptMgr.OnGuildMemberWitdrawMoney(this, player, amount, repair);
+    sScriptMgr->OnGuildMemberWitdrawMoney(this, player, amount, repair);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // Update remaining money amount
@@ -2071,7 +2071,7 @@ void Guild::BroadcastPacket(WorldPacket *packet) const
 // Members handling
 bool Guild::AddMember(const uint64& guid, uint8 rankId)
 {
-    Player* player = sObjectMgr.GetPlayer(guid);
+    Player* player = sObjectMgr->GetPlayer(guid);
     // Player cannot be in guild
     if (player)
     {
@@ -2133,7 +2133,7 @@ bool Guild::AddMember(const uint64& guid, uint8 rankId)
     _UpdateAccountsNumber();
 
     // Call scripts if member was succesfully added (and stored to database)
-    sScriptMgr.OnGuildAddMember(this, player, rankId);
+    sScriptMgr->OnGuildAddMember(this, player, rankId);
 
     return true;
 }
@@ -2141,7 +2141,7 @@ bool Guild::AddMember(const uint64& guid, uint8 rankId)
 void Guild::DeleteMember(const uint64& guid, bool isDisbanding, bool isKicked)
 {
     uint32 lowguid = GUID_LOPART(guid);
-    Player *player = sObjectMgr.GetPlayer(guid);
+    Player *player = sObjectMgr->GetPlayer(guid);
 
     // Guild master can be deleted when loading guild and guid doesn't exist in characters table
     // or when he is removed from guild by gm command
@@ -2176,7 +2176,7 @@ void Guild::DeleteMember(const uint64& guid, bool isDisbanding, bool isKicked)
         }
     }
     // Call script on remove before member is acutally removed from guild (and database)
-    sScriptMgr.OnGuildRemoveMember(this, player, isDisbanding, isKicked);
+    sScriptMgr->OnGuildRemoveMember(this, player, isDisbanding, isKicked);
 
     if (Member* pMember = GetMember(guid))
         delete pMember;
@@ -2291,11 +2291,11 @@ void Guild::_CreateDefaultGuildRanks(LocaleConstant loc)
     stmt->setUInt32(0, m_id);
     CharacterDatabase.Execute(stmt);
 
-    _CreateRank(sObjectMgr.GetTrinityString(LANG_GUILD_MASTER,   loc), GR_RIGHT_ALL);
-    _CreateRank(sObjectMgr.GetTrinityString(LANG_GUILD_OFFICER,  loc), GR_RIGHT_ALL);
-    _CreateRank(sObjectMgr.GetTrinityString(LANG_GUILD_VETERAN,  loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
-    _CreateRank(sObjectMgr.GetTrinityString(LANG_GUILD_MEMBER,   loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
-    _CreateRank(sObjectMgr.GetTrinityString(LANG_GUILD_INITIATE, loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
+    _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_MASTER,   loc), GR_RIGHT_ALL);
+    _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_OFFICER,  loc), GR_RIGHT_ALL);
+    _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_VETERAN,  loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
+    _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_MEMBER,   loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
+    _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_INITIATE, loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
 }
 
 void Guild::_CreateRank(const std::string& name, uint32 rights)
@@ -2497,7 +2497,7 @@ inline void Guild::_LogEvent(GuildEventLogTypes eventType, uint32 playerGuid1, u
     m_eventLog->AddEvent(trans, new EventLogEntry(m_id, m_eventLog->GetNextGUID(), eventType, playerGuid1, playerGuid2, newRank));
     CharacterDatabase.CommitTransaction(trans);
 
-    sScriptMgr.OnGuildEvent(this, uint8(eventType), playerGuid1, playerGuid2, newRank);
+    sScriptMgr->OnGuildEvent(this, uint8(eventType), playerGuid1, playerGuid2, newRank);
 }
 
 // Add new bank event log record
@@ -2515,7 +2515,7 @@ void Guild::_LogBankEvent(SQLTransaction& trans, GuildBankEventLogTypes eventTyp
     LogHolder* pLog = m_bankEventLog[tabId];
     pLog->AddEvent(trans, new BankEventLogEntry(m_id, pLog->GetNextGUID(), eventType, dbTabId, lowguid, itemOrMoney, itemStackCount, destTabId));
 
-    sScriptMgr.OnGuildBankEvent(this, uint8(eventType), tabId, lowguid, itemOrMoney, itemStackCount, destTabId);
+    sScriptMgr->OnGuildBankEvent(this, uint8(eventType), tabId, lowguid, itemOrMoney, itemStackCount, destTabId);
 }
 
 inline Item* Guild::_GetItem(uint8 tabId, uint8 slotId) const

@@ -414,11 +414,6 @@ void ObjectMgr::RemoveArenaTeam(uint32 Id)
     mArenaTeamMap.erase(Id);
 }
 
-CreatureInfo const* ObjectMgr::GetCreatureTemplate(uint32 id)
-{
-    return sCreatureStorage.LookupEntry<CreatureInfo>(id);
-}
-
 void ObjectMgr::AddLocaleString(std::string& s, LocaleConstant locale, StringVector& data)
 {
     if (!s.empty())
@@ -542,7 +537,7 @@ struct SQLCreatureLoader : public SQLStorageLoaderBase<SQLCreatureLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(sObjectMgr.GetScriptId(src));
+        dst = D(sObjectMgr->GetScriptId(src));
     }
 };
 
@@ -1312,7 +1307,7 @@ void ObjectMgr::LoadCreatures()
                     spawnMasks[i] |= (1 << k);
 
     //TODO: remove this
-    //sGameEventMgr.mGameEventCreatureGuids.resize(52*2-1);
+    //sGameEventMgr->mGameEventCreatureGuids.resize(52*2-1);
 
 
     do
@@ -1442,14 +1437,14 @@ void ObjectMgr::LoadCreatures()
         /*if (entry == 30739 || entry == 30740)
         {
             gameEvent = 51;
-            uint32 guid2 = sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT);
+            uint32 guid2 = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
             CreatureData& data2 = mCreatureDataMap[guid2];
             data2 = data;
 //            data2.id = (entry == 32307 ? 32308 : 32307);
             data2.id = (entry == 30739 ? 30740 : 30739);
             data2.displayid = 0;
-            sGameEventMgr.mGameEventCreatureGuids[51+51].push_back(guid);
-            sGameEventMgr.mGameEventCreatureGuids[51+50].push_back(guid2);
+            sGameEventMgr->mGameEventCreatureGuids[51+51].push_back(guid);
+            sGameEventMgr->mGameEventCreatureGuids[51+50].push_back(guid2);
         }*/
 
         if (gameEvent == 0 && PoolId == 0)                      // if not this is to be managed by GameEvent System or Pool system
@@ -1501,7 +1496,7 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
     if (!goinfo)
         return 0;
 
-    Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(mapId));
+    Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(mapId));
     if (!map)
         return 0;
 
@@ -1562,7 +1557,7 @@ bool ObjectMgr::MoveCreData(uint32 guid, uint32 mapId, Position pos)
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(mapId)))
+    if (Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(mapId)))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsLoaded(data.posX, data.posY))
@@ -1587,7 +1582,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
         return 0;
 
     uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
-    CreatureBaseStats const* stats = sObjectMgr.GetCreatureBaseStats(level, cInfo->unit_class);
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
 
     uint32 guid = GenerateLowGuid(HIGHGUID_UNIT);
     CreatureData& data = NewOrExistCreatureData(guid);
@@ -1617,7 +1612,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(mapId)))
+    if (Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(mapId)))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
@@ -2010,7 +2005,7 @@ struct SQLItemLoader : public SQLStorageLoaderBase<SQLItemLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(sObjectMgr.GetScriptId(src));
+        dst = D(sObjectMgr->GetScriptId(src));
     }
 };
 
@@ -2275,7 +2270,7 @@ void ObjectMgr::LoadItemPrototypes()
             else if (proto->Spells[1].SpellId != -1)
             {
                 SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[1].SpellId);
-                if (!spellInfo && !sDisableMgr.IsDisabledFor(DISABLE_TYPE_SPELL, proto->Spells[1].SpellId, NULL))
+                if (!spellInfo && !sDisableMgr->IsDisabledFor(DISABLE_TYPE_SPELL, proto->Spells[1].SpellId, NULL))
                 {
                     sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%d)",i,1+1,proto->Spells[1].SpellId);
                     const_cast<ItemPrototype*>(proto)->Spells[0].SpellId = 0;
@@ -2323,7 +2318,7 @@ void ObjectMgr::LoadItemPrototypes()
                 if (proto->Spells[j].SpellId && proto->Spells[j].SpellId != -1)
                 {
                     SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[j].SpellId);
-                    if (!spellInfo && !sDisableMgr.IsDisabledFor(DISABLE_TYPE_SPELL, proto->Spells[j].SpellId, NULL))
+                    if (!spellInfo && !sDisableMgr->IsDisabledFor(DISABLE_TYPE_SPELL, proto->Spells[j].SpellId, NULL))
                     {
                         sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%d)",i,j+1,proto->Spells[j].SpellId);
                         const_cast<ItemPrototype*>(proto)->Spells[j].SpellId = 0;
@@ -2462,7 +2457,7 @@ void ObjectMgr::LoadItemPrototypes()
 
             uint32 item_id = entry->ItemId[j];
 
-            if (!GetItemPrototype(item_id))
+            if (!ObjectMgr::GetItemPrototype(item_id))
                 notFoundOutfit.insert(item_id);
         }
     }
@@ -2570,7 +2565,7 @@ void ObjectMgr::LoadItemSetNames()
         {
             uint32 entry = *itr;
             // add data from item_template if available
-            pProto = GetItemPrototype(entry);
+            pProto = ObjectMgr::GetItemPrototype(entry);
             if (pProto)
             {
                 sLog.outErrorDb("Item set part (Entry: %u) does not have entry in `item_set_names`, adding data from `item_template`.", entry);
@@ -2951,7 +2946,7 @@ void ObjectMgr::LoadPlayerInfo()
 
                 uint32 item_id = fields[2].GetUInt32();
 
-                if (!GetItemPrototype(item_id))
+                if (!ObjectMgr::GetItemPrototype(item_id))
                 {
                     sLog.outErrorDb("Item id %u (race %u class %u) in `playercreateinfo_item` table but not listed in `item_template`, ignoring.",item_id,current_race,current_class);
                     continue;
@@ -3943,7 +3938,7 @@ void ObjectMgr::LoadGroups()
                 diff = 0;                                   // default for both difficaly types
             }
 
-            InstanceSave *save = sInstanceSaveMgr.AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), time_t(fields[5].GetUInt64()), fields[6].GetBool(), true);
+            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), time_t(fields[5].GetUInt64()), fields[6].GetBool(), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
             ++count;
         }
@@ -4026,7 +4021,7 @@ void ObjectMgr::LoadQuests()
     for (QuestMap::iterator iter = mQuestTemplates.begin(); iter != mQuestTemplates.end(); ++iter)
     {
         // skip post-loading checks for disabled quests
-        if (sDisableMgr.IsDisabledFor(DISABLE_TYPE_QUEST, iter->first, NULL))
+        if (sDisableMgr->IsDisabledFor(DISABLE_TYPE_QUEST, iter->first, NULL))
             continue;
 
         Quest * qinfo = iter->second;
@@ -4989,7 +4984,7 @@ void ObjectMgr::LoadScripts(ScriptsType type)
 
             case SCRIPT_COMMAND_CREATE_ITEM:
             {
-                if (!GetItemPrototype(tmp.CreateItem.ItemEntry))
+                if (!ObjectMgr::GetItemPrototype(tmp.CreateItem.ItemEntry))
                 {
                     sLog.outErrorDb("Table `%s` has nonexistent item (entry: %u) in SCRIPT_COMMAND_CREATE_ITEM for script id %u",
                         tableName.c_str(), tmp.CreateItem.ItemEntry, tmp.id);
@@ -5202,7 +5197,7 @@ void ObjectMgr::LoadSpellScriptNames()
 
         if (allRanks)
         {
-            if (sSpellMgr.GetFirstSpellInChain(spellId) != uint32(spellId))
+            if (sSpellMgr->GetFirstSpellInChain(spellId) != uint32(spellId))
             {
                 sLog.outErrorDb("Scriptname:`%s` spell (spell_id:%d) is not first rank of spell.",scriptName,fields[0].GetInt32());
                 continue;
@@ -5210,7 +5205,7 @@ void ObjectMgr::LoadSpellScriptNames()
             while(spellId)
             {
                 mSpellScripts.insert(SpellScriptsMap::value_type(spellId, GetScriptId(scriptName)));
-                spellId = sSpellMgr.GetNextSpellInChain(spellId);
+                spellId = sSpellMgr->GetNextSpellInChain(spellId);
             }
         }
         else
@@ -5240,7 +5235,7 @@ void ObjectMgr::ValidateSpellScripts()
     {
         SpellEntry const * spellEntry = sSpellStore.LookupEntry(itr->first);
         std::vector<std::pair<SpellScriptLoader *, SpellScriptsMap::iterator> > SpellScriptLoaders;
-        sScriptMgr.CreateSpellScriptLoaders(itr->first, SpellScriptLoaders);
+        sScriptMgr->CreateSpellScriptLoaders(itr->first, SpellScriptLoaders);
         itr = mSpellScripts.upper_bound(itr->first);
 
 
@@ -5373,7 +5368,7 @@ struct SQLInstanceLoader : public SQLStorageLoaderBase<SQLInstanceLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(sObjectMgr.GetScriptId(src));
+        dst = D(sObjectMgr->GetScriptId(src));
     }
 };
 
@@ -5386,7 +5381,7 @@ void ObjectMgr::LoadInstanceTemplate()
 
     for (uint32 i = 0; i < sInstanceTemplate.MaxEntry; i++)
     {
-        InstanceTemplate* temp = const_cast<InstanceTemplate*>(GetInstanceTemplate(i));
+        InstanceTemplate* temp = const_cast<InstanceTemplate*>(ObjectMgr::GetInstanceTemplate(i));
         if (!temp)
             continue;
 
@@ -5892,7 +5887,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         }
     }
 
-    CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(mount_id);
+    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(mount_id);
     if (minfo)
         mount_id = minfo->modelid;
 
@@ -5963,7 +5958,7 @@ void ObjectMgr::LoadGraveyardZones()
 WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
 {
     // search for zone associated closest graveyard
-    uint32 zoneId = sMapMgr.GetZoneId(MapId,x,y,z);
+    uint32 zoneId = sMapMgr->GetZoneId(MapId,x,y,z);
 
     if (!zoneId)
     {
@@ -6270,7 +6265,7 @@ void ObjectMgr::LoadAccessRequirements()
 
         if (ar.item)
         {
-            ItemPrototype const *pProto = GetItemPrototype(ar.item);
+            ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(ar.item);
             if (!pProto)
             {
                 sLog.outError("Key item %u does not exist for map %u difficulty %u, removing key requirement.", ar.item, mapid, difficulty);
@@ -6280,7 +6275,7 @@ void ObjectMgr::LoadAccessRequirements()
 
         if (ar.item2)
         {
-            ItemPrototype const *pProto = GetItemPrototype(ar.item2);
+            ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(ar.item2);
             if (!pProto)
             {
                 sLog.outError("Second item %u does not exist for map %u difficulty %u, removing key requirement.", ar.item2, mapid, difficulty);
@@ -6335,7 +6330,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 
     if (mapEntry->IsDungeon())
     {
-        const InstanceTemplate *iTemplate = sObjectMgr.GetInstanceTemplate(Map);
+        const InstanceTemplate *iTemplate = ObjectMgr::GetInstanceTemplate(Map);
 
         if (!iTemplate)
             return NULL;
@@ -6607,7 +6602,7 @@ struct SQLGameObjectLoader : public SQLStorageLoaderBase<SQLGameObjectLoader>
     template<class D>
     void convert_from_str(uint32 /*field_pos*/, char *src, D &dst)
     {
-        dst = D(sObjectMgr.GetScriptId(src));
+        dst = D(sObjectMgr->GetScriptId(src));
     }
 };
 
@@ -7702,7 +7697,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, std::string table,
     }
 
 
-    PooledQuestRelation* poolRelationMap = go ? &sPoolMgr.mQuestGORelation : &sPoolMgr.mQuestCreatureRelation;
+    PooledQuestRelation* poolRelationMap = go ? &sPoolMgr->mQuestGORelation : &sPoolMgr->mQuestCreatureRelation;
     if (starter)
         poolRelationMap->clear();
 
@@ -8879,7 +8874,7 @@ bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 item_id, int32 max
         return false;
     }
 
-    if (!GetItemPrototype(item_id))
+    if (!ObjectMgr::GetItemPrototype(item_id))
     {
         if (pl)
             ChatHandler(pl).PSendSysMessage(LANG_ITEM_NOT_FOUND, item_id);
@@ -9048,7 +9043,7 @@ void ObjectMgr::LoadDbScriptStrings()
 // Functions for scripting access
 uint32 GetAreaTriggerScriptId(uint32 trigger_id)
 {
-    return sObjectMgr.GetAreaTriggerScriptId(trigger_id);
+    return sObjectMgr->GetAreaTriggerScriptId(trigger_id);
 }
 
 bool LoadTrinityStrings(char const* table, int32 start_value, int32 end_value)
@@ -9061,27 +9056,27 @@ bool LoadTrinityStrings(char const* table, int32 start_value, int32 end_value)
         return false;
     }
 
-    return sObjectMgr.LoadTrinityStrings(table, start_value, end_value);
+    return sObjectMgr->LoadTrinityStrings(table, start_value, end_value);
 }
 
 uint32  GetScriptId(const char *name)
 {
-    return sObjectMgr.GetScriptId(name);
+    return sObjectMgr->GetScriptId(name);
 }
 
 ObjectMgr::ScriptNameMap & GetScriptNames()
 {
-    return sObjectMgr.GetScriptNames();
+    return sObjectMgr->GetScriptNames();
 }
 
 GameObjectInfo const *GetGameObjectInfo(uint32 id)
 {
-    return sObjectMgr.GetGameObjectInfo(id);
+    return ObjectMgr::GetGameObjectInfo(id);
 }
 
 CreatureInfo const *GetCreatureInfo(uint32 id)
 {
-    return sObjectMgr.GetCreatureTemplate(id);
+    return ObjectMgr::GetCreatureTemplate(id);
 }
 
 CreatureInfo const* GetCreatureTemplateStore(uint32 entry)
@@ -9091,7 +9086,7 @@ CreatureInfo const* GetCreatureTemplateStore(uint32 entry)
 
 Quest const* GetQuestTemplateStore(uint32 entry)
 {
-    return sObjectMgr.GetQuestTemplate(entry);
+    return sObjectMgr->GetQuestTemplate(entry);
 }
 
 CreatureBaseStats const* ObjectMgr::GetCreatureBaseStats(uint8 level, uint8 unitClass)
@@ -9239,9 +9234,9 @@ void ObjectMgr::LoadFactionChangeItems()
         uint32 alliance = fields[0].GetUInt32();
         uint32 horde = fields[1].GetUInt32();
 
-        if (!GetItemPrototype(alliance))
+        if (!ObjectMgr::GetItemPrototype(alliance))
             sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
-        else if (!GetItemPrototype(horde))
+        else if (!ObjectMgr::GetItemPrototype(horde))
             sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
         else
             factionchange_items[alliance] = horde;

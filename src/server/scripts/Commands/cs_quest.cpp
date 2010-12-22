@@ -66,7 +66,7 @@ public:
 
         uint32 entry = atol(cId);
 
-        Quest const* pQuest = sObjectMgr.GetQuestTemplate(entry);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
         if (!pQuest)
         {
@@ -120,7 +120,7 @@ public:
 
         uint32 entry = atol(cId);
 
-        Quest const* pQuest = sObjectMgr.GetQuestTemplate(entry);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
         if (!pQuest)
         {
@@ -170,7 +170,7 @@ public:
 
         uint32 entry = atol(cId);
 
-        Quest const* pQuest = sObjectMgr.GetQuestTemplate(entry);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
         // If player doesn't have the quest
         if (!pQuest || player->GetQuestStatus(entry) == QUEST_STATUS_NONE)
@@ -212,7 +212,7 @@ public:
             }
             else if (creature > 0)
             {
-                if (CreatureInfo const* cInfo = sObjectMgr.GetCreatureTemplate(creature))
+                if (CreatureInfo const* cInfo = ObjectMgr::GetCreatureTemplate(creature))
                     for (uint16 z = 0; z < creaturecount; ++z)
                         player->KilledMonster(cInfo,0);
             }

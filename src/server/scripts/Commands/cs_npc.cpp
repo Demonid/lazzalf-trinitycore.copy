@@ -197,7 +197,7 @@ public:
         }
 
         Creature* pCreature = new Creature;
-        if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
+        if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
         {
             delete pCreature;
             return false;
@@ -211,7 +211,7 @@ public:
         pCreature->LoadFromDB(db_guid, map);
 
         map->Add(pCreature);
-        sObjectMgr.AddCreatureToGrid(db_guid, sObjectMgr.GetCreatureData(db_guid));
+        sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
         return true;
     }
 
@@ -253,15 +253,15 @@ public:
 
         uint32 vendor_entry = vendor ? vendor->GetEntry() : 0;
 
-        if (!sObjectMgr.IsVendorItemValid(vendor_entry,itemId,maxcount,incrtime,extendedcost,handler->GetSession()->GetPlayer()))
+        if (!sObjectMgr->IsVendorItemValid(vendor_entry,itemId,maxcount,incrtime,extendedcost,handler->GetSession()->GetPlayer()))
         {
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        sObjectMgr.AddVendorItem(vendor_entry,itemId,maxcount,incrtime,extendedcost);
+        sObjectMgr->AddVendorItem(vendor_entry,itemId,maxcount,incrtime,extendedcost);
 
-        ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(itemId);
+        ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(itemId);
 
         handler->PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1,maxcount,incrtime,extendedcost);
         return true;
@@ -288,7 +288,7 @@ public:
         // attempt check creature existence by DB data
         if (!pCreature)
         {
-            CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+            CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
             if (!data)
             {
                 handler->PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
@@ -395,7 +395,7 @@ public:
         {
             if (((Pet*)pCreature)->getPetType() == HUNTER_PET)
             {
-                pCreature->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, sObjectMgr.GetXPForLevel(lvl)/4);
+                pCreature->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, sObjectMgr->GetXPForLevel(lvl)/4);
                 pCreature->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             }
             ((Pet*)pCreature)->GivePetLevel(lvl);
@@ -426,7 +426,7 @@ public:
             if (!lowguid)
                 return false;
 
-            if (CreatureData const* cr_data = sObjectMgr.GetCreatureData(lowguid))
+            if (CreatureData const* cr_data = sObjectMgr->GetCreatureData(lowguid))
                 unit = handler->GetSession()->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(lowguid, cr_data->id, HIGHGUID_UNIT));
         }
         else
@@ -475,14 +475,14 @@ public:
         }
         uint32 itemId = atol(pitem);
 
-        if (!sObjectMgr.RemoveVendorItem(vendor->GetEntry(),itemId))
+        if (!sObjectMgr->RemoveVendorItem(vendor->GetEntry(),itemId))
         {
             handler->PSendSysMessage(LANG_ITEM_NOT_IN_LIST,itemId);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        ItemPrototype const* pProto = sObjectMgr.GetItemPrototype(itemId);
+        ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(itemId);
 
         handler->PSendSysMessage(LANG_ITEM_DELETED_FROM_LIST,itemId,pProto->Name1);
         return true;
@@ -611,7 +611,7 @@ public:
         handler->PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()));
         if (const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
             if (CreatureInfo const *master = GetCreatureInfo(linked->id))
-                handler->PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
+                handler->PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
 
         if ((npcflags & UNIT_NPC_FLAG_VENDOR))
         {
@@ -649,7 +649,7 @@ public:
             // Attempting creature load from DB data
             if (!pCreature)
             {
-                CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+                CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
                 if (!data)
                 {
                     handler->PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
@@ -683,7 +683,7 @@ public:
 
         if (pCreature)
         {
-            if (CreatureData const* data = sObjectMgr.GetCreatureData(pCreature->GetDBTableGUIDLow()))
+            if (CreatureData const* data = sObjectMgr->GetCreatureData(pCreature->GetDBTableGUIDLow()))
             {
                 const_cast<CreatureData*>(data)->posX = x;
                 const_cast<CreatureData*>(data)->posY = y;
@@ -836,7 +836,7 @@ public:
             // attempt check creature existence by DB data
             if (!pCreature)
             {
-                CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+                CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
                 if (!data)
                 {
                     handler->PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
@@ -1107,7 +1107,7 @@ public:
         uint64 receiver_guid= atol(receiver_str);
 
         // check online security
-        if (handler->HasLowerSecurity(sObjectMgr.GetPlayer(receiver_guid), 0))
+        if (handler->HasLowerSecurity(sObjectMgr->GetPlayer(receiver_guid), 0))
             return false;
 
         pCreature->MonsterWhisper(text,receiver_guid);
@@ -1322,7 +1322,7 @@ public:
             return false;
         }
 
-        if (!sObjectMgr.SetCreatureLinkedRespawn(pCreature->GetDBTableGUIDLow(), linkguid))
+        if (!sObjectMgr->SetCreatureLinkedRespawn(pCreature->GetDBTableGUIDLow(), linkguid))
         {
             handler->PSendSysMessage("Selected creature can't link with guid '%u'", linkguid);
             handler->SetSentErrorMessage(true);
@@ -1365,7 +1365,7 @@ public:
         uint32 ItemID = atoi(pItemID);
         uint32 SlotID = atoi(pSlotID);
 
-        ItemPrototype* tmpItem = sObjectMgr.GetItemPrototype(ItemID);
+        ItemPrototype* tmpItem = ObjectMgr::GetItemPrototype(ItemID);
 
         bool added = false;
         if (tmpItem)
@@ -1440,7 +1440,7 @@ public:
         }
 
         pCreature->SetName(args);
-        uint32 idname = sObjectMgr.AddCreatureTemplate(pCreature->GetName());
+        uint32 idname = sObjectMgr->AddCreatureTemplate(pCreature->GetName());
         pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, idname);
 
         pCreature->SaveToDB();
@@ -1486,7 +1486,7 @@ public:
             return true;
         }
 
-        uint32 idname = sObjectMgr.AddCreatureSubName(pCreature->GetName(),args,pCreature->GetUInt32Value(UNIT_FIELD_DISPLAYID));
+        uint32 idname = sObjectMgr->AddCreatureSubName(pCreature->GetName(),args,pCreature->GetUInt32Value(UNIT_FIELD_DISPLAYID));
         pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, idname);
 
         pCreature->SaveToDB();
