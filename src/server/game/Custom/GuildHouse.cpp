@@ -237,7 +237,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                 {
                     sObjectMgr->AddCreatureToGrid(*itr2, data);
 
-                    Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
+                    Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->mapid));
                     
                     if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                     {
