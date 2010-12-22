@@ -30,7 +30,6 @@
 
 #include "GuildHouse.h"
 #include "ObjectMgr.h"
-#include "ProgressBar.h"
 #include "Guild.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
@@ -269,21 +268,14 @@ void GuildHouseObject::LoadGuildHouse()
 
     if (!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
         sLog.outString("");
         sLog.outErrorDb(">> Loaded 0 guild house.");
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
-
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 id = fields[0].GetUInt32();
         uint32 guildID = fields[1].GetUInt32();
@@ -332,21 +324,14 @@ void GuildHouseObject::LoadGuildHouseAdd()
 
     if (!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
         sLog.outString("");
         sLog.outErrorDb(">> Loaded 0 GuildHouse Add");
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
-
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 guid         = fields[0].GetUInt32();
         uint16 type         = fields[1].GetUInt16();

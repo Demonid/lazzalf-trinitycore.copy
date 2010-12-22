@@ -13,7 +13,6 @@
 
 #include "ScriptPCH.h"
 #include "sc_npc_teleport.h"
-#include "ProgressBar.h"
 
 #define TELE    nsNpcTel::CatDest
 #define PAGE    nsNpcTel::Page
@@ -315,7 +314,6 @@ void LoadNpcTele(void)
     if (result)
     {
         sLog.outString( "TSCR: Loading %s, %s and %s...", Table[0], Table[1], Table[2]);
-        barGoLink bar(result->GetRowCount());
 
         uint32 catid = 0;
         uint32 nbDest = 0;
@@ -324,7 +322,6 @@ void LoadNpcTele(void)
 
         do
         {
-            bar.step();
             Field *fields = result->Fetch();
 
             if (!IsValidCat && catid == fields[3].GetUInt32() && !FirstTime)
