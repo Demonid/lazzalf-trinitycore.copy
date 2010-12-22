@@ -568,7 +568,7 @@ public:
             {
                 if (HandOfDeathTimer <= diff)
                 {
-                    DoCast(me->getVictim(), SPELL_HAND_OF_DEATH);
+                    //DoCast(me->getVictim(), SPELL_HAND_OF_DEATH);
                     HandOfDeathTimer = 2000;
                 } else HandOfDeathTimer -= diff;
                 return;                                         // Don't do anything after this point.
