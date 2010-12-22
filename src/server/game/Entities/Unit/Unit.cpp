@@ -7781,7 +7781,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 break;
             }
             // Unholy Blight
-            if (dummySpell->Id == 49194)
+            /*if (dummySpell->Id == 49194)
             {
                 basepoints0 = triggerAmount * damage / 1000;
                 // Glyph of Unholy Blight
@@ -7798,6 +7798,36 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, AuraEffect* trigger
                 }
 
                 triggered_spell_id = 50536;
+                break;
+            }*/
+            // Unholy Blight
+            if (dummySpell->Id == 49194)
+            {
+                if (!damage)
+                    return false;
+
+                triggered_spell_id = 50536;
+                SpellEntry const * spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+                uint32 ticks = GetSpellMaxDuration(spellInfo) / spellInfo->EffectAmplitude[EFFECT_0];             
+
+                basepoints0 = triggerAmount * damage / 100;
+
+                 // Glyph of Unholy Blight
+                if (AuraEffect const * aurEff = GetAuraEffect(63332, EFFECT_0))
+                    basepoints0 += basepoints0 * aurEff->GetAmount() / 100;
+
+                 // Find replaced aura to use it's remaining amount
+                AuraEffectList const & auras = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+                for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                {
+                    if (((*itr)->GetCasterGUID() != GetGUID()) || ((*itr)->GetId() != triggered_spell_id))
+                         continue;
+
+                    basepoints0 += (*itr)->GetAmount() * ((*itr)->GetTotalTicks() - (*itr)->GetTickNumber());
+                    break;
+                }
+
+                basepoints0 = basepoints0 / ticks;
                 break;
             }
             // Vendetta
