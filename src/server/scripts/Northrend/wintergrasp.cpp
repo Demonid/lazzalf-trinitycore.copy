@@ -27,7 +27,7 @@ class npc_demolisher_engineerer : public CreatureScript
 
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
-        OutdoorPvPWG *pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+        OutdoorPvPWG *pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
         if (!pvpWG)
             return false;
@@ -122,7 +122,7 @@ class npc_wg_misc : public CreatureScript
         void Reset()
         {
             events.Reset();
-            pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+            pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
             switch(me->GetEntry())
             {
@@ -311,7 +311,7 @@ class npc_winterguard : public CreatureScript
             pCreature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_NORMAL, true);
             pCreature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
             
-            pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+            pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
         }
 
         OutdoorPvPWG *pvpWG;

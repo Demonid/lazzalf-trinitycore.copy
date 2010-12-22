@@ -744,7 +744,7 @@ void Battleground::EndBattleground(uint32 winner)
 
 	    for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
 	    { 
-            Player *plr = sObjectMgr.GetPlayer(itr->first);
+            Player *plr = sObjectMgr->GetPlayer(itr->first);
             uint32 team = itr->second.Team;
 	        if (plr && plr->GetSession())
             {
@@ -1092,7 +1092,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if (!bmEntry)
         return;
 
-    ItemPrototype const* markProto = sObjectMgr.GetItemPrototype(mark);
+    ItemPrototype const* markProto = sObjectMgr->GetItemPrototype(mark);
     if (!markProto)
         return;
 
@@ -1106,7 +1106,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         std::string subject = markProto->Name1;
         int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
         if (loc_idx >= 0)
-            if (ItemLocale const *il = sObjectMgr.GetItemLocale(markProto->ItemId))
+            if (ItemLocale const *il = sObjectMgr->GetItemLocale(markProto->ItemId))
                 if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
                     subject = il->Name[loc_idx];
 

@@ -191,7 +191,7 @@ class npc_guild_master : public CreatureScript
 
         uint32 guildsize = 1;
 
-        Guild *guild =sObjectMgr.GetGuildById(player->GetGuildId());
+        Guild *guild =sObjectMgr->GetGuildById(player->GetGuildId());
         if (guild)
             guildsize = guild->GetMemberSize();
 
@@ -267,7 +267,7 @@ class npc_guild_master : public CreatureScript
         uint32 guildsize = 1;
         uint32 guild_add = GHobj.GetGuildHouse_Add(player->GetGuildId());
 
-        Guild *guild =sObjectMgr.GetGuildById(player->GetGuildId());
+        Guild *guild =sObjectMgr->GetGuildById(player->GetGuildId());
         if (guild)
             guildsize = guild->GetMemberSize();
 
@@ -898,7 +898,7 @@ class npc_portal : public CreatureScript
             return;
         }
 
-        OutdoorPvPWG *pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr.GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+        OutdoorPvPWG *pvpWG = (OutdoorPvPWG*) sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
         switch(action)
         {

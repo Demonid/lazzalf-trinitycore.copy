@@ -91,7 +91,7 @@ public:
         {
             if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
             {
-                if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197))
+                if(OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(4197))
                 {
                     if ((pvpWG->getDefenderTeamId()==TEAM_ALLIANCE) && (m_player->ToPlayer()->GetTeam() == ALLIANCE))
                         return;

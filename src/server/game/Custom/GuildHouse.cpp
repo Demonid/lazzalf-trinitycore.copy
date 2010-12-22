@@ -48,7 +48,7 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
     if (!guild_id)
         return false;
 
-    Guild* guild = sObjectMgr.GetGuildById(guild_id);  
+    Guild* guild = sObjectMgr->GetGuildById(guild_id);  
     
     if (!guild_id)
     {
@@ -173,9 +173,9 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         gh_Item_Vector::iterator itr2 =  itr->second.AddCre.begin();
         for (; itr2 != itr->second.AddCre.end(); itr2++)
         {
-            if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
+            if (CreatureData const* data = sObjectMgr->GetCreatureData(*itr2))
             {
-                sObjectMgr.RemoveCreatureFromGrid(*itr2, data);
+                sObjectMgr->RemoveCreatureFromGrid(*itr2, data);
                 if( Creature* pCreature = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
                     pCreature->AddObjectToRemoveList();
             }
@@ -183,9 +183,9 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
         itr2 =  itr->second.AddGO.begin();
         for (; itr2 != itr->second.AddGO.end(); itr2++)
         {
-            if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
+            if (GameObjectData const* data = sObjectMgr->GetGOData(*itr2))
             { 
-                sObjectMgr.RemoveGameobjectFromGrid(*itr2, data);
+                sObjectMgr->RemoveGameobjectFromGrid(*itr2, data);
                 if (GameObject* pGameobject = sObjectAccessor.GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
                      pGameobject->AddObjectToRemoveList();
             }
@@ -210,11 +210,11 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             gh_Item_Vector::iterator itr2 =  itr->second.AddGO.begin();
             for (; itr2 != itr->second.AddGO.end(); itr2++)
             {
-                if (GameObjectData const* data = sObjectMgr.GetGOData(*itr2))
+                if (GameObjectData const* data = sObjectMgr->GetGOData(*itr2))
                 {
-                    sObjectMgr.AddGameobjectToGrid(*itr2, data);
+                    sObjectMgr->AddGameobjectToGrid(*itr2, data);
 
-                    Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
+                    Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->mapid));
 
                     if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                     {
@@ -233,9 +233,9 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
             itr2 =  itr->second.AddCre.begin();
             for (; itr2 != itr->second.AddCre.end(); itr2++)
             {                
-                if (CreatureData const* data = sObjectMgr.GetCreatureData(*itr2))
+                if (CreatureData const* data = sObjectMgr->GetCreatureData(*itr2))
                 {
-                    sObjectMgr.AddCreatureToGrid(*itr2, data);
+                    sObjectMgr->AddCreatureToGrid(*itr2, data);
 
                     Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
                     
@@ -342,7 +342,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
         find = ( (uint32)id << 16 ) | (uint32)add_type;
         if (type == CREATURE)
         {
-            if (!sObjectMgr.GetCreatureData(guid))                
+            if (!sObjectMgr->GetCreatureData(guid))                
             {                
                 sLog.outString( "Data per Creature Guid %u non esistente", guid );
                 continue;
@@ -351,7 +351,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
         }
         else if (type == OBJECT)
         {
-            if (!sObjectMgr.GetGOData(guid))
+            if (!sObjectMgr->GetGOData(guid))
             {                
                 sLog.outString( "Data per GameObject Guid %u non esistente", guid );
                 continue;
@@ -426,7 +426,7 @@ void GuildHouseObject::ControlGuildHouse()
 {
     for (GuildHouseMap::iterator itr = GH_map.begin(); itr != GH_map.end(); itr++)
     {
-        if (Guild* pGuild = sObjectMgr.GetGuildById((*itr).first))
+        if (Guild* pGuild = sObjectMgr->GetGuildById((*itr).first))
             if (pGuild->GetMemberSize() < (*itr).second.min_member)
             {                    
                 GHobj.ChangeGuildHouse((*itr).first, 0);

@@ -143,7 +143,7 @@ public:
             Map *map = chr->GetMap();
 
             Creature* pCreature = new Creature;
-            if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
+            if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
             {
                 delete pCreature;
                 return false;
@@ -160,7 +160,7 @@ public:
                                    pCreature->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pCreature->GetName());   
 
             map->Add(pCreature);
-            sObjectMgr.AddCreatureToGrid(db_guid, sObjectMgr.GetCreatureData(db_guid));
+            sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
             return true;
         }
 

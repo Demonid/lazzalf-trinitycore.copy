@@ -92,7 +92,7 @@ class boss_koralon : public CreatureScript
 
         void CheckForVoA()
         {
-            if (!sOutdoorPvPMgr.CanBeAttacked(me))
+            if (!sOutdoorPvPMgr->CanBeAttacked(me))
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_PASSIVE);

@@ -103,7 +103,7 @@ void OutdoorPvPWG::LoadCreatureMap(uint64 guid, WG_QUESTGIVER_MOVEPOS_INDEX idx,
     m_creatures[guid].team = team;
     m_creatures[guid].isQg = true;
 
-    sObjectMgr.MoveCreData(m_creatures[guid].lguid, 571, pos);
+    sObjectMgr->MoveCreData(m_creatures[guid].lguid, 571, pos);
 }
 */
 
@@ -316,7 +316,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         Field *fields = result->Fetch();
 
         uint32 guid = fields[0].GetUInt32();
-        GameObjectData const * goData = sObjectMgr.GetGOData(guid);
+        GameObjectData const * goData = sObjectMgr->GetGOData(guid);
 
         if (!goData) // this should not happen
             continue;
@@ -375,7 +375,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
             for (std::list<uint32>::iterator itr = engGuids.begin(); itr != engGuids.end(); ++itr)
             {
-                const CreatureData *creData = sObjectMgr.GetCreatureData(*itr);
+                const CreatureData *creData = sObjectMgr->GetCreatureData(*itr);
 
                 if (!creData)
                     continue;
@@ -401,7 +401,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
             for (std::list<uint32>::iterator itr = spiritGuids.begin(); itr != spiritGuids.end(); ++itr)
             {
-                const CreatureData *creData = sObjectMgr.GetCreatureData(*itr);
+                const CreatureData *creData = sObjectMgr->GetCreatureData(*itr);
 
                 if (!creData)
                     continue;
@@ -428,7 +428,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             if (goData->id==192028 || goData->id==192029)
                workshop->m_capturePointGUID = goData->id;
 
-            const CreatureData *creData = sObjectMgr.GetCreatureData(engGuid);
+            const CreatureData *creData = sObjectMgr->GetCreatureData(engGuid);
 
             if (!creData)
                 continue;
@@ -442,7 +442,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             {
                 spiritGuids.remove(spiritGuid);
 
-                const CreatureData *spiritData = sObjectMgr.GetCreatureData(spiritGuid);
+                const CreatureData *spiritData = sObjectMgr->GetCreatureData(spiritGuid);
 
                 if (!spiritData)
                     continue;
@@ -472,15 +472,15 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     }
 
     // Load Graveyard
-    GraveYardMap::const_iterator graveLow  = sObjectMgr.mGraveYardMap.lower_bound(NORTHREND_WINTERGRASP);
-    GraveYardMap::const_iterator graveUp   = sObjectMgr.mGraveYardMap.upper_bound(NORTHREND_WINTERGRASP);
+    GraveYardMap::const_iterator graveLow  = sObjectMgr->mGraveYardMap.lower_bound(NORTHREND_WINTERGRASP);
+    GraveYardMap::const_iterator graveUp   = sObjectMgr->mGraveYardMap.upper_bound(NORTHREND_WINTERGRASP);
 
     for (AreaPOIList::iterator itr = areaPOIs.begin(); itr != areaPOIs.end();)
     {
         if ((*itr)->icon[1] == 8)
         {
             // find or create grave yard
-            const WorldSafeLocsEntry *loc = sObjectMgr.GetClosestGraveYard((*itr)->x, (*itr)->y, (*itr)->z, (*itr)->mapId, 0);
+            const WorldSafeLocsEntry *loc = sObjectMgr->GetClosestGraveYard((*itr)->x, (*itr)->y, (*itr)->z, (*itr)->mapId, 0);
 
             if (!loc)
             {
@@ -499,7 +499,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
                 GraveYardData graveData;
                 graveData.safeLocId = loc->ID;
                 graveData.team = 0;
-                graveItr = sObjectMgr.mGraveYardMap.insert(std::make_pair(NORTHREND_WINTERGRASP, graveData));
+                graveItr = sObjectMgr->mGraveYardMap.insert(std::make_pair(NORTHREND_WINTERGRASP, graveData));
             }
 
             for (BuildingStateMap::iterator stateItr = m_buildingStates.begin(); stateItr != m_buildingStates.end(); ++stateItr)
@@ -517,7 +517,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     }
 
     // Titan Relic
-    sObjectMgr.AddGOData(WG_GO_TITAN_RELIC, 571, 5440.0f, 2840.8f, 420.43f + 10.0f, 0);
+    sObjectMgr->AddGOData(WG_GO_TITAN_RELIC, 571, 5440.0f, 2840.8f, 420.43f + 10.0f, 0);
 
     LoadTeamPair(m_goDisplayPair, OutdoorPvPWGGODisplayPair);
     LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
@@ -629,11 +629,11 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
             switch(state->type)
             {
                 case BUILDING_WORKSHOP:
-                    msgStr = fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DAMAGED), msgStr.c_str(), sObjectMgr.GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
+                    msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DAMAGED), msgStr.c_str(), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     break;
                 case BUILDING_WALL:
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -657,7 +657,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                     break;
                 case BUILDING_TOWER:
                     ++m_towerDamagedCount[state->GetTeamId()];
-                    msgStr = fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DAMAGED), msgStr.c_str());
+                    msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DAMAGED), msgStr.c_str());
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
@@ -704,11 +704,11 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
             {
                 case BUILDING_WORKSHOP:
                     ModifyWorkshopCount(state->GetTeamId(), false);
-                    msgStr = fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DESTROYED), msgStr.c_str(), sObjectMgr.GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
+                    msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DESTROYED), msgStr.c_str(), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     break;
                 case BUILDING_WALL:
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -761,7 +761,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                                 m_timer = m_timer - 600000; // - 10 mins
                         }
                     }
-                    msgStr = fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DESTROYED), msgStr.c_str());
+                    msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DESTROYED), msgStr.c_str());
                     sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
@@ -1360,7 +1360,7 @@ bool OutdoorPvPWG::UpdateQuestGiverPosition(uint32 guid, Creature *creature)
             creature->Respawn(true);
     }
     else
-        sObjectMgr.MoveCreData(guid, 571, pos);
+        sObjectMgr->MoveCreData(guid, 571, pos);
 
     return true;
 }
@@ -2018,7 +2018,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
                         Creature* sh = NULL;
                         for (std::vector<uint64>::const_iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
                         {
-                            Player *plr = sObjectMgr.GetPlayer(*itr2);
+                            Player *plr = sObjectMgr->GetPlayer(*itr2);
                             if (!plr)
                                 continue;
 
@@ -2055,7 +2055,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
             {
                 for (std::vector<uint64>::const_iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
                 {
-                    Player *plr = sObjectMgr.GetPlayer(*itr);
+                    Player *plr = sObjectMgr->GetPlayer(*itr);
                     if (!plr)
                         continue;
                     plr->ResurrectPlayer(1.0f);
@@ -2083,21 +2083,21 @@ bool OutdoorPvPWG::Update(uint32 diff)
         if (isWarTime())
         {
             if (m_timer != 1) // 1 = forceStopBattle
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(entry), sObjectMgr.GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
+                sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(entry), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
 
             EndBattle();
         }
         else
         {
             if (m_timer != 1) // 1 = forceStartBattle
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_STARTS));
+                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_STARTS));
  	            
             if (!m_players[getDefenderTeamId()].empty() && !m_players[getAttackerTeamId()].empty())
                 StartBattle();
             else
             {
                 m_timer = sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
+                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
 
                 if (m_players[getDefenderTeamId()].empty())
                     forceChangeTeam();
@@ -2122,7 +2122,7 @@ void OutdoorPvPWG::forceStartBattle()
     if (m_timer != 1)
     {
         m_timer = 1;
-        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_START));
+        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_START));
     }
 }
 
@@ -2134,7 +2134,7 @@ void OutdoorPvPWG::forceStopBattle()
     if (m_timer != 1)
     {
         m_timer = 1;
-        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_STOP));
+        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_STOP));
     }
 }
 
@@ -2142,7 +2142,7 @@ void OutdoorPvPWG::forceChangeTeam()
 {
     m_changeDefender = true;
     m_timer = 1;
-    sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr.GetTrinityStringForDBCLocale(LANG_BG_WG_SWITCH_FACTION), sObjectMgr.GetTrinityStringForDBCLocale(getAttackerTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
+    sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_SWITCH_FACTION), sObjectMgr->GetTrinityStringForDBCLocale(getAttackerTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
 
     if (isWarTime())
         forceStartBattle();
@@ -2487,7 +2487,7 @@ void OutdoorPvPWG::LoadQuestGiverMap(uint32 guid, Position posHorde, Position po
     m_questgivers[guid] = NULL;
 
     if (getDefenderTeamId() == TEAM_ALLIANCE)
-        sObjectMgr.MoveCreData(guid, 571, posAlli);
+        sObjectMgr->MoveCreData(guid, 571, posAlli);
 }
 
 OPvPCapturePointWG *OutdoorPvPWG::GetWorkshop(uint32 lowguid) const
@@ -2537,7 +2537,7 @@ void OutdoorPvPWG::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
-    Player *plr = sObjectMgr.GetPlayer(player_guid);
+    Player *plr = sObjectMgr->GetPlayer(player_guid);
     if (!plr)
         return;
 
@@ -2554,7 +2554,7 @@ void OutdoorPvPWG::RemovePlayerFromResurrectQueue(uint64 player_guid)
             {
                 (itr->second).erase(itr2);
 
-                Player *plr = sObjectMgr.GetPlayer(player_guid);
+                Player *plr = sObjectMgr->GetPlayer(player_guid);
                 if (!plr)
                     return;
 
@@ -2578,12 +2578,12 @@ void OutdoorPvPWG::RemovePlayerFromResurrectQueue(uint64 player_guid)
         WorldSafeLocsEntry const *ClosestGrave = NULL;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            Player* plr = sObjectMgr.GetPlayer(*itr);
+            Player* plr = sObjectMgr->GetPlayer(*itr);
             if (!plr)
                 continue;
 
             if (!ClosestGrave)
-                ClosestGrave = sObjectMgr.GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
+                ClosestGrave = sObjectMgr->GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
 
             if (ClosestGrave)
                 plr->TeleportTo(plr->GetMapId(), ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
@@ -2603,14 +2603,14 @@ void OutdoorPvPWG::RelocateAllianceDeadPlayers(Creature *cr)
         WorldSafeLocsEntry const *ClosestGrave = NULL;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            Player* plr = sObjectMgr.GetPlayer(*itr);
+            Player* plr = sObjectMgr->GetPlayer(*itr);
 			if (!plr)
                 continue;
 
 			if (plr->getFaction() == ALLIANCE)
 			{
             if (!ClosestGrave)
-                ClosestGrave = sObjectMgr.GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
+                ClosestGrave = sObjectMgr->GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
 
             if (ClosestGrave)
                 plr->TeleportTo(plr->GetMapId(), ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
@@ -2631,14 +2631,14 @@ void OutdoorPvPWG::RelocateHordeDeadPlayers(Creature *cr)
         WorldSafeLocsEntry const *ClosestGrave = NULL;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            Player* plr = sObjectMgr.GetPlayer(*itr);
+            Player* plr = sObjectMgr->GetPlayer(*itr);
 			if (!plr)
                 continue;
 
 			if (plr->getFaction() == HORDE)
 			{
             if (!ClosestGrave)
-                ClosestGrave = sObjectMgr.GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
+                ClosestGrave = sObjectMgr->GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetMapId(), plr->GetTeam());
 
             if (ClosestGrave)
                 plr->TeleportTo(plr->GetMapId(), ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
