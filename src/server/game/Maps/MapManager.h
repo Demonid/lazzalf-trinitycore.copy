@@ -38,6 +38,9 @@ class MapManager
 
     public:
 
+        Map* FindMapByThread(ACE_thread_t tId);
+        MapUpdater m_updater;
+
         Map* CreateMap(uint32, const WorldObject* obj, uint32 instanceId);
         Map const* CreateBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_createBaseMap(id); }
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
@@ -166,7 +169,7 @@ class MapManager
         IntervalTimer i_timer;
 
         uint32 i_MaxInstanceId;
-        MapUpdater m_updater;
+        //MapUpdater m_updater;
 };
 #define sMapMgr ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance()
 #endif

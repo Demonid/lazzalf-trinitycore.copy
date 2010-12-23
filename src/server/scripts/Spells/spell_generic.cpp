@@ -25,6 +25,311 @@
 #include "ScriptPCH.h"
 #include "SpellAuraEffects.h"
 
+enum eTrickTreatSpells
+{
+    SPELL_TRICK_TREAT     = 44436,
+    SPELL_UPSET_TUMMY     = 42966,
+    SPELL_TRICKY_TREAT    = 42919,
+};
+
+class spell_gen_trick_treat : public SpellScriptLoader
+{
+public:
+    spell_gen_trick_treat() : SpellScriptLoader("spell_gen_trick_treat") {}
+
+    class spell_gen_trick_treat_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_trick_treat_SpellScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_TRICK_TREAT))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_UPSET_TUMMY))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_TRICKY_TREAT))
+                return false;
+            return true;
+        }
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {           
+            if (Unit* pTarget = GetTargetUnit())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                    if (Aura* aur = pPlayerTarget->GetAura(SPELL_TRICKY_TREAT))
+                    {
+                        uint8 stack = aur->GetStackAmount();
+                        if (stack == 2)
+                        {
+                            if (rand()%5 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
+                        }
+                        else if (stack == 3)
+                        {
+                            if (rand()%3 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
+                        }
+                        else if (stack == 4)
+                        {
+                            if (rand()%2 == 0)
+                                pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
+                        }
+                        else if (stack >= 5)
+                        {
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_UPSET_TUMMY, true);
+                        }
+                    } 
+        }
+
+        void Register()
+        {
+            OnEffect += SpellEffectFn(spell_gen_trick_treat_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_trick_treat_SpellScript();
+    }
+};
+
+enum eRamSpells
+{
+    SPELL_RAM_FATIGUE         = 43052,
+    SPELL_RAM_TROT            = 42992,
+    SPELL_RAM_CANTER          = 42993,
+    SPELL_RAM_GALLOP          = 42994,
+    SPELL_RAM_NEUTRAL         = 43310,
+};
+
+enum eRamGobject
+{
+    GO_FIENO         = 190559
+};
+
+// 43310 Ram Neutral
+class spell_ram_neutral : public SpellScriptLoader
+{
+public:
+    spell_ram_neutral() : SpellScriptLoader("spell_ram_neutral") { }
+
+    class spell_ram_neutral_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_ram_neutral_AuraScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_NEUTRAL))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        {
+            if (Unit* pTarget = aurApp->GetTarget())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                {
+                    std::list<GameObject*> ChestList;
+                    pPlayerTarget->GetGameObjectListWithEntryInGrid(ChestList, GO_FIENO, 4.0f);
+                    if (!ChestList.empty())
+                    {
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                    }
+                    else if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                    {
+                        uint8 stack = aur->GetStackAmount();
+                        if (stack > 4)
+                        {
+                            pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack-4);
+                        }
+                        else
+                        {
+                            pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                        }
+                    }            
+                }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ram_neutral_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_ram_neutral_AuraScript();
+    }
+};
+
+// 42992 Ram Trot
+class spell_ram_trot : public SpellScriptLoader
+{
+public:
+    spell_ram_trot() : SpellScriptLoader("spell_ram_trot") { }
+
+    class spell_ram_trot_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_ram_trot_AuraScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_TROT))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        {
+            if (Unit* pTarget = aurApp->GetTarget())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                {
+                    std::list<GameObject*> ChestList;
+                    pPlayerTarget->GetGameObjectListWithEntryInGrid(ChestList, GO_FIENO, 4.0f);
+                    if (!ChestList.empty())
+                    {
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                    }
+                    else if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                    {
+                        uint8 stack = aur->GetStackAmount();
+                        if (stack > 2)
+                        {
+                            pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack-2);
+                        }
+                        else
+                        {                            
+                            pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                        }
+                    }            
+                }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ram_trot_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_ram_trot_AuraScript();
+    }
+};
+
+// 42993 Ram Canter
+class spell_ram_canter : public SpellScriptLoader
+{
+public:
+    spell_ram_canter() : SpellScriptLoader("spell_ram_canter") { }
+
+    class spell_ram_canter_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_ram_canter_AuraScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_CANTER))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        {
+            if (Unit* pTarget = aurApp->GetTarget())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                {
+                    std::list<GameObject*> ChestList;
+                    pPlayerTarget->GetGameObjectListWithEntryInGrid(ChestList, GO_FIENO, 4.0f);
+                    if (!ChestList.empty())
+                    {
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                    }
+                    else
+                    {
+                        uint8 stack = 0;
+                        if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                            stack = aur->GetStackAmount();
+                        if (stack == 100) 
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
+                        pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_FATIGUE, true);
+                    }
+                }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ram_canter_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_ram_canter_AuraScript();
+    }
+};
+
+// 42994 Ram Gallop
+class spell_ram_gallop : public SpellScriptLoader
+{
+public:
+    spell_ram_gallop() : SpellScriptLoader("spell_ram_gallop") { }
+
+    class spell_ram_gallop_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_ram_gallop_AuraScript)
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellStore.LookupEntry(SPELL_RAM_FATIGUE))
+                return false;
+            if (!sSpellStore.LookupEntry(SPELL_RAM_GALLOP))
+                return false;
+            return true;
+        }
+
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        {
+            if (Unit* pTarget = aurApp->GetTarget())
+                if (Player* pPlayerTarget = pTarget->ToPlayer())
+                {
+                    std::list<GameObject*> ChestList;
+                    pPlayerTarget->GetGameObjectListWithEntryInGrid(ChestList, GO_FIENO, 4.0f);
+                    if (!ChestList.empty())
+                    {
+                        pPlayerTarget->RemoveAurasDueToSpell(SPELL_RAM_FATIGUE);
+                    }
+                    else
+                    {
+                        uint8 stack = 0;
+                        if (Aura* aur = pPlayerTarget->GetAura(SPELL_RAM_FATIGUE))
+                            stack = aur->GetStackAmount();
+                        if (stack < 97) 
+                            stack += 5;
+                        else
+                        {
+                            stack = 101;
+                            pPlayerTarget->CastSpell(pPlayerTarget, SPELL_RAM_NEUTRAL, true);
+                        }
+                        pPlayerTarget->SetAuraStack(SPELL_RAM_FATIGUE, pPlayerTarget, stack);                        
+                     }
+                }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ram_gallop_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_ram_gallop_AuraScript();
+    }
+};
+
+
 // 41337 Aura of Anger
 class spell_gen_aura_of_anger : public SpellScriptLoader
 {
@@ -562,6 +867,11 @@ class spell_gen_shroud_of_death : public SpellScriptLoader
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_gen_trick_treat();
+    new spell_ram_neutral();
+    new spell_ram_trot();
+    new spell_ram_canter();
+    new spell_ram_gallop();
     new spell_gen_aura_of_anger();
     new spell_gen_burn_brutallus();
     new spell_gen_leeching_swarm();

@@ -63,7 +63,7 @@ public:
 
     struct boss_anubrekhanAI : public BossAI
     {
-        boss_anubrekhanAI(Creature *c) : BossAI(c, BOSS_ANUBREKHAN) {}
+        boss_anubrekhanAI(Creature *c) : BossAI(c, BOSS_ANUBREKHAN) { }
 
         bool hasTaunted;
 
@@ -89,12 +89,18 @@ public:
             }
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(Unit* Victim)
         {
+            if (instance)
+            {
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    instance->SetData(DATA_IMMORTAL, 1);
+            }
+
             //Force the player to spawn corpse scarabs via spell, TODO: Check percent chance for scarabs, 20% at the moment
             if (!(rand()%5))
-                if (victim->GetTypeId() == TYPEID_PLAYER)
-                    victim->CastSpell(victim, SPELL_SUMMON_CORPSE_SCARABS_PLR, true, NULL, NULL, me->GetGUID());
+                if (Victim->GetTypeId() == TYPEID_PLAYER)
+                    Victim->CastSpell(Victim, SPELL_SUMMON_CORPSE_SCARABS_PLR, true, NULL, NULL, me->GetGUID());
 
             DoScriptText(SAY_SLAY, me);
         }
