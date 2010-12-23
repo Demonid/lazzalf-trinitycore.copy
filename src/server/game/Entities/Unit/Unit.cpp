@@ -10518,19 +10518,16 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     if (GetTypeId() == TYPEID_UNIT && !this->ToCreature()->isPet())
         DoneTotalMod *= this->ToCreature()->GetSpellDamageMod(this->ToCreature()->GetCreatureInfo()->rank);
 
-    AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-    for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
-        if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) &&
-            (*i)->GetSpellProto()->EquippedItemClass == -1 &&          // -1 == any item class (not wand)
-            (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0) // 0 == any inventory type (not wand)
-        {
-            AddPctN(DoneTotalMod, (*i)->GetAmount());
-                     
-            /*if ((*i)->GetId() != 53386) // Only Cinderglacier should be removed there
-                continue;
-            if (spellProto->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_UNK30) && (*i)->GetBase()->DropCharge())
-                i = mModDamagePercentDone.begin();*/
-        }
+    if (spellProto)
+    {
+        AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+        for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
+            if ((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto))
+                if (((*i)->GetSpellProto()->EquippedItemClass == -1) ||
+                    ((*i)->GetSpellProto()->EquippedItemClass & spellProto->EquippedItemClass) &&
+                    ((*i)->GetSpellProto()->EquippedItemSubClassMask & spellProto->EquippedItemSubClassMask))
+                    AddPctN(DoneTotalMod, (*i)->GetAmount());
+    }
 
     uint32 creatureTypeMask = pVictim->GetCreatureTypeMask();
     // Add flat bonus from spell damage versus
@@ -11835,19 +11832,32 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage, WeaponAttackType att
     float TakenTotalMod = 1.0f;
 
     // ..done
-    // SPELL_AURA_MOD_DAMAGE_PERCENT_DONE included in weapon damage
-    // SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT  included in weapon damage
-
-    // SPELL_AURA_MOD_DAMAGE_PERCENT_DONE for non-physical spells like Scourge Strike, Frost Strike, this is NOT included in weapon damage
-    if (spellProto)
-        if (GetSpellSchoolMask(spellProto) != SPELL_SCHOOL_MASK_NORMAL)
+    AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+    for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
+        if (spellProto)
         {
-            AuraEffectList const &mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-            for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
-                if (((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto)) && !((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
-                {
+            if ((*i)->GetMiscValue() & GetSpellSchoolMask(spellProto))
+                if (((*i)->GetSpellProto()->EquippedItemClass == -1) ||
+                    ((*i)->GetSpellProto()->EquippedItemClass & spellProto->EquippedItemClass) &&
+                    ((*i)->GetSpellProto()->EquippedItemSubClassMask & spellProto->EquippedItemSubClassMask))
                     AddPctN(DoneTotalMod, (*i)->GetAmount());
-                }
+        }
+        else if (ToPlayer())
+        {
+            EquipmentSlots slot;
+                    
+            switch (attType)
+            {
+                case BASE_ATTACK:   slot = EQUIPMENT_SLOT_MAINHAND; break;
+                case OFF_ATTACK:    slot = EQUIPMENT_SLOT_OFFHAND;  break;
+                case RANGED_ATTACK: slot = EQUIPMENT_SLOT_RANGED;   break;
+                default: return;
+            }
+
+            Item * item = ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+
+            if (item && !item->IsBroken() && item->IsFitToSpellRequirements((*i)->GetSpellProto()))
+                AddPctN(DoneTotalMod, (*i)->GetAmount());
         }
 
     AuraEffectList const &mDamageDoneVersus = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS);
