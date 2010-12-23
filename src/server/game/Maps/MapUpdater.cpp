@@ -56,7 +56,7 @@ class MapUpdateRequest : public ACE_Method_Request
 
         virtual int call()
         {
-            if (sWorld.getBoolConfig(CONFIG_CRASH_RECOVER_ENABLE))
+            if (sWorld->getBoolConfig(CONFIG_CRASH_RECOVER_ENABLE))
             {
                 signal(SIGSEGV, HandleCrash);
                 m_map.m_updater = ACE_Based::Thread::currentId();
@@ -86,35 +86,35 @@ class MapUpdateRequest : public ACE_Method_Request
   {
     if (Map *map = sMapMgr->FindMapByThread(ACE_Based::Thread::currentId()))
     {
-        if (++m_crashcounter[map->GetId()].first < sWorld.getIntConfig(CONFIG_UINT32_MAX_CRASH_COUNT))
+        if (++m_crashcounter[map->GetId()].first < sWorld->getIntConfig(CONFIG_UINT32_MAX_CRASH_COUNT))
         {
             ACE_Stack_Trace st(-5);
 
             if (map->Instanceable())
-                sLog.outError("Trovato crash nell'istanza %i della mappa %i", ((InstanceMap*)map)->GetInstanceId(), map->GetId());
+                sLog->outError("Trovato crash nell'istanza %i della mappa %i", ((InstanceMap*)map)->GetInstanceId(), map->GetId());
             else
-                sLog.outError("Trovato crash nella mappa %i", map->GetId());
-            sLog.outError("Crash numero: %i", m_crashcounter[map->GetId()].first);
-            m_crashcounter[map->GetId()].second = sWorld.getIntConfig(CONFIG_UINT32_CRASH_COUNT_RESET);
+                sLog->outError("Trovato crash nella mappa %i", map->GetId());
+            sLog->outError("Crash numero: %i", m_crashcounter[map->GetId()].first);
+            m_crashcounter[map->GetId()].second = sWorld->getIntConfig(CONFIG_UINT32_CRASH_COUNT_RESET);
 
-            sLog.outError("Stack Trace:\n%s", st.c_str());
-            sWorld.ShutdownServ(180, SHUTDOWN_MASK_RESTART | SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE);
+            sLog->outError("Stack Trace:\n%s", st.c_str());
+            sWorld->ShutdownServ(180, SHUTDOWN_MASK_RESTART | SHUTDOWN_MASK_IDLE, RESTART_EXIT_CODE);
             map->Wipe();
             sMapMgr->m_updater.update_finished_wrapper();
 
             if (sMapMgr->m_updater.respawn() == -1)
             {
-                sLog.outError("Impossibile ripristinare il thread. shutdown in corso...");
+                sLog->outError("Impossibile ripristinare il thread. shutdown in corso...");
                 abort();
             }
 
             ACE_Thread::exit(0);
         }
         else
-            sLog.outError("Numero massimo di crash raggiunto. shutdown in corso...");
+            sLog->outError("Numero massimo di crash raggiunto. shutdown in corso...");
     }
     else
-        sLog.outError("Trovato crash esterno all'update delle mappe.");
+        sLog->outError("Trovato crash esterno all'update delle mappe.");
   }
 };
 

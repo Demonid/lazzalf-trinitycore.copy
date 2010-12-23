@@ -29,7 +29,7 @@ AntiCheat::AntiCheat(Player* new_plMover)
 
     for (int i = 0; i < MAX_CHEAT; i++)
         m_CheatList[i] = 0;
-    m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
+    m_CheatList_reset_diff = sWorld->getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
 	
 	m_anti_LastClientTime  = 0;          // last movement client time
     m_anti_LastServerTime  = 0;          // last movement server time
@@ -77,7 +77,7 @@ bool AntiCheat::GetAndUpdateDelta(int32 diff)
     }
 
     if (ac_delta == 0)
-        ac_delta = int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA));
+        ac_delta = int32(sWorld->getIntConfig(CONFIG_AC_SLEEP_DELTA));
 
     if (ac_delta > 0)
     {
@@ -86,7 +86,7 @@ bool AntiCheat::GetAndUpdateDelta(int32 diff)
         else
         {
             ac_delta = 0;
-            ac_goactivate = sWorld.getIntConfig(CONFIG_AC_ALIVE_COUNT);
+            ac_goactivate = sWorld->getIntConfig(CONFIG_AC_ALIVE_COUNT);
         }
     }
     else if (ac_delta < 0)
@@ -126,7 +126,7 @@ void AntiCheat::SetSleep(int32 delta)
 
 void AntiCheat::ResetCheatList(uint32 diff)
 {
-    if (sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
+    if (sWorld->getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA) == 0)
         return;
 
     if (m_CheatList_reset_diff >= diff)
@@ -140,13 +140,13 @@ void AntiCheat::ResetCheatList(uint32 diff)
             m_CheatList[i] = 0;
         number_cheat_find = 0;
 
-        m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
+        m_CheatList_reset_diff = sWorld->getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA);
     }
 }
 
 bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo& pMovementInfo, Unit *mover)
 {
-	if (plMover->GetSession() && plMover->GetSession()->GetSecurity() >= int32(sWorld.getIntConfig(CONFIG_AC_DISABLE_GM_LEVEL)))
+	if (plMover->GetSession() && plMover->GetSession()->GetSecurity() >= int32(sWorld->getIntConfig(CONFIG_AC_DISABLE_GM_LEVEL)))
 		return true;
     	
     if (!plMover->IsInWorld())
@@ -172,11 +172,11 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
 	//if (GetBlock())
 	//	return true;
 
-    if (sWorld.iIgnoreMapIds_AC.count(plMover->GetMapId()))
+    if (sWorld->iIgnoreMapIds_AC.count(plMover->GetMapId()))
     {
         // Go to sleep
         ac_goactivate = 0;
-        SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
+        SetDelta(int32(sWorld->getIntConfig(CONFIG_AC_SLEEP_DELTA)));
         return true;
     }
 
@@ -184,7 +184,7 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
 	bool check_passed = true;
 
     // Only if we are not coming from sleep
-    if (ac_goactivate < int32(sWorld.getIntConfig(CONFIG_AC_ALIVE_COUNT)))
+    if (ac_goactivate < int32(sWorld->getIntConfig(CONFIG_AC_ALIVE_COUNT)))
     {
         CalcVariables(GetLastPacket(), pMovementInfo, mover);
 
@@ -193,47 +193,47 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
 	    if (!curDest)
 	    { 	
 	        // Mistiming Cheat
-	        if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_MISTIMING))
+	        if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_MISTIMING))
 		        if (!CheckMistiming(vehMover, pMovementInfo))
 			        check_passed = false;
 
             // Gravity Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIGRAVITY))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTIGRAVITY))
 			    if (!CheckAntiGravity(vehMover, pMovementInfo))
 				    check_passed = false;
 
             // MultiJump Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMULTIJUMP))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTIMULTIJUMP))
 			    if (!CheckAntiMultiJump(vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
             // Speed Cheat
-            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTISPEED))
+            if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTISPEED))
 			    if (!CheckAntiSpeed(vehMover, GetLastPacket(), pMovementInfo, opcode))
 				    check_passed = false;
 
             // Tele Cheat
-            if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELE))
+            if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTITELE))
 			    if (!CheckAntiTele(vehMover, pMovementInfo, opcode))
 				    check_passed = false;
 
             // Mountain Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTIMOUNTAIN))
 			    if (!CheckAntiMountain(vehMover, pMovementInfo))
 				    check_passed = false;
 
             // Fly Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIFLY))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTIFLY))
 			    if (!CheckAntiFly(vehMover, GetLastPacket(), pMovementInfo))
 				    check_passed = false;
 
             // Waterwalk Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTIWATERWALK))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTIWATERWALK))
                 if (!CheckAntiWaterwalk(vehMover, GetLastPacket(), pMovementInfo))
 				    check_passed = false;
 
             // Tele To Plane Cheat
-		    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE))
+		    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE))
 			    if (!CheckAntiTeleToPlane(vehMover, pMovementInfo))
 				    check_passed = false;
 	    }
@@ -244,22 +244,22 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
             {
                 ++(number_cheat_find);
 
-                if (sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING) &&
-                    number_cheat_find > sWorld.getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING)) 
+                if (sWorld->getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING) &&
+                    number_cheat_find > sWorld->getIntConfig(CONFIG_AC_REPORTS_FOR_GM_WARNING)) 
                 {
                     // display warning at the center of the screen, hacky way.
                     std::string str = "";
                     str = "|cFFFFFC00[AC]|cFF00FFFF[|cFF60FF00" + std::string(plMover->GetName()) + "|cFF00FFFF] Possible cheater!";
                     WorldPacket data(SMSG_NOTIFICATION, (str.size()+1));
                     data << str;
-                    sWorld.SendGlobalGMMessage(&data);
+                    sWorld->SendGlobalGMMessage(&data);
                 }
             }
             // We are are not going to sleep
-            SetDelta(-abs(int32(sWorld.getIntConfig(CONFIG_AC_ALARM_DELTA))));
+            SetDelta(-abs(int32(sWorld->getIntConfig(CONFIG_AC_ALARM_DELTA))));
             // Increase reset cheat list time
-            if (m_CheatList_reset_diff < sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND))
-                m_CheatList_reset_diff = sWorld.getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND);
+            if (m_CheatList_reset_diff < sWorld->getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND))
+                m_CheatList_reset_diff = sWorld->getIntConfig(CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND);
             if (map_puni)
             {
                 if (!AntiCheatPunisher(pMovementInfo)) // Try Punish him
@@ -279,32 +279,32 @@ bool AntiCheat::DoAntiCheatCheck(Vehicle *vehMover, uint16 opcode, MovementInfo&
 
 bool AntiCheat::ControllPunisher()
 {
-    if (sWorld.getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT) && 
-        m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT))
+    if (sWorld->getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT) && 
+        m_CheatList[CHEAT_MISTIMING] >= sWorld->getIntConfig(CONFIG_AC_MISTIMING_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT) && 
-        m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT) && 
+        m_CheatList[CHEAT_GRAVITY] >= sWorld->getIntConfig(CONFIG_AC_ANTIGRAVITY_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT) && 
-        m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT) && 
+        m_CheatList[CHEAT_MULTIJUMP] >= sWorld->getIntConfig(CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT) &&
-        m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT) &&
+        m_CheatList[CHEAT_SPEED] >= sWorld->getIntConfig(CONFIG_AC_ANTISPEED_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT) && 
-        m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT) && 
+        m_CheatList[CHEAT_TELEPORT] >= sWorld->getIntConfig(CONFIG_AC_ANTITELE_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT) && 
-        m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT) && 
+        m_CheatList[CHEAT_MOUNTAIN] >= sWorld->getIntConfig(CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT) &&
-        m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT) &&
+        m_CheatList[CHEAT_FLY] >= sWorld->getIntConfig(CONFIG_AC_ANTIFLY_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT) && 
-        m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT) && 
+        m_CheatList[CHEAT_WATERWALK] >= sWorld->getIntConfig(CONFIG_AC_ANTIWATERWALK_PUNI_COUNT))
         return true;
-    else if (sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT) && 
-        m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT))
+    else if (sWorld->getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT) && 
+        m_CheatList[CHEAT_TELETOPLANE] >= sWorld->getIntConfig(CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT))
         return true;
 
     return false;
@@ -312,13 +312,13 @@ bool AntiCheat::ControllPunisher()
 
 bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
 {
-    if (!sWorld.getIntConfig(CONFIG_AC_PUNI_TYPE))
+    if (!sWorld->getIntConfig(CONFIG_AC_PUNI_TYPE))
         return true;
 
-    if (plMover->getLevel() > sWorld.getIntConfig(CONFIG_AC_PUNI_LEVEL_MAX))
+    if (plMover->getLevel() > sWorld->getIntConfig(CONFIG_AC_PUNI_LEVEL_MAX))
         return true;
 
-    if (sWorld.getBoolConfig(CONFIG_AC_PUNI_MAP_SMALL))
+    if (sWorld->getBoolConfig(CONFIG_AC_PUNI_MAP_SMALL))
         if (plMover->GetMapId() != 0 && plMover->GetMapId() != 1)
             return true;
 
@@ -332,56 +332,56 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
 
     // Yes, We Can!
     std::string announce = "";
-    switch (sWorld.getIntConfig(CONFIG_AC_PUNI_TYPE))
+    switch (sWorld->getIntConfig(CONFIG_AC_PUNI_TYPE))
     {
         case PUNI_NONE:
             return true;
         case PUNI_BLOCK:
-            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BLOCK",
+            sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BLOCK",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             break;
         case PUNI_KILL:
             plMover->DealDamage(plMover, plMover->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KILL",
+            sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KILL",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             break;
         case PUNI_KICK:
             plMover->GetSession()->KickPlayer();
-            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KICK",
+            sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER KICK",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             announce = "AntiCheatPunisher ha Kickato il player ";
             announce += plMover->GetName();
             announce += "per uso di Hack";
-            sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+            sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
             break;
         case PUNI_BAN_CHAR:
-            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_CHARACTER",
+            sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_CHARACTER",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());            
             announce = "AntiCheatPunisher ha bannato il player ";
             announce += plMover->GetName();
             announce += " per uso di Hack";
-            sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-            sWorld.BanCharacter(plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+            sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+            sWorld->BanCharacter(plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             break;
         case PUNI_BAN_ACC:
             {
-                sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_ACCOUNT",
+                sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_ACCOUNT",
                         plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
                 announce = "AntiCheatPunisher ha bannato l'account del player ";
                 announce += plMover->GetName();
                 announce += " per uso di Hack";
-                sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-                sWorld.BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+                sWorld->BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             }
             break;
         case PUNI_BAN_IP:
             {
-                sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_IP",
+                sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER BAN_IP",
                         plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
                 announce = "AntiCheatPunisher ha bannato l'ip del player ";
                 announce += plMover->GetName();
                 announce += " per uso di Hack";
-                sWorld.SendServerMessage(SERVER_MSG_STRING,announce.c_str());
+                sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
                 QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", plMover->GetSession()->GetAccountId());
                 if (result)
                 {
@@ -390,17 +390,17 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
                     std::string LastIP = fields[0].GetString();
                     if(!LastIP.empty())
                     {
-                        sWorld.BanAccount(BAN_IP,LastIP,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                        sWorld->BanAccount(BAN_IP,LastIP,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
                     }
                 }                
             } break;
         default:
-            sLog.outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER TYPE NOT VALID",
+            sLog->outCheat("AC-Punisher-%s Map %u Area %u, X:%f Y:%f Z:%f, PUNISHER TYPE NOT VALID",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             break;
     }
 
-    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
+    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
         ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, level, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%u', '%f', '%f', '%f', NOW())", 
                 "AntiCheatPunisher", plMover->GetGUIDLow(), plMover->GetName(), plMover->getLevel(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
     return false;
@@ -444,9 +444,9 @@ void AntiCheat::CalcDeltas(MovementInfo& pNewPacket,  MovementInfo& pOldPacket)
     if (!m_logdb_time)
         difftime_log_db = cServerTime - m_logdb_time;
 
-    map_count = !sWorld.iIgnoreMapIds_ACCount.count(plMover->GetMapId());
-    map_block = !sWorld.iIgnoreMapIds_ACBlock.count(plMover->GetMapId());
-    map_puni = !sWorld.iIgnoreMapIds_ACPuni.count(plMover->GetMapId());
+    map_count = !sWorld->iIgnoreMapIds_ACCount.count(plMover->GetMapId());
+    map_block = !sWorld->iIgnoreMapIds_ACBlock.count(plMover->GetMapId());
+    map_puni = !sWorld->iIgnoreMapIds_ACPuni.count(plMover->GetMapId());
 }
 
 // Calc variables for next AntiCheat activation
@@ -530,7 +530,7 @@ void AntiCheat::CalcVariables(MovementInfo& pOldPacket, MovementInfo& pNewPacket
     fClientRate = (fDistance2d * 1000 / uiDiffTime_packets) /  plMover->GetSpeed(uiMoveType);
 
     // fServerRate = it is the player's rate using the distance per second (core information)
-    fServerRate = plMover->GetSpeed(uiMoveType) * uiDiffTime_packets / 1000 + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED);
+    fServerRate = plMover->GetSpeed(uiMoveType) * uiDiffTime_packets / 1000 + sWorld->getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED);
 
     // Check if he have fly auras
 	fly_auras = CanFly(pNewPacket);
@@ -549,7 +549,7 @@ void AntiCheat::CalcVariables(MovementInfo& pOldPacket, MovementInfo& pNewPacket
 	//client_time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
    
     // normalize time - 1.5 second allowed for heavy loaded server
-	client_time_delta = uiDiffTime_packets < sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME) ? float(uiDiffTime_packets)/1000.0f : sWorld.getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME)/1000.0f; 
+	client_time_delta = uiDiffTime_packets < sWorld->getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME) ? float(uiDiffTime_packets)/1000.0f : sWorld->getFloatConfig(CONFIG_AC_MIN_DIFF_PACKETTIME)/1000.0f; 
 
     tg_z = (fDistance2d != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / fDistance2d) : -99999; // movement distance tangents
 
@@ -558,7 +558,7 @@ void AntiCheat::CalcVariables(MovementInfo& pOldPacket, MovementInfo& pNewPacket
 
 	allowed_delta = (plMover->m_transport || plMover->m_temp_transport) ? 2 :   // movement distance allowed delta
 		pow(std::max(fSpeedRate, m_anti_Last_HSpeed) * client_time_delta, 2)
-	    + sWorld.getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)            // minimum allowed delta
+	    + sWorld->getFloatConfig(CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED)            // minimum allowed delta
 		+ (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                             // mountain fall allowed delta
 
 	if (pNewPacket.time > m_anti_LastSpeedChangeTime)
@@ -605,67 +605,67 @@ void AntiCheat::LogCheat(eCheat m_cheat, MovementInfo& pMovementInfo)
 	switch (m_cheat)
 	{
 		case CHEAT_MISTIMING:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;    
-			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, mistiming exception #%d, mistiming: %dms", 
+			    sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, mistiming exception #%d, mistiming: %dms", 
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 			        m_anti_MistimingCount, sync_time);
             }
             cheat_type = "Mistiming";
             break;
 		case CHEAT_GRAVITY:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;   
-		        sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
+		        sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, AntiGravity exception. JumpHeight = %f, Allowed Vertical Speed = %f",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 				    JumpHeight, m_anti_Last_VSpeed);
             }
             cheat_type = "Gravity";
 			break;
 		case CHEAT_MULTIJUMP:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, multi jump  exception",
+			    sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, multi jump  exception",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
             }
             cheat_type = "MultiJump";
             break;
 		case CHEAT_SPEED:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+			    sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
 				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), fDistance2d, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, client_time_delta);
             }	
             cheat_type = "Speed";
             break;
 		case CHEAT_TELEPORT:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
+			    sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f", plMover->GetName(), plMover->GetMapId(), 
 				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), plMover->GetAreaId(), fDistance2d, allowed_delta, fSpeedRate, m_anti_Last_HSpeed, client_time_delta);
             }
             cheat_type = "Teleport";
             break;
 		case CHEAT_MOUNTAIN:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, umountain exception | tg_z=%f", 
+			    sLog->outCheat("AC-%s Map %u Area %u, X:%f Y:%f Z:%f, umountain exception | tg_z=%f", 
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
                     tg_z);
             }
 			cheat_type = "Mountain";
             break;
 		case CHEAT_FLY:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
+			    sLog->outCheat("AC-%s Map %u Area %u X:%f Y:%f Z:%f flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plMover->GetVehicle()=[%X]}",
 				    plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
 				    plMover->HasAuraType(SPELL_AURA_FLY), plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
 				    plMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
@@ -674,28 +674,28 @@ void AntiCheat::LogCheat(eCheat m_cheat, MovementInfo& pMovementInfo)
             cheat_type = "Fly";
             break;
 		case CHEAT_WATERWALK:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {pMovementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
+			    sLog->outCheat("AC-%s Map %u, X: %f, Y: %f, waterwalk exception. {pMovementInfo=[%X]}{SPELL_AURA_WATER_WALK=[%X]}",
                     plMover->GetName(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(),
                     pMovementInfo.flags, plMover->HasAuraType(SPELL_AURA_WATER_WALK));
             }
             cheat_type = "Waterwalk";
             break;
 		case CHEAT_TELETOPLANE:
-            if (difftime_log_file >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
+            if (difftime_log_file >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_FILE))
 			{
 				m_logfile_time = cServerTime;  
-			    sLog.outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
+			    sLog->outCheat("AC-%s Map %u, X: %f, Y: %f, Z: %f teleport to plane exception. Exception count: %d", plMover->GetName(), plMover->GetMapId(), 
 				    plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), m_anti_TeleToPlane_Count);
             }
             cheat_type = "TeleToPlane";
             break;
 	}
 
-    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
-        if (difftime_log_db >= sWorld.getIntConfig(CONFIG_AC_DELTA_LOG_DB))
+    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE_DBLOG))
+        if (difftime_log_db >= sWorld->getIntConfig(CONFIG_AC_DELTA_LOG_DB))
         {		                    
             ExtraDatabase.PExecute("INSERT INTO cheat_log(cheat_type, guid, name, level, map, area, pos_x, pos_y, pos_z, date) VALUES ('%s', '%u', '%s', '%u', '%u', '%u', '%f', '%f', '%f', NOW())", 
                 cheat_type.c_str(), plMover->GetGUIDLow(), plMover->GetName(), plMover->getLevel(), plMover->GetMapId(), plMover->GetAreaId(), plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ());
@@ -705,7 +705,7 @@ void AntiCheat::LogCheat(eCheat m_cheat, MovementInfo& pMovementInfo)
 
 bool AntiCheat::CheckMistiming(Vehicle *vehMover, MovementInfo& pMovementInfo)
 {		
-	const int32 GetMistimingDelta = abs(int32(sWorld.getIntConfig(CONFIG_AC_ENABLE_MISTIMING_DELTHA)));
+	const int32 GetMistimingDelta = abs(int32(sWorld->getIntConfig(CONFIG_AC_ENABLE_MISTIMING_DELTHA)));
 	
 	if (sync_time > GetMistimingDelta)
 	{
@@ -721,8 +721,8 @@ bool AntiCheat::CheckMistiming(Vehicle *vehMover, MovementInfo& pMovementInfo)
             cheat_find = true;
 			LogCheat(CHEAT_MISTIMING, pMovementInfo);
 		}
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_MISTIMING] >= sWorld.getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT))     
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_MISTIMING] >= sWorld->getIntConfig(CONFIG_AC_MISTIMING_BLOCK_COUNT))     
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -755,8 +755,8 @@ bool AntiCheat::CheckAntiGravity(Vehicle *vehMover, MovementInfo& pMovementInfo)
             ++(m_CheatList[CHEAT_GRAVITY]);
         cheat_find = true;
 		LogCheat(CHEAT_GRAVITY, pMovementInfo);
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_GRAVITY] >= sWorld.getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT))
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_GRAVITY] >= sWorld->getIntConfig(CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -791,8 +791,8 @@ bool AntiCheat::CheckAntiMultiJump(Vehicle *vehMover, MovementInfo& pNewPacket, 
         ++(m_CheatList[CHEAT_MULTIJUMP]);
     cheat_find = true;
 	LogCheat(CHEAT_MULTIJUMP, pNewPacket);
-	if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT) &&
-        m_CheatList[CHEAT_MULTIJUMP] >= sWorld.getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
+	if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT) &&
+        m_CheatList[CHEAT_MULTIJUMP] >= sWorld->getIntConfig(CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT))
     {
 	    // don't process new jump packet
 	    if (vehMover)
@@ -862,8 +862,8 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, Move
         if (map_count)
             ++(m_CheatList[CHEAT_SPEED]);
         LogCheat(CHEAT_SPEED, pNewPacket);
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_SPEED] >= sWorld.getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_SPEED] >= sWorld->getIntConfig(CONFIG_AC_ANTISPEED_BLOCK_COUNT))
         {
             if (vehMover)
 	            vehMover->Die();
@@ -887,8 +887,8 @@ bool AntiCheat::CheckAntiTele(Vehicle *vehMover, MovementInfo& pNewPacket, uint3
 	    if (map_count)
             ++(m_CheatList[CHEAT_TELEPORT]);
 		LogCheat(CHEAT_TELEPORT, pNewPacket);
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_TELEPORT] >= sWorld.getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_TELEPORT] >= sWorld->getIntConfig(CONFIG_AC_ANTITELE_BLOCK_COUNT))
         {
             if (vehMover)
 	            vehMover->Die();
@@ -908,8 +908,8 @@ bool AntiCheat::CheckAntiMountain(Vehicle *vehMover, MovementInfo& pMovementInfo
             ++(m_CheatList[CHEAT_MOUNTAIN]);
         cheat_find = true;
 		LogCheat(CHEAT_MOUNTAIN, pMovementInfo);
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_MOUNTAIN] >= sWorld.getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT))
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_MOUNTAIN] >= sWorld->getIntConfig(CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -950,8 +950,8 @@ bool AntiCheat::CheckAntiFly(Vehicle *vehMover, MovementInfo& pOldPacket, Moveme
             ++(m_CheatList[CHEAT_FLY]);
         cheat_find = true;
 		LogCheat(CHEAT_FLY, pNewPacket);
-        if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT) &&
-            m_CheatList[CHEAT_FLY] >= sWorld.getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT))
+        if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT) &&
+            m_CheatList[CHEAT_FLY] >= sWorld->getIntConfig(CONFIG_AC_ANTIFLY_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -1011,8 +1011,8 @@ bool AntiCheat::CheckAntiWaterwalk(Vehicle *vehMover, MovementInfo& pOldPacket, 
             ++(m_CheatList[CHEAT_WATERWALK]);
         cheat_find = true;
 		LogCheat(CHEAT_WATERWALK, pNewPacket);
-		if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT) && 
-            m_CheatList[CHEAT_WATERWALK] >= sWorld.getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT))
+		if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT) && 
+            m_CheatList[CHEAT_WATERWALK] >= sWorld->getIntConfig(CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT))
 	    {
 		    if (vehMover)
 			    vehMover->Die();
@@ -1048,14 +1048,14 @@ bool AntiCheat::CheckAntiTeleToPlane(Vehicle *vehMover, MovementInfo& pMovementI
 			if (plane_z > 0.1f || plane_z < -0.1f)
 			{
 				++(m_anti_TeleToPlane_Count);
-				if (m_anti_TeleToPlane_Count > sWorld.getIntConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS))
+				if (m_anti_TeleToPlane_Count > sWorld->getIntConfig(CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS))
 				{
                     if (map_count)
                         ++(m_CheatList[CHEAT_TELETOPLANE]);
                     cheat_find = true;
 					LogCheat(CHEAT_TELETOPLANE, pMovementInfo);
-					if (map_block && sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT) &&
-                        m_CheatList[CHEAT_TELETOPLANE] >= sWorld.getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT))
+					if (map_block && sWorld->getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT) &&
+                        m_CheatList[CHEAT_TELETOPLANE] >= sWorld->getIntConfig(CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT))
 	        	    {						
 					    if (vehMover)
 						    vehMover->Die();

@@ -570,13 +570,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_MISTIMING_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.MistimingBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_MISTIMING_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.MistimingBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_MISTIMING_BLOCK_COUNT]);
+        sLog->outError("Anticheat.MistimingBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_MISTIMING_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_MISTIMING_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_MISTIMING_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.MistimingPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_MISTIMING_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.MistimingPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_MISTIMING_PUNI_COUNT]);
+        sLog->outError("Anticheat.MistimingPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_MISTIMING_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_MISTIMING_PUNI_COUNT] = 0;
     }
 
@@ -584,13 +584,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiGravityBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiGravityBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiGravityBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTIGRAVITY_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIGRAVITY_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiGravityPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIGRAVITY_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiGravityPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIGRAVITY_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiGravityPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIGRAVITY_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTIGRAVITY_PUNI_COUNT] = 0;
     }
     
@@ -598,13 +598,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiMultiJumpBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiMultiJumpBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiMultiJumpBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTIMULTIJUMP_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiMultiJumpPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiMultiJumpPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiMultiJumpPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTIMULTIJUMP_PUNI_COUNT] = 0;
     }
     
@@ -614,25 +614,25 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiSpeedBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiSpeedBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiSpeedBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTISPEED_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTISPEED_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiSpeedPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTISPEED_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiSpeedPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTISPEED_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiSpeedPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTISPEED_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTISPEED_PUNI_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTITELE_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiTeleBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTITELE_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiTeleBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELE_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiTeleBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELE_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTITELE_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTITELE_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiTelePunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTITELE_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiTelePunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELE_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiTelePunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELE_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTITELE_PUNI_COUNT] = 0;
     }
     
@@ -640,13 +640,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiMountainBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiMountainBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiMountainBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTIMOUNTAIN_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiMountainPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiMountainPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiMountainPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT] = 0;
     }
     
@@ -654,13 +654,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTIFLY_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiFlyHackBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIFLY_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiFlyHackBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIFLY_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiFlyHackBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIFLY_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTIFLY_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiFlyHackPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIFLY_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiFlyHackPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIFLY_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiFlyHackPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIFLY_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTIFLY_PUNI_COUNT] = 0;
     }
     
@@ -668,13 +668,13 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiWaterwalkBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiFlyHackBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT]);
+        sLog->outError("Anticheat.AntiFlyHackBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTIWATERWALK_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.AntiFlyHackPunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTIWATERWALK_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.AntiFlyHackPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIWATERWALK_PUNI_COUNT]);
+        sLog->outError("Anticheat.AntiFlyHackPunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTIWATERWALK_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTIWATERWALK_PUNI_COUNT] = 0;
     }
     
@@ -682,130 +682,130 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT]         = sConfig.GetIntDefault("Anticheat.TeleportToPlaneBlock.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT] < 0)
     {
-        sLog.outError("Anticheat.TeleportToPlaneBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT]);
+        sLog->outError("Anticheat.TeleportToPlaneBlock.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT]);
         m_int_configs[CONFIG_AC_ANTITELETOPLANE_BLOCK_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ANTIMOUNTAIN_PUNI_COUNT]         = sConfig.GetIntDefault("Anticheat.TeleportToPlanePunisher.Count", 0);
     if (m_int_configs[CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT] < 0)
     {
-        sLog.outError("Anticheat.TeleportToPlanePunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT]);
+        sLog->outError("Anticheat.TeleportToPlanePunisher.Count (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT]);
         m_int_configs[CONFIG_AC_ANTITELETOPLANE_PUNI_COUNT] = 0;
     }
     m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = sConfig.GetIntDefault("Anticheat.TeleportToPlaneAlarms", 50);
     if (m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] < 20)
     {
-        sLog.outError("Anticheat.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
+        sLog->outError("Anticheat.TeleportToPlaneAlarms (%d) must be >= 20. Using 20 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
         m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = 20;
     }
     if (m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] > 100)
     {
-        sLog.outError("Anticheat.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
+        sLog->outError("Anticheat.TeleportToPlaneAlarms (%d) must be <= 100. Using 100 instead.", m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS]);
         m_int_configs[CONFIG_AC_ENABLE_ANTITELETOPLANE_ALARMS] = 100;
     }
     
     m_int_configs[CONFIG_AC_DISABLE_GM_LEVEL]               = sConfig.GetIntDefault("Anticheat.IgnoreGMLevel", 3);
     if (m_int_configs[CONFIG_AC_DISABLE_GM_LEVEL] < 0)
     {
-        sLog.outError("Anticheat.IgnoreGMLevel (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DISABLE_GM_LEVEL]);
+        sLog->outError("Anticheat.IgnoreGMLevel (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DISABLE_GM_LEVEL]);
         m_int_configs[CONFIG_AC_DISABLE_GM_LEVEL] = 0;
     }    
     m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = sConfig.GetIntDefault("Anticheat.MistimingDelta", 15000);
     if (m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] < 5000)
     {
-        sLog.outError("Anticheat.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
+        sLog->outError("Anticheat.m_MistimingDelta (%d) must be >= 5000ms. Using 5000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
         m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = 5000;
     }
     if (m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] > 50000)
     {
-        sLog.outError("Anticheat.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
+        sLog->outError("Anticheat.m_MistimingDelta (%d) must be <= 50000ms. Using 50000ms instead.", m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA]);
         m_int_configs[CONFIG_AC_ENABLE_MISTIMING_DELTHA] = 50000;
     }
     m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = sConfig.GetIntDefault("Anticheat.LogFileDelta", 1000);
     if (m_int_configs[CONFIG_AC_DELTA_LOG_FILE] < 0)
     {
-        sLog.outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
+        sLog->outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
         m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = 0;
     }
     if (m_int_configs[CONFIG_AC_DELTA_LOG_FILE] > 60000)
     {
-        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
+        sLog->outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_FILE]);
         m_int_configs[CONFIG_AC_DELTA_LOG_FILE] = 60000;    
     }
     m_int_configs[CONFIG_AC_DELTA_LOG_DB] = sConfig.GetIntDefault("Anticheat.LogDBDelta", 1000);
     if (m_int_configs[CONFIG_AC_DELTA_LOG_DB] < 0)
     {
-        sLog.outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
+        sLog->outError("Anticheat.LogFileDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
         m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 0;
     }
     if (m_int_configs[CONFIG_AC_DELTA_LOG_DB] > 60000)
     {
-        sLog.outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
+        sLog->outError("Anticheat.LogFileDelta (%d) must be <= 60000. Using 60000 instead.", m_int_configs[CONFIG_AC_DELTA_LOG_DB]);
         m_int_configs[CONFIG_AC_DELTA_LOG_DB] = 60000;    
     }
     m_int_configs[CONFIG_AC_SLEEP_DELTA] = sConfig.GetIntDefault("Anticheat.SleepDelta", 500);
     if (m_int_configs[CONFIG_AC_SLEEP_DELTA] < 0)
     {
-        sLog.outError("Anticheat.SleepDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_SLEEP_DELTA]);
+        sLog->outError("Anticheat.SleepDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_SLEEP_DELTA]);
         m_int_configs[CONFIG_AC_SLEEP_DELTA] = 0;
     }
     m_int_configs[CONFIG_AC_ALIVE_COUNT] = sConfig.GetIntDefault("Anticheat.AliveCount", 1);
     if (m_int_configs[CONFIG_AC_ALIVE_COUNT] < 1)
     {
-        sLog.outError("Anticheat.AliveCount (%d) must be >= 1. Using 1 instead.", m_int_configs[CONFIG_AC_ALIVE_COUNT]);
+        sLog->outError("Anticheat.AliveCount (%d) must be >= 1. Using 1 instead.", m_int_configs[CONFIG_AC_ALIVE_COUNT]);
         m_int_configs[CONFIG_AC_ALIVE_COUNT] = 1;
     }
     m_int_configs[CONFIG_AC_ALARM_DELTA] = sConfig.GetIntDefault("Anticheat.AlarmDelta", 5000);
     if (m_int_configs[CONFIG_AC_ALARM_DELTA] < 0)
     {
-        sLog.outError("Anticheat.AlarmDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ALARM_DELTA]);
+        sLog->outError("Anticheat.AlarmDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_ALARM_DELTA]);
         m_int_configs[CONFIG_AC_ALARM_DELTA] = 0;
     }
     m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = sConfig.GetIntDefault("Anticheat.CheatResetListDelta", 5000);
     if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] < 0)
     {
-        sLog.outError("Anticheat.CheatResetListDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA]);
+        sLog->outError("Anticheat.CheatResetListDelta (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA]);
         m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA] = 0;
     }
     m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND] = sConfig.GetIntDefault("Anticheat.CheatResetListDeltaFound", 5000);
     if (m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND] < 0)
     {
-        sLog.outError("Anticheat.CheatResetListDeltaFound (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND]);
+        sLog->outError("Anticheat.CheatResetListDeltaFound (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND]);
         m_int_configs[CONFIG_AC_RESET_CHEATLIST_DELTA_FOUND] = 0;
     }
     m_bool_configs[CONFIG_AC_PUNI_MAP_SMALL] = sConfig.GetBoolDefault("Anticheat.Punisher.MapSmall", false);
     m_int_configs[CONFIG_AC_PUNI_TYPE] = sConfig.GetIntDefault("Anticheat.Punisher.TypeBan", 0);
     if (m_int_configs[CONFIG_AC_PUNI_TYPE] < 0)
     {
-        sLog.outError("Anticheat.Punisher.TypeBan (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
+        sLog->outError("Anticheat.Punisher.TypeBan (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
         m_int_configs[CONFIG_AC_PUNI_TYPE] = 0;
     }
     if (m_int_configs[CONFIG_AC_PUNI_TYPE] > 6)
     {
-        sLog.outError("Anticheat.Punisher.TypeBan (%d) must be <= 6. Using 6 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
+        sLog->outError("Anticheat.Punisher.TypeBan (%d) must be <= 6. Using 6 instead.", m_int_configs[CONFIG_AC_PUNI_TYPE]);
         m_int_configs[CONFIG_AC_PUNI_TYPE] = 6;
     } 
     m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX] = sConfig.GetIntDefault("Anticheat.Punisher.LevelMax", 80);
     if (m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX] < 1)
     {
-        sLog.outError("Anticheat.Punisher.LevelMax (%d) must be > 0. Using 1 instead.", m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX]);
+        sLog->outError("Anticheat.Punisher.LevelMax (%d) must be > 0. Using 1 instead.", m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX]);
         m_int_configs[CONFIG_AC_PUNI_LEVEL_MAX] = 1;
     }
     m_int_configs[CONFIG_AC_REPORTS_FOR_GM_WARNING] = sConfig.GetIntDefault("Anticheat.ReportsForGMWarnings", 0);
     if (m_int_configs[CONFIG_AC_REPORTS_FOR_GM_WARNING] < 0)
     {
-        sLog.outError("Anticheat.ReportsForGMWarnings (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_REPORTS_FOR_GM_WARNING]);
+        sLog->outError("Anticheat.ReportsForGMWarnings (%d) must be >= 0. Using 0 instead.", m_int_configs[CONFIG_AC_REPORTS_FOR_GM_WARNING]);
         m_int_configs[CONFIG_AC_REPORTS_FOR_GM_WARNING] = 0;
     }    
     m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = sConfig.GetFloatDefault("Anticheat.MaxAllowedDistance", 10.0f);
     if (m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] < 0)
     {
-        sLog.outError("Anticheat.MaxAllowedDistance (%d) must be >= 0. Using 0 instead.", m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED]);
+        sLog->outError("Anticheat.MaxAllowedDistance (%d) must be >= 0. Using 0 instead.", m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED]);
         m_float_configs[CONFIG_AC_MAX_DISTANCE_DIFF_ALLOWED] = 0;
     }   
     m_float_configs[CONFIG_AC_MIN_DIFF_PACKETTIME] = sConfig.GetFloatDefault("Anticheat.MinDiffPacketTime", 1500.0f);
     if (m_float_configs[CONFIG_AC_MIN_DIFF_PACKETTIME] < 0)
     {
-        sLog.outError("Anticheat.MinDiffPacketTime (%d) must be >= 0. Using 0 instead.", m_float_configs[CONFIG_AC_MIN_DIFF_PACKETTIME]);
+        sLog->outError("Anticheat.MinDiffPacketTime (%d) must be >= 0. Using 0 instead.", m_float_configs[CONFIG_AC_MIN_DIFF_PACKETTIME]);
         m_float_configs[CONFIG_AC_MIN_DIFF_PACKETTIME] = 0;
     } 
     std::string ignoreMapIds = sConfig.GetStringDefault("Anticheat.ignoreMapIds", "");
@@ -3106,7 +3106,7 @@ void World::ACpreventMapsFromBeingUsed(const char* pMapIdString)
 			ss2 >> map_num; 
 			if (map_num >= 0)
 			{ 
-				sLog.outDebug("Ignoring Map %i for AC", map_num); 
+				sLog->outDebug("Ignoring Map %i for AC", map_num); 
 				iIgnoreMapIds_AC[map_num] = true;
 			}
 		}
@@ -3128,7 +3128,7 @@ void World::ACpreventMapsFromBeingUsedCount(const char* pMapIdString)
 			ss2 >> map_num; 
 			if (map_num >= 0)
 			{ 
-				sLog.outDebug("Ignoring Map %i for ACCount", map_num); 
+				sLog->outDebug("Ignoring Map %i for ACCount", map_num); 
 				iIgnoreMapIds_ACCount[map_num] = true;
 			}
 		}
@@ -3150,7 +3150,7 @@ void World::ACpreventMapsFromBeingUsedBlock(const char* pMapIdString)
 			ss2 >> map_num; 
 			if (map_num >= 0)
 			{ 
-				sLog.outDebug("Ignoring Map %i for ACBlock", map_num); 
+				sLog->outDebug("Ignoring Map %i for ACBlock", map_num); 
 				iIgnoreMapIds_ACBlock[map_num] = true;
 			}
 		}
@@ -3172,7 +3172,7 @@ void World::ACpreventMapsFromBeingUsedPuni(const char* pMapIdString)
 			ss2 >> map_num; 
 			if (map_num >= 0)
 			{ 
-				sLog.outDebug("Ignoring Map %i for ACPuni", map_num); 
+				sLog->outDebug("Ignoring Map %i for ACPuni", map_num); 
 				iIgnoreMapIds_ACPuni[map_num] = true;
 			}
 		}

@@ -52,7 +52,7 @@ bool GuildHouseObject::CheckGuildID(uint32 guild_id)
     
     if (!guild_id)
     {
-        sLog.outError("The guild %u not found", guild_id);
+        sLog->outError("The guild %u not found", guild_id);
         return false;
     }
     return true;
@@ -219,7 +219,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                     if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                     {
                         GameObject* pGameobject = new GameObject;
-                        //sLog.outDebug("Spawning gameobject %u", itr2->first);
+                        //sLog->outDebug("Spawning gameobject %u", itr2->first);
                         if (!pGameobject->LoadFromDB(*itr2, map))
                             delete pGameobject;
                         else
@@ -242,7 +242,7 @@ bool GuildHouseObject::AddGuildHouseAdd(uint32 id, uint32 add, uint32 guild)
                     if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
                     {
                         Creature* pCreature = new Creature;
-                        //sLog.outDebug("Spawning creature %u",itr2->first);
+                        //sLog->outDebug("Spawning creature %u",itr2->first);
                         if (!pCreature->LoadFromDB(*itr2, map))
                             delete pCreature;
                         else
@@ -268,8 +268,8 @@ void GuildHouseObject::LoadGuildHouse()
 
     if (!result)
     {
-        sLog.outString("");
-        sLog.outErrorDb(">> Loaded 0 guild house.");
+        sLog->outString("");
+        sLog->outErrorDb(">> Loaded 0 guild house.");
         return;
     }
 
@@ -309,23 +309,23 @@ void GuildHouseObject::LoadGuildHouse()
             RemoveGuildHouseAdd(id);
     } while (result->NextRow());
 
-    sLog.outString();
-    sLog.outString( ">> Loaded %u GuildHouse", GH_map.size() );
+    sLog->outString();
+    sLog->outString( ">> Loaded %u GuildHouse", GH_map.size() );
 }
 
 void GuildHouseObject::LoadGuildHouseAdd()
 {
     GH_AddHouse.clear();
     mGuildGuardID.clear();
-    sLog.outString( "Loading Guild House System");
-    sLog.outString("");
+    sLog->outString( "Loading Guild House System");
+    sLog->outString("");
 
     QueryResult result = WorldDatabase.Query("SELECT `guid`,`type`,`id`,`add_type` FROM guildhouses_add ORDER BY Id ASC");
 
     if (!result)
     {
-        sLog.outString("");
-        sLog.outErrorDb(">> Loaded 0 GuildHouse Add");
+        sLog->outString("");
+        sLog->outErrorDb(">> Loaded 0 GuildHouse Add");
         return;
     }
 
@@ -344,7 +344,7 @@ void GuildHouseObject::LoadGuildHouseAdd()
         {
             if (!sObjectMgr->GetCreatureData(guid))                
             {                
-                sLog.outString( "Data per Creature Guid %u non esistente", guid );
+                sLog->outString( "Data per Creature Guid %u non esistente", guid );
                 continue;
             }
             GH_AddHouse[find].AddCre.push_back(guid);
@@ -353,15 +353,15 @@ void GuildHouseObject::LoadGuildHouseAdd()
         {
             if (!sObjectMgr->GetGOData(guid))
             {                
-                sLog.outString( "Data per GameObject Guid %u non esistente", guid );
+                sLog->outString( "Data per GameObject Guid %u non esistente", guid );
                 continue;
             }
             GH_AddHouse[find].AddGO.push_back(guid);
         }
     } while (result->NextRow());
 
-    sLog.outString();
-    sLog.outString( ">> Loaded %u GuildHouse Add", GH_AddHouse.size() );
+    sLog->outString();
+    sLog->outString( ">> Loaded %u GuildHouse Add", GH_AddHouse.size() );
 }
 
 uint32 GuildHouseObject::GetGuildByGuardID(uint64 guid)

@@ -50,7 +50,7 @@ bool ChatHandler::HandleWintergraspStatusCommand(const char* args)
 {
     OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
-    if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
         SendSysMessage(LANG_BG_WG_DISABLE);
         SetSentErrorMessage(true);
@@ -70,7 +70,7 @@ bool ChatHandler::HandleWintergraspStartCommand(const char* args)
 {
     OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
-    if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
         SendSysMessage(LANG_BG_WG_DISABLE);
         SetSentErrorMessage(true);
@@ -85,7 +85,7 @@ bool ChatHandler::HandleWintergraspStopCommand(const char* args)
 {
     OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
-    if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
         SendSysMessage(LANG_BG_WG_DISABLE);
         SetSentErrorMessage(true);
@@ -103,7 +103,7 @@ bool ChatHandler::HandleWintergraspEnableCommand(const char* args)
 
     OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr->GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
 
-    if (!pvpWG || !sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!pvpWG || !sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
         SendSysMessage(LANG_BG_WG_DISABLE);
         SetSentErrorMessage(true);
@@ -112,20 +112,20 @@ bool ChatHandler::HandleWintergraspEnableCommand(const char* args)
 
     if (!strncmp(args, "on", 3))
     {
-        if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         {
             pvpWG->forceStopBattle();
-            sWorld.setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, true);
+            sWorld->setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, true);
         }
         PSendSysMessage(LANG_BG_WG_ENABLE);
         return true;
     }
     else if (!strncmp(args, "off", 4))
     {
-        if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+        if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         {
             pvpWG->forceStopBattle();
-            sWorld.setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, false);
+            sWorld->setBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED, false);
         }
         PSendSysMessage(LANG_BG_WG_DISABLE);
         return true;

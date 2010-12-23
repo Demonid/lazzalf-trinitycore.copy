@@ -253,7 +253,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                 }
                 else
                 {
-                    sLog.outMail("Char %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                    sLog->outMail("Char %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 

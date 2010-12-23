@@ -3084,7 +3084,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     break;
                 case SUMMON_TYPE_TOTEM:
                 {
-                    if (sWorld.getBoolConfig(CONFIG_DETECT_POS_COLLISION))
+                    if (sWorld->getBoolConfig(CONFIG_DETECT_POS_COLLISION))
                     {
                         float destx, desty, destz;
                         if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 0.5f, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 0.5f, destx, desty, destz, -0.5f))
@@ -3546,7 +3546,7 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
         if (!pEnchant)
             return;
 
-        sLog.outCheat("Exploiting attempt: Player %s(GUID: %u) tried to apply an enchanement with Use: spell on an item that already has a Use: effect,"
+        sLog->outCheat("Exploiting attempt: Player %s(GUID: %u) tried to apply an enchanement with Use: spell on an item that already has a Use: effect,"
                       " this should be blocked from client side.", p_caster->GetName(), p_caster->GetGUIDLow());                        
         // item can be in trade slot and have owner diff. from caster
         Player* item_owner = itemTarget->GetOwner();
