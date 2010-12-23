@@ -583,7 +583,7 @@ class npc_guild_master : public CreatureScript
                     if (strlen(sCode) + 1 == sizeof CODE_SELL)
                         i = strcmp(CODE_SELL, sCode);
 
-                } catch(char *str) {sLog.outErrorDb(str);}
+                } catch(char *str) {sLog->outErrorDb(str);}
 
                 if (i == 0)
                 {

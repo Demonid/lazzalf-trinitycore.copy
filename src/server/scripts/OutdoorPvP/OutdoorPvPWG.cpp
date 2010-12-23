@@ -49,7 +49,7 @@ std::string OutdoorPvPWG::GetLocaleString(WG_STRING_LOCALE_INDEX idx, LocaleCons
 {
     if (idx >= MAX_WG_STRINGS || loc >= TOTAL_LOCALES)
     {
-        sLog.outError("WINTERGRASP: Bad call of OutdoorPvPWG::GetLocaleString()!");
+        sLog->outError("WINTERGRASP: Bad call of OutdoorPvPWG::GetLocaleString()!");
         return "[STRING NOT FOUND]";
     }
 
@@ -72,7 +72,7 @@ Position OutdoorPvPWG::SetQuestgiverPos(WG_QUESTGIVER_MOVEPOS_INDEX idx, TeamId 
 
     if (idx >= MAX_WG_QUESTGIVER)
     {
-        sLog.outError("WINTERGRASP: Bad call of OutdoorPvPWG::SetQuestgiverPos()!");
+        sLog->outError("WINTERGRASP: Bad call of OutdoorPvPWG::SetQuestgiverPos()!");
         return pos;
     }
 
@@ -189,7 +189,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
         WG_CREATURE_QUESTGIVER_6_A,     WG_CREATURE_QUESTGIVER_6_H);
 
     if (!result)
-        sLog.outError("WINTERGRASP: Can't find siege workshop master or spirit guides in creature!");
+        sLog->outError("WINTERGRASP: Can't find siege workshop master or spirit guides in creature!");
     else
     {
         do
@@ -307,7 +307,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
     if (!result)
     {
-        sLog.outError("WINTERGRASP: Can't find any GO within Wintergrasp!");
+        sLog->outError("WINTERGRASP: Can't find any GO within Wintergrasp!");
         return false;
     }
 
@@ -390,7 +390,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
             if (!engGuid)
             {
-                sLog.outError("WINTERGRASP: Can't find nearby siege workshop master!");
+                sLog->outError("WINTERGRASP: Can't find nearby siege workshop master!");
                 continue;
             }
             else
@@ -420,7 +420,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
             if (goData->posX < POS_X_CENTER && !workshop->SetCapturePointData(capturePointEntry, goData->mapid, goData->posX + 40 * cos(goData->orientation + M_PI / 2), goData->posY + 40 * sin(goData->orientation + M_PI / 2), goData->posZ))
             {
                 delete workshop;
-                sLog.outError("WINTERGRASP: Can't add capture point!");
+                sLog->outError("WINTERGRASP: Can't add capture point!");
                 continue;
             }
 
@@ -467,7 +467,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
 
     if (!m_gate)
     {
-        sLog.outError("WINTERGRASP: Can't find wintergrasp fortress gate!");
+        sLog->outError("WINTERGRASP: Can't find wintergrasp fortress gate!");
         return false;
     }
 
@@ -690,12 +690,12 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
             if (m_gate && m_gate->building && state->building->GetEntry() == m_gate->building->GetEntry())
             {
                 if (!m_gate_collision1)
-                    sLog.outError("WINTERGRASP: Can't find GO with entry 194162 'Doodad_WG_Keep_Door01_collision01'!");
+                    sLog->outError("WINTERGRASP: Can't find GO with entry 194162 'Doodad_WG_Keep_Door01_collision01'!");
                 else
                     m_gate_collision1->SetGoState(GO_STATE_ACTIVE);
 
                 if (!m_gate_collision2)
-                    sLog.outError("WINTERGRASP: Can't find GO with entry 194323 'Wintergrasp Keep Collision Wall'!");
+                    sLog->outError("WINTERGRASP: Can't find GO with entry 194323 'Wintergrasp Keep Collision Wall'!");
                 else
                     m_gate_collision2->SetGoState(GO_STATE_ACTIVE);
             }
@@ -801,7 +801,7 @@ void OutdoorPvPWG::ModifyWorkshopCount(TeamId team, bool add)
     else if (m_workshopCount[team])
         --m_workshopCount[team];
     else
-        sLog.outError("WINTERGRASP: OutdoorPvPWG::ModifyWorkshopCount: negative workshop count!");
+        sLog->outError("WINTERGRASP: OutdoorPvPWG::ModifyWorkshopCount: negative workshop count!");
 
     SendUpdateWorldState(MaxVehNumWorldState[team], m_workshopCount[team] * MAX_VEHICLE_PER_WORKSHOP);
     SaveData();
@@ -2061,7 +2061,7 @@ bool OutdoorPvPWG::Update(uint32 diff)
                     plr->ResurrectPlayer(1.0f);
                     plr->CastSpell(plr, 6962, true);
                     plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
-                    sObjectAccessor.ConvertCorpseForPlayer(*itr);
+                    sObjectAccessor->ConvertCorpseForPlayer(*itr);
                 }
                 m_ResurrectQueue.clear();
             }
@@ -2279,7 +2279,7 @@ void OutdoorPvPWG::EndBattle()
             if ((*itr)->isDead())
             {
                 (*itr)->ResurrectPlayer(1.0f);
-                sObjectAccessor.ConvertCorpseForPlayer((*itr)->GetGUID());
+                sObjectAccessor->ConvertCorpseForPlayer((*itr)->GetGUID());
             }
 
             (*itr)->RemoveAurasDueToSpell(SPELL_TENACITY);
@@ -2468,7 +2468,7 @@ void OutdoorPvPWG::RewardMarkOfHonor(Player *plr, uint32 count)
 
     if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
     {
-        sLog.outErrorDb("Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
+        sLog->outErrorDb("Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
         return;
     }
 
@@ -2744,7 +2744,7 @@ void OPvPCapturePointWG::ChangeTeam(TeamId oldTeam)
     else if (m_engineer)
         m_engineer->SetVisible(false);
 
-    sLog.outDebug("Wintergrasp workshop now belongs to %u.", (uint32)m_buildingState->GetTeamId());
+    sLog->outDebug("Wintergrasp workshop now belongs to %u.", (uint32)m_buildingState->GetTeamId());
 }
 
 class OutdoorPvP_wintergrasp : public OutdoorPvPScript

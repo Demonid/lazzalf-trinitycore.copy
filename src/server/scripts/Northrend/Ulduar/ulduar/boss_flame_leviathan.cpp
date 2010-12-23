@@ -887,7 +887,7 @@ class mob_flameleviathan_loot : public CreatureScript
                     bLeviathan = true;   
                     me->MonsterYell("Rilevato tentativo di Kill Illegale, attivazione sistema di distruzione personaggi", LANG_UNIVERSAL,0);
                     if (who)
-                        sLog.outCheat("Boss-%s, Tentativo di kill del loot del Flame Leviathan senza aver fatto il boss", who->GetName());
+                        sLog->outCheat("Boss-%s, Tentativo di kill del loot del Flame Leviathan senza aver fatto il boss", who->GetName());
                     return;
                 }
             }
