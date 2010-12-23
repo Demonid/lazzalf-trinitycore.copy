@@ -165,6 +165,7 @@ class ChatHandler
         bool HandleCharacterRenameCommand(const char * args);
         bool HandleCharacterReputationCommand(const char* args);
         bool HandleCharacterTitlesCommand(const char* args);
+		bool HandleCharacterJailpinfoCommand(const char* args);
 
         bool HandleChannelSetOwnership(const char *args);
 
@@ -245,6 +246,13 @@ class ChatHandler
         bool HandleUnBanAccountByCharCommand(const char* args);
         bool HandleUnBanCharacterCommand(const char* args);
         bool HandleUnBanIPCommand(const char* args);
+
+        bool HandleWintergraspStatusCommand(const char *args);
+        bool HandleWintergraspStartCommand(const char *args);
+        bool HandleWintergraspStopCommand(const char *args);
+        bool HandleWintergraspEnableCommand(const char *args);
+        bool HandleWintergraspSwitchTeamCommand(const char *args);
+        bool HandleWintergraspTimerCommand(const char *args);
 
         bool HandleHelpCommand(const char* args);
         bool HandleCommandsCommand(const char* args);
@@ -333,6 +341,11 @@ class ChatHandler
 
         /*bool HandleCharDeleteCommand(const char *args);
         bool HandleSendMessageCommand(const char * args);*/
+
+        bool HandleJailCommand(const char* args);
+        bool HandleJailInfoCommand(const char* args);
+        bool HandleUnJailCommand(const char* args);
+        bool HandleJailReloadCommand(const char* args);
 
         bool HandleFlushArenaPointsCommand(const char *args);
         bool HandlePlayAllCommand(const char* args);
