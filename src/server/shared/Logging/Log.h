@@ -182,7 +182,7 @@ class Log
         std::string m_dumpsDir;
 };
 
-#define sLog (*ACE_Singleton<Log, ACE_Thread_Mutex>::instance())
+#define sLog ACE_Singleton<Log, ACE_Thread_Mutex>::instance()
 
 #endif
 

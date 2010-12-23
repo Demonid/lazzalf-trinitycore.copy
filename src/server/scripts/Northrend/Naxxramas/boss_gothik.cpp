@@ -190,7 +190,7 @@ class boss_gothik : public CreatureScript
 
             if (LiveTriggerGUID.size() < POS_LIVE || DeadTriggerGUID.size() < POS_DEAD)
             {
-                sLog.outError("Script Gothik: cannot summon triggers!");
+                sLog->outError("Script Gothik: cannot summon triggers!");
                 EnterEvadeMode();
                 return;
             }
