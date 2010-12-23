@@ -1654,9 +1654,9 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
             uint32 winsAllTeam = 0;
             uint32 winsAllPlayer = 0;
 
-            uint32 winsAllTeamLimit = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN);
-            uint32 winsAllPlayerLimit = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN);
-            bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+            uint32 winsAllTeamLimit = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN);
+            uint32 winsAllPlayerLimit = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN);
+            bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
             if(enabled)
             {

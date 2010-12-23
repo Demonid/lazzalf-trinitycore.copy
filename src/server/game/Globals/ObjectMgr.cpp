@@ -6951,8 +6951,8 @@ void ObjectMgr::LoadJailConf(void)
 
     if (!result)
     {
-		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR1));
-		sLog.outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR2));
+		sLog->outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR1));
+		sLog->outError(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_ERR2));
 
 		m_jailconf_max_jails    = 3;
 		m_jailconf_max_duration = 672;
@@ -7052,9 +7052,9 @@ do
 }
 while (result->NextRow());
 
-    sLog.outString("");
-    sLog.outString(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_LOADED));
-    sLog.outString("");
+    sLog->outString("");
+    sLog->outString(GetTrinityStringForDBCLocale(LANG_JAIL_CONF_LOADED));
+    sLog->outString("");
 }
 
 void ObjectMgr::LoadCorpses()

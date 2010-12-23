@@ -173,16 +173,16 @@ void BattlegroundMgr::Update(uint32 diff)
             m_AutoDistributionTimeChecker -= diff;
     }
 
-    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE))
+    if (sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE))
     {
         if (m_ArenaModResetChecker < diff)
         {
-            if (time(NULL)/*sWorld.GetGameTime()*/ > m_NextArenaModResetTime)
+            if (time(NULL)/*sWorld->GetGameTime()*/ > m_NextArenaModResetTime)
             {
                 CharacterDatabase.PExecute("DELETE FROM arena_mod");
                 m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
                 //CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaModReset = '"UI64FMTD"'", m_NextArenaModResetTime);
-                sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+                sWorld->setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
             }
             m_ArenaModResetChecker = 600000; // check 10 minutes
         }
@@ -826,24 +826,24 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
 
 void BattlegroundMgr::InitAutomaticArenaModTimer()
 {
-    bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+    bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
     if(enabled)
     {
-        sLog.outDebug("Initializing Automatic Arena Mod Timer");
-        uint64 m_NextArenaModResetTime_temp = sWorld.getWorldState(LAST_TIME_MOD_RESET);
+        sLog->outDebug("Initializing Automatic Arena Mod Timer");
+        uint64 m_NextArenaModResetTime_temp = sWorld->getWorldState(LAST_TIME_MOD_RESET);
         //QueryResult result = CharacterDatabase.Query("SELECT NextArenaModReset FROM saved_variables");
         if(!m_NextArenaModResetTime_temp)
         {
-            sLog.outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");
+            sLog->outDebug("Battleground: Next arena mod reset time not found in SavedVariables, reseting it now.");
             m_NextArenaModResetTime = time(NULL) + BATTLEGROUND_ARENA_MOD_RESET_HOUR * sConfig.GetIntDefault("ArenaMod.TimeToReset", 24);
             //CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaModReset) VALUES ('"UI64FMTD"')", m_NextArenaModResetTime);
-            sWorld.setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
+            sWorld->setWorldState(LAST_TIME_MOD_RESET, uint64(m_NextArenaModResetTime));
         }
         else
         {
             m_NextArenaModResetTime = time_t(m_NextArenaModResetTime_temp);
         }
-        sLog.outDebug("Automatic Arena Mod Reset initialized.");
+        sLog->outDebug("Automatic Arena Mod Reset initialized.");
     }
 }
 

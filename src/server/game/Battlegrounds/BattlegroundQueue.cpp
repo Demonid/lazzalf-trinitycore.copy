@@ -64,10 +64,10 @@ bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
         ArenaTeam *at1 = sObjectMgr->GetArenaTeamById(TeamId1);
         ArenaTeam *at2 = sObjectMgr->GetArenaTeamById(TeamId2);
 
-        bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
-        uint32 mode = sWorld.getIntConfig(CONFIG_ARENAMOD_MODE);
-        uint32 maxTeamWinsTeam = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM);
-        uint32 maxPlayerWinsTeam = sWorld.getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM);
+        bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+        uint32 mode = sWorld->getIntConfig(CONFIG_ARENAMOD_MODE);
+        uint32 maxTeamWinsTeam = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM);
+        uint32 maxPlayerWinsTeam = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM);
 
         //check if arenamod is enabled
         if(enabled)
@@ -376,7 +376,7 @@ GroupQueueInfo * BattlegroundQueue::AddGroup(Player *leader, Group* grp, Battleg
                     {
                         sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level,
                             qAlliance, (MinPlayers > qAlliance) ? MinPlayers - qAlliance : (uint32)0, qHorde, (MinPlayers > qHorde) ? MinPlayers - qHorde : (uint32)0);
-                        sWorld.SetBGTimerAnnounceFalse();
+                        sWorld->SetBGTimerAnnounceFalse();
                     }
                 }
             }

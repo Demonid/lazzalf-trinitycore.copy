@@ -257,7 +257,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     sObjectMgr->GetNearestTaxiNode(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY(),movementInfo.pos.GetPositionZ(),GetPlayer()->GetMapId(),GetPlayer()->GetTeam(), curDest);
     // end movement anticheat
 
-    // sLog.outBasic("AC2-%s > | xyzo: %f,%f,%fo(%f) flags[%X] | curloc: %d | destloc: %d ",
+    // sLog->outBasic("AC2-%s > | xyzo: %f,%f,%fo(%f) flags[%X] | curloc: %d | destloc: %d ",
     // GetPlayer()->GetName(), movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o,
     // movementInfo.flags, curloc, curDest);
     TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);

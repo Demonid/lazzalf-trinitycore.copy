@@ -10573,7 +10573,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                     AuraEffect* eff0 = (*i)->GetBase()->GetEffect(0);
                     if (!eff0 || (*i)->GetEffIndex() != 1)
                     {
-                        sLog.outError("Spell structure of DD (%u) changed.",(*i)->GetId());
+                        sLog->outError("Spell structure of DD (%u) changed.",(*i)->GetId());
                         continue;
                     }
 

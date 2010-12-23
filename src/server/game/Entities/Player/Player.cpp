@@ -1316,7 +1316,7 @@ void Player::Update(uint32 p_time)
 
             _SaveJail();
             
-            sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+            sWorld->SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
             
 			CastSpell(this,8690,false);
 
@@ -7043,7 +7043,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     if (uVictim != NULL)
     {
-        honor *= sWorld.getRate(RATE_HONOR);
+        honor *= sWorld->getRate(RATE_HONOR);
 
         if (groupsize > 1)
             honor_f /= groupsize;
@@ -16935,7 +16935,7 @@ void Player::_LoadJail(void)
 
         _SaveJail();
 
-        sWorld.SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
+        sWorld->SendWorldText(LANG_JAIL_CHAR_FREE, GetName());
 
         CastSpell(this,8690,false);
         return;
@@ -16954,7 +16954,7 @@ void Player::_LoadJail(void)
                 sObjectMgr->m_jailconf_horde_y, sObjectMgr->m_jailconf_horde_z, sObjectMgr->m_jailconf_horde_o);
         }
          
-        sWorld.SendWorldText(LANG_JAIL_CHAR_TELE, GetName() );
+        sWorld->SendWorldText(LANG_JAIL_CHAR_TELE, GetName() );
     }
 }
 
@@ -18484,7 +18484,7 @@ void Player::_SaveInventory(SQLTransaction& trans)
                 if (Item* test2 = GetItemByPos(INVENTORY_SLOT_BAG_0, item->GetBagSlot()))
                     bagTestGUID = test2->GetGUIDLow();
                 sLog->outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u (state %d) are incorrect, the player doesn't have an item at that position!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
-                sLog.outCheat("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
+                sLog->outCheat("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d (state %d) are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
                 // according to the test that was just performed nothing should be in this slot, delete
                 trans->PAppend("DELETE FROM character_inventory WHERE bag=%u AND slot=%u AND guid=%u", bagTestGUID, item->GetSlot(), lowGuid);
                 // also THIS item should be somewhere else, cheat attempt
@@ -18496,7 +18496,7 @@ void Player::_SaveInventory(SQLTransaction& trans)
             else if (test != item)
             {
                 sLog->outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u are incorrect, the item with guid %u is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
-                sLog.outCheat("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
+                sLog->outCheat("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
                 // save all changes to the item...
                 if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
                     item->SaveToDB(trans);

@@ -733,7 +733,7 @@ void Battleground::EndBattleground(uint32 winner)
 
 	bool controll_ip = true;
 
-    if (sWorld.getBoolConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
+    if (sWorld->getBoolConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
     {	
 	    bool virgolat = false;
         bool virgolaa = false;
@@ -779,30 +779,30 @@ void Battleground::EndBattleground(uint32 winner)
         {
             if( resultt->GetRowCount() != (resulta->GetRowCount() + resultb->GetRowCount()) )
             {
-                sLog.outArena("Partita con ip uguali");
+                sLog->outArena("Partita con ip uguali");
                 controll_ip = false;
             }
             else 
             {
-                sLog.outArena("Partita con ip diversi");
+                sLog->outArena("Partita con ip diversi");
                 controll_ip = true;
             }
         }
 
         if(!resultt)
         {
-            sLog.outArena("No result total");
+            sLog->outArena("No result total");
         }
 
         if(!resulta)
         {
-            sLog.outArena("No result A");
+            sLog->outArena("No result A");
             controll_ip = false;
         }
 
         if(!resultb)
         {
-            sLog.outArena("No result B"); 
+            sLog->outArena("No result B"); 
             controll_ip = false;
         }
     }
@@ -810,7 +810,7 @@ void Battleground::EndBattleground(uint32 winner)
     // arena rating calculation
     if (isArena() && isRated())
     {
-        bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+        bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
         winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
@@ -900,7 +900,7 @@ void Battleground::EndBattleground(uint32 winner)
         // per player calculation
         if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
-            bool enabled = sWorld.getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+            bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
             if(enabled)
             {
@@ -1052,7 +1052,7 @@ void Battleground::RewardSpellCast(Player *plr, uint32 spell_id)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
     if (!spellInfo)
     {
-        sLog.outError("Battleground reward casting spell %u not exist.",spell_id);
+        sLog->outError("Battleground reward casting spell %u not exist.",spell_id);
         return;
     }
 
@@ -1071,7 +1071,7 @@ void Battleground::RewardItem(Player *plr, uint32 item_id, uint32 count)
 
     if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
     {
-        sLog.outErrorDb("Battleground reward item (Entry %u) not exist in `item_template`.",item_id);
+        sLog->outErrorDb("Battleground reward item (Entry %u) not exist in `item_template`.",item_id);
         return;
     }
 

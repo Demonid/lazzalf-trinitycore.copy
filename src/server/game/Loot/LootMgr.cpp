@@ -471,7 +471,7 @@ void Loot::FillNotNormalLootFor(Player* pl, bool withCurrency)
         FillNonQuestNonFFAConditionalLoot(pl);
 
     // if not auto-processed player will have to come and pick it up manually
-    if (!withCurrency || !sWorld.getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
+    if (!withCurrency || !sWorld->getBoolConfig(CONFIG_LOOT_AUTO_DISTRIBUTE))
         return;
 
     // Process currency items

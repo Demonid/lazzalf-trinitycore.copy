@@ -3130,9 +3130,9 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         case SPELL_ESSENCE_OF_WINTERGRASP_WINNER:   // Essence of Wintergrasp - Wintergrasp
         case SPELL_ESSENCE_OF_WINTERGRASP_WORLD:    // Essence of Wintergrasp - Northrend
             {
-                if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+                if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
                 {
-                    if (!player || player->GetTeamId() != sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld.getWorldState(WS_WINTERGRASP_ISWAR))
+                    if (!player || player->GetTeamId() != sWorld->getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID) || sWorld->getWorldState(WS_WINTERGRASP_ISWAR))
                         return false;
                 }
                 else

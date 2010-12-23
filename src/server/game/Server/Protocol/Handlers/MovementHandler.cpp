@@ -384,7 +384,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         Being Teleported
         Can't free move
     */
-    if (sWorld.getBoolConfig(CONFIG_AC_ENABLE))
+    if (sWorld->getBoolConfig(CONFIG_AC_ENABLE))
     {
         if (plMover && !plMover->isInFlight() && !plMover->GetTransport() && !plMover->IsBeingTeleported() && plMover->CanFreeMove())
         {
@@ -394,7 +394,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         {
             // Go to sleep
             plMover->GetAntiCheat()->ac_goactivate = 0;
-            plMover->GetAntiCheat()->SetDelta(int32(sWorld.getIntConfig(CONFIG_AC_SLEEP_DELTA)));
+            plMover->GetAntiCheat()->SetDelta(int32(sWorld->getIntConfig(CONFIG_AC_SLEEP_DELTA)));
         }
     }
 
@@ -469,7 +469,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         // movement anticheat
         if (plMover->GetAntiCheat()->m_anti_AlarmCount > 0)
         {
-            sLog.outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->GetAntiCheat()->m_anti_AlarmCount);
+            sLog->outCheat("AC2-%s produce %d anticheat alarms", plMover->GetName(), plMover->GetAntiCheat()->m_anti_AlarmCount);
             plMover->GetAntiCheat()->m_anti_AlarmCount = 0;
         }
         // end movement anticheat
@@ -484,7 +484,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
     }*/
 
-    //sLog.outString("Receive Movement Packet %s:", opcodeTable[recv_data.GetOpcode()]);
+    //sLog->outString("Receive Movement Packet %s:", opcodeTable[recv_data.GetOpcode()]);
     //mover->OutMovementInfo();
     }
     else if (plMover)
@@ -779,8 +779,8 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
     // Save movement flags
     _player->SetUnitMovementFlags(movementInfo.flags);
     #ifdef ANTICHEAT_DEBUG
-    sLog.outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK: time: %d, fall time: %d | xyzo: %f,%f,%fo(%f) flags[%X]", GetPlayer()->GetName(), movementInfo.time, movementInfo.fallTime, movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o, movementInfo.flags);
-    sLog.outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK additional: Vspeed: %f, Hspeed: %f", GetPlayer()->GetName(), movementInfo.j_unk, movementInfo.j_xyspeed);
+    sLog->outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK: time: %d, fall time: %d | xyzo: %f,%f,%fo(%f) flags[%X]", GetPlayer()->GetName(), movementInfo.time, movementInfo.fallTime, movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o, movementInfo.flags);
+    sLog->outBasic("%s CMSG_MOVE_KNOCK_BACK_ACK additional: Vspeed: %f, Hspeed: %f", GetPlayer()->GetName(), movementInfo.j_unk, movementInfo.j_xyspeed);
     #endif
 
     _player->m_movementInfo = movementInfo;
