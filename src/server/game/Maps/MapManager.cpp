@@ -163,6 +163,10 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     if (!entry->IsDungeon())
         return true;
 
+    // Not an areatrigger teleporting from world into an instance, if it is same map
+    if (mapid == player->GetMapId())
+       return true;
+
     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(mapid);
     if (!instance)
         return false;
@@ -360,4 +364,12 @@ uint32 MapManager::GetNumPlayersInInstances()
                 ret += ((InstanceMap*)mitr->second)->GetPlayers().getSize();
     }
     return ret;
+}
+
+Map* MapManager::FindMapByThread(ACE_thread_t tId)
+{
+    for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
+        if (iter->second->m_updater == tId)
+            return iter->second;
+    return NULL;
 }

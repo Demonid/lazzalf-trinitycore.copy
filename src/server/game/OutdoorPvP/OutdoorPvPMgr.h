@@ -76,6 +76,8 @@ class OutdoorPvPMgr
         void HandleGossipOption(Player * player, uint64 guid, uint32 gossipid);
 
         bool CanTalkTo(Player * player, Creature * creature, GossipMenuItems gso);
+    bool CanEnterVaultOfArchavon(Player *plr);
+    bool CanBeAttacked(Creature *pCreature);
 
         void HandleDropFlag(Player * plr, uint32 spellId);
 

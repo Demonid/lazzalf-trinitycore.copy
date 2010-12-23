@@ -63,6 +63,8 @@ const Position JedogaPosition[2] =
     {372.330994f, -705.278015f, -16.179716f, 5.427970f}
 };
 
+#define ACHIEVEMENT_VOLUNTEER_WORK 2056
+
 class boss_jedoga_shadowseeker : public CreatureScript
 {
 public:
@@ -92,6 +94,8 @@ public:
 
         bool bFirstTime;
 
+        bool KilledVolunteer;
+
         void Reset()
         {
             uiOpFerTimer = urand(15*IN_MILLISECONDS,20*IN_MILLISECONDS);
@@ -117,6 +121,8 @@ public:
             MoveUp();
 
             bFirstTime = false;
+
+            KilledVolunteer = false;
         }
 
         void EnterCombat(Unit* who)
@@ -149,7 +155,12 @@ public:
         {
             DoScriptText(TEXT_DEATH, me);
             if (pInstance)
+            {
                 pInstance->SetData(DATA_JEDOGA_SHADOWSEEKER_EVENT, DONE);
+
+                if(IsHeroic() && !KilledVolunteer)
+                    pInstance->DoCompleteAchievement(ACHIEVEMENT_VOLUNTEER_WORK);
+            }
         }
 
         void MoveInLineOfSight(Unit* who)
@@ -330,6 +341,8 @@ public:
     }
 };
 
+#define BOSS_JEDOGA 29310
+
 class mob_jedoga_initiand : public CreatureScript
 {
 public:
@@ -374,7 +387,8 @@ public:
 
         void JustDied(Unit* Killer)
         {
-            if (!Killer || !pInstance) return;
+            if (!Killer || !pInstance) 
+                return;
 
             if (bWalking)
             {
@@ -386,7 +400,17 @@ public:
 
                 bWalking = false;
             }
-            if (Killer->GetTypeId() == TYPEID_PLAYER) pInstance->SetData64(DATA_PL_JEDOGA_TARGET, Killer->GetGUID());
+
+            if (Killer->GetTypeId() == TYPEID_PLAYER) 
+            {
+                pInstance->SetData64(DATA_PL_JEDOGA_TARGET, Killer->GetGUID());
+
+                if(IsHeroic() && (pInstance->GetData(DATA_JEDOGA_SHADOWSEEKER_EVENT) == IN_PROGRESS))
+                {
+                    if (Creature* pJedoga = me->FindNearestCreature(BOSS_JEDOGA,60,true))
+                        CAST_AI(boss_jedoga_shadowseeker::boss_jedoga_shadowseekerAI,pJedoga->AI())->KilledVolunteer = true;
+                }					
+            }
         }
 
         void EnterCombat(Unit* who)

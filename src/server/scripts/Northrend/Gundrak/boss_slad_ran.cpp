@@ -65,6 +65,8 @@ static Position SpawnLoc[]=
   {1716.76f, 635.159f, 129.282f, 0.191986f}
 };
 
+#define ACHI_SNAKES 2058
+
 class boss_slad_ran : public CreatureScript
 {
 public:
@@ -86,6 +88,7 @@ public:
         uint32 uiPowerfullBiteTimer;
         uint32 uiVenomBoltTimer;
         uint32 uiSpawnTimer;
+        std::set<uint64> lWrappedPlayers;
 
         uint8 uiPhase;
 
@@ -98,13 +101,21 @@ public:
             uiPoisonNovaTimer = 10*IN_MILLISECONDS;
             uiPowerfullBiteTimer = 3*IN_MILLISECONDS;
             uiVenomBoltTimer = 15*IN_MILLISECONDS;
-            uiSpawnTimer = 5*IN_MILLISECONDS;
+            //uiSpawnTimer = 5*IN_MILLISECONDS;
+            uiSpawnTimer = 15*IN_MILLISECONDS;
             uiPhase = 0;
+            lWrappedPlayers.clear();
 
             lSummons.DespawnAll();
 
             if (pInstance)
                 pInstance->SetData(DATA_SLAD_RAN_EVENT, NOT_STARTED);
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_SNAKE, 100.0f))
+                pTarget->RemoveFromWorld();
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_CONSTRICTORS, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -139,7 +150,7 @@ public:
                 uiVenomBoltTimer = 10*IN_MILLISECONDS;
             } else uiVenomBoltTimer -= diff;
 
-            if (uiPhase)
+            /*if (uiPhase)
             {
                 if (uiSpawnTimer <= diff)
                 {
@@ -163,7 +174,20 @@ public:
             {
                 DoScriptText(SAY_SUMMON_CONSTRICTORS,me);
                 uiPhase = 2;
-            }
+            }*/
+
+            if (uiSpawnTimer <= diff)
+            {
+                DoScriptText(SAY_SUMMON_SNAKES,me);
+                for (uint8 i = 0; i < DUNGEON_MODE(3, 5); ++i)
+                    me->SummonCreature(CREATURE_SNAKE, SpawnLoc[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
+
+                DoScriptText(SAY_SUMMON_CONSTRICTORS,me);
+                for (uint8 i = 0; i < DUNGEON_MODE(2, 3); ++i)
+                    me->SummonCreature(CREATURE_CONSTRICTORS, SpawnLoc[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN,20*IN_MILLISECONDS);
+                
+                uiSpawnTimer = 20*IN_MILLISECONDS;
+            } else uiSpawnTimer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -172,8 +196,30 @@ public:
         {
             DoScriptText(SAY_DEATH, me);
 
+            if (IsHeroic())
+            {
+                AchievementEntry const *achievSnakes = GetAchievementStore()->LookupEntry(ACHI_SNAKES);
+                if (achievSnakes)
+                {
+                    Map::PlayerList const &players = pInstance->instance->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    {
+                        if (lWrappedPlayers.find(itr->getSource()->GetGUID()) != lWrappedPlayers.end())
+                            continue;
+                        else
+                            itr->getSource()->CompletedAchievement(achievSnakes);
+                    }
+                }
+            }
+
             if (pInstance)
                 pInstance->SetData(DATA_SLAD_RAN_EVENT, DONE);
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_SNAKE, 100.0f))
+                pTarget->RemoveFromWorld();
+
+            while (Unit* pTarget = me->FindNearestCreature(CREATURE_CONSTRICTORS, 100.0f))
+                pTarget->RemoveFromWorld();
         }
 
         void KilledUnit(Unit * /*victim*/)
@@ -209,6 +255,18 @@ public:
         void Reset()
         {
             uiGripOfSladRanTimer = 1*IN_MILLISECONDS;
+        }
+
+        void SpellHitTarget(Unit* pTarget, const SpellEntry *spell)
+        {
+            if (spell->Id == SPELL_GRIP_OF_SLAD_RAN)
+            {
+                if (pTarget->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (Creature* pSladRan = me->FindNearestCreature(CREATURE_SLAD_RAN,60,true))
+                        CAST_AI(boss_slad_ran::boss_slad_ranAI,pSladRan->AI())->lWrappedPlayers.insert(pTarget->ToPlayer()->GetGUID());
+                }
+            }
         }
 
         void UpdateAI(const uint32 diff)

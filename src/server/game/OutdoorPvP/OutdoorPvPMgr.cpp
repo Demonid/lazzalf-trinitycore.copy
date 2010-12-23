@@ -16,6 +16,7 @@
  */
 
 #include "OutdoorPvPMgr.h"
+#include "../../scripts/OutdoorPvP/OutdoorPvPWG.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "DisableMgr.h"
@@ -115,8 +116,44 @@ void OutdoorPvPMgr::AddZone(uint32 zoneid, OutdoorPvP *handle)
     m_OutdoorPvPMap[zoneid] = handle;
 }
 
+bool OutdoorPvPMgr::CanBeAttacked(Creature *pCreature)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    if (!pvpWG)
+        return false;
+
+    // Toravon
+    if (pCreature->GetEntry() == 38433 && (pvpWG->GetTimer()/60) <= 15)
+        return false;
+
+    // All
+    if (pvpWG->isWarTime())
+        return false;
+
+    return true;
+}
+
+bool OutdoorPvPMgr::CanEnterVaultOfArchavon(Player *plr)
+{
+    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+    if (!pvpWG)
+        return false;
+
+    if (pvpWG->getDefenderTeamId() != plr->GetTeamId() || pvpWG->isWarTime())
+        return false;
+
+    return true;
+}
+
 void OutdoorPvPMgr::HandlePlayerEnterZone(Player *plr, uint32 zoneid)
 {
+    if (zoneid != NORTHREND_WINTERGRASP)
+    {
+ 	    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)GetOutdoorPvPToZoneId(NORTHREND_WINTERGRASP);
+ 	    if (pvpWG)
+  	        pvpWG->HandleEssenceOfWintergrasp(plr, zoneid);
+    }
+
     OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneid);
     if (itr == m_OutdoorPvPMap.end())
         return;
