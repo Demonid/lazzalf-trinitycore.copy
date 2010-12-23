@@ -1754,6 +1754,10 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
             if (unitTarget->ToPlayer()->HasSpellCooldown(1784))
                 unitTarget->ToPlayer()->RemoveSpellCooldown(1784);
 
+            // Exit from combat
+            if (unitTarget->isInCombat())
+                unitTarget->CombatStop();
+
             triggered_spell_id = 1784;
             break;
         }
