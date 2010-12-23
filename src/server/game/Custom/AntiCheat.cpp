@@ -361,7 +361,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
             announce += plMover->GetName();
             announce += " per uso di Hack";
             sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-            sWorld->BanCharacter(plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+            sWorld->BanCharacter(plMover->GetName(),sConfig->GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             break;
         case PUNI_BAN_ACC:
             {
@@ -371,7 +371,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
                 announce += plMover->GetName();
                 announce += " per uso di Hack";
                 sWorld->SendServerMessage(SERVER_MSG_STRING,announce.c_str());
-                sWorld->BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                sWorld->BanAccount(BAN_CHARACTER,plMover->GetName(),sConfig->GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
             }
             break;
         case PUNI_BAN_IP:
@@ -390,7 +390,7 @@ bool AntiCheat::AntiCheatPunisher(MovementInfo& pMovementInfo)
                     std::string LastIP = fields[0].GetString();
                     if(!LastIP.empty())
                     {
-                        sWorld->BanAccount(BAN_IP,LastIP,sConfig.GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
+                        sWorld->BanAccount(BAN_IP,LastIP,sConfig->GetStringDefault("Anticheat.Punisher.BanTime", "-1"),"Cheat","AntiCheatPunisher");
                     }
                 }                
             } break;

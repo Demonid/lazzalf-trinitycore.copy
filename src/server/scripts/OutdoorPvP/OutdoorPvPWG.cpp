@@ -109,53 +109,53 @@ void OutdoorPvPWG::LoadCreatureMap(uint64 guid, WG_QUESTGIVER_MOVEPOS_INDEX idx,
 
 void OutdoorPvPWG::SaveData()
 {
-    sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(m_defender));
-    sWorld.setWorldState(WS_WINTERGRASP_CLOCK_ALLY, m_clock[TEAM_ALLIANCE]);
-    sWorld.setWorldState(WS_WINTERGRASP_CLOCK_HORDE, m_clock[TEAM_HORDE]);
-    sWorld.setWorldState(WS_WINTERGRASP_ISWAR, uint64(m_wartime));
-    sWorld.setWorldState(WS_WINTERGRASP_TIMER, m_timer);
+    sWorld->setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(m_defender));
+    sWorld->setWorldState(WS_WINTERGRASP_CLOCK_ALLY, m_clock[TEAM_ALLIANCE]);
+    sWorld->setWorldState(WS_WINTERGRASP_CLOCK_HORDE, m_clock[TEAM_HORDE]);
+    sWorld->setWorldState(WS_WINTERGRASP_ISWAR, uint64(m_wartime));
+    sWorld->setWorldState(WS_WINTERGRASP_TIMER, m_timer);
 
     // TODO: Until the team/state is at startup correct set (not implemented yet) we must set 0 here!
-    //sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(m_workshopCount[TEAM_ALLIANCE]));
-    //sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(m_workshopCount[TEAM_HORDE]));
-    //sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(m_towerDestroyedCount[TEAM_ALLIANCE]));
-    //sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(m_towerDestroyedCount[TEAM_HORDE]));
-    //sWorld.setWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY, uint64(m_VehicleCnt[TEAM_ALLIANCE]));
-    //sWorld.setWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE, uint64(m_VehicleCnt[TEAM_HORDE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(m_workshopCount[TEAM_ALLIANCE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(m_workshopCount[TEAM_HORDE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(m_towerDestroyedCount[TEAM_ALLIANCE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(m_towerDestroyedCount[TEAM_HORDE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY, uint64(m_VehicleCnt[TEAM_ALLIANCE]));
+    //sWorld->setWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE, uint64(m_VehicleCnt[TEAM_HORDE]));
 
-    sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(0));
-    sWorld.setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(0));
-    sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(0));
-    sWorld.setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(0));
-    sWorld.setWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY, uint64(0));
-    sWorld.setWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY, uint64(0));
+    sWorld->setWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE, uint64(0));
 
     m_saveinterval = WG_MIN_SAVE;
 }
 
 bool OutdoorPvPWG::SetupOutdoorPvP()
 {
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
     {
-        sWorld.setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(TEAM_NEUTRAL));
+        sWorld->setWorldState(WS_WINTERGRASP_CONTROLING_TEAMID, uint64(TEAM_NEUTRAL));
         return false;
     }
 
-    m_defender = (TeamId)sWorld.getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID);
+    m_defender = (TeamId)sWorld->getWorldState(WS_WINTERGRASP_CONTROLING_TEAMID);
 
-    m_clock[TEAM_ALLIANCE] = sWorld.getWorldState(WS_WINTERGRASP_CLOCK_ALLY);
-    m_clock[TEAM_HORDE] = sWorld.getWorldState(WS_WINTERGRASP_CLOCK_HORDE);
+    m_clock[TEAM_ALLIANCE] = sWorld->getWorldState(WS_WINTERGRASP_CLOCK_ALLY);
+    m_clock[TEAM_HORDE] = sWorld->getWorldState(WS_WINTERGRASP_CLOCK_HORDE);
 
-    m_wartime = (bool)sWorld.getWorldState(WS_WINTERGRASP_ISWAR);
-    m_timer = sWorld.getWorldState(WS_WINTERGRASP_TIMER);
+    m_wartime = (bool)sWorld->getWorldState(WS_WINTERGRASP_ISWAR);
+    m_timer = sWorld->getWorldState(WS_WINTERGRASP_TIMER);
 
     // TODO: Until the team/state is at startup correct set (not implemented yet) we must set 0 here!
-    //m_workshopCount[TEAM_ALLIANCE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY));
-    //m_workshopCount[TEAM_HORDE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE));
-    //m_towerDestroyedCount[TEAM_ALLIANCE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY));
-    //m_towerDestroyedCount[TEAM_HORDE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE));
-    //m_VehicleCnt[TEAM_ALLIANCE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY));
-    //m_VehicleCnt[TEAM_HORDE] = uint32(sWorld.getWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE));
+    //m_workshopCount[TEAM_ALLIANCE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_SHOP_CNT_ALLY));
+    //m_workshopCount[TEAM_HORDE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_SHOP_CNT_HORDE));
+    //m_towerDestroyedCount[TEAM_ALLIANCE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_TOWER_DEST_ALLY));
+    //m_towerDestroyedCount[TEAM_HORDE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_TOWER_DEST_HORDE));
+    //m_VehicleCnt[TEAM_ALLIANCE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_VEHICLE_CNT_ALLY));
+    //m_VehicleCnt[TEAM_HORDE] = uint32(sWorld->getWorldState(WS_WINTERGRASP_VEHICLE_CNT_HORDE));
 
     m_workshopCount[TEAM_ALLIANCE] = 0;
     m_workshopCount[TEAM_HORDE] = 0;
@@ -523,7 +523,7 @@ bool OutdoorPvPWG::SetupOutdoorPvP()
     LoadTeamPair(m_creEntryPair, OutdoorPvPWGCreEntryPair);
 
     if (!m_timer)
-        m_timer = sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILLISECONDS;
+        m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME) * MINUTE * IN_MILLISECONDS;
 
     m_saveinterval = WG_MIN_SAVE;
 
@@ -547,7 +547,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                 std::stringstream msg;
                 msg << player->GetName() << " porta alla vittoria la sua fazione!";
                 std::string msgStr = msg.str();
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                sWorld->SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
             }
     }
     else if (obj->GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
@@ -563,58 +563,58 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
         {
             case WG_GO_TOWER_FLAMEWATCH_DAMAGED:
             case WG_GO_TOWER_FLAMEWATCH_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_TOWER_FLAMEWATCH, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_TOWER_FLAMEWATCH, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_TOWER_SHADOWSIGHT_DAMAGED:
             case WG_GO_TOWER_SHADOWSIGHT_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_TOWER_SHADOWSIGHT, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_TOWER_SHADOWSIGHT, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_TOWER_WINTERS_EDGE_DAMAGED:
             case WG_GO_TOWER_WINTERS_EDGE_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_TOWER_WINTERS_EDGE, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_TOWER_WINTERS_EDGE, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_E_DAMAGED:
             case WG_GO_WORKSHOP_E_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_E, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_E, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_W_DAMAGED:
             case WG_GO_WORKSHOP_W_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_W, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_W, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_NW_DAMAGED:
             case WG_GO_WORKSHOP_NW_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_NW, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_NW, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_NE_DAMAGED:
             case WG_GO_WORKSHOP_NE_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_NE, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_NE, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_SW_DAMAGED:
             case WG_GO_WORKSHOP_SW_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_SW, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_SW, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_WORKSHOP_SE_DAMAGED:
             case WG_GO_WORKSHOP_SE_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_WORKSHOP_SE, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_WORKSHOP_SE, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_KEEP_TOWER_NW_DAMAGED:
             case WG_GO_KEEP_TOWER_NW_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_NW, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_NW, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_KEEP_TOWER_NE_DAMAGED:
             case WG_GO_KEEP_TOWER_NE_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_NE, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_NE, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_KEEP_TOWER_SW_DAMAGED:
             case WG_GO_KEEP_TOWER_SW_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_SW, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_SW, sWorld->GetDefaultDbcLocale());
                 break;
             case WG_GO_KEEP_TOWER_SE_DAMAGED:
             case WG_GO_KEEP_TOWER_SE_DESTROYED:
-                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_SE, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_KEEP_TOWER_SE, sWorld->GetDefaultDbcLocale());
                 break;
             default:
-                msgStr = GetLocaleString(WG_STRING_DEFAULT, sWorld.GetDefaultDbcLocale());
+                msgStr = GetLocaleString(WG_STRING_DEFAULT, sWorld->GetDefaultDbcLocale());
         }
 
         BuildingState *state = itr->second;
@@ -630,10 +630,10 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
             {
                 case BUILDING_WORKSHOP:
                     msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DAMAGED), msgStr.c_str(), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     break;
                 case BUILDING_WALL:
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -658,7 +658,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                 case BUILDING_TOWER:
                     ++m_towerDamagedCount[state->GetTeamId()];
                     msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DAMAGED), msgStr.c_str());
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -705,10 +705,10 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                 case BUILDING_WORKSHOP:
                     ModifyWorkshopCount(state->GetTeamId(), false);
                     msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_WORKSHOP_DESTROYED), msgStr.c_str(), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_HORDE : LANG_BG_AB_ALLY));
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     break;
                 case BUILDING_WALL:
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_FORTRESS_UNDER_ATTACK));
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -762,7 +762,7 @@ void OutdoorPvPWG::ProcessEvent(GameObject *obj, uint32 eventId, Player* player)
                         }
                     }
                     msgStr = fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_TOWER_DESTROYED), msgStr.c_str());
-                    sWorld.SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
+                    sWorld->SendZoneText(NORTHREND_WINTERGRASP, msgStr.c_str());
                     for (PlayerSet::iterator itr = m_players[getDefenderTeamId()].begin(); itr != m_players[getDefenderTeamId()].end(); ++itr)
                     {
                         if (getDefenderTeamId() == TEAM_ALLIANCE)
@@ -1423,7 +1423,7 @@ void OutdoorPvPWG::HandleEssenceOfWintergrasp(Player *plr, uint32 zoneId)
     if (!plr || !zoneId)
         return;
 
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) || isWarTime() || plr->GetTeamId() != getDefenderTeamId())
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) || isWarTime() || plr->GetTeamId() != getDefenderTeamId())
     {
         plr->RemoveAurasDueToSpell(SPELL_ESSENCE_OF_WINTERGRASP_WINNER);
         plr->RemoveAurasDueToSpell(SPELL_ESSENCE_OF_WINTERGRASP_WORLD);
@@ -1488,7 +1488,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 {
     HandleEssenceOfWintergrasp(plr, zone);
 
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return;
 
     if (isWarTime())
@@ -1538,7 +1538,7 @@ void OutdoorPvPWG::HandlePlayerEnterZone(Player *plr, uint32 zone)
 // Reapply Auras if needed
 void OutdoorPvPWG::HandlePlayerResurrects(Player *plr, uint32 zone)
 {
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return;
 
     if (isWarTime())
@@ -1581,7 +1581,7 @@ void OutdoorPvPWG::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 {
     HandleEssenceOfWintergrasp(plr, zone);
 
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return;
 
     if (!plr->GetSession()->PlayerLogout())
@@ -1633,7 +1633,7 @@ void OutdoorPvPWG::PromotePlayer(Player *killer) const
 
 void OutdoorPvPWG::HandleKill(Player *killer, Unit *victim)
 {
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) || !isWarTime())
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED) || !isWarTime())
         return;
 
     bool ok = false;
@@ -1750,7 +1750,7 @@ void OutdoorPvPWG::UpdateClockDigit(uint32 &timer, uint32 digit, uint32 mod)
     {
         m_clock[digit] = value;
         SendUpdateWorldState(ClockWorldState[digit], uint32(timer + time(NULL)));
-        sWorld.SetWintergrapsTimer(uint32(timer + time(NULL)), digit);
+        sWorld->SetWintergrapsTimer(uint32(timer + time(NULL)), digit);
     }
 }
 
@@ -1766,7 +1766,7 @@ void OutdoorPvPWG::UpdateClock()
 
 bool OutdoorPvPWG::Update(uint32 diff)
 {
-    if (!sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
+    if (!sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED))
         return false;
 
     if (m_saveinterval <= diff)
@@ -2083,21 +2083,21 @@ bool OutdoorPvPWG::Update(uint32 diff)
         if (isWarTime())
         {
             if (m_timer != 1) // 1 = forceStopBattle
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(entry), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
+                sWorld->SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(entry), sObjectMgr->GetTrinityStringForDBCLocale(getDefenderTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
 
             EndBattle();
         }
         else
         {
             if (m_timer != 1) // 1 = forceStartBattle
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_STARTS));
+                sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_STARTS));
  	            
             if (!m_players[getDefenderTeamId()].empty() && !m_players[getAttackerTeamId()].empty())
                 StartBattle();
             else
             {
-                m_timer = sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
-                sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
+                m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
+                sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_NOT_ENOUGH_PLAYERS));
 
                 if (m_players[getDefenderTeamId()].empty())
                     forceChangeTeam();
@@ -2122,7 +2122,7 @@ void OutdoorPvPWG::forceStartBattle()
     if (m_timer != 1)
     {
         m_timer = 1;
-        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_START));
+        sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_START));
     }
 }
 
@@ -2134,7 +2134,7 @@ void OutdoorPvPWG::forceStopBattle()
     if (m_timer != 1)
     {
         m_timer = 1;
-        sWorld.SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_STOP));
+        sWorld->SendZoneText(NORTHREND_WINTERGRASP, sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_BATTLE_FORCE_STOP));
     }
 }
 
@@ -2142,7 +2142,7 @@ void OutdoorPvPWG::forceChangeTeam()
 {
     m_changeDefender = true;
     m_timer = 1;
-    sWorld.SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_SWITCH_FACTION), sObjectMgr->GetTrinityStringForDBCLocale(getAttackerTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
+    sWorld->SendZoneText(NORTHREND_WINTERGRASP, fmtstring(sObjectMgr->GetTrinityStringForDBCLocale(LANG_BG_WG_SWITCH_FACTION), sObjectMgr->GetTrinityStringForDBCLocale(getAttackerTeamId() == TEAM_ALLIANCE ? LANG_BG_AB_ALLY : LANG_BG_AB_HORDE)));
 
     if (isWarTime())
         forceStartBattle();
@@ -2154,7 +2154,7 @@ void OutdoorPvPWG::forceChangeTeam()
 void OutdoorPvPWG::StartBattle()
 {
     m_wartime = true;
-    m_timer = sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILLISECONDS;
+    m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME) * MINUTE * IN_MILLISECONDS;
 
     // destroyed all vehicles
     for (uint32 team = 0; team < 2; ++team)
@@ -2320,18 +2320,18 @@ void OutdoorPvPWG::EndBattle()
         uint32 playersWithRankNum = 0;
         uint32 honor = 0;
 
-        if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR))
+        if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR))
         {
             // Calculate Level 70+ with Corporal or Lieutenant rank
             for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
                 if ((*itr)->getLevel() > 69 && ((*itr)->HasAura(SPELL_LIEUTENANT) || (*itr)->HasAura(SPELL_CORPORAL)))
                     ++playersWithRankNum;
 
-            baseHonor = team == getDefenderTeamId() ? sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
-            baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER) * m_towerDamagedCount[OTHER_TEAM(team)]);
-            baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER) * m_towerDestroyedCount[OTHER_TEAM(team)]);
-            baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING) * intactNum);
-            baseHonor += (sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING) * damagedNum);
+            baseHonor = team == getDefenderTeamId() ? sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE) : sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE);
+            baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER) * m_towerDamagedCount[OTHER_TEAM(team)]);
+            baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER) * m_towerDestroyedCount[OTHER_TEAM(team)]);
+            baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING) * intactNum);
+            baseHonor += (sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING) * damagedNum);
 
             //if (playersWithRankNum)
             //    baseHonor /= playersWithRankNum;
@@ -2344,7 +2344,7 @@ void OutdoorPvPWG::EndBattle()
                 continue; // No rewards for level <70
 
             // give rewards
-            if (sWorld.getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR))
+            if (sWorld->getBoolConfig(CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR))
             {
                 if (team == getDefenderTeamId())
                 {
@@ -2425,7 +2425,7 @@ void OutdoorPvPWG::EndBattle()
         }
     }
 
-    m_timer = sWorld.getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
+    m_timer = sWorld->getIntConfig(CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL) * MINUTE * IN_MILLISECONDS;
 
     // Teleport all attackers (except accs with sec. >= SEC_GAMEMASTER) to Dalaran
     for (PlayerSet::iterator itr = m_players[getAttackerTeamId()].begin(); itr != m_players[getAttackerTeamId()].end(); ++itr)
