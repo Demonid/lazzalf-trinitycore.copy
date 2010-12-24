@@ -115,9 +115,9 @@ public:
 
             if (!bHealth1 && HealthBelowPct(5))
             {
-                DoCast(me,SPELL_EMERGE);
-                CreatureState(me, false);
                 bHealth1 = true;
+                DoCast(me,SPELL_EMERGE);
+                CreatureState(me, false);                
                 me->RemoveAllAuras();
             }
 
@@ -201,11 +201,17 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (!bGoToColossus && HealthBelowPct(50))
+            if (!bGoToColossus)
             {
                 if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                 {
-                    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->bHealth1)
+                    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->bHealth1 && HealthBelowPct(50))
+                    {
+                        me->InterruptNonMeleeSpells(true);
+                        DoCast(me, SPELL_MERGE);
+                        bGoToColossus = true;
+                    }
+                    else if (HealthBelowPct(5))
                     {
                         me->InterruptNonMeleeSpells(true);
                         DoCast(me, SPELL_MERGE);
