@@ -2309,11 +2309,11 @@ void Player::RegenerateAll()
     if (m_regenTimerCount >= 2000)
     {
         // Not in combat or they have regeneration
-        if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) ||
-            HasAuraType(SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT) || IsPolymorphed())
-        {
+        //if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) ||
+        //    HasAuraType(SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT) || IsPolymorphed())
+        //{
             RegenerateHealth();
-        }
+        //}
 
         Regenerate(POWER_RAGE);
         if (getClass() == CLASS_DEATH_KNIGHT)
@@ -2450,11 +2450,6 @@ void Player::RegenerateHealth()
     if (curValue >= maxValue)
         return;
 
-    float HealthIncreaseRate = sWorld->getRate(RATE_HEALTH);
-
-    if (getLevel() < 15)
-        HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
-
     float addvalue = 0.0f;
 
     // polymorphed case
@@ -2462,7 +2457,12 @@ void Player::RegenerateHealth()
         addvalue = (float)GetMaxHealth()/3;
     // normal regen case (maybe partly in combat case)
     else if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT))
-    {
+    {        
+        float HealthIncreaseRate = sWorld->getRate(RATE_HEALTH);
+
+        if (getLevel() < 15)
+            HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
+
         addvalue = OCTRegenHPPerSpirit()* HealthIncreaseRate;
         if (!isInCombat())
         {
