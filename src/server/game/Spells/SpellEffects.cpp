@@ -3436,7 +3436,7 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
     //m_caster->ToPlayer()->UpdateVisibilityOf(dynObj);
 }
 
-void Spell::EffectUntrainTalents(SpellEffIndex effIndex)
+void Spell::EffectUntrainTalents(SpellEffIndex /*effIndex*/)
 {
     if (!unitTarget || m_caster->GetTypeId() == TYPEID_PLAYER)
         return;
@@ -5231,7 +5231,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                             if (Creature *oldContainer = dynamic_cast<Creature*>(seat->GetPassenger(1)))
                                 oldContainer->DisappearAndDie();
                             // TODO: a hack, range = 11, should after some time cast, otherwise too far
-                            unitTarget->CastSpell(seat->GetBase(), 62496, true);
+                            m_caster->CastSpell(seat->GetBase(), 62496, true);
                             unitTarget->EnterVehicle(seat, 1);
                         }
                     }
