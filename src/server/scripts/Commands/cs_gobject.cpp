@@ -58,6 +58,7 @@ public:
             { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
             { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
             { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
+                { "guildadd",       SEC_GAMEMASTER,     false, &HandleGameObjectAddGuildCommand,  "", NULL },
             { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
@@ -68,6 +69,99 @@ public:
         };
         return commandTable;
     }
+
+//spawn go for guildhouse
+static bool HandleGameObjectAddGuildCommand(ChatHandler* handler, const char* args)
+{
+    if (!*args)
+        return false;
+
+    // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+    char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject_entry");
+    if (!cId)
+        return false;
+
+    char* guildhouse = strtok(NULL, " ");
+    if (!guildhouse)
+        return false;
+
+    char* guildhouseadd = strtok(NULL, " ");
+    if (!guildhouseadd)
+        return false;
+
+    uint32 id = atol(cId);
+    uint32 guildhouseid = atoi(guildhouse);
+    uint32 guildhouseaddid = atoi(guildhouseadd);
+
+    if (!id || !guildhouseid || !guildhouseaddid)
+        return false;
+
+    char* spawntimeSecs = strtok(NULL, " ");
+
+    const GameObjectInfo *gInfo = sObjectMgr->GetGameObjectInfo(id);
+
+    if (!gInfo)
+    {
+        handler->PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
+        handler->SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+    {
+        // report to DB errors log as in loading case
+        sLog->outErrorDb("Gameobject (Entry %u GoType: %u) have invalid displayId (%u), not spawned.",id, gInfo->type, gInfo->displayId);
+        handler->PSendSysMessage(LANG_GAMEOBJECT_HAVE_INVALID_DATA,id);
+        handler->SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player *chr = handler->GetSession()->GetPlayer();
+    float x = float(chr->GetPositionX());
+    float y = float(chr->GetPositionY());
+    float z = float(chr->GetPositionZ());
+    float o = float(chr->GetOrientation());
+    Map *map = chr->GetMap();
+
+    GameObject* pGameObj = new GameObject;
+    uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+
+    if (!pGameObj->Create(db_lowGUID, gInfo->id, map, chr->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    if (spawntimeSecs)
+    {
+        uint32 value = atoi((char*)spawntimeSecs);
+        pGameObj->SetRespawnTime(value);
+        //sLog->outDebug("*** spawntimeSecs: %d", value);
+    }
+
+    // fill the gameobject data and save to the db
+    pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()),chr->GetPhaseMaskForSpawn());
+
+    // this will generate a new guid if the object is in an instance
+    if (!pGameObj->LoadFromDB(db_lowGUID, map))
+    {
+        delete pGameObj;
+        return false;
+    }
+
+    sLog->outDebug(handler->GetTrinityString(LANG_GAMEOBJECT_CURRENT), gInfo->name, db_lowGUID, x, y, z, o);
+
+    map->Add(pGameObj);
+
+    WorldDatabase.PQuery("INSERT INTO guildhouses_add (guid, type, id, add_type, comment) VALUES (%u, 1, %u, %u, '%s')", 
+                              pGameObj->GetDBTableGUIDLow(), guildhouseid, guildhouseaddid, pGameObj->GetName());   
+
+    // TODO: is it really necessary to add both the real and DB table guid here ?
+    sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
+
+    handler->PSendSysMessage(LANG_GAMEOBJECT_ADD,id,gInfo->name,db_lowGUID,x,y,z);
+    return true;
+}
 
     static bool HandleGameObjectActivateCommand(ChatHandler* handler, const char* args)
     {
@@ -372,6 +466,9 @@ public:
         obj->SetRespawnTime(0);                                 // not save respawn time
         obj->Delete();
         obj->DeleteFromDB();
+
+    // GuidHouse
+    WorldDatabase.PQuery("DELETE FROM guildhouses_add WHERE guid = %u AND type = 1", obj->GetDBTableGUIDLow());   
 
         handler->PSendSysMessage(LANG_COMMAND_DELOBJMESSAGE, obj->GetGUIDLow());
 

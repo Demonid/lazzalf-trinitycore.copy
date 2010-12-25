@@ -63,11 +63,10 @@ public:
         {
             if (pInstance)
                 pInstance->SetData(DATA_DRAKKARI_COLOSSUS_EVENT, NOT_STARTED);
-            if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE))
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->ClearUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
-            me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_AGGRESSIVE);
             MightyBlowTimer = 10*IN_MILLISECONDS;
             bHealth = false;
             bHealth1 = false;
@@ -90,7 +89,8 @@ public:
                 pWho->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 if (pWho == me)
                     me->RemoveAura(SPELL_FREEZE_ANIM);
-            }else
+            }
+            else
             {
                 pWho->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pWho->AddUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT);
@@ -115,9 +115,9 @@ public:
 
             if (!bHealth1 && HealthBelowPct(5))
             {
-                DoCast(me,SPELL_EMERGE);
-                CreatureState(me, false);
                 bHealth1 = true;
+                DoCast(me,SPELL_EMERGE);
+                CreatureState(me, false);                
                 me->RemoveAllAuras();
             }
 
@@ -168,7 +168,7 @@ public:
 
         uint32 uiSurgeTimer;
 
-        bool bGoToColossus;
+        bool bGoToColossus; //inutile
 
         void Reset()
         {
@@ -201,14 +201,20 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (!bGoToColossus && HealthBelowPct(50))
+            if (!bGoToColossus)
             {
                 if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                 {
-                    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->HealthBelowPct(6))
+                    if (!CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI,pColossus->AI())->bHealth1 && HealthBelowPct(50))
                     {
                         me->InterruptNonMeleeSpells(true);
-                        DoCast(pColossus, SPELL_MERGE);
+                        DoCast(me, SPELL_MERGE);
+                        bGoToColossus = true;
+                    }
+                    else if (HealthBelowPct(5))
+                    {
+                        me->InterruptNonMeleeSpells(true);
+                        DoCast(me, SPELL_MERGE);
                         bGoToColossus = true;
                     }
                 }
@@ -289,6 +295,7 @@ public:
                         EnterEvadeMode();
                     }
                 }
+                me->getThreatManager().getThreatList().clear();
             }
         }
 
@@ -315,9 +322,6 @@ public:
     };
 
 };
-
-
-
 
 void AddSC_boss_drakkari_colossus()
 {

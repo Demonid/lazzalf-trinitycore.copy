@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
 /* ScriptData
 SDName: instance_trial_of_the_crusader
@@ -25,6 +23,23 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "trial_of_the_crusader.h"
+
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_10          3936
+#define ACHIEVEMENT_NOT_ONE_BUT_TWO_25          3937
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10   3798
+#define ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25   3814
+#define ACHIEVEMENT_SALT_AND_PEPPER_10          3799
+#define ACHIEVEMENT_SALT_AND_PEPPER_25          3815
+#define ACHIEVEMENT_TRAITOR_KING_10             3800
+#define ACHIEVEMENT_TRAITOR_KING_25             3816
+#define TRAITOR_KING_MAX_TIMER                  30 * IN_MILLISECONDS
+#define TRAITOR_KING_MIN_COUNT                  40
+#define ACHIEVEMENT_TRIBUTE_SKILL_10            3808
+#define ACHIEVEMENT_TRIBUTE_MAD_SKILL_10        3809
+#define ACHIEVEMENT_TRIBUTE_INSANITY_10         3810
+#define ACHIEVEMENT_TRIBUTE_SKILL_25            3817
+#define ACHIEVEMENT_TRIBUTE_MAD_SKILL_25        3818
+#define ACHIEVEMENT_TRIBUTE_INSANITY_25         3819
 
 class instance_trial_of_the_crusader : public InstanceMapScript
 {
@@ -70,6 +85,7 @@ public:
         uint64 m_uiAnubarakGUID;
 
         uint64 m_uiCrusadersCacheGUID;
+        uint64 m_uiTwinChestGUID;
         uint64 m_uiFloorGUID;
 
         uint64 m_uiTributeChestGUID;
@@ -80,11 +96,19 @@ public:
 
         // Achievement stuff
         uint32 m_uiNotOneButTwoJormungarsTimer;
+        uint32 achievementNotOneButTwoJormungars;
         uint32 m_uiResilienceWillFixItTimer;
+        uint32 achievementResilienceWillFixIt;
+        //uint32 saltAndPepperTimer;
+        //uint32 achievementSaltAndPepper;
         uint8  m_uiSnoboldCount;
         uint8  m_uiMistressOfPainCount;
         bool   m_bTributeToImmortalityElegible;
-        std::list<uint32> m_vScarabTimeOfDeath;
+        //std::list<uint32> m_vScarabTimeOfDeath; not used, not needed :|
+        uint32 scarabsCount;
+        uint32 traitorKingTimer;
+        uint32 achievementTraitorKing;
+        uint8 tributeCheck;
 
         void Initialize()
         {
@@ -95,6 +119,7 @@ public:
             m_uiEvent = 0;
 
             m_uiTributeChestGUID = 0;
+            m_uiTwinChestGUID = 0;
             m_uiDataDamageTwin = 0;
 
             m_uiMainGateDoorGUID = 0;
@@ -105,11 +130,21 @@ public:
 
             m_uiEventTimer = 1000;
 
+            m_uiAcidmawGUID = 0;
+
             m_uiNotOneButTwoJormungarsTimer = 0;
+            achievementNotOneButTwoJormungars = 0;
             m_uiResilienceWillFixItTimer = 0;
+            achievementResilienceWillFixIt = 0;
+            //saltAndPepperTimer = 0;
+            //achievementSaltAndPepper = 0;
             m_uiSnoboldCount = 0;
             m_uiMistressOfPainCount = 0;
             m_bTributeToImmortalityElegible = true;
+            scarabsCount = 0;
+            traitorKingTimer = 0;
+            achievementTraitorKing = 0;
+            tributeCheck = 0;
 
             m_bNeedSave = false;
         }
@@ -216,6 +251,22 @@ public:
                 case GO_TRIBUTE_CHEST_25H_50:
                 case GO_TRIBUTE_CHEST_25H_99:
                     m_uiTributeChestGUID = go->GetGUID(); break;
+                case GO_TWIN_CHEST_10:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_NORMAL)
+                        m_uiTwinChestGUID = go->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_25:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_NORMAL)
+                        m_uiTwinChestGUID = go->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_10_H:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        m_uiTwinChestGUID = go->GetGUID();
+                    break;
+                case GO_TWIN_CHEST_25_H:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        m_uiTwinChestGUID = go->GetGUID();
+                    break;
             }
         }
 
@@ -237,7 +288,17 @@ public:
                         case DONE:
                             DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_DEFEAT_FACTION_CHAMPIONS);
                             if (m_uiResilienceWillFixItTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CHAMPIONS_KILLED_IN_MINUTE);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementResilienceWillFixIt = ACHIEVEMENT_RESILIENCE_WILL_FIX_IT_25;
+
+                                AchievementEntry const *AchievResilienceWillFixIt = GetAchievementStore()->LookupEntry(achievementResilienceWillFixIt);
+                                if (AchievResilienceWillFixIt)
+                                    DoCompleteAchievement(achievementResilienceWillFixIt);
+                            }
                             if (GameObject* pChest = instance->GetGameObject(m_uiCrusadersCacheGUID))
                                 if (pChest && !pChest->isSpawned())
                                     pChest->SetRespawnTime(7*DAY);
@@ -248,13 +309,32 @@ public:
                 case TYPE_VALKIRIES:
                     switch (uiData)
                     {
+                        //case IN_PROGRESS:
+                            //saltAndPepperTimer = 3 * MINUTE * IN_MILLISECONDS;
                         case FAIL:
-                            if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) uiData = NOT_STARTED;
+                            if (m_auiEncounter[TYPE_VALKIRIES] == NOT_STARTED) 
+                                uiData = NOT_STARTED;
+                            if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
+                                pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                             break;
                         case SPECIAL:
                             if (m_auiEncounter[TYPE_VALKIRIES] == SPECIAL) uiData = DONE;
                             break;
                         case DONE:
+                            /*if (saltAndPepperTimer > 0)
+                            {
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementSaltAndPepper = ACHIEVEMENT_SALT_AND_PEPPER_25;
+
+                                AchievementEntry const *AchievSaltAndPepper = GetAchievementStore()->LookupEntry(achievementSaltAndPepper);
+                                if (AchievSaltAndPepper)
+                                    DoCompleteAchievement(achievementSaltAndPepper);
+                            }*/
+                            if (GameObject* pChest = instance->GetGameObject(m_uiTwinChestGUID))
+                                if (pChest && !pChest->isSpawned())
+                                    pChest->SetRespawnTime(7*DAY);
                             if (instance->GetPlayers().getFirst()->getSource()->GetTeam() == ALLIANCE)
                                 m_uiEvent = 4020;
                             else
@@ -273,33 +353,48 @@ public:
                             if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
                             {
                                 if (m_uiTrialCounter >= 50)
+                                {
                                     tributeChest = GO_TRIBUTE_CHEST_10H_99;
+                                    tributeCheck = 3;
+                                }
+                                else if (m_uiTrialCounter >= 45)
+                                {
+                                    tributeChest = GO_TRIBUTE_CHEST_10H_50;
+                                    tributeCheck = 2;
+                                }
+                                else if (m_uiTrialCounter >= 25)
+                                {
+                                    tributeChest = GO_TRIBUTE_CHEST_10H_45;
+                                    tributeCheck = 1;
+                                }
                                 else
-                                    if (m_uiTrialCounter >= 45)
-                                        tributeChest = GO_TRIBUTE_CHEST_10H_50;
-                                    else
-                                        if (m_uiTrialCounter >= 25)
-                                            tributeChest = GO_TRIBUTE_CHEST_10H_45;
-                                        else
-                                            tributeChest = GO_TRIBUTE_CHEST_10H_25;
+                                    tributeChest = GO_TRIBUTE_CHEST_10H_25;
                             }
                             else if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
                             {
                                 if (m_uiTrialCounter >= 50)
+                                {
                                     tributeChest = GO_TRIBUTE_CHEST_25H_99;
+                                    tributeCheck = 3;
+                                }
+                                else if (m_uiTrialCounter >= 45)
+                                {
+                                    tributeChest = GO_TRIBUTE_CHEST_25H_50;
+                                    tributeCheck = 2;
+                                }
+                                else if (m_uiTrialCounter >= 25)
+                                {
+                                    tributeChest = GO_TRIBUTE_CHEST_25H_45;
+                                    tributeCheck = 1;
+                                }
                                 else
-                                    if (m_uiTrialCounter >= 45)
-                                        tributeChest = GO_TRIBUTE_CHEST_25H_50;
-                                    else
-                                        if (m_uiTrialCounter >= 25)
-                                            tributeChest = GO_TRIBUTE_CHEST_25H_45;
-                                        else
-                                            tributeChest = GO_TRIBUTE_CHEST_25H_25;
+                                    tributeChest = GO_TRIBUTE_CHEST_25H_25;
                             }
                             if (tributeChest)
                                 if (Creature* pTirion =  instance->GetCreature(m_uiTirionGUID))
                                     if (GameObject* pChest = pTirion->SummonGameObject(tributeChest,805.62f,134.87f,142.16f,3.27f,0,0,0,0,90000000))
                                         pChest->SetRespawnTime(pChest->GetRespawnDelay());
+                            TributeAchievements();
                             break;
                     }
                     break;
@@ -319,7 +414,17 @@ public:
                         case SNAKES_SPECIAL: m_uiNotOneButTwoJormungarsTimer = 10*IN_MILLISECONDS; break;
                         case SNAKES_DONE:
                             if (m_uiNotOneButTwoJormungarsTimer > 0)
-                                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                            {
+                                //DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_WORMS_KILLED_IN_10_SECONDS);
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_10;
+                                if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                                    achievementNotOneButTwoJormungars = ACHIEVEMENT_NOT_ONE_BUT_TWO_25;
+
+                                AchievementEntry const *AchievNotOneButTwo = GetAchievementStore()->LookupEntry(achievementNotOneButTwoJormungars);
+                                if (AchievNotOneButTwo)
+                                    DoCompleteAchievement(achievementNotOneButTwoJormungars);
+                            }
                             m_uiEvent = 300;
                             SetData(TYPE_NORTHREND_BEASTS,IN_PROGRESS);
                             SetData(TYPE_BEASTS,IN_PROGRESS);
@@ -349,6 +454,18 @@ public:
                     else if (uiData == DECREASE)
                         --m_uiMistressOfPainCount;
                     break;
+                case DATA_TRAITOR_KING_START:
+                    if (uiData == ACHI_START)
+                        traitorKingTimer = TRAITOR_KING_MAX_TIMER;
+                    else if (uiData == ACHI_RESET)
+                    {
+                        traitorKingTimer = 0;
+                        scarabsCount = 0;
+                    }
+                    break;
+                case DATA_TRAITOR_KING_COUNT:
+                    if (uiData == ACHI_INCREASE)
+                        scarabsCount++;
                 case DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE:
                     m_bTributeToImmortalityElegible = false;
                     break;
@@ -367,6 +484,9 @@ public:
                 sLog->outBasic("[ToCr] m_auiEncounter[uiType %u] %u = uiData %u;",uiType,m_auiEncounter[uiType],uiData);
                 if (uiData == FAIL)
                 {
+                    if (Unit* pAnnouncer = instance->GetCreature(GetData64(NPC_BARRENT)))
+                            pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
                     if (IsRaidWiped())
                     {
                         --m_uiTrialCounter;
@@ -383,6 +503,30 @@ public:
                         pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     Save();
                 }
+            }
+        }
+
+        void TributeAchievements()
+        {
+            switch (tributeCheck)
+            {
+                case 3:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_INSANITY_10);
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_INSANITY_25);
+                case 2:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_MAD_SKILL_10);
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_MAD_SKILL_25);
+                case 1:
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_SKILL_10);
+                    if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        DoCompleteAchievement(ACHIEVEMENT_TRIBUTE_SKILL_25);
+                case 0:
+                    return;
             }
         }
 
@@ -517,6 +661,15 @@ public:
                     };
                     return m_uiEventNPCId;
                 case DATA_HEALTH_TWIN_SHARED: return m_uiDataDamageTwin;
+                
+                //achievements
+                case DATA_SNOBOLD_COUNT: return m_uiSnoboldCount;
+                case DATA_MISTRESS_OF_PAIN_COUNT: return m_uiMistressOfPainCount;
+                case DATA_TRAITOR_KING_START:
+                    if (traitorKingTimer > 0)
+                        return ACHI_IS_IN_PROGRESS;
+                    else
+                        return ACHI_IS_NOT_STARTED;
             }
             return 0;
         }
@@ -535,6 +688,35 @@ public:
                 if (m_uiResilienceWillFixItTimer <= uiDiff)
                     m_uiResilienceWillFixItTimer = 0;
                 else m_uiResilienceWillFixItTimer -= uiDiff;
+            }
+
+            /*if (GetData(TYPE_VALKIRIES) == IN_PROGRESS && saltAndPepperTimer)
+            {
+                if (saltAndPepperTimer <= uiDiff)
+                    saltAndPepperTimer = 0;
+                else saltAndPepperTimer -= uiDiff;
+            }*/
+
+            // Achievement The Traitor King control
+            if (traitorKingTimer)
+            {
+                if (scarabsCount >= TRAITOR_KING_MIN_COUNT)
+                {
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC)
+                        achievementTraitorKing = ACHIEVEMENT_TRAITOR_KING_10;
+                    if (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL || Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC)
+                        achievementTraitorKing = ACHIEVEMENT_TRAITOR_KING_25;
+
+                    AchievementEntry const *AchievTraitorKing = GetAchievementStore()->LookupEntry(achievementTraitorKing);
+                    if (AchievTraitorKing)
+                        DoCompleteAchievement(achievementTraitorKing);
+
+                    SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
+                }
+
+                if (traitorKingTimer <= uiDiff)
+                    SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
+                else traitorKingTimer -= uiDiff;
             }
         }
 
@@ -585,40 +767,56 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-        {
-            switch (criteria_id)
-            {
-                case UPPER_BACK_PAIN_10_PLAYER:
-                case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 2;
-                case UPPER_BACK_PAIN_25_PLAYER:
-                case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
-                    return m_uiSnoboldCount >= 4;
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
-                case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
-                    return m_uiMistressOfPainCount >= 2;
-                case A_TRIBUTE_TO_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 25;
-                case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
-                case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
-                    return m_uiTrialCounter >= 45;
-                case A_TRIBUTE_TO_INSANITY_10_PLAYER:
-                case A_TRIBUTE_TO_INSANITY_25_PLAYER:
-                case REALM_FIRST_GRAND_CRUSADER:
-                    return m_uiTrialCounter == 50;
-                case A_TRIBUTE_TO_IMMORTALITY_HORDE:
-                case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
-                    return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
-                case A_TRIBUTE_TO_DEDICATED_INSANITY:
-                    return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
-            }
+        //bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+        //{
+        //    switch (criteria_id)
+        //    {
+        //        case UPPER_BACK_PAIN_10_PLAYER:
+        //        case UPPER_BACK_PAIN_10_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 2;
+        //        case UPPER_BACK_PAIN_25_PLAYER:
+        //        case UPPER_BACK_PAIN_25_PLAYER_HEROIC:
+        //            return m_uiSnoboldCount >= 4;
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_10_PLAYER_HEROIC:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER:
+        //        case THREE_SIXTY_PAIN_SPIKE_25_PLAYER_HEROIC:
+        //            return m_uiMistressOfPainCount >= 2;
+        //        case A_TRIBUTE_TO_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 25;
+        //        case A_TRIBUTE_TO_MAD_SKILL_10_PLAYER:
+        //        case A_TRIBUTE_TO_MAD_SKILL_25_PLAYER:
+        //            return m_uiTrialCounter >= 45;
+        //        case A_TRIBUTE_TO_INSANITY_10_PLAYER:
+        //        case A_TRIBUTE_TO_INSANITY_25_PLAYER:
+        //        case REALM_FIRST_GRAND_CRUSADER:
+        //            return m_uiTrialCounter == 50;
+        //        case A_TRIBUTE_TO_IMMORTALITY_HORDE:
+        //        case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
+        //            return m_uiTrialCounter == 50 && m_bTributeToImmortalityElegible;
+        //        case A_TRIBUTE_TO_DEDICATED_INSANITY:
+        //            return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+        //         boss kill credits
+        //        case ICEHOWL_25:
+        //        case JARAXXUS_25:
+        //        case TWIN_25:
+        //        case ANUB_25:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_NORMAL);
+        //        case ICEHOWL_10H:
+        //        case JARAXXUS_10H:
+        //        case TWIN_10H:
+        //        case ANUB_10H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_10MAN_HEROIC);
+        //        case ICEHOWL_25H:
+        //        case JARAXXUS_25H:
+        //        case TWIN_25H:
+        //        case ANUB_25H:
+        //            return (Difficulty(instance->GetSpawnMode()) == RAID_DIFFICULTY_25MAN_HEROIC);
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
     };
 
 };

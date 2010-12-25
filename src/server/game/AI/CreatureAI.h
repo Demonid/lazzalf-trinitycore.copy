@@ -29,6 +29,19 @@ class Creature;
 class Player;
 struct SpellEntry;
 
+// Mangos Script
+enum CanCastResult
+{
+    CAST_OK                     = 0,
+    CAST_FAIL_IS_CASTING        = 1,
+    CAST_FAIL_OTHER             = 2,
+    CAST_FAIL_TOO_FAR           = 3,
+    CAST_FAIL_TOO_CLOSE         = 4,
+    CAST_FAIL_POWER             = 5,
+    CAST_FAIL_STATE             = 6,
+    CAST_FAIL_TARGET_AURA       = 7
+};
+
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
 

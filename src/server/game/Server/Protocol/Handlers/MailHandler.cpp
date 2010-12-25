@@ -251,6 +251,11 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                     sLog->outCommand(GetAccountId(), "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
+                else
+                {
+                    sLog->outMail("Char %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                        GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
+                }
 
                 item->SetNotRefundable(GetPlayer()); // makes the item no longer refundable
                 pl->MoveItemFromInventory(items[i]->GetBagSlot(), item->GetSlot(), true);

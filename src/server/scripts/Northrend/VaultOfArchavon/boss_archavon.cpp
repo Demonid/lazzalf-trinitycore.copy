@@ -37,163 +37,219 @@
 //Yell
 #define SAY_LEAP "Archavon the Stone Watcher lunges for $N!" //$N should be the target
 
-enum Events
-{
-    // Archavon
-    EVENT_ROCK_SHARDS       = 1,    // 15s cd
-    EVENT_CHOKING_CLOUD     = 2,    // 30s cd
-    EVENT_STOMP             = 3,    // 45s cd
-    EVENT_IMPALE            = 4,
-    EVENT_BERSERK           = 5,    // 300s cd
+#define EVENT_ROCK_SHARDS        1  //15s cd
+#define EVENT_CHOKING_CLOUD      2  //30s cd
+#define EVENT_STOMP              3  //45s cd
+#define EVENT_IMPALE             4
+#define EVENT_BERSERK            5  //300s cd
 
-    //mob
-    EVENT_ROCK_SHOWER       = 6,    // set = 20s cd,unkown cd
-    EVENT_SHIELD_CRUSH      = 7,    // set = 30s cd
-    EVENT_WHIRL             = 8,    // set= 10s cd
-};
+//mob
+#define EVENT_ROCK_SHOWER        5  //set = 20s cd,unkown cd
+#define EVENT_SHIELD_CRUSH       6  //set = 30s cd
+#define EVENT_WHIRL              8  //set= 10s cd
 
 class boss_archavon : public CreatureScript
 {
     public:
-        boss_archavon() : CreatureScript("boss_archavon") { }
+        boss_archavon(): CreatureScript("boss_archavon") {}
 
-        struct boss_archavonAI : public BossAI
+    struct boss_archavonAI : public ScriptedAI
+    {
+        boss_archavonAI(Creature *c) : ScriptedAI(c)
         {
-            boss_archavonAI(Creature* creature) : BossAI(creature, DATA_ARCHAVON)
-            {
-            }
-
-            void EnterCombat(Unit * /*who*/)
-            {
-                events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
-                events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
-                events.ScheduleEvent(EVENT_STOMP, 45000);
-                events.ScheduleEvent(EVENT_BERSERK, 300000);
-
-                _EnterCombat();
-            }
-
-            // Below UpdateAI may need review/debug.
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
-                if (me->HasUnitState(UNIT_STAT_CASTING))
-                    return;
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ROCK_SHARDS:
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, SPELL_ROCK_SHARDS);
-                            events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
-                            break;
-                        case EVENT_CHOKING_CLOUD:
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, SPELL_CRUSHING_LEAP, true); //10y~80y, ignore range
-                            events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
-                            break;
-                        case EVENT_STOMP:
-                            DoCastVictim(SPELL_STOMP);
-                            events.ScheduleEvent(EVENT_IMPALE, 3000);
-                            events.ScheduleEvent(EVENT_STOMP, 45000);
-                            break;
-                        case EVENT_IMPALE:
-                            DoCastVictim(SPELL_IMPALE);
-                            break;
-                        case EVENT_BERSERK:
-                            DoCast(me, SPELL_BERSERK);
-                            DoScriptText(EMOTE_BERSERK, me);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new boss_archavonAI(creature);
+            pInstance = c->GetInstanceScript();
         }
+
+        InstanceScript* pInstance;
+        EventMap events;
+        uint32 checktimer;
+        uint8 WatchersCount;
+
+        void Reset()
+        {
+            events.Reset();
+
+            CheckForVoA();
+
+            checktimer = 10000;
+            WatchersCount = 0;
+
+            if (pInstance)
+                pInstance->SetData(DATA_ARCHAVON_EVENT, NOT_STARTED);
+        }
+
+        void CheckForVoA()
+        {
+            if (!sOutdoorPvPMgr->CanBeAttacked(me))
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+            else
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+        }
+
+        void KilledUnit(Unit* Victim){}
+
+        void JustDied(Unit* Killer)
+        {
+            if (Creature* Emalon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_EMALON) : 0))
+                if (Emalon->isAlive()) 
+                    WatchersCount++;
+                
+            if (Creature* Koralon = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_KORALON) : 0))
+                if (Koralon->isAlive())
+                    WatchersCount++;
+
+            if (pInstance)
+            {
+                if (WatchersCount == 2)
+                    pInstance->SetData(DATA_EWF_START, ACHI_START);                
+
+                pInstance->SetData(DATA_EWF_COUNT, ACHI_INCREASE);
+                pInstance->SetData(DATA_ARCHAVON_EVENT, DONE);
+                pInstance->SaveToDB();
+            }
+        }
+
+        void EnterCombat(Unit *who)
+        {
+            DoZoneInCombat();
+            events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
+            events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
+            events.ScheduleEvent(EVENT_STOMP, 45000);
+            events.ScheduleEvent(EVENT_BERSERK, 300000);
+
+            if (pInstance)
+                pInstance->SetData(DATA_ARCHAVON_EVENT, IN_PROGRESS);
+        }
+
+        // Below UpdateAI may need review/debug.
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+            {
+                if (checktimer <= diff)
+                {
+                    CheckForVoA();
+                    checktimer = 10000;
+                } else checktimer -= diff;
+
+                return;
+            }
+
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STAT_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_ROCK_SHARDS:
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            DoCast(pTarget, SPELL_ROCK_SHARDS);
+                        events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
+                        return;
+                    case EVENT_CHOKING_CLOUD:
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            DoCast(pTarget, SPELL_CRUSHING_LEAP, true); //10y~80y, ignore range
+                        events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
+                        return;
+                    case EVENT_STOMP:
+                        DoCast(me->getVictim(), SPELL_STOMP);
+                        events.ScheduleEvent(EVENT_IMPALE, 3000);
+                        events.ScheduleEvent(EVENT_STOMP, 45000);
+                        return;
+                    case EVENT_IMPALE:
+                        DoCast(me->getVictim(), SPELL_IMPALE);
+                        return;
+                    case EVENT_BERSERK:
+                        DoCast(me, SPELL_BERSERK);
+                        DoScriptText(EMOTE_BERSERK, me);
+                        return;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_archavonAI (pCreature);
+    };
 };
 
 /*######
 ##  Mob Archavon Warder
 ######*/
+
 class mob_archavon_warder : public CreatureScript
 {
     public:
-        mob_archavon_warder() : CreatureScript("mob_archavon_warder") { }
+        mob_archavon_warder(): CreatureScript("mob_archavon_warder") {}
 
-        struct mob_archavon_warderAI : public ScriptedAI //npc 32353
+    struct mob_archavon_warderAI : public ScriptedAI //npc 32353
+    {
+        mob_archavon_warderAI(Creature *c) : ScriptedAI(c) {}
+
+        EventMap events;
+
+        void Reset()
         {
-            mob_archavon_warderAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-
-            EventMap events;
-
-            void Reset()
-            {
-                events.Reset();
-                events.ScheduleEvent(EVENT_ROCK_SHOWER, 2000);
-                events.ScheduleEvent(EVENT_SHIELD_CRUSH, 20000);
-                events.ScheduleEvent(EVENT_WHIRL, 7500);
-            }
-
-            void EnterCombat(Unit* /*who*/)
-            {
-                DoZoneInCombat();
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
-                if (me->HasUnitState(UNIT_STAT_CASTING))
-                    return;
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_ROCK_SHOWER:
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                                DoCast(target, SPELL_ROCK_SHOWER);
-                            events.ScheduleEvent(EVENT_ROCK_SHARDS, 6000);
-                            break;
-                        case EVENT_SHIELD_CRUSH:
-                            DoCastVictim(SPELL_SHIELD_CRUSH);
-                            events.ScheduleEvent(EVENT_SHIELD_CRUSH, 20000);
-                            break;
-                        case EVENT_WHIRL:
-                            DoCastVictim(SPELL_WHIRL);
-                            events.ScheduleEvent(EVENT_WHIRL, 8000);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new mob_archavon_warderAI(creature);
+            events.Reset();
         }
+
+        void EnterCombat(Unit *who)
+        {
+            DoZoneInCombat();
+            events.ScheduleEvent(EVENT_ROCK_SHOWER, 2000);
+            events.ScheduleEvent(EVENT_SHIELD_CRUSH, 20000);
+            events.ScheduleEvent(EVENT_WHIRL, 7500);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            //Return since we have no target
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_ROCK_SHOWER:
+                    {
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            DoCast(pTarget, SPELL_ROCK_SHOWER);
+                        events.ScheduleEvent(EVENT_ROCK_SHARDS, 6000);
+                        return;
+                    }
+                    case EVENT_SHIELD_CRUSH:
+                        DoCast(me->getVictim(), SPELL_SHIELD_CRUSH);
+                        events.ScheduleEvent(EVENT_SHIELD_CRUSH, 20000);
+                        return;
+                    case EVENT_WHIRL:
+                        DoCast(me->getVictim(), SPELL_WHIRL);
+                        events.ScheduleEvent(EVENT_WHIRL, 8000);
+                        return;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new mob_archavon_warderAI(pCreature);
+    };
 };
 
 void AddSC_boss_archavon()

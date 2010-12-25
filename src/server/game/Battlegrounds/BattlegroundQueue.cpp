@@ -56,6 +56,158 @@ BattlegroundQueue::~BattlegroundQueue()
     }
 }
 
+bool BattlegroundQueue::TeamsAreAllowedToFight(uint32 TeamId1, uint32 TeamId2)
+{
+    if(TeamId1 && TeamId2 && (TeamId1 != TeamId2)) // teamId1 only != 0 if rated/arena
+    {
+        //get arenateams and configs
+        ArenaTeam *at1 = sObjectMgr->GetArenaTeamById(TeamId1);
+        ArenaTeam *at2 = sObjectMgr->GetArenaTeamById(TeamId2);
+
+        bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
+        uint32 mode = sWorld->getIntConfig(CONFIG_ARENAMOD_MODE);
+        uint32 maxTeamWinsTeam = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_TEAM_WIN_AGAINST_TEAM);
+        uint32 maxPlayerWinsTeam = sWorld->getIntConfig(CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM);
+
+        //check if arenamod is enabled
+        if(enabled)
+        {
+            //get arenamod's mode
+            if(mode & 1)
+            {
+                if(at1 && at2)
+                {
+                    //iterate through arenateam1's members and check if they can fight
+                    for(ArenaTeam::MemberList::iterator itr = at1->m_membersBegin(); itr !=  at1->m_membersEnd(); ++itr)
+                    {
+                        if(itr->guid)
+                        {
+                            Player *plr = sObjectMgr->GetPlayer(itr->guid);
+                            if(plr)
+                            {
+                                //check if player is really in the group joining the arena match
+                                if((plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) && at1->GetType() == ARENA_TEAM_2v2 && !at1->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) && at1->GetType() == ARENA_TEAM_3v3 && !at1->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) && at1->GetType() == ARENA_TEAM_5v5 && !at1->IsFighting()))
+                                {
+                                    //database query : get all wins of player against at2 and add them
+                                    // in order to be able to check if that amount is bigger
+                                    // than allowed, if so return false
+                                    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId2);
+
+                                    if(!result)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        uint32 allwins = 0;
+                                        do
+                                        {
+                                            Field *fields = result->Fetch();
+                                            uint32 wins = fields[0].GetUInt32();
+                                            
+                                            allwins += wins;
+                                        }while(result->NextRow());
+
+                                        if(allwins >= maxPlayerWinsTeam)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //iterate through arenateam2's members and check if they can fight
+                    for(ArenaTeam::MemberList::iterator itr = at2->m_membersBegin(); itr !=  at2->m_membersEnd(); ++itr)
+                    {
+                        if(itr->guid)
+                        {
+                            Player *plr = sObjectMgr->GetPlayer(itr->guid);
+                            if(plr)
+                            {
+                                //check if player is really in the group joining the arena match
+                                if((plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2) && at2->GetType() == ARENA_TEAM_2v2 && !at2->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_3v3) && at2->GetType() == ARENA_TEAM_3v3 && !at2->IsFighting()) ||
+                                    (plr->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) && at2->GetType() == ARENA_TEAM_5v5 && !at2->IsFighting()))
+                                {
+                                    //database query : get all wins of player against at2 and add them
+                                    // in order to be able to check if that amount is bigger
+                                    // than allowed, if so return false
+                                    QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='%u' AND enemy_team_id='%u'", GUID_LOPART(itr->guid), TeamId1);
+
+                                    if(!result)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        uint32 allwins = 0;
+                                        do
+                                        {
+                                            Field *fields = result->Fetch();
+                                            uint32 wins = fields[0].GetUInt32();
+                                            
+                                            allwins += wins;
+                                        }while(result->NextRow());
+
+                                        if(allwins >= maxPlayerWinsTeam)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(mode & 2)
+            {
+                //database query : get all wins of team1 against team2
+                // in order to be able to check if that amount is bigger
+                // than allowed, if so return false
+                QueryResult result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId1, TeamId2);
+
+                if(result)
+                {
+                    uint32 wins = 0;
+                    Field *fields = result->Fetch();
+                    wins = fields[0].GetUInt32();
+
+                    if(wins >= maxTeamWinsTeam)
+                    {
+                        return false;
+                    }
+                }
+
+                //database query : get all wins of team2 against team1
+                // in order to be able to check if that amount is bigger
+                // than allowed, if so return false
+                result = CharacterDatabase.PQuery("SELECT wins FROM arena_mod WHERE player_guid='0' AND player_team_id='%u' AND enemy_team_id='%u'", TeamId2, TeamId1);
+
+                if(result)
+                {
+                    uint32 wins = 0;
+                    Field *fields = result->Fetch();
+                    wins = fields[0].GetUInt32();
+
+                    if(wins >= maxTeamWinsTeam)
+                    {
+                        return false;
+                    }
+                }
+
+            }
+        }
+    }
+
+    return true;
+}
+
 /*********************************************************/
 /***      BATTLEGROUND QUEUE SELECTION POOLS           ***/
 /*********************************************************/
@@ -160,7 +312,8 @@ GroupQueueInfo * BattlegroundQueue::AddGroup(Player *leader, Group* grp, Battleg
     {
         ArenaTeam *Team = sObjectMgr->GetArenaTeamById(arenateamid);
         if (Team)
-            sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, Team->GetName().c_str(), ginfo->ArenaType, ginfo->ArenaType, ginfo->ArenaTeamRating);
+	    sWorld->SendWorldText(CUSTOM_ARENA_JOIN, ginfo->ArenaType, ginfo->ArenaType);
+            //sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, Team->GetName().c_str(), ginfo->ArenaType, ginfo->ArenaType, ginfo->ArenaTeamRating);
     }
 
     //add players from group to ginfo
@@ -219,8 +372,12 @@ GroupQueueInfo * BattlegroundQueue::AddGroup(Player *leader, Group* grp, Battleg
                 // System message
                 else
                 {
-                    sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level,
-                        qAlliance, (MinPlayers > qAlliance) ? MinPlayers - qAlliance : (uint32)0, qHorde, (MinPlayers > qHorde) ? MinPlayers - qHorde : (uint32)0);
+                    if (sWorld->GetBGTimerAnnounce())
+                    {
+                        sWorld->SendWorldText(LANG_BG_QUEUE_ANNOUNCE_WORLD, bgName, q_min_level, q_max_level,
+                            qAlliance, (MinPlayers > qAlliance) ? MinPlayers - qAlliance : (uint32)0, qHorde, (MinPlayers > qHorde) ? MinPlayers - qHorde : (uint32)0);
+                        sWorld->SetBGTimerAnnounceFalse();
+                    }
                 }
             }
         }
@@ -351,12 +508,13 @@ void BattlegroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     m_QueuedPlayers.erase(itr);
 
     // announce to world if arena team left queue for rated match, show only once
-    if (group->ArenaType && group->IsRated && group->Players.empty() && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
+    /*if (group->ArenaType && group->IsRated && group->Players.empty() && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
     {
         ArenaTeam *Team = sObjectMgr->GetArenaTeamById(group->ArenaTeamId);
         if (Team)
-            sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, Team->GetName().c_str(), group->ArenaType, group->ArenaType, group->ArenaTeamRating);
-    }
+            sWorld->SendWorldText(CUSTOM_ARENA_EXIT, group->ArenaType, group->ArenaType);
+            //sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, Team->GetName().c_str(), group->ArenaType, group->ArenaType, group->ArenaTeamRating);
+    }*/
 
     //if player leaves queue and he is invited to rated arena match, then he have to lose
     if (group->IsInvitedToBGInstanceGUID && group->IsRated && decreaseInvitedCount)
@@ -730,7 +888,7 @@ this method is called when group is inserted, or player / group is removed from 
 it must be called after fully adding the members of a group to ensure group joining
 should be called from Battleground::RemovePlayer function in some cases
 */
-void BattlegroundQueue::Update(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType, bool isRated, uint32 arenaRating)
+void BattlegroundQueue::Update(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType, bool isRated, uint32 arenaRating, uint32 ateamId)
 {
     //if no players in queue - do nothing
     if (m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].empty() &&
@@ -925,7 +1083,7 @@ void BattlegroundQueue::Update(BattlegroundTypeId bgTypeId, BattlegroundBracketI
             for (; itr_team[i] != m_QueuedGroups[bracket_id][i].end(); ++(itr_team[i]))
             {
                 // if group match conditions, then add it to pool
-                if (!(*itr_team[i])->IsInvitedToBGInstanceGUID
+                if (TeamsAreAllowedToFight(ateamId, (*itr_team[i])->ArenaTeamId) && !(*itr_team[i])->IsInvitedToBGInstanceGUID
                     && (((*itr_team[i])->ArenaMatchmakerRating >= arenaMinRating && (*itr_team[i])->ArenaMatchmakerRating <= arenaMaxRating)
                         || (*itr_team[i])->JoinTime < discardTime))
                 {
