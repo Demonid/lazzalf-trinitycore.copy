@@ -3483,6 +3483,9 @@ AuraApplication * Unit::_CreateAuraApplication(Aura * aura, uint8 effMask)
     // aura musn't be removed
     ASSERT(!aura->IsRemoved());
 
+    // aura mustn't be already applied on target
+    ASSERT (!aura->IsAppliedOnTarget(GetGUID()) && "Unit::_CreateAuraApplication: aura musn't be applied on target");
+
     SpellEntry const* aurSpellInfo = aura->GetSpellProto();
     uint32 aurId = aurSpellInfo->Id;
 
@@ -17083,10 +17086,8 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         else if (GetTransport())
             data->append(GetTransport()->GetPackGUID());
         else
-        {
-            sLog->outError("Unit %u does not have transport!", GetEntry());
             *data << (uint8)0;
-        }
+
         *data << float (GetTransOffsetX());
         *data << float (GetTransOffsetY());
         *data << float (GetTransOffsetZ());
