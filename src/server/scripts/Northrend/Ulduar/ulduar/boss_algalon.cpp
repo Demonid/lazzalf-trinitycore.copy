@@ -106,7 +106,6 @@ class boss_algalon : public CreatureScript
         uint64 BlackHoleGUID;
 
         bool Enrage;
-        bool m_bIsHeroicMode;
         bool Summon;
 
         void EnterCombat(Unit* who)
@@ -236,7 +235,7 @@ class boss_algalon : public CreatureScript
 
                 if(QuantumStrike_Timer <= diff)
                 {
-                    DoCast(me->getVictim(), m_bIsHeroicMode ? H_SPELL_QUANTUM_STRIKE : SPELL_QUANTUM_STRIKE, true);
+                    DoCast(me->getVictim(), RAID_MODE(SPELL_QUANTUM_STRIKE, H_SPELL_QUANTUM_STRIKE), true);
 
                     QuantumStrike_Timer = 4000 + rand()%10000;
                 }else QuantumStrike_Timer -= diff;
@@ -244,7 +243,7 @@ class boss_algalon : public CreatureScript
                 if(BigBang_Timer <= diff)
                 {
                     DoScriptText(RAND(SAY_BIG_BANG_1,SAY_BIG_BANG_2), me);
-                    DoCast(me->getVictim(), m_bIsHeroicMode ? H_SPELL_BIG_BANG : SPELL_BIG_BANG, true);
+                    DoCast(me->getVictim(), RAID_MODE(SPELL_BIG_BANG, H_SPELL_BIG_BANG), true);
 
                     BigBang_Timer = 90000;
                 }else BigBang_Timer -= diff;
@@ -265,7 +264,7 @@ class boss_algalon : public CreatureScript
 
                 if(CosmicSmash_Timer <= diff)
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), m_bIsHeroicMode ? H_SPELL_COSMIC_SMASH : SPELL_COSMIC_SMASH, true);
+                    DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH, H_SPELL_COSMIC_SMASH), true);
 
                     CosmicSmash_Timer = urand(30000, 60000);
                 }else CosmicSmash_Timer -= diff;
