@@ -322,7 +322,6 @@ class boss_ignis : public CreatureScript
             {
                 construct_list.push_back(summon->GetGUID());
             }
-
             summons.Summon(summon);
         }
 
