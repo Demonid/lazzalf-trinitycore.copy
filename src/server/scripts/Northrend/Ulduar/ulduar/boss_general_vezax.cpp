@@ -48,6 +48,7 @@ enum VezaxSpells
     SPELL_SARONITE_BARRIER                      = 63364,
     SPELL_SEARING_FLAMES                        = 62661,
     SPELL_SHADOW_CRASH                          = 62660,
+    SPELL_SHADOW_CRASH_HIT                       = 62659, 
     SPELL_SURGE_OF_DARKNESS                     = 62662,
     SPELL_SARONITE_VAPOR                        = 63323,
     SPELL_PROFOUND_OF_DARKNESS                  = 63420,
@@ -135,7 +136,7 @@ class boss_general_vezax : public CreatureScript
         
         void SpellHitTarget(Unit * pTarget, const SpellEntry * pSpell)
         {
-            if (pSpell->Id == SPELL_SHADOW_CRASH && pTarget->GetTypeId() == TYPEID_PLAYER)
+            if (pSpell->Id == SPELL_SHADOW_CRASH_HIT && pTarget->GetTypeId() == TYPEID_PLAYER)
                 Dodged = false;
         }
 
@@ -195,9 +196,8 @@ class boss_general_vezax : public CreatureScript
                 switch(eventId)
                 {
                     case EVENT_SHADOW_CRASH:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
-                            if (!pTarget->IsWithinDist(me, 15))
-                                DoCast(pTarget, SPELL_SHADOW_CRASH);
+                        if (Unit * pTarget = GetPlayerAtMinimumRange(15.0f))
+                            DoCast(pTarget, SPELL_SHADOW_CRASH);
                         events.ScheduleEvent(EVENT_SHADOW_CRASH, urand(6000, 10000));
                         break;
                     case EVENT_SEARING_FLAMES:
@@ -211,9 +211,17 @@ class boss_general_vezax : public CreatureScript
                         events.ScheduleEvent(EVENT_DARKNESS, urand(60000, 70000));
                         break;
                     case EVENT_MARK:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
+                        {
+                            Unit* pTarget = NULL;
+                            /*  He will not cast this on players within 15 yards of him. 
+                                However, if there are not at least 9 people outside of 15 yards 
+                                he will start casting it on players inside 15 yards melee and tank included.
+                            */
+                            if (!(pTarget = CheckPlayersInRange(RAID_MODE(4,9), 15.0f, 50.f)))
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM); 
                             DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-                        events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
+                            events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
+                        }
                         break;
                     case EVENT_SARONITE_VAPORS:
                         me->MonsterTextEmote(EMOTE_VAPORS, 0, true);
@@ -270,36 +278,43 @@ class boss_general_vezax : public CreatureScript
                 (*iter)->ForcedDespawn();
         }
 
-        Unit* CheckPlayersinRange(float range_max, float range_min, uint32 player_min)
+        /*  Player Range Check
+            Purpose: If there are uiPlayersMin people within uiRangeMin, uiRangeMax: return a random players in that range.
+            If not, return NULL and allow other target selection
+        */
+        Unit * CheckPlayersInRange(uint32 uiPlayersMin, float uiRangeMin, float uiRangeMax)
         {
-            std::list<uint64> PlList;
-            Map::PlayerList const &players = pInstance->instance->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            Map * pMap = me->GetMap();
+            if (pMap && pMap->IsDungeon())
             {
-                Player* pPlayer = itr->getSource();                        
-                if (!pPlayer)
-                    continue;
+                std::list<Player*> PlayerList;
+                Map::PlayerList const &Players = pMap->GetPlayers();
+                for (Map::PlayerList::const_iterator itr = Players.begin(); itr != Players.end(); ++itr)
+                {
+                    if (Player * pPlayer = itr->getSource())
+                    {
+                        float uiDistance = pPlayer->GetDistance(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                        if (uiRangeMin < uiDistance || uiDistance > uiRangeMax)
+                            continue;
 
-                uint32 m_dist = pPlayer->GetDistance(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ());
-                if (range_min < m_dist || m_dist > range_max)
-                    continue;
+                        PlayerList.push_back(pPlayer);
+                    }
+                }
 
-                PlList.push_back(pPlayer->GetGUID());
-            }
-            if (PlList.empty())
-                return NULL;            
-            if (PlList.size() < player_min)
-                return NULL;
+                if (PlayerList.empty())
+                    return NULL;
 
-            std::list<uint64>::const_iterator itr = PlList.begin();
-            std::advance(itr, urand(0, PlList.size()-1));
-            if (Player *pPlayer = Unit::GetPlayer(*me, *itr))
-            {
-                return pPlayer->ToUnit();
+                size_t size = PlayerList.size();
+                if (size < uiPlayersMin)
+                    return NULL;
+
+                std::list<Player*>::const_iterator itr = PlayerList.begin();
+                std::advance(itr, urand(0, size - 1));
+                return *itr;
             }
             else
                 return NULL;
-        }
+        };
     };
      
     CreatureAI* GetAI(Creature *pCreature) const
@@ -375,8 +390,6 @@ class mob_saronite_animus : public CreatureScript
                 Vezax->AI()->DoAction(ACTION_ANIMUS_DEAD);
             }
         }
-
-        void EnterCombat(Unit* pWho){}
 
         void Reset()
         {   
