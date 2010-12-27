@@ -176,7 +176,7 @@ bool GuildHouseObject::RemoveGuildHouseAdd(uint32 id)
             if (CreatureData const* data = sObjectMgr->GetCreatureData(*itr2))
             {
                 sObjectMgr->RemoveCreatureFromGrid(*itr2, data);
-                if( Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
+                if(Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(*itr2, data->id, HIGHGUID_UNIT), (Creature*)NULL))
                     pCreature->AddObjectToRemoveList();
             }
         }
