@@ -832,7 +832,13 @@ bool AntiCheat::CheckAntiSpeed(Vehicle *vehMover, MovementInfo& pOldPacket, Move
 
     // False segnalation
     if (plMover->HasAura(30174) || // 30174 -> Riding Turtle
-        plMover->HasAura(64731))   // 64731 -> Sea Turtle
+        plMover->HasAura(64731)) // 64731 -> Sea Turtle
+        return true;
+
+    if (pNewPacket.flags & MOVEMENTFLAG_SWIMMING &&
+        (plMover->HasAura(7840) || // 7840 -> Swim Speed
+        plMover->HasAura(88026) || // 88026 -> Silversnap Swim Tonic Master
+        plMover->HasAura(30430)))   // 30430 -> Embrace of the Serpent
         return true;
 
     // just to prevent false reports
