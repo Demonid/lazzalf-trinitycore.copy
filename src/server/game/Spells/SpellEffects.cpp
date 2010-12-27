@@ -1684,8 +1684,9 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
                 break;
         }
     }
-    Unit * caster = GetTriggeredSpellCaster(spellInfo, m_caster, unitTarget);
 
+    Unit * caster = GetTriggeredSpellCaster(spellInfo, m_caster, unitTarget);
+ 
     caster->CastSpell(unitTarget, spellInfo, true, NULL, NULL, m_originalCasterGUID);
 }
 
@@ -1705,6 +1706,7 @@ void Spell::EffectForceCastWithValue(SpellEffIndex effIndex)
         return;
     }
     int32 bp = damage;
+
     Unit * caster = GetTriggeredSpellCaster(spellInfo, m_caster, unitTarget);
 
     caster->CastCustomSpell(unitTarget, spellInfo->Id, &bp, &bp, &bp, true, NULL, NULL, m_originalCasterGUID);
@@ -5240,6 +5242,12 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     }
                     return;
                 }
+                case 65594: // Cancel Stone Grip
+                {
+                    uint32 spellToRemove = unitTarget->GetMap()->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL ? 62166 : 63981;
+                    unitTarget->RemoveAurasDueToSpell(spellToRemove);
+                    return;
+                }
                 case 60123: // Lightwell
                 {
                     if (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isSummon())
@@ -6278,9 +6286,8 @@ void Spell::EffectQuestClear(SpellEffIndex effIndex)
     if (!pQuest)
         return;
 
-    QuestStatusMap::iterator qs_itr = pPlayer->getQuestStatusMap().find(quest_id);
     // Player has never done this quest
-    if (qs_itr == pPlayer->getQuestStatusMap().end())
+    if (pPlayer->GetQuestStatus(quest_id) == QUEST_STATUS_NONE)
         return;
 
     // remove all quest entries for 'entry' from quest log
@@ -6296,7 +6303,8 @@ void Spell::EffectQuestClear(SpellEffIndex effIndex)
         }
     }
 
-    pPlayer->RemoveQuest(quest_id);
+    pPlayer->RemoveActiveQuest(quest_id);
+    pPlayer->RemoveRewardedQuest(quest_id);
 }
 
 void Spell::EffectSendTaxi(SpellEffIndex effIndex)
