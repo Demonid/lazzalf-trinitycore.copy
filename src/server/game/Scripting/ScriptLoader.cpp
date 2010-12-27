@@ -1126,6 +1126,7 @@ void AddNorthrendScripts()
     AddSC_boss_ignis();
     AddSC_boss_razorscale();
     AddSC_boss_xt002();
+    AddSC_boss_general_vezax();
     AddSC_boss_assembly_of_iron();
     AddSC_boss_kologarn();
     AddSC_boss_hodir();

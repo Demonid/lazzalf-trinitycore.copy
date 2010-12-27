@@ -14819,7 +14819,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     } else if (pQuest->IsWeekly())
         SetWeeklyQuestStatus(quest_id);
 
-    RemoveQuest(quest_id);
+    RemoveActiveQuest(quest_id);
 
     m_RewardedQuests.insert(quest_id);
     m_RewardedQuestsSave[quest_id] = true;
@@ -15388,7 +15388,7 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
     UpdateForQuestWorldObjects();
 }
 
-void Player::RemoveQuest(uint32 quest_id)
+void Player::RemoveActiveQuest(uint32 quest_id)
 {
     QuestStatusMap::iterator itr = m_QuestStatus.find(quest_id);
     if (itr != m_QuestStatus.end())
@@ -15397,7 +15397,10 @@ void Player::RemoveQuest(uint32 quest_id)
         m_QuestStatusSave[quest_id] = false;
         return;
     }
+}
 
+void Player::RemoveRewardedQuest(uint32 quest_id)
+{
     RewardedQuestSet::iterator rewItr = m_RewardedQuests.find(quest_id);
     if (rewItr != m_RewardedQuests.end())
     {
