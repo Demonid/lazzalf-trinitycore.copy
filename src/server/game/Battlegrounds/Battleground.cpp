@@ -731,82 +731,6 @@ void Battleground::EndBattleground(uint32 winner)
     //we must set it this way, because end time is sent in packet!
     m_EndTime = TIME_TO_AUTOREMOVE;
 
-	bool controll_ip = true;
-
-    if (sWorld->getBoolConfig(CONFIG_ARENAMOD_CONTROLL_IP) && isArena() && isRated())
-    {	
-	    bool virgolat = false;
-        bool virgolaa = false;
-        bool virgolab = false;
-        std::stringstream total;
-        std::stringstream teamA;
-        std::stringstream teamB;
-
-	    for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-	    { 
-            Player *plr = sObjectMgr->GetPlayer(itr->first);
-            uint32 team = itr->second.Team;
-	        if (plr && plr->GetSession())
-            {
-                if(virgolat)
-	                total << ',';
-	            virgolat = true;               
-                total << plr->GetSession()->GetAccountId();
-
-                if( team == winner )
-                {
-                    if(virgolaa)
-	                    teamA << ',';
-	                virgolaa = true; 
-                    teamA << plr->GetSession()->GetAccountId();
-                }
-                else
-                {
-                    if(virgolab)
-	                    teamB << ',';
-	                virgolab = true; 
-                    teamB << plr->GetSession()->GetAccountId();
-                }
-	        } 
-        }
-        std::string queryt = total.str();
-        std::string querya = teamA.str();
-        std::string queryb = teamB.str();
-	    QueryResult resultt = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryt.c_str());
-        QueryResult resulta = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", querya.c_str());
-        QueryResult resultb = LoginDatabase.PQuery ("SELECT DISTINCT `last_ip` FROM `account` WHERE `id` IN (%s);", queryb.c_str());
-       	if(resultt && resulta && resultb)
-        {
-            if( resultt->GetRowCount() != (resulta->GetRowCount() + resultb->GetRowCount()) )
-            {
-                sLog->outArena("Partita con ip uguali");
-                controll_ip = false;
-            }
-            else 
-            {
-                sLog->outArena("Partita con ip diversi");
-                controll_ip = true;
-            }
-        }
-
-        if(!resultt)
-        {
-            sLog->outArena("No result total");
-        }
-
-        if(!resulta)
-        {
-            sLog->outArena("No result A");
-            controll_ip = false;
-        }
-
-        if(!resultb)
-        {
-            sLog->outArena("No result B"); 
-            controll_ip = false;
-        }
-    }
-
     // arena rating calculation
     if (isArena() && isRated())
     {
@@ -814,7 +738,7 @@ void Battleground::EndBattleground(uint32 winner)
 
         winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner));
         loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(GetOtherTeam(winner)));
-        if (controll_ip && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+        if (winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
        	    if (enabled)
             {
@@ -862,7 +786,7 @@ void Battleground::EndBattleground(uint32 winner)
         if (itr->second.OfflineRemoveTime)
         {
             //if rated arena match - make member lost!
-            if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+            if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
             {
                 if (team == winner)
                     winner_arena_team->OfflineMemberLost(itr->first, loser_matchmaker_rating, winner_change);
@@ -898,7 +822,7 @@ void Battleground::EndBattleground(uint32 winner)
         //if (!team) team = plr->GetTeam();
 
         // per player calculation
-        if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+        if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
         {
             bool enabled = sWorld->getBoolConfig(CONFIG_ARENAMOD_ENABLE);
 
@@ -975,7 +899,7 @@ void Battleground::EndBattleground(uint32 winner)
         plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
     }
 
-    if (controll_ip && isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
+    if (isArena() && isRated() && winner_arena_team && loser_arena_team && winner_arena_team != loser_arena_team)
     {
         // update arena points only after increasing the player's match count!
         //obsolete: winner_arena_team->UpdateArenaPointsHelper();

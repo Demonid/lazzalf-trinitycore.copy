@@ -1431,7 +1431,6 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN]                 = sConfig->GetIntDefault("ArenaMod.MaximalPlayerWins", 30);
     m_int_configs[CONFIG_ARENAMOD_MAX_PLAYER_WIN_AGAINST_TEAM]    = sConfig->GetIntDefault("ArenaMod.MaximalPlayerWinsAgainstTeam", 15);
     m_int_configs[CONFIG_ARENAMOD_TIME_RESET]                     = sConfig->GetIntDefault("ArenaMod.TimeToReset", 24);
-    m_bool_configs[CONFIG_ARENAMOD_CONTROLL_IP]                    = sConfig->GetBoolDefault("ArenaMod.ControllIp", 0);
 
     m_bool_configs[CONFIG_CRASH_RECOVER_ENABLE] = sConfig->GetBoolDefault("CrashRecover.Enable", false);
     m_int_configs[CONFIG_UINT32_MAX_CRASH_COUNT] = sConfig->GetIntDefault("CrashRecover.MaxCrashCount", 5);
