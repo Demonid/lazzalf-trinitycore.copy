@@ -2555,9 +2555,6 @@ Network.TcpNodelay = 1
 #        Sets the time intervall in HOURS for resetting the limitation
 #    Default: 24
 #
-#    ArenaMod.ControllIp
-#        Enable/Disable Controll Ip for Arena Team
-#    Default: 0
 ###################################################################################################################
 
 ArenaMod.Enabled = 0
@@ -2567,7 +2564,6 @@ ArenaMod.MaximalTeamWinsAgainstTeam = 20
 ArenaMod.MaximalPlayerWins = 30
 ArenaMod.MaximalPlayerWinsAgainstTeam = 15
 ArenaMod.TimeToReset = 24
-ArenaMod.ControllIp = 0
 
 ###############################################################################
 # MOVEMENT ANTICHEAT
