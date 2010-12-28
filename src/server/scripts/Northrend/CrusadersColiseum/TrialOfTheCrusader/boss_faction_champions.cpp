@@ -65,6 +65,11 @@ public:
         boss_toc_champion_controllerAI(Creature* pCreature) : ScriptedAI(pCreature), Summons(me)
         {
             m_pInstance = (InstanceScript *) pCreature->GetInstanceScript();
+            m_uiChampionsNotStarted = 0;
+            m_uiChampionsFailed = 0;
+            m_uiChampionsKilled = 0;
+            m_bInProgress = false;
+            Summons.clear();
         }
 
         InstanceScript* m_pInstance;
@@ -74,14 +79,16 @@ public:
         uint32 m_uiChampionsKilled;
         bool   m_bInProgress;
 
+        /*
         void Inizialize()
         {
             m_uiChampionsNotStarted = 0;
             m_uiChampionsFailed = 0;
             m_uiChampionsKilled = 0;
             m_bInProgress = false;
+            Summons.clear();
         }
-        /*
+        
         void Reset()
         {
             m_uiChampionsNotStarted = 0;
