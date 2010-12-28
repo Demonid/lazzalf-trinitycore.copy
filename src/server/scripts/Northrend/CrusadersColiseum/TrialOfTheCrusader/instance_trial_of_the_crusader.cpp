@@ -124,7 +124,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                 EventTimer = 1000;
 
-                m_uiAcidmawGUID = 0;
+                AcidmawGUID = 0;
 
                 NotOneButTwoJormungarsTimer = 0;
                 ResilienceWillFixItTimer = 0;
@@ -489,16 +489,16 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                             --MistressOfPainCount;
                         break;
                     case DATA_TRAITOR_KING_START:
-                        if (uiData == ACHI_START)
+                        if (data == ACHI_START)
                             traitorKingTimer = TRAITOR_KING_MAX_TIMER;
-                        else if (uiData == ACHI_RESET)
+                        else if (data == ACHI_RESET)
                         {
                             traitorKingTimer = 0;
                             scarabsCount = 0;
                         }
                         break;
                     case DATA_TRAITOR_KING_COUNT:
-                        if (uiData == ACHI_INCREASE)
+                        if (data == ACHI_INCREASE)
                             scarabsCount++;
                     case DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE:
                         TributeToImmortalityElegible = false;
@@ -729,12 +729,12 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         };
                         return EventNPCId;
                     case DATA_HEALTH_TWIN_SHARED:  
-                        return m_uiDataDamageTwin;              
+                        return DataDamageTwin;              
                     //achievements
                     case DATA_SNOBOLD_COUNT: 
-                        return m_uiSnoboldCount;
+                        return SnoboldCount;
                     case DATA_MISTRESS_OF_PAIN_COUNT: 
-                        return m_uiMistressOfPainCount;
+                        return MistressOfPainCount;
                     case DATA_TRAITOR_KING_START:
                         if (traitorKingTimer > 0)
                             return ACHI_IS_IN_PROGRESS;
@@ -788,10 +788,10 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
                     }
 
-                    if (traitorKingTimer <= uiDiff)
+                    if (traitorKingTimer <= diff)
                         SetData(DATA_TRAITOR_KING_START, ACHI_RESET);
                     else 
-                        traitorKingTimer -= uiDiff;
+                        traitorKingTimer -= diff;
                 }
             }
 
@@ -843,8 +843,8 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 OUT_LOAD_INST_DATA_COMPLETE;
             }
 
-            /*bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-            {
+            //bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+            /*{
                 switch (criteria_id)
                 {
                     case UPPER_BACK_PAIN_10_PLAYER:
@@ -872,7 +872,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                     case A_TRIBUTE_TO_IMMORTALITY_ALLIANCE:
                         return TrialCounter == 50 && TributeToImmortalityElegible;
                     case A_TRIBUTE_TO_DEDICATED_INSANITY:
-                        return false/*uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem*/;
+                        return false; //uiGrandCrusaderAttemptsLeft == 50 && !bHasAtAnyStagePlayerEquippedTooGoodItem;
                 }
 
                 return false;

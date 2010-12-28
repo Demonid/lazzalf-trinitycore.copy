@@ -124,9 +124,9 @@ public:
             return true;
         }
 
-        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/)
         {
-            if (Unit* pTarget = aurApp->GetTarget())
+            if (Unit* pTarget = GetTarget())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
                 {
                     std::list<GameObject*> ChestList;
@@ -180,9 +180,9 @@ public:
             return true;
         }
 
-        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/)
         {
-            if (Unit* pTarget = aurApp->GetTarget())
+            if (Unit* pTarget = GetTarget())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
                 {
                     std::list<GameObject*> ChestList;
@@ -236,9 +236,9 @@ public:
             return true;
         }
 
-        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/)
         {
-            if (Unit* pTarget = aurApp->GetTarget())
+            if (Unit* pTarget = GetTarget())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
                 {
                     std::list<GameObject*> ChestList;
@@ -289,9 +289,9 @@ public:
             return true;
         }
 
-        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/, AuraApplication const * aurApp)
+        void HandleEffectPeriodic(AuraEffect const * /*aurEff*/)
         {
-            if (Unit* pTarget = aurApp->GetTarget())
+            if (Unit* pTarget = GetTarget())
                 if (Player* pPlayerTarget = pTarget->ToPlayer())
                 {
                     std::list<GameObject*> ChestList;
