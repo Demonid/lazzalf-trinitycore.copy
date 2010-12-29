@@ -412,6 +412,7 @@ class boss_sartharion : public CreatureScript
 
                 if (!pFetchTene->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pFetchTene->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pFetchTene->SetReactState(REACT_PASSIVE);
             }
 
             if (pFetchShad && pFetchShad->isAlive() && !pFetchShad->getVictim())
@@ -426,6 +427,7 @@ class boss_sartharion : public CreatureScript
 
                 if (!pFetchShad->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pFetchShad->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pFetchShad->SetReactState(REACT_PASSIVE);
             }
 
             if (pFetchVesp && pFetchVesp->isAlive() && !pFetchVesp->getVictim())
@@ -440,6 +442,7 @@ class boss_sartharion : public CreatureScript
 
                 if (!pFetchVesp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     pFetchVesp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pFetchVesp->SetReactState(REACT_PASSIVE);
             }
 
             if (bCanUseWill)
@@ -461,6 +464,7 @@ class boss_sartharion : public CreatureScript
                 {
                     if (pTenebron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         pTenebron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    pTenebron->SetReactState(REACT_AGGRESSIVE);
                     pTenebron->RemoveAllAuras();
                     pTenebron->GetMotionMaster()->MoveTargetedHome();
                 }
@@ -481,6 +485,7 @@ class boss_sartharion : public CreatureScript
                 {
                     if (pShadron->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         pShadron->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    pShadron->SetReactState(REACT_AGGRESSIVE);
                     pShadron->RemoveAllAuras();
                     pShadron->GetMotionMaster()->MoveTargetedHome();
                 }
@@ -501,6 +506,7 @@ class boss_sartharion : public CreatureScript
                 {
                     if (pVesperon->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                         pVesperon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    pVesperon->SetReactState(REACT_AGGRESSIVE);
                     pVesperon->RemoveAllAuras();
                     pVesperon->GetMotionMaster()->MoveTargetedHome();
                 }
@@ -529,6 +535,8 @@ class boss_sartharion : public CreatureScript
 
                         if (pTemp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                             pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+                        pTemp->SetReactState(REACT_AGGRESSIVE);
 
                         int32 iTextId = 0;
 
@@ -996,7 +1004,9 @@ class mob_tenebron : public CreatureScript
         void Reset()
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+            me->SetReactState(REACT_AGGRESSIVE);
         
             m_uiWaypointId = 0;
             m_uiMoveNextTimer = 500;
@@ -1121,7 +1131,9 @@ class mob_shadron : public CreatureScript
         void Reset()
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+            me->SetReactState(REACT_AGGRESSIVE);
         
             m_uiWaypointId = 0;
             m_uiMoveNextTimer = 500;
@@ -1259,7 +1271,9 @@ class mob_vesperon : public CreatureScript
         void Reset()
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+            me->SetReactState(REACT_AGGRESSIVE);
         
             m_uiWaypointId = 0;
             m_uiMoveNextTimer = 500;
