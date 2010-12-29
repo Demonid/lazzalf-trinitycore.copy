@@ -216,7 +216,8 @@ public:
                     DoCast(me, SPELL_MERGE);
                     if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                         CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI, pColossus->AI())->CreatureState(pColossus, true);
-                    me->CombatStop();
+                    me->DeleteThreatList();
+                    me->CombatStop(true);
                     me->RemoveFromWorld();
                     return;
                 }
@@ -226,7 +227,8 @@ public:
                     DoCast(me, SPELL_MERGE);
                     if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                         CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI, pColossus->AI())->CreatureState(pColossus, true);
-                    me->CombatStop();
+                    me->DeleteThreatList();
+                    me->CombatStop(true);
                     me->RemoveFromWorld();
                     return;
                 }
