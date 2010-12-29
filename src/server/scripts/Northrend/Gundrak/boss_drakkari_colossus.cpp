@@ -189,7 +189,7 @@ public:
             me->RemoveFromWorld();
         }
 
-        void MovementInform(uint32 uiType, uint32 /*uiId*/)
+        /*void MovementInform(uint32 uiType, uint32 uiId)
         {
             if (uiType != POINT_MOTION_TYPE)
                 return;
@@ -200,7 +200,7 @@ public:
             }
             me->CombatStop();
             me->RemoveFromWorld();
-        }
+        }*/
 
         void UpdateAI(const uint32 diff)
         {
@@ -214,14 +214,20 @@ public:
                 {
                     me->InterruptNonMeleeSpells(true);
                     DoCast(me, SPELL_MERGE);
-                    //me->RemoveFromWorld();
+                    if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                        CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI, pColossus->AI())->CreatureState(pColossus, true);
+                    me->CombatStop();
+                    me->RemoveFromWorld();
                     return;
                 }
                 else if (HealthBelowPct(5))
                 {
                     me->InterruptNonMeleeSpells(true);
                     DoCast(me, SPELL_MERGE);
-                    //me->RemoveFromWorld();
+                    if (Creature *pColossus = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                        CAST_AI(boss_drakkari_colossus::boss_drakkari_colossusAI, pColossus->AI())->CreatureState(pColossus, true);
+                    me->CombatStop();
+                    me->RemoveFromWorld();
                     return;
                 }
             }
