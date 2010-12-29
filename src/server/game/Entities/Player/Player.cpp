@@ -14819,13 +14819,19 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, quest_id);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY, quest_id);
         }
-    } else if (pQuest->IsWeekly())
+    } 
+    else if (pQuest->IsWeekly())
         SetWeeklyQuestStatus(quest_id);
+    else
+    {
+        m_RewardedQuests.insert(quest_id);
+        m_RewardedQuestsSave[quest_id] = true;
+    }
 
     RemoveActiveQuest(quest_id);
 
-    m_RewardedQuests.insert(quest_id);
-    m_RewardedQuestsSave[quest_id] = true;
+    //m_RewardedQuests.insert(quest_id);
+    //m_RewardedQuestsSave[quest_id] = true;
 
     if (announce)
         SendQuestReward(pQuest, XP, questGiver);
