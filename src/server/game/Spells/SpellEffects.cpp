@@ -5540,7 +5540,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
-    unitTarget->getHostileRefManager().UpdateVisibility();
+    unitTarget->getHostileRefManager().UpdateVisibility();    
 
     Unit::AttackerSet const& attackers = unitTarget->getAttackers();
     for (Unit::AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
