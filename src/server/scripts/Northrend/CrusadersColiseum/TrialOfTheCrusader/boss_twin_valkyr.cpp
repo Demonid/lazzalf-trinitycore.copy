@@ -83,8 +83,8 @@ enum BossSpells
     SPELL_DARK_TOUCH            = 67282,
 
     SPELL_TWIN_POWER            = 65916,
-    SPELL_LIGHT_ESSENCE         = 65686,
-    SPELL_DARK_ESSENCE          = 65684,
+    SPELL_LIGHT_ESSENCE         = RAID_MODE(65686,67222,67223,67224),
+    SPELL_DARK_ESSENCE          = RAID_MODE(65684,67176,67177,67178),
     SPELL_BERSERK               = 64238,
     SPELL_NONE                  = 0,
 

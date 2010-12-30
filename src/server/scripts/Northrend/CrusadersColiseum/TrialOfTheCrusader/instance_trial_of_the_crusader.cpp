@@ -367,15 +367,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 if (GameObject* pChest = instance->GetGameObject(m_uiTwinChestGUID))
                                     if (pChest && !pChest->isSpawned())
                                         pChest->SetRespawnTime(7*DAY);
-                                // Remove valkyrie aura
-                                Map::PlayerList const &players = instance->GetPlayers();
-                                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                                    if (Player* player = i->getSource())
-                                        if (player->isAlive())
-                                        {
-                                            player->RemoveAurasDueToSpell(65684);
-                                            player->RemoveAurasDueToSpell(65686);
-                                        }
                                 if (instance->GetPlayers().getFirst()->getSource()->GetTeam() == ALLIANCE)
                                     EventStage = 4020;
                                 else
